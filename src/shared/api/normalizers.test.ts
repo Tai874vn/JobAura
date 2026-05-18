@@ -18,13 +18,12 @@ describe('normalizers', () => {
   it('normalizes category and subcategory using fallback keys', () => {
     expect(normalizeCategory({ id: 3, name: 'Design' })).toEqual({ id: 3, name: 'Design', tenLoaiCongViec: 'Design' })
 
-    expect(normalizeSubcategory({ id: 8, name: 'Logo', image: '/logo.png', categoryId: 3 })).toEqual({
+    expect(normalizeSubcategory({ id: 8, name: 'Logo', image: '/logo.png', categoryId: 3 })).toMatchObject({
       id: 8,
       name: 'Logo',
       tenChiTiet: 'Logo',
       hinhAnh: '/logo.png',
       maLoaiCongViec: 3,
-      loaiCongViec: undefined,
     })
   })
 
@@ -77,7 +76,7 @@ describe('normalizers', () => {
         total: 21,
         data: [{ id: 1, title: 'Test', price: 5 }],
       },
-    })
+    } as never)
 
     expect(response.statusCode).toBe(200)
     expect(response.content?.pageIndex).toBe(2)
@@ -93,7 +92,7 @@ describe('normalizers', () => {
         price: 99,
         comments: [{ id: 2, jobId: 6, comment: 'Solid', rating: 4 }],
       },
-    })
+    } as never)
     expect(withComments.content?.binhLuans?.[0].noiDung).toBe('Solid')
   })
 

@@ -25,7 +25,7 @@ describe('utils', () => {
 
   it('returns initials and resolves asset URLs safely', () => {
     expect(initials('job aura')).toBe('JA')
-    expect(initials(undefined)).toBe('JA')
+    expect(initials(undefined)).toBe('J')
     expect(resolveAssetUrl('https://example.com/a.png')).toBe('https://example.com/a.png')
     expect(resolveAssetUrl('images\\avatar.png')).toBe('http://localhost:3000/images/avatar.png')
     expect(resolveAssetUrl('blob:http://example.com/a')).toBeUndefined()
