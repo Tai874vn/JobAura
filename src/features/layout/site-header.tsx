@@ -29,7 +29,7 @@ export function SiteHeader() {
     },
   })
 
-  function submitSearch(event: React.FormEvent<HTMLFormElement>) {
+  function submitSearch(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     router.push(`/jobs?keyword=${encodeURIComponent(query.trim())}`)
   }
@@ -80,7 +80,7 @@ export function SiteHeader() {
               {initials(user.name)}
             </button>
             {menuOpen ? (
-              <div className="absolute right-6 top-14 w-56 rounded-lg border border-border bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+              <div className="absolute right-24 top-14 w-56 rounded-lg border border-border bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
                 <MenuLink href={`/profile/${user.id}`} icon={<User className="h-4 w-4" />} label="Profile" />
                 <MenuLink href="/my-posts" icon={<BriefcaseBusiness className="h-4 w-4" />} label="My posts" />
                 <MenuLink href="/my-jobs" icon={<LayoutDashboard className="h-4 w-4" />} label="My jobs" />
