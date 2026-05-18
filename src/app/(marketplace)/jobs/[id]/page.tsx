@@ -7,7 +7,7 @@ import type { ApiResponse, Comment, Job } from '@/shared/schemas'
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const response = await serverRequest<ApiResponse<Job & { binhLuans?: Comment[] }>>(`/api/jobs/details/${id}`)
-  const job = response ? normalizeJobResponse(response).content : null
+  const job = response.ok ? normalizeJobResponse(response.data).content : null
   if (!job) notFound()
   return <JobDetailView job={job} comments={job.binhLuans ?? []} />
 }

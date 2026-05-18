@@ -18,8 +18,8 @@ export async function HomePage() {
     serverRequest<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search?page=1&pageSize=8'),
     serverRequest<ApiResponse<JobType[]>>('/api/categories'),
   ])
-  const jobs = jobsRes ? (normalizePaginatedJobsResponse(jobsRes).content?.data ?? []) : []
-  const jobTypes = typesRes ? (normalizeCategoriesResponse(typesRes).content ?? []) : []
+  const jobs = jobsRes.ok ? (normalizePaginatedJobsResponse(jobsRes.data).content?.data ?? []) : []
+  const jobTypes = typesRes.ok ? (normalizeCategoriesResponse(typesRes.data).content ?? []) : []
 
   return (
     <div>

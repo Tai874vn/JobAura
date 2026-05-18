@@ -136,11 +136,11 @@ export const skillsApi = {
 }
 
 export const chatApi = {
-  rooms: async () => (await apiClient.get<ApiResponse<ChatRoom[]>>('/api/api/chat/rooms')).data,
-  room: async (id: number) => (await apiClient.get<ApiResponse<ChatRoom>>(`/api/api/chat/rooms/${id}`)).data,
+  rooms: async () => (await apiClient.get<ApiResponse<ChatRoom[]>>('/api/chat/rooms')).data,
+  room: async (id: number) => (await apiClient.get<ApiResponse<ChatRoom>>(`/api/chat/rooms/${id}`)).data,
   messages: async (roomId: number) =>
-    (await apiClient.get<ApiResponse<ChatMessage[]>>(`/api/api/chat/rooms/${roomId}/messages`)).data,
-  start: async (userId: number) => (await apiClient.get<ApiResponse<ChatRoom>>(`/api/api/chat/start/${userId}`)).data,
+    (await apiClient.get<ApiResponse<ChatMessage[]>>(`/api/chat/rooms/${roomId}/messages`)).data,
+  start: async (userId: number) => (await apiClient.get<ApiResponse<ChatRoom>>(`/api/chat/start/${userId}`)).data,
   createRoom: async (data: { name?: string; memberIds: number[] }) =>
-    (await apiClient.post<ApiResponse<ChatRoom>>('/api/api/chat/rooms', data)).data,
+    (await apiClient.post<ApiResponse<ChatRoom>>('/api/chat/rooms', data)).data,
 }

@@ -7,6 +7,17 @@ import { useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/api/query-keys'
 import { Card, CardContent, Spinner } from '@/shared/ui'
 
+const oauthErrorMessages: Record<string, string> = {
+  access_denied: 'Google sign-in was cancelled.',
+  invalid_state: 'The sign-in session expired. Please try again.',
+  missing_code: 'Google did not return the required sign-in code. Please try again.',
+  auth_failed: 'Google sign-in could not be completed. Please try again.',
+}
+
+function getOAuthErrorMessage(error: string) {
+  return oauthErrorMessages[error] ?? 'Google sign-in could not be completed. Please try again.'
+}
+
 export function OAuthCallback() {
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
@@ -27,7 +38,7 @@ export function OAuthCallback() {
     return (
       <OAuthShell title="Google sign-in failed" description="The backend could not complete Google authentication.">
         <p className="rounded-lg border border-danger/20 bg-danger/5 px-3 py-2 text-sm font-medium text-danger">
-          {error}
+          {getOAuthErrorMessage(error)}
         </p>
         <Link className="mt-4 inline-block font-semibold text-primary" href="/auth/login">
           Back to sign in

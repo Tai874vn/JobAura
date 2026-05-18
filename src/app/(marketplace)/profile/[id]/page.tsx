@@ -6,6 +6,6 @@ import type { ApiResponse, User } from '@/shared/schemas'
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const response = await serverRequest<ApiResponse<User>>(`/api/users/profile/${id}`)
-  if (!response?.content) notFound()
-  return <ProfilePage user={response.content} />
+  if (!response.ok || !response.data.content) notFound()
+  return <ProfilePage user={response.data.content} />
 }
