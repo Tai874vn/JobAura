@@ -26,7 +26,7 @@ export const paginatedContentSchema = <T extends z.ZodType>(item: T) =>
 export const userSchema = z.object({
   id: z.number(),
   name: z.string(),
-  email: z.string().email(),
+  email: z.string().trim().pipe(z.email().toLowerCase()),
   passWord: z.string().optional(),
   phone: z.string().optional(),
   birthDay: z.string().optional(),
@@ -41,13 +41,13 @@ export const userSchema = z.object({
 })
 
 export const signInSchema = z.object({
-  email: z.string().email('Enter a valid email'),
+  email: z.string().trim().pipe(z.email('Enter a valid email').toLowerCase()),
   password: z.string().min(1, 'Password is required'),
 })
 
 export const signUpSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Enter a valid email'),
+  email: z.string().trim().pipe(z.email('Enter a valid email').toLowerCase()),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   phone: z.string().optional(),
   birthDay: z.string().optional(),
