@@ -40,6 +40,59 @@ export const userSchema = z.object({
   updatedAt: z.string().optional(),
 })
 
+export const profileSkillSchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  level: z.string().optional().nullable(),
+  sortOrder: z.number().optional().nullable(),
+})
+
+export const profileCertificationSchema = z.object({
+  id: z.number().optional(),
+  name: z.string(),
+  issuer: z.string().optional().nullable(),
+  issuedAt: z.string().optional().nullable(),
+  expiresAt: z.string().optional().nullable(),
+  credentialUrl: z.string().optional().nullable(),
+  credentialId: z.string().optional().nullable(),
+  sortOrder: z.number().optional().nullable(),
+})
+
+export const profilePortfolioItemSchema = z.object({
+  id: z.number().optional(),
+  title: z.string(),
+  description: z.string().optional().nullable(),
+  image: z.string().optional().nullable(),
+  url: z.string().optional().nullable(),
+  sortOrder: z.number().optional().nullable(),
+})
+
+export const userProfileSchema = userSchema.extend({
+  headline: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  website: z.string().optional().nullable(),
+  cover: z.string().optional().nullable(),
+  coverImage: z.string().optional().nullable(),
+  skills: z.array(profileSkillSchema).optional().nullable(),
+  certifications: z.array(profileCertificationSchema).optional().nullable(),
+  portfolio: z.array(profilePortfolioItemSchema).optional().nullable(),
+  portfolioItems: z.array(profilePortfolioItemSchema).optional().nullable(),
+})
+
+export const updateProfileSchema = userProfileSchema
+  .pick({
+    name: true,
+    phone: true,
+    birthDay: true,
+    gender: true,
+    headline: true,
+    bio: true,
+    location: true,
+    website: true,
+  })
+  .partial()
+
 export const signInSchema = z.object({
   email: z.string().trim().pipe(z.email('Enter a valid email').toLowerCase()),
   password: z.string().min(1, 'Password is required'),
@@ -155,6 +208,11 @@ export type ApiResponse<T> = {
 export type PaginatedContent<T> = z.infer<ReturnType<typeof paginatedContentSchema<z.ZodType<T>>>>
 export type PaginationParams = z.infer<typeof paginationParamsSchema>
 export type User = z.infer<typeof userSchema>
+export type ProfileSkill = z.infer<typeof profileSkillSchema>
+export type ProfileCertification = z.infer<typeof profileCertificationSchema>
+export type ProfilePortfolioItem = z.infer<typeof profilePortfolioItemSchema>
+export type UserProfile = z.infer<typeof userProfileSchema>
+export type UpdateProfile = z.infer<typeof updateProfileSchema>
 export type SignIn = z.infer<typeof signInSchema>
 export type SignUp = z.infer<typeof signUpSchema>
 export type Job = z.infer<typeof jobSchema>

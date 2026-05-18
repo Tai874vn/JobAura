@@ -1,0 +1,39 @@
+import { NextResponse, type NextRequest } from 'next/server'
+
+const backendBaseUrl = process.env.BACKEND_API_BASE_URL ?? 'http://localhost:3000'
+
+async function proxyRequest(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  const { path } = await params
+  const targetUrl = new URL(`/api/${path.join('/')}`, backendBaseUrl)
+  targetUrl.search = request.nextUrl.search
+
+  const headers = new Headers(request.headers)
+  headers.delete('host')
+
+  try {
+    const response = await fetch(targetUrl, {
+      method: request.method,
+      headers,
+      body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.arrayBuffer(),
+      cache: 'no-store',
+      redirect: 'manual',
+    })
+
+    return new NextResponse(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : 'Unable to reach backend API' },
+      { status: 502 }
+    )
+  }
+}
+
+export const GET = proxyRequest
+export const POST = proxyRequest
+export const PATCH = proxyRequest
+export const PUT = proxyRequest
+export const DELETE = proxyRequest

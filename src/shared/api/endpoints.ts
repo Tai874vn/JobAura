@@ -12,10 +12,15 @@ import type {
   JobType,
   PaginatedContent,
   PaginationParams,
+  ProfileCertification,
+  ProfilePortfolioItem,
+  ProfileSkill,
   SignIn,
   SignUp,
+  UpdateProfile,
   UpdateJob,
   User,
+  UserProfile,
 } from '@/shared/schemas'
 import {
   normalizeCategoriesResponse,
@@ -121,13 +126,33 @@ export const hiredJobsApi = {
 
 export const usersApi = {
   all: async () => (await apiClient.get<ApiResponse<User[]>>('/api/users')).data,
-  profile: async (id: number) => (await apiClient.get<ApiResponse<User>>(`/api/users/profile/${id}`)).data,
+  profile: async (id: number) => (await apiClient.get<ApiResponse<UserProfile>>(`/api/users/profile/${id}`)).data,
+  myProfile: async () => (await apiClient.get<ApiResponse<UserProfile>>('/api/users/me/profile')).data,
+  updateMyProfile: async (data: UpdateProfile) =>
+    (await apiClient.patch<ApiResponse<UserProfile>>('/api/users/me/profile', data)).data,
+  replaceSkills: async (skills: Array<Omit<ProfileSkill, 'id'>>) =>
+    (await apiClient.put<ApiResponse<UserProfile>>('/api/users/me/profile/skills', { skills })).data,
+  replaceCertifications: async (certifications: Array<Omit<ProfileCertification, 'id'>>) =>
+    (await apiClient.put<ApiResponse<UserProfile>>('/api/users/me/profile/certifications', { certifications })).data,
+  createPortfolioItem: async (data: Omit<ProfilePortfolioItem, 'id'>) =>
+    (await apiClient.post<ApiResponse<UserProfile>>('/api/users/me/profile/portfolio', data)).data,
+  updatePortfolioItem: async (
+    id: number,
+    data: Partial<Omit<ProfilePortfolioItem, 'id'>>
+  ) => (await apiClient.put<ApiResponse<UserProfile>>(`/api/users/me/profile/portfolio/${id}`, data)).data,
+  deletePortfolioItem: async (id: number) =>
+    (await apiClient.delete<ApiResponse<void>>(`/api/users/me/profile/portfolio/${id}`)).data,
   update: async (id: number, data: Partial<User>) => (await apiClient.put<ApiResponse<User>>(`/api/users/${id}`, data)).data,
   delete: async (id: number) => (await apiClient.delete<ApiResponse<void>>(`/api/users/${id}`)).data,
   uploadAvatar: async (file: File) => {
     const formData = new FormData()
     formData.append('file', file)
-    return (await uploadClient.post<ApiResponse<User>>('/api/users/upload-avatar', formData)).data
+    return (await uploadClient.post<ApiResponse<UserProfile>>('/api/users/upload-avatar', formData)).data
+  },
+  uploadCover: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return (await uploadClient.post<ApiResponse<UserProfile>>('/api/users/upload-cover', formData)).data
   },
 }
 
