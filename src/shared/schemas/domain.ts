@@ -80,6 +80,36 @@ export const userProfileSchema = userSchema.extend({
   portfolioItems: z.array(profilePortfolioItemSchema).optional().nullable(),
 })
 
+export const resumeDataSchema = z
+  .object({
+    ResumeID: z.string().optional().nullable(),
+    Category: z.string().optional().nullable(),
+    Name: z.string().optional().nullable(),
+    Email: z.string().optional().nullable(),
+    Phone: z.string().optional().nullable(),
+    Location: z.string().optional().nullable(),
+    Summary: z.string().optional().nullable(),
+    Skills: z.string().optional().nullable(),
+    Experience: z.string().optional().nullable(),
+    Education: z.string().optional().nullable(),
+    Text: z.string().optional().nullable(),
+    Source: z.string().optional().nullable(),
+  })
+  .passthrough()
+
+export const importResumeSchema = z.object({
+  data: resumeDataSchema,
+  sourceFileName: z.string().optional().nullable(),
+  schemaVersion: z.string().optional().nullable(),
+})
+
+export const userResumeSchema = importResumeSchema.extend({
+  id: z.number().optional(),
+  userId: z.number().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+})
+
 export const updateProfileSchema = userProfileSchema
   .pick({
     name: true,
@@ -212,6 +242,9 @@ export type ProfileSkill = z.infer<typeof profileSkillSchema>
 export type ProfileCertification = z.infer<typeof profileCertificationSchema>
 export type ProfilePortfolioItem = z.infer<typeof profilePortfolioItemSchema>
 export type UserProfile = z.infer<typeof userProfileSchema>
+export type ResumeData = z.infer<typeof resumeDataSchema>
+export type ImportResume = z.infer<typeof importResumeSchema>
+export type UserResume = z.infer<typeof userResumeSchema>
 export type UpdateProfile = z.infer<typeof updateProfileSchema>
 export type SignIn = z.infer<typeof signInSchema>
 export type SignUp = z.infer<typeof signUpSchema>

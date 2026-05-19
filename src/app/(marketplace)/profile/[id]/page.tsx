@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
 import { ProfilePage } from '@/features/users/profile-page'
+import { getUserPosts } from '@/features/users/profile-posts'
+import { normalizeJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
-import type { ApiResponse, UserProfile } from '@/shared/schemas'
+import type { ApiResponse, Job, UserProfile } from '@/shared/schemas'
 import { Card, CardContent } from '@/shared/ui'
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -9,7 +11,11 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const response = await serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`)
   if (!response.ok) return <ProfileLoadError id={id} message={response.error} />
   if (!response.data.content) notFound()
-  return <ProfilePage user={response.data.content} />
+
+  const jobsResponse = await serverRequest<ApiResponse<Job[]>>('/api/jobs')
+  const jobs = jobsResponse.ok ? normalizeJobsResponse(jobsResponse.data).content ?? [] : []
+
+  return <ProfilePage user={response.data.content} posts={getUserPosts(jobs, response.data.content.id)} />
 }
 
 function ProfileLoadError({ id, message }: { id: string; message: string | string[] }) {

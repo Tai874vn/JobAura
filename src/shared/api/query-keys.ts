@@ -6,6 +6,7 @@ export const queryKeys = {
   jobDetailTypes: ['job-detail-types'] as const,
   users: (params?: object) => ['users', params ?? {}] as const,
   myProfile: ['users', 'me', 'profile'] as const,
+  myResume: ['users', 'me', 'resume'] as const,
   comments: ['comments'] as const,
   hiredJobs: ['hired-jobs'] as const,
   chatRooms: ['chat', 'rooms'] as const,

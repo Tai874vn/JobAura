@@ -13,9 +13,11 @@ import {
   Sparkles,
   Star,
 } from 'lucide-react'
-import type { User } from '@/shared/schemas'
-import { Badge, Card, CardContent } from '@/shared/ui'
-import { initials } from '@/shared/lib/utils'
+import Image from 'next/image'
+import Link from 'next/link'
+import type { Job, User } from '@/shared/schemas'
+import { Badge, Button, Card, CardContent, CardHeader } from '@/shared/ui'
+import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 
 type ProfileSkill = {
   id?: number
@@ -57,11 +59,15 @@ type MarketplaceProfile = User & {
   portfolioItems?: PortfolioItem[] | null
 }
 
-export function ProfilePage({ user }: { user: MarketplaceProfile }) {
+export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; posts?: Job[] }) {
   const skills = sortByOrder(user.skills ?? legacySkills(user.skill))
   const certifications = sortByOrder(user.certifications ?? legacyCertifications(user.certification))
   const portfolio = sortByOrder(user.portfolio ?? user.portfolioItems ?? [])
   const coverImage = user.coverImage ?? user.cover
+  const coverImageUrl = resolveAssetUrl(coverImage)
+  const bypassCoverOptimizer = shouldBypassImageOptimizer(coverImage)
+  const avatarUrl = resolveAssetUrl(user.avatar)
+  const bypassAvatarOptimizer = shouldBypassImageOptimizer(user.avatar)
   const headline = user.headline ?? 'Independent professional on JobAura'
   const bio =
     user.bio ??
@@ -72,9 +78,8 @@ export function ProfilePage({ user }: { user: MarketplaceProfile }) {
       <section className="border-b border-border bg-surface">
         <div className="container-page">
           <div className="relative h-48 overflow-hidden rounded-b-lg border-x border-b border-border bg-[#e4e2e1] md:h-64">
-            {coverImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={coverImage} alt="" className="h-full w-full object-cover" />
+            {coverImageUrl ? (
+              <Image src={coverImageUrl} alt="" fill priority unoptimized={bypassCoverOptimizer} className="object-cover" sizes="100vw" />
             ) : (
               <div className="h-full w-full bg-[linear-gradient(135deg,#f6f3f2_0%,#e4e2e1_45%,#bccabe_100%)]">
                 <div className="h-full w-full bg-[radial-gradient(circle_at_20%_20%,rgba(0,109,67,0.16),transparent_28%),linear-gradient(90deg,rgba(255,255,255,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.34)_1px,transparent_1px)] bg-[size:auto,40px_40px,40px_40px]" />
@@ -86,10 +91,9 @@ export function ProfilePage({ user }: { user: MarketplaceProfile }) {
             <Card className="overflow-hidden">
               <CardContent className="p-5 md:p-6">
                 <div className="flex flex-col gap-5 md:flex-row md:items-end">
-                  <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border-4 border-white bg-primary font-display text-4xl font-bold text-white shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
-                    {user.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                  <div className="relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border-4 border-white bg-primary font-display text-4xl font-bold text-white shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+                    {avatarUrl ? (
+                      <Image src={avatarUrl} alt={user.name} fill unoptimized={bypassAvatarOptimizer} className="object-cover" sizes="112px" />
                     ) : (
                       initials(user.name)
                     )}
@@ -140,35 +144,53 @@ export function ProfilePage({ user }: { user: MarketplaceProfile }) {
           </Card>
 
           <Card>
+            <CardHeader className="flex flex-wrap items-center justify-between gap-3">
+              <SectionTitle title="Posts" meta={`${posts.length} services`} />
+              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Public marketplace activity</span>
+            </CardHeader>
+            <CardContent className="grid gap-4 p-5 md:p-6">
+              {posts.length ? (
+                posts.map((post) => <ProfilePostCard key={post.id} post={post} user={user} />)
+              ) : (
+                <EmptyState icon={<BriefcaseBusiness className="h-5 w-5" />} text="No service posts from this member yet." />
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardContent className="p-5 md:p-6">
               <SectionTitle title="Portfolio" meta={`${portfolio.length} projects`} />
               {portfolio.length ? (
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  {portfolio.map((item, index) => (
-                    <a
-                      key={item.id ?? `${item.title}-${index}`}
-                      href={item.url ?? '#'}
-                      className="group overflow-hidden rounded-lg border border-border bg-white transition hover:border-primary"
-                    >
-                      <div className="aspect-[16/9] bg-surface-muted">
-                        {item.image ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={item.image} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex h-full items-center justify-center text-primary">
-                            <BriefcaseBusiness className="h-8 w-8" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <h3 className="font-display text-lg font-bold leading-snug">{item.title}</h3>
-                          {item.url ? <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-muted group-hover:text-primary" /> : null}
+                  {portfolio.map((item, index) => {
+                    const imageUrl = resolveAssetUrl(item.image)
+                    const bypassImageOptimizer = shouldBypassImageOptimizer(item.image)
+
+                    return (
+                      <a
+                        key={item.id ?? `${item.title}-${index}`}
+                        href={item.url ?? '#'}
+                        className="group overflow-hidden rounded-lg border border-border bg-white transition hover:border-primary"
+                      >
+                        <div className="relative aspect-[16/9] bg-surface-muted">
+                          {imageUrl ? (
+                            <Image src={imageUrl} alt="" fill unoptimized={bypassImageOptimizer} className="object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-primary">
+                              <BriefcaseBusiness className="h-8 w-8" />
+                            </div>
+                          )}
                         </div>
-                        {item.description ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{item.description}</p> : null}
-                      </div>
-                    </a>
-                  ))}
+                        <div className="p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <h3 className="font-display text-lg font-bold leading-snug">{item.title}</h3>
+                            {item.url ? <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-muted group-hover:text-primary" /> : null}
+                          </div>
+                          {item.description ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{item.description}</p> : null}
+                        </div>
+                      </a>
+                    )
+                  })}
                 </div>
               ) : (
                 <EmptyState icon={<BriefcaseBusiness className="h-5 w-5" />} text="Portfolio projects will appear here once this member adds them." />
@@ -231,6 +253,65 @@ export function ProfilePage({ user }: { user: MarketplaceProfile }) {
         </aside>
       </div>
     </main>
+  )
+}
+
+function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile }) {
+  const imageUrl = resolveAssetUrl(post.hinhAnh)
+  const bypassOptimizer = shouldBypassImageOptimizer(post.hinhAnh)
+
+  return (
+    <article className="overflow-hidden rounded-lg border border-border bg-white">
+      <div className="flex items-center justify-between gap-3 border-b border-border p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+            {initials(user.name)}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-bold">{user.name}</span>
+            <span className="block text-xs text-muted">{post.createdAt ? formatDate(post.createdAt) : 'Marketplace service'}</span>
+          </span>
+        </div>
+        <Badge tone="rating">
+          <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
+          {(post.saoCongViec ?? 0).toFixed(1)}
+        </Badge>
+      </div>
+      <div className="grid gap-0 md:grid-cols-[220px_1fr]">
+        <Link href={`/jobs/${post.id}`} className="relative block aspect-[16/10] bg-surface-muted md:aspect-auto">
+          {imageUrl ? (
+            <Image src={imageUrl} alt={post.tenCongViec} fill unoptimized={bypassOptimizer} className="object-cover" sizes="(min-width: 768px) 220px, 100vw" />
+          ) : (
+            <span className="flex h-full items-center justify-center text-primary">
+              <BriefcaseBusiness className="h-8 w-8" />
+            </span>
+          )}
+        </Link>
+        <div className="grid gap-4 p-4">
+          <div>
+            <Link href={`/jobs/${post.id}`} className="font-display text-xl font-bold leading-snug hover:text-primary">
+              {post.tenCongViec}
+            </Link>
+            <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
+              {post.moTaNgan || post.moTa || 'This service post is available on JobAura.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm text-muted">
+              From <strong className="text-foreground">{currency(post.giaTien)}</strong>
+            </span>
+            <div className="flex gap-2">
+              <Link href={`/jobs/${post.id}`}>
+                <Button variant="secondary" size="sm">
+                  View details
+                </Button>
+              </Link>
+              <Button size="sm">Contact</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
   )
 }
 

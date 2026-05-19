@@ -7,6 +7,7 @@ import type {
   CreateComment,
   CreateJob,
   HiredJob,
+  ImportResume,
   Job,
   JobDetailType,
   JobType,
@@ -21,6 +22,7 @@ import type {
   UpdateJob,
   User,
   UserProfile,
+  UserResume,
 } from '@/shared/schemas'
 import {
   normalizeCategoriesResponse,
@@ -128,6 +130,9 @@ export const usersApi = {
   all: async () => (await apiClient.get<ApiResponse<User[]>>('/api/users')).data,
   profile: async (id: number) => (await apiClient.get<ApiResponse<UserProfile>>(`/api/users/profile/${id}`)).data,
   myProfile: async () => (await apiClient.get<ApiResponse<UserProfile>>('/api/users/me/profile')).data,
+  myResume: async () => (await apiClient.get<ApiResponse<UserResume | null>>('/api/users/me/resume')).data,
+  importResume: async (data: ImportResume) =>
+    (await apiClient.put<ApiResponse<UserResume>>('/api/users/me/resume', data)).data,
   updateMyProfile: async (data: UpdateProfile) =>
     (await apiClient.patch<ApiResponse<UserProfile>>('/api/users/me/profile', data)).data,
   replaceSkills: async (skills: Array<Omit<ProfileSkill, 'id'>>) =>
