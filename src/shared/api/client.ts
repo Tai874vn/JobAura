@@ -42,7 +42,7 @@ function handleSessionExpired() {
 }
 
 async function refreshSession() {
-  await axios.post(`${env.apiBaseUrl}/api/auth/refresh`, undefined, { withCredentials: true })
+  await axios.post(`${env.apiBaseUrl}/api/auth/refresh`, {}, { withCredentials: true })
 }
 
 function shouldSkipRefresh(request: RetryConfig) {

@@ -133,6 +133,11 @@ export const usersApi = {
   myResume: async () => (await apiClient.get<ApiResponse<UserResume | null>>('/api/users/me/resume')).data,
   importResume: async (data: ImportResume) =>
     (await apiClient.put<ApiResponse<UserResume>>('/api/users/me/resume', data)).data,
+  uploadResumeFile: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return (await uploadClient.post<ApiResponse<UserResume>>('/api/users/me/resume/file', formData)).data
+  },
   updateMyProfile: async (data: UpdateProfile) =>
     (await apiClient.patch<ApiResponse<UserProfile>>('/api/users/me/profile', data)).data,
   replaceSkills: async (skills: Array<Omit<ProfileSkill, 'id'>>) =>

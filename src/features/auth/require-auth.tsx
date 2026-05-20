@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { authApi } from '@/shared/api/endpoints'
@@ -16,6 +16,7 @@ export function RequireAuth({
   admin?: boolean
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const hasRedirectedRef = useRef(false)
   const { user, hasHydrated, setStatus, setUser, clearSession } = useAuthStore()
 
@@ -45,15 +46,15 @@ export function RequireAuth({
 
     if (!verifiedUser) {
       hasRedirectedRef.current = true
-      window.location.replace(`/auth/login?next=${encodeURIComponent(pathname)}`)
+      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`)
       return
     }
 
     if (admin && verifiedUser.role !== 'admin') {
       hasRedirectedRef.current = true
-      window.location.replace('/')
+      router.replace('/')
     }
-  }, [admin, isChecking, pathname, verifiedUser])
+  }, [admin, isChecking, pathname, router, verifiedUser])
 
   if (isChecking || !verifiedUser || !isStoreSynced || (admin && verifiedUser.role !== 'admin')) {
     return (

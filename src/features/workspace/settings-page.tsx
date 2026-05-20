@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CreditCard,
   FileJson,
+  FileText,
   ImageUp,
   KeyRound,
   LayoutDashboard,
@@ -29,12 +30,15 @@ import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, Card, CardContent, Input, Spinner, Textarea } from '@/shared/ui'
 import { calculateProfileCompletion } from '@/features/users/profile-posts'
 import {
+  canExtractResumeFile,
+  extractResumeFile,
   hasResumeDraftInput,
-  parseResumeJson,
+  resumeFileAccept,
   resumeDraftFromData,
   resumeDraftToImportPayload,
   resumeSchemaVersion,
   resumeSkills,
+  validateResumeFile,
   type ResumeDraft,
   type ResumeFieldKey,
 } from '@/features/users/resume'
@@ -87,7 +91,7 @@ export function SettingsPage() {
   const [portfolio, setPortfolio] = useState<ProfilePortfolioItem[]>([])
   const [newPortfolio, setNewPortfolio] = useState<PortfolioDraft>(emptyPortfolio)
   const [resumeDraft, setResumeDraft] = useState<Partial<ResumeDraft>>({})
-  const [resumeSourceFileName, setResumeSourceFileName] = useState<string | null>(null)
+  const [attachedResumeFile, setAttachedResumeFile] = useState<File | null>(null)
 
   useEffect(() => {
     if (!profile) return
@@ -188,16 +192,30 @@ export function SettingsPage() {
 
   const uploadAvatar = useUploadMutation(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
   const uploadCover = useUploadMutation(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
-  const importResume = useMutation({
-    mutationFn: usersApi.importResume,
+  const saveResume = useMutation({
+    mutationFn: async () => {
+      const payload = resumeDraftToImportPayload(currentResumeDraft)
+
+      if (!hasResumeDraftInput(currentResumeDraft)) {
+        throw new Error('Fill at least one resume field before saving.')
+      }
+
+      const response = await usersApi.importResume(payload)
+
+      if (attachedResumeFile) {
+        return usersApi.uploadResumeFile(attachedResumeFile)
+      }
+
+      return response
+    },
     onSuccess: (response) => {
       queryClient.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content ?? null })
       queryClient.invalidateQueries({ queryKey: queryKeys.myResume })
       setResumeDraft({})
-      setResumeSourceFileName(null)
-      toast.success('Resume imported')
+      setAttachedResumeFile(null)
+      toast.success(attachedResumeFile ? 'Resume file and details saved' : 'Resume imported')
     },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to import resume')),
+    onError: (error) => toast.error(getErrorMessage(error, 'Unable to save resume')),
   })
 
   const isSaving = useMemo(
@@ -211,28 +229,36 @@ export function SettingsPage() {
     [createPortfolio.isPending, deletePortfolio.isPending, saveBasic.isPending, saveCertifications.isPending, saveSkills.isPending, updatePortfolio.isPending]
   )
 
-  const currentResumeDraft = useMemo(
-    () => ({ ...resumeDraftFromData(resume?.data), ...resumeDraft }),
-    [resume?.data, resumeDraft]
-  )
-  const currentResumeSourceFileName = resumeSourceFileName ?? resume?.sourceFileName ?? ''
+  const currentResumeDraft = { ...resumeDraftFromData(resume?.data), ...resumeDraft }
 
   function submitResumeImport() {
-    importResume.mutate(resumeDraftToImportPayload(currentResumeDraft, currentResumeSourceFileName))
+    saveResume.mutate()
   }
 
   function updateResumeField(field: ResumeFieldKey, value: string) {
     setResumeDraft((draft) => ({ ...draft, [field]: value }))
   }
 
-  async function loadResumeJsonFile(file: File) {
+  async function loadResumeFile(file: File) {
+    const validation = validateResumeFile(file)
+    if (!validation.valid) {
+      toast.error(validation.message)
+      return
+    }
+
+    setAttachedResumeFile(file)
+
+    if (!canExtractResumeFile(file)) {
+      toast.info('Resume file attached. Browser extraction supports PDF and DOCX, so fill or edit the fields before saving.')
+      return
+    }
+
     try {
-      const parsed = parseResumeJson(await file.text())
+      const parsed = await extractResumeFile(file)
       setResumeDraft(resumeDraftFromData(parsed.data))
-      setResumeSourceFileName(parsed.sourceFileName ?? file.name)
-      toast.success('Resume JSON loaded')
+      toast.success('Resume extracted and attached')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to read resume JSON')
+      toast.error(error instanceof Error ? error.message : 'Resume attached, but extraction failed. You can fill the fields manually.')
     }
   }
 
@@ -401,13 +427,13 @@ export function SettingsPage() {
             <ResumeImportSection
               resume={resume}
               draft={currentResumeDraft}
-              sourceFileName={currentResumeSourceFileName}
+              attachedFile={attachedResumeFile}
               isLoading={resumeQuery.isPending}
-              isImporting={importResume.isPending}
+              isImporting={saveResume.isPending}
               onFieldChange={updateResumeField}
-              onSourceFileNameChange={setResumeSourceFileName}
+              onClearAttachedFile={() => setAttachedResumeFile(null)}
               onImport={submitResumeImport}
-              onJsonFile={loadResumeJsonFile}
+              onResumeFile={loadResumeFile}
             />
           ) : null}
 
@@ -482,23 +508,23 @@ function SettingsOverview({
 function ResumeImportSection({
   resume,
   draft,
-  sourceFileName,
+  attachedFile,
   isLoading,
   isImporting,
   onFieldChange,
-  onSourceFileNameChange,
+  onClearAttachedFile,
   onImport,
-  onJsonFile,
+  onResumeFile,
 }: {
   resume: UserResume | null
   draft: ResumeDraft
-  sourceFileName: string
+  attachedFile: File | null
   isLoading: boolean
   isImporting: boolean
   onFieldChange: (field: ResumeFieldKey, value: string) => void
-  onSourceFileNameChange: (value: string) => void
+  onClearAttachedFile: () => void
   onImport: () => void
-  onJsonFile: (file: File) => void
+  onResumeFile: (file: File) => void
 }) {
   const canImport = hasResumeDraftInput(draft)
 
@@ -518,7 +544,7 @@ function ResumeImportSection({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="font-display text-2xl font-bold">Career fields</h3>
-                <p className="mt-1 text-sm text-muted">Fill the resume fields directly, or load a ResumeAtlas JSON file to prefill them.</p>
+                <p className="mt-1 text-sm text-muted">Fill the resume fields directly, or upload a CV file to extract the fields.</p>
               </div>
               <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -527,8 +553,6 @@ function ResumeImportSection({
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Resume ID" value={draft.ResumeID} onChange={(value) => onFieldChange('ResumeID', value)} />
-              <Field label="Category" value={draft.Category} onChange={(value) => onFieldChange('Category', value)} />
               <Field label="Name" value={draft.Name} onChange={(value) => onFieldChange('Name', value)} />
               <Field label="Email" value={draft.Email} onChange={(value) => onFieldChange('Email', value)} />
               <Field label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
@@ -552,39 +576,49 @@ function ResumeImportSection({
               <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Full extracted text</span>
               <Textarea className="min-h-40" value={draft.Text} onChange={(event) => onFieldChange('Text', event.target.value)} />
             </label>
-            <Field label="Source" value={draft.Source} onChange={(value) => onFieldChange('Source', value)} />
-            <Field label="Source file name" value={sourceFileName} onChange={onSourceFileNameChange} />
 
             <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold">Load ResumeAtlas JSON</p>
-                  <p className="mt-1 text-xs leading-5 text-muted">This fills the form. PDF/DOCX extraction should run on the backend.</p>
+                  <p className="text-sm font-bold">Extract CV or resume</p>
+                  <p className="mt-1 text-xs leading-5 text-muted">Supports PDF, DOC, and DOCX up to 10MB. PDF and DOCX are extracted for review before saving.</p>
+                  <p className="mt-1 text-xs leading-5 text-muted">For best results, attach DOCX, PDF, or another readable document instead of an image, which cannot be read here.</p>
                 </div>
                 <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
-                  <Upload className="h-4 w-4" />
-                  Load file
+                  <FileText className="h-4 w-4" />
+                  Attach file
                   <input
                     className="sr-only"
                     type="file"
-                    accept=".json,application/json"
+                    accept={resumeFileAccept}
                     onChange={(event) => {
                       const file = event.target.files?.[0]
-                      if (file) onJsonFile(file)
+                      if (file) onResumeFile(file)
                       event.target.value = ''
                     }}
                   />
                 </label>
               </div>
+              {attachedFile ? (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-white px-3 py-2">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{attachedFile.name}</p>
+                    <p className="text-xs text-muted">{formatFileSize(attachedFile.size)} ready to upload</p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={onClearAttachedFile}>
+                    Remove
+                  </Button>
+                </div>
+              ) : null}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs leading-5 text-muted">
-                Existing resume data is kept until a new import succeeds.
+                If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
               </p>
               <Button disabled={!canImport || isImporting} onClick={onImport}>
                 <FileJson className="h-4 w-4" />
-                {isImporting ? 'Saving...' : 'Save resume'}
+                {isImporting ? 'Saving...' : attachedFile ? 'Upload and save' : 'Save resume'}
               </Button>
             </div>
           </CardContent>
@@ -623,14 +657,12 @@ function ResumePreviewCard({
         ) : hasResumeDraftInput(data) ? (
           <div className="mt-5 grid gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{data.Category ?? 'Professional profile'}</p>
               <h4 className="mt-1 font-display text-2xl font-bold">{data.Name ?? 'Unnamed resume'}</h4>
             </div>
             <div className="grid gap-2 text-sm text-muted">
               <ResumeMeta label="Email" value={data.Email} />
               <ResumeMeta label="Phone" value={data.Phone} />
               <ResumeMeta label="Location" value={data.Location} />
-              <ResumeMeta label="Source" value={data.Source ?? resume?.sourceFileName} />
             </div>
             {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
             {skills.length ? (
@@ -650,7 +682,7 @@ function ResumePreviewCard({
           </div>
         ) : (
           <div className="mt-5 rounded-lg border border-dashed border-border bg-surface-muted p-4 text-sm leading-6 text-muted">
-            Fill the resume fields or load a ResumeAtlas JSON file to preview the data before saving.
+            Fill the resume fields or extract a CV file to preview the data before saving.
           </div>
         )}
       </CardContent>
@@ -832,4 +864,10 @@ function formatSettingsDate(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }

@@ -106,6 +106,10 @@ export const importResumeSchema = z.object({
 export const userResumeSchema = importResumeSchema.extend({
   id: z.number().optional(),
   userId: z.number().optional(),
+  sourceFileUrl: z.string().optional().nullable(),
+  sourceFileMimeType: z.string().optional().nullable(),
+  sourceFileSize: z.number().optional().nullable(),
+  sourceFilePublicId: z.string().optional().nullable(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 })
