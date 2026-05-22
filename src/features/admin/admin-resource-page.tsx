@@ -447,7 +447,7 @@ function Thumb({ src, label }: { src?: string; label: string }) {
 
   return (
     <div className="relative h-10 w-14 overflow-hidden rounded border border-border bg-surface-muted">
-      {imageUrl ? <Image src={imageUrl} alt={label} fill unoptimized={bypassOptimizer} className="object-cover" /> : null}
+      {imageUrl ? <Image src={imageUrl} alt={label} fill sizes="56px" unoptimized={bypassOptimizer} className="object-cover" /> : null}
     </div>
   )
 }

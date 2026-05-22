@@ -27,7 +27,7 @@ describe('utils', () => {
     expect(initials('job aura')).toBe('JA')
     expect(initials(undefined)).toBe('J')
     expect(resolveAssetUrl('https://example.com/a.png')).toBe('https://example.com/a.png')
-    expect(resolveAssetUrl('images\\avatar.png')).toBe('http://localhost:3000/images/avatar.png')
+    expect(resolveAssetUrl('images\\avatar.png')).toBe(`${process.env.NEXT_PUBLIC_API_BASE_URL}/images/avatar.png`)
     expect(resolveAssetUrl('blob:http://example.com/a')).toBeUndefined()
     expect(resolveAssetUrl('http://[invalid')).toBeUndefined()
   })

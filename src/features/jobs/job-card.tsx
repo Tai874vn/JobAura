@@ -5,7 +5,7 @@ import { Badge, Button, Card } from '@/shared/ui'
 import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Job } from '@/shared/schemas'
 
-export function JobCard({ job }: { job: Job }) {
+export function JobCard({ job, priority = false }: { job: Job; priority?: boolean }) {
   const imageUrl = resolveAssetUrl(job.hinhAnh)
   const bypassOptimizer = shouldBypassImageOptimizer(job.hinhAnh)
 
@@ -18,9 +18,10 @@ export function JobCard({ job }: { job: Job }) {
               src={imageUrl}
               alt={job.tenCongViec}
               fill
+              priority={priority}
               unoptimized={bypassOptimizer}
               className="object-cover"
-              sizes="(min-width: 1024px) 25vw, 50vw"
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             />
           ) : (
             <div className="flex h-full items-center justify-center font-display text-4xl font-bold text-primary/30">

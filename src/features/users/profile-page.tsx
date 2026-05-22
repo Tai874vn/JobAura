@@ -240,7 +240,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               <Image src={coverImageUrl} alt="" fill priority unoptimized={bypassCoverOptimizer} className="object-cover" sizes="100vw" />
             ) : (
               <div className="h-full w-full bg-[linear-gradient(135deg,#f6f3f2_0%,#e4e2e1_45%,#bccabe_100%)]">
-                <div className="h-full w-full bg-[radial-gradient(circle_at_20%_20%,rgba(0,109,67,0.16),transparent_28%),linear-gradient(90deg,rgba(255,255,255,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.34)_1px,transparent_1px)] bg-[size:auto,40px_40px,40px_40px]" />
+                <div className="h-full w-full bg-[radial-gradient(circle_at_20%_20%,rgba(0,109,67,0.16),transparent_28%),linear-gradient(90deg,rgba(255,255,255,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.34)_1px,transparent_1px)] bg-size-[auto,40px_40px,40px_40px]" />
               </div>
             )}
             {isOwner ? (
@@ -368,7 +368,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                         href={item.url ?? '#'}
                         className="group overflow-hidden rounded-lg border border-border bg-white transition hover:border-primary"
                       >
-                        <div className="relative aspect-[16/9] bg-surface-muted">
+                        <div className="relative aspect-video bg-surface-muted">
                           {imageUrl ? (
                             <Image src={imageUrl} alt="" fill unoptimized={bypassImageOptimizer} className="object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
                           ) : (
@@ -506,7 +506,7 @@ function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile }
         </Badge>
       </div>
       <div className="grid gap-0 md:grid-cols-[220px_1fr]">
-        <Link href={`/jobs/${post.id}`} className="relative block aspect-[16/10] bg-surface-muted md:aspect-auto">
+        <Link href={`/jobs/${post.id}`} className="relative block aspect-16/10 bg-surface-muted md:aspect-auto">
           {imageUrl ? (
             <Image src={imageUrl} alt={post.tenCongViec} fill unoptimized={bypassOptimizer} className="object-cover" sizes="(min-width: 768px) 220px, 100vw" />
           ) : (

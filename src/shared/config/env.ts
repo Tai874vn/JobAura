@@ -1,10 +1,18 @@
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+function requireValue(name: string, value: string | undefined) {
+  if (!value) {
+    throw new Error(`${name} is required`)
+  }
 
-if (!apiBaseUrl && process.env.NODE_ENV === 'production') {
-  throw new Error('NEXT_PUBLIC_API_BASE_URL is required in production')
+  return value
 }
 
 export const env = {
-  apiBaseUrl: apiBaseUrl ?? 'http://localhost:3000',
-  googleClientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? '',
+  apiBaseUrl: requireValue('NEXT_PUBLIC_API_BASE_URL', process.env.NEXT_PUBLIC_API_BASE_URL),
+  googleClientId: requireValue('NEXT_PUBLIC_GOOGLE_CLIENT_ID', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
 } as const
+
+export function getServerEnv() {
+  return {
+    backendApiBaseUrl: requireValue('BACKEND_API_BASE_URL', process.env.BACKEND_API_BASE_URL),
+  } as const
+}

@@ -68,7 +68,15 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           </div>
           <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-surface-muted">
             {imageUrl ? (
-              <Image src={imageUrl} alt={job.tenCongViec} fill unoptimized={bypassOptimizer} className="object-cover" />
+              <Image
+                src={imageUrl}
+                alt={job.tenCongViec}
+                fill
+                priority
+                sizes="(min-width: 1024px) calc(100vw - 456px), 100vw"
+                unoptimized={bypassOptimizer}
+                className="object-cover"
+              />
             ) : (
               <div className="flex h-full items-center justify-center font-display text-6xl font-bold text-primary/20">JobAura</div>
             )}

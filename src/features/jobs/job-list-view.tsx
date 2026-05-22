@@ -36,7 +36,7 @@ export function JobListView() {
         </div>
       ) : jobs.length ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {jobs.map((job) => <JobCard key={job.id} job={job} />)}
+          {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index < 4} />)}
         </div>
       ) : (
         <Card>
