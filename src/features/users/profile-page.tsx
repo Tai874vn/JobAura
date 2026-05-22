@@ -108,22 +108,29 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const authUser = useAuthStore((state) => state.user)
   const hasHydrated = useAuthStore((state) => state.hasHydrated)
   const setUser = useAuthStore((state) => state.setUser)
-  const skills = useMemo(() => sortByOrder(user.skills ?? legacySkills(user.skill)), [user.skill, user.skills])
+  const isOwner = Boolean(hasHydrated && authUser?.id === user.id)
+  const myProfileQuery = useQuery({
+    queryKey: queryKeys.myProfile,
+    queryFn: usersApi.myProfile,
+    enabled: isOwner,
+    staleTime: 0,
+  })
+  const profile = (isOwner ? myProfileQuery.data?.content : null) ?? user
+  const skills = useMemo(() => sortByOrder(profile.skills ?? legacySkills(profile.skill)), [profile.skill, profile.skills])
   const certifications = useMemo(
-    () => sortByOrder(user.certifications ?? legacyCertifications(user.certification)),
-    [user.certification, user.certifications]
+    () => sortByOrder(profile.certifications ?? legacyCertifications(profile.certification)),
+    [profile.certification, profile.certifications]
   )
-  const portfolio = useMemo(() => sortByOrder(user.portfolio ?? user.portfolioItems ?? []), [user.portfolio, user.portfolioItems])
-  const coverImage = user.coverImage ?? user.cover
+  const portfolio = useMemo(() => sortByOrder(profile.portfolio ?? profile.portfolioItems ?? []), [profile.portfolio, profile.portfolioItems])
+  const coverImage = profile.coverImage ?? profile.cover
   const coverImageUrl = resolveAssetUrl(coverImage)
   const bypassCoverOptimizer = shouldBypassImageOptimizer(coverImage)
-  const avatarUrl = resolveAssetUrl(user.avatar)
-  const bypassAvatarOptimizer = shouldBypassImageOptimizer(user.avatar)
-  const headline = user.headline ?? 'Independent professional on JobAura'
+  const avatarUrl = resolveAssetUrl(profile.avatar)
+  const bypassAvatarOptimizer = shouldBypassImageOptimizer(profile.avatar)
+  const headline = profile.headline ?? 'Independent professional on JobAura'
   const bio =
-    user.bio ??
+    profile.bio ??
     'This JobAura member is building out their profile. Browse their skills, credentials, and portfolio to understand how they can help.'
-  const isOwner = Boolean(hasHydrated && authUser?.id === user.id)
   const [editableProfile, setEditableProfile] = useState<UpdateProfile>({})
   const [editableSkills, setEditableSkills] = useState<SkillDraft[]>([])
   const [editableCertifications, setEditableCertifications] = useState<CertificationDraft[]>([])
@@ -140,16 +147,24 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const currentResumeDraft = { ...resumeDraftFromData(resume?.data), ...resumeDraft }
 
   useEffect(() => {
+    const freshProfile = myProfileQuery.data?.content
+    if (!freshProfile) return
+
+    setUser(freshProfile)
+    queryClient.setQueryData(queryKeys.me, { content: freshProfile })
+  }, [myProfileQuery.data, queryClient, setUser])
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       setEditableProfile({
-        name: user.name ?? '',
-        phone: user.phone ?? '',
-        birthDay: user.birthDay ?? '',
-        gender: user.gender ?? '',
-        headline: user.headline ?? '',
-        bio: user.bio ?? '',
-        location: user.location ?? '',
-        website: user.website ?? '',
+        name: profile.name ?? '',
+        phone: profile.phone ?? '',
+        birthDay: profile.birthDay ?? '',
+        gender: profile.gender ?? '',
+        headline: profile.headline ?? '',
+        bio: profile.bio ?? '',
+        location: profile.location ?? '',
+        website: profile.website ?? '',
       })
       setEditableSkills(skills.map((skill, index) => ({ name: skill.name, level: skill.level ?? '', sortOrder: skill.sortOrder ?? index })))
       setEditableCertifications(
@@ -165,7 +180,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
       )
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [user, skills, certifications])
+  }, [profile, skills, certifications])
 
   function refreshProfile(next?: UserProfile) {
     if (next) {
@@ -260,9 +275,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                 <div className="flex flex-col gap-5 md:flex-row md:items-end">
                   <div className="group/avatar relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border-4 border-white bg-primary font-display text-4xl font-bold text-white shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
                     {avatarUrl ? (
-                      <Image src={avatarUrl} alt={user.name} fill unoptimized={bypassAvatarOptimizer} className="object-cover" sizes="112px" />
+                      <Image src={avatarUrl} alt={profile.name} fill unoptimized={bypassAvatarOptimizer} className="object-cover" sizes="112px" />
                     ) : (
-                      initials(user.name)
+                      initials(profile.name)
                     )}
                     {isOwner ? (
                       <OwnerUploadButton
@@ -276,7 +291,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">{user.name}</h1>
+                      <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">{profile.name}</h1>
                       <Badge tone="primary" className="gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         Verified profile
@@ -294,9 +309,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                       </button>
                     ) : null}
                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-                      {user.location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={user.location} /> : null}
-                      {user.website ? (
-                        <a className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline" href={user.website}>
+                      {profile.location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={profile.location} /> : null}
+                      {profile.website ? (
+                        <a className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline" href={profile.website}>
                           <Globe2 className="h-4 w-4" />
                           Website
                           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -311,9 +326,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
 
             <Card className="self-end">
               <CardContent className="grid gap-3 p-4 text-sm">
-                <ContactRow icon={<Mail className="h-4 w-4" />} label="Email" value={user.email} />
-                <ContactRow icon={<Phone className="h-4 w-4" />} label="Phone" value={user.phone} />
-                <ContactRow icon={<ShieldCheck className="h-4 w-4" />} label="Role" value={user.role ?? 'member'} />
+                <ContactRow icon={<Mail className="h-4 w-4" />} label="Email" value={profile.email} />
+                <ContactRow icon={<Phone className="h-4 w-4" />} label="Phone" value={profile.phone} />
+                <ContactRow icon={<ShieldCheck className="h-4 w-4" />} label="Role" value={profile.role ?? 'member'} />
               </CardContent>
             </Card>
           </div>
@@ -346,7 +361,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
             </CardHeader>
             <CardContent className="grid gap-4 p-5 md:p-6">
               {posts.length ? (
-                posts.map((post) => <ProfilePostCard key={post.id} post={post} user={user} />)
+                posts.map((post) => <ProfilePostCard key={post.id} post={post} user={profile} />)
               ) : (
                 <EmptyState icon={<BriefcaseBusiness className="h-5 w-5" />} text="No service posts from this member yet." />
               )}
@@ -484,7 +499,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   )
 }
 
-function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile }) {
+function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile | UserProfile }) {
   const imageUrl = resolveAssetUrl(post.hinhAnh)
   const bypassOptimizer = shouldBypassImageOptimizer(post.hinhAnh)
 

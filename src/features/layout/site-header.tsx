@@ -1,10 +1,10 @@
 'use client'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BriefcaseBusiness, LayoutDashboard, LogOut, Menu, MessageCircle, Plus, Search, Settings, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { initials } from '@/shared/lib/utils'
@@ -17,8 +17,28 @@ export function SiteHeader() {
   const queryClient = useQueryClient()
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const { user, hasHydrated, clearSession } = useAuthStore()
+  const { user, hasHydrated, clearSession, setUser } = useAuthStore()
   const openChat = useChatStore((state) => state.openChat)
+
+  const meQuery = useQuery({
+    queryKey: queryKeys.me,
+    queryFn: authApi.me,
+    enabled: hasHydrated,
+    retry: false,
+    staleTime: 60_000,
+  })
+
+  useEffect(() => {
+    if (!hasHydrated) return
+
+    if (meQuery.isSuccess) {
+      const verifiedUser = meQuery.data.content ?? null
+      if (verifiedUser) setUser(verifiedUser)
+      else clearSession()
+    }
+
+    if (meQuery.isError) clearSession()
+  }, [clearSession, hasHydrated, meQuery.data, meQuery.isError, meQuery.isSuccess, setUser])
 
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
@@ -62,7 +82,7 @@ export function SiteHeader() {
             </Link>
           ) : null}
         </nav>
-        {!hasHydrated ? (
+        {!hasHydrated || (meQuery.isPending && !user) ? (
           <div className="hidden items-center gap-2 md:flex">
             <div className="h-10 w-20 rounded-lg bg-surface-muted" />
             <div className="h-10 w-16 rounded-lg bg-surface-muted" />
