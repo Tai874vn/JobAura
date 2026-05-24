@@ -86,7 +86,9 @@ type MarketplaceProfile = User & {
   cover?: string | null
   coverImage?: string | null
   skills?: ProfileSkill[] | null
+  profileSkills?: ProfileSkill[] | null
   certifications?: Certification[] | null
+  profileCertifications?: Certification[] | null
   portfolio?: PortfolioItem[] | null
   portfolioItems?: PortfolioItem[] | null
 }
@@ -109,19 +111,10 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const hasHydrated = useAuthStore((state) => state.hasHydrated)
   const setUser = useAuthStore((state) => state.setUser)
   const isOwner = Boolean(hasHydrated && authUser?.id === user.id)
-  const myProfileQuery = useQuery({
-    queryKey: queryKeys.myProfile,
-    queryFn: usersApi.myProfile,
-    enabled: isOwner,
-    staleTime: 0,
-  })
-  const profile = (isOwner ? myProfileQuery.data?.content : null) ?? user
-  const skills = useMemo(() => sortByOrder(profile.skills ?? legacySkills(profile.skill)), [profile.skill, profile.skills])
-  const certifications = useMemo(
-    () => sortByOrder(profile.certifications ?? legacyCertifications(profile.certification)),
-    [profile.certification, profile.certifications]
-  )
-  const portfolio = useMemo(() => sortByOrder(profile.portfolio ?? profile.portfolioItems ?? []), [profile.portfolio, profile.portfolioItems])
+  const profile: MarketplaceProfile | UserProfile = (isOwner ? authUser : null) ?? user
+  const skills = useMemo(() => getProfileSkills(profile), [profile])
+  const certifications = useMemo(() => getProfileCertifications(profile), [profile])
+  const portfolio = useMemo<PortfolioItem[]>(() => sortByOrder(profile.portfolio ?? profile.portfolioItems ?? []), [profile])
   const coverImage = profile.coverImage ?? profile.cover
   const coverImageUrl = resolveAssetUrl(coverImage)
   const bypassCoverOptimizer = shouldBypassImageOptimizer(coverImage)
@@ -146,13 +139,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const resume = resumeQuery.data?.content ?? null
   const currentResumeDraft = { ...resumeDraftFromData(resume?.data), ...resumeDraft }
 
-  useEffect(() => {
-    const freshProfile = myProfileQuery.data?.content
-    if (!freshProfile) return
 
-    setUser(freshProfile)
-    queryClient.setQueryData(queryKeys.me, { content: freshProfile })
-  }, [myProfileQuery.data, queryClient, setUser])
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -184,10 +171,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
 
   function refreshProfile(next?: UserProfile) {
     if (next) {
-      queryClient.setQueryData(queryKeys.myProfile, { content: next })
+      queryClient.setQueryData(queryKeys.me, { content: next })
       setUser(next)
     }
-    queryClient.invalidateQueries({ queryKey: queryKeys.myProfile })
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
     router.refresh()
   }
@@ -1012,6 +998,13 @@ function toDateInput(value?: string | null) {
   return value ? value.slice(0, 10) : ''
 }
 
+function getProfileSkills(profile: MarketplaceProfile | UserProfile): ProfileSkill[] {
+  return sortByOrder(profile.profileSkills ?? profile.skills ?? legacySkills(profile.skill))
+}
+
+function getProfileCertifications(profile: MarketplaceProfile | UserProfile): Certification[] {
+  return sortByOrder(profile.profileCertifications ?? profile.certifications ?? legacyCertifications(profile.certification))
+}
 function legacySkills(value?: string | null): ProfileSkill[] {
   if (!value) return []
   return value

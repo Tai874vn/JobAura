@@ -2,15 +2,15 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { User } from '@/shared/schemas'
+import type { UserProfile } from '@/shared/schemas'
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous'
 
 interface AuthState {
-  user: User | null
+  user: UserProfile | null
   status: AuthStatus
   hasHydrated: boolean
-  setUser: (user: User | null) => void
+  setUser: (user: UserProfile | null) => void
   setStatus: (status: AuthStatus) => void
   clearSession: () => void
   setHasHydrated: (state: boolean) => void

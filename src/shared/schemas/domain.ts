@@ -75,7 +75,9 @@ export const userProfileSchema = userSchema.extend({
   cover: z.string().optional().nullable(),
   coverImage: z.string().optional().nullable(),
   skills: z.array(profileSkillSchema).optional().nullable(),
+  profileSkills: z.array(profileSkillSchema).optional().nullable(),
   certifications: z.array(profileCertificationSchema).optional().nullable(),
+  profileCertifications: z.array(profileCertificationSchema).optional().nullable(),
   portfolio: z.array(profilePortfolioItemSchema).optional().nullable(),
   portfolioItems: z.array(profilePortfolioItemSchema).optional().nullable(),
 })
