@@ -4,6 +4,8 @@ import { normalizeJobResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import type { ApiResponse, Comment, Job } from '@/shared/schemas'
 
+export const dynamic = 'force-dynamic'
+
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const response = await serverRequest<ApiResponse<Job & { binhLuans?: Comment[] }>>(`/api/jobs/details/${id}`)

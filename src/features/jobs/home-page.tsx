@@ -6,6 +6,8 @@ import { serverRequest } from '@/shared/api/server'
 import type { ApiResponse, Job, JobType, PaginatedContent } from '@/shared/schemas'
 import { Button, Card, CardContent } from '@/shared/ui'
 
+const homeRevalidate = 300
+
 const categories = [
   { label: 'Graphics', icon: Palette },
   { label: 'Marketing', icon: Megaphone },
@@ -15,8 +17,14 @@ const categories = [
 
 export async function HomePage() {
   const [jobsRes, typesRes] = await Promise.all([
-    serverRequest<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search?page=1&pageSize=8'),
-    serverRequest<ApiResponse<JobType[]>>('/api/categories'),
+    serverRequest<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search?page=1&pageSize=8', {
+      cache: 'force-cache',
+      next: { revalidate: homeRevalidate },
+    }),
+    serverRequest<ApiResponse<JobType[]>>('/api/categories', {
+      cache: 'force-cache',
+      next: { revalidate: homeRevalidate },
+    }),
   ])
   const jobs = jobsRes.ok ? (normalizePaginatedJobsResponse(jobsRes.data).content?.data ?? []) : []
   const jobTypes = typesRes.ok ? (normalizeCategoriesResponse(typesRes.data).content ?? []) : []
