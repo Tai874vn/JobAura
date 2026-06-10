@@ -80,8 +80,8 @@ export function SettingsPage() {
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
   const profileQuery = useQuery({ queryKey: queryKeys.me, queryFn: authApi.me })
-  const resumeQuery = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume })
   const profile = profileQuery.data?.content
+  const resumeQuery = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume, enabled: Boolean(profile) })
   const resume = resumeQuery.data?.content ?? null
 
   const [activeSection, setActiveSection] = useState<SettingSection>('overview')

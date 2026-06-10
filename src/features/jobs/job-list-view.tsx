@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { SlidersHorizontal } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { jobsApi } from '@/shared/api/endpoints'
@@ -15,6 +15,7 @@ export function JobListView() {
   const query = useQuery({
     queryKey: queryKeys.jobs({ page, keyword }),
     queryFn: () => jobsApi.paginated({ page, pageSize: 12, keyword }),
+    placeholderData: keepPreviousData,
   })
   const jobs = query.data?.content?.data ?? []
 

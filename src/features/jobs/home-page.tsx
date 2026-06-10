@@ -15,8 +15,14 @@ const categories = [
 
 export async function HomePage() {
   const [jobsRes, typesRes] = await Promise.all([
-    serverRequest<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search?page=1&pageSize=8'),
-    serverRequest<ApiResponse<JobType[]>>('/api/categories'),
+    serverRequest<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search?page=1&pageSize=8', {
+      includeCookies: false,
+      next: { revalidate: 60 },
+    }),
+    serverRequest<ApiResponse<JobType[]>>('/api/categories', {
+      includeCookies: false,
+      next: { revalidate: 300 },
+    }),
   ])
   const jobs = jobsRes.ok ? (normalizePaginatedJobsResponse(jobsRes.data).content?.data ?? []) : []
   const jobTypes = typesRes.ok ? (normalizeCategoriesResponse(typesRes.data).content ?? []) : []

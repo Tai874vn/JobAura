@@ -8,11 +8,14 @@ import { Card, CardContent } from '@/shared/ui'
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const response = await serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`)
+  const [response, jobsResponse] = await Promise.all([
+    serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`, { includeCookies: false }),
+    serverRequest<ApiResponse<Job[]>>('/api/jobs', { includeCookies: false, next: { revalidate: 60 } }),
+  ])
+
   if (!response.ok) return <ProfileLoadError id={id} message={response.error} />
   if (!response.data.content) notFound()
 
-  const jobsResponse = await serverRequest<ApiResponse<Job[]>>('/api/jobs')
   const jobs = jobsResponse.ok ? normalizeJobsResponse(jobsResponse.data).content ?? [] : []
 
   return <ProfilePage user={response.data.content} posts={getUserPosts(jobs, response.data.content.id)} />
