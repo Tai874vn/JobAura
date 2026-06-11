@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createCommentSchema, createJobSchema, paginatedContentSchema, signInSchema } from './domain'
+import { createCommentSchema, createJobSchema, paginatedContentSchema, recommendationScoreSchema, recommendedJobSchema, signInSchema } from './domain'
 
 describe('domain schemas', () => {
   it('normalizes sign in emails', () => {
@@ -23,5 +23,27 @@ describe('domain schemas', () => {
     const schema = paginatedContentSchema(createCommentSchema)
     expect(schema.parse({}).data).toEqual([])
     expect(() => createCommentSchema.parse({ maCongViec: 1, noiDung: '', saoBinhLuan: 0 })).toThrow()
+  })
+
+  it('validates recommendation labels and recommended jobs', () => {
+    const recommendation = recommendationScoreSchema.parse({
+      rank: 1,
+      aiScore: 0.82,
+      finalScore: 0.79,
+      label: 'high_match',
+      skillScore: 0.75,
+      seniorityScore: 1,
+      categoryScore: 0.5,
+    })
+
+    expect(recommendation.label).toBe('high_match')
+    expect(
+      recommendedJobSchema.parse({
+        id: 9,
+        tenCongViec: 'Backend API',
+        giaTien: 250,
+        recommendation,
+      }).recommendation.finalScore
+    ).toBe(0.79)
   })
 })

@@ -16,6 +16,9 @@ import type {
   ProfileCertification,
   ProfilePortfolioItem,
   ProfileSkill,
+  RecommendationContent,
+  RecommendedCandidate,
+  RecommendedJob,
   SignIn,
   SignUp,
   UpdateProfile,
@@ -34,6 +37,8 @@ import {
   normalizeJobResponse,
   normalizeJobsResponse,
   normalizePaginatedJobsResponse,
+  normalizeRecommendedCandidatesResponse,
+  normalizeRecommendedJobsResponse,
   normalizeSubcategoriesResponse,
   normalizeCategory,
   normalizeSubcategory,
@@ -42,6 +47,11 @@ import {
   toJobPayload,
   toSubcategoryPayload,
 } from './normalizers'
+
+type RecommendationParams = {
+  topK?: number
+  poolSize?: number
+}
 
 export const authApi = {
   signIn: async (data: SignIn) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signin', data)).data,
@@ -75,6 +85,17 @@ export const jobsApi = {
     return response.content ? { ...response, content: normalizeJob(response.content) } : response
   },
   menu: async () => (await apiClient.get<ApiResponse<unknown>>('/api/jobs/category-menu')).data,
+}
+
+export const recommendationsApi = {
+  jobs: async (params?: RecommendationParams) =>
+    normalizeRecommendedJobsResponse(
+      (await apiClient.get<ApiResponse<RecommendationContent<RecommendedJob>>>('/api/recommendations/jobs', { params })).data
+    ),
+  candidates: async (jobId: number, params?: RecommendationParams) =>
+    normalizeRecommendedCandidatesResponse(
+      (await apiClient.get<ApiResponse<RecommendationContent<RecommendedCandidate>>>(`/api/recommendations/jobs/${jobId}/candidates`, { params })).data
+    ),
 }
 
 export const jobTypesApi = {

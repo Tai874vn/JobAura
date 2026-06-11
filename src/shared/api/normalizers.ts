@@ -1,4 +1,21 @@
-import type { ApiResponse, Comment, CreateComment, CreateJob, HiredJob, Job, JobDetailType, JobType, PaginatedContent, UpdateJob } from '@/shared/schemas'
+import type {
+  ApiResponse,
+  Comment,
+  CreateComment,
+  CreateJob,
+  HiredJob,
+  Job,
+  JobDetailType,
+  JobType,
+  PaginatedContent,
+  RecommendationContent,
+  RecommendationLabel,
+  RecommendationScore,
+  RecommendedCandidate,
+  RecommendedJob,
+  UpdateJob,
+  UserProfile,
+} from '@/shared/schemas'
 
 type ApiRecord = Record<string, unknown>
 
@@ -81,6 +98,60 @@ export function normalizeJob(raw: unknown): Job {
   }
 }
 
+export function normalizeRecommendationScore(raw: unknown): RecommendationScore {
+  const record = asRecord(raw)
+  const label = pickString(record, 'label', 'matchLabel')
+  const validLabel: RecommendationLabel =
+    label === 'high_match' || label === 'medium_match' || label === 'low_match' ? label : 'low_match'
+
+  return {
+    rank: pickNumber(record, 'rank') ?? 0,
+    aiScore: pickNumber(record, 'aiScore', 'score') ?? 0,
+    finalScore: pickNumber(record, 'finalScore', 'final_score') ?? pickNumber(record, 'aiScore', 'score') ?? 0,
+    label: validLabel,
+    skillScore: pickNumber(record, 'skillScore', 'skill_score') ?? 0,
+    seniorityScore: pickNumber(record, 'seniorityScore', 'seniority_score') ?? 0,
+    categoryScore: pickNumber(record, 'categoryScore', 'category_score') ?? 0,
+  }
+}
+
+export function normalizeRecommendedJob(raw: unknown): RecommendedJob {
+  const record = asRecord(raw)
+  return {
+    ...normalizeJob(raw),
+    recommendation: normalizeRecommendationScore(record.recommendation),
+  }
+}
+
+export function normalizeRecommendedCandidate(raw: unknown): RecommendedCandidate {
+  const record = asRecord(raw)
+  const profileSkills = Array.isArray(record.profileSkills)
+    ? record.profileSkills
+    : Array.isArray(record.skills)
+      ? record.skills
+      : undefined
+
+  return {
+    ...(record as Partial<UserProfile>),
+    id: pickNumber(record, 'id') ?? 0,
+    name: pickString(record, 'name') ?? '',
+    email: pickString(record, 'email') ?? '',
+    avatar: pickString(record, 'avatar') ?? null,
+    phone: pickString(record, 'phone'),
+    birthDay: pickString(record, 'birthDay'),
+    gender: pickString(record, 'gender'),
+    role: pickString(record, 'role'),
+    skill: pickString(record, 'skill') ?? null,
+    certification: pickString(record, 'certification') ?? null,
+    headline: pickString(record, 'headline') ?? null,
+    bio: pickString(record, 'bio') ?? null,
+    location: pickString(record, 'location') ?? null,
+    profileSkills: profileSkills as RecommendedCandidate['profileSkills'],
+    skills: profileSkills as RecommendedCandidate['skills'],
+    recommendation: normalizeRecommendationScore(record.recommendation),
+  }
+}
+
 export function normalizeComment(raw: unknown): Comment {
   const record = asRecord(raw)
   return {
@@ -124,6 +195,38 @@ export function normalizePaginatedJobsResponse(response: ApiResponse<PaginatedCo
 
 export function normalizeJobsResponse(response: ApiResponse<Job[]>): ApiResponse<Job[]> {
   return mapApiResponse(response, (content) => content.map(normalizeJob))
+}
+
+export function normalizeRecommendedJobsResponse(
+  response: ApiResponse<RecommendationContent<RecommendedJob>>
+): ApiResponse<RecommendationContent<RecommendedJob>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    const data = Array.isArray(record.data) ? record.data.map(normalizeRecommendedJob) : []
+
+    return {
+      ...content,
+      data,
+      model: pickString(record, 'model'),
+      elapsedMs: pickNumber(record, 'elapsedMs', 'elapsed_ms'),
+    }
+  })
+}
+
+export function normalizeRecommendedCandidatesResponse(
+  response: ApiResponse<RecommendationContent<RecommendedCandidate>>
+): ApiResponse<RecommendationContent<RecommendedCandidate>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    const data = Array.isArray(record.data) ? record.data.map(normalizeRecommendedCandidate) : []
+
+    return {
+      ...content,
+      data,
+      model: pickString(record, 'model'),
+      elapsedMs: pickNumber(record, 'elapsedMs', 'elapsed_ms'),
+    }
+  })
 }
 
 export function normalizeJobResponse<T extends Job & { binhLuans?: Comment[]; comments?: Comment[] }>(response: ApiResponse<T>): ApiResponse<Job & { binhLuans?: Comment[] }> {

@@ -7,6 +7,8 @@ import {
   normalizeJobResponse,
   normalizeJobsResponse,
   normalizePaginatedJobsResponse,
+  normalizeRecommendedCandidatesResponse,
+  normalizeRecommendedJobsResponse,
   normalizeSubcategory,
   toCategoryPayload,
   toCommentPayload,
@@ -94,6 +96,57 @@ describe('normalizers', () => {
       },
     } as never)
     expect(withComments.content?.binhLuans?.[0].noiDung).toBe('Solid')
+  })
+
+  it('normalizes recommendation responses while preserving match metadata', () => {
+    const jobs = normalizeRecommendedJobsResponse({
+      content: {
+        data: [
+          {
+            id: 3,
+            title: 'Python API',
+            price: 200,
+            recommendation: {
+              rank: 1,
+              score: 0.84,
+              finalScore: 0.78,
+              label: 'high_match',
+              skillScore: 0.6,
+            },
+          },
+        ],
+        model: 'embedding-model',
+        elapsedMs: 42,
+      },
+    } as never)
+
+    expect(jobs.content?.model).toBe('embedding-model')
+    expect(jobs.content?.data[0].tenCongViec).toBe('Python API')
+    expect(jobs.content?.data[0].recommendation.aiScore).toBe(0.84)
+    expect(jobs.content?.data[0].recommendation.label).toBe('high_match')
+
+    const candidates = normalizeRecommendedCandidatesResponse({
+      content: {
+        data: [
+          {
+            id: 8,
+            name: 'Lina Tran',
+            email: 'lina@example.com',
+            headline: 'Backend developer',
+            profileSkills: [{ name: 'Python' }],
+            recommendation: {
+              rank: 2,
+              aiScore: 0.63,
+              finalScore: 0.61,
+              label: 'medium_match',
+            },
+          },
+        ],
+      },
+    } as never)
+
+    expect(candidates.content?.data[0].name).toBe('Lina Tran')
+    expect(candidates.content?.data[0].recommendation.rank).toBe(2)
   })
 
   it('maps payloads to API contract keys', () => {

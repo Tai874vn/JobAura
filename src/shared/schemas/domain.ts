@@ -176,6 +176,26 @@ export const jobSchema = z.object({
   nguoiDung: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
 })
 
+export const recommendationLabelSchema = z.enum(['high_match', 'medium_match', 'low_match'])
+
+export const recommendationScoreSchema = z.object({
+  rank: z.coerce.number().int().positive(),
+  aiScore: z.coerce.number().min(0).max(1),
+  finalScore: z.coerce.number().min(0).max(1),
+  label: recommendationLabelSchema,
+  skillScore: z.coerce.number().min(0).max(1).optional().default(0),
+  seniorityScore: z.coerce.number().min(0).max(1).optional().default(0),
+  categoryScore: z.coerce.number().min(0).max(1).optional().default(0),
+})
+
+export const recommendedJobSchema = jobSchema.extend({
+  recommendation: recommendationScoreSchema,
+})
+
+export const recommendedCandidateSchema = userProfileSchema.extend({
+  recommendation: recommendationScoreSchema,
+})
+
 export const createJobSchema = z.object({
   tenCongViec: z.string().min(3, 'Service title is required'),
   giaTien: z.coerce.number().min(1, 'Price must be greater than zero'),
@@ -255,6 +275,15 @@ export type UpdateProfile = z.infer<typeof updateProfileSchema>
 export type SignIn = z.infer<typeof signInSchema>
 export type SignUp = z.infer<typeof signUpSchema>
 export type Job = z.infer<typeof jobSchema>
+export type RecommendationLabel = z.infer<typeof recommendationLabelSchema>
+export type RecommendationScore = z.infer<typeof recommendationScoreSchema>
+export type RecommendedJob = z.infer<typeof recommendedJobSchema>
+export type RecommendedCandidate = z.infer<typeof recommendedCandidateSchema>
+export type RecommendationContent<T> = {
+  data: T[]
+  model?: string
+  elapsedMs?: number
+}
 export type CreateJob = z.infer<typeof createJobSchema>
 export type UpdateJob = z.infer<typeof updateJobSchema>
 export type JobType = z.infer<typeof jobTypeSchema>

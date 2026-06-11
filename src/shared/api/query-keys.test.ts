@@ -12,4 +12,9 @@ describe('query keys', () => {
     expect(queryKeys.jobs()).toEqual(['jobs', {}])
     expect(queryKeys.users()).toEqual(['users', {}])
   })
+
+  it('returns stable recommendation keys', () => {
+    expect(queryKeys.recommendedJobs({ topK: 4 })).toEqual(['recommendations', 'jobs', { topK: 4 }])
+    expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'jobs', 12, 'candidates', { topK: 5 }])
+  })
 })
