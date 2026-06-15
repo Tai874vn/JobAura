@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { accountRoles, signupRoles } from '@/shared/lib/roles'
 
 export const apiResponseSchema = <T extends z.ZodType>(content: T) =>
   z.object({
@@ -32,7 +33,7 @@ export const userSchema = z.object({
   birthDay: z.string().optional(),
   avatar: z.string().optional().nullable(),
   gender: z.string().optional(),
-  role: z.string().optional(),
+  role: z.enum(accountRoles).optional(),
   skill: z.string().optional().nullable(),
   certification: z.string().optional().nullable(),
   googleId: z.string().optional().nullable(),
@@ -141,7 +142,7 @@ export const signUpSchema = z.object({
   phone: z.string().optional(),
   birthDay: z.string().optional(),
   gender: z.string().optional(),
-  role: z.string().optional(),
+  role: z.enum(signupRoles).optional(),
   skill: z.string().optional(),
   certification: z.string().optional(),
 })

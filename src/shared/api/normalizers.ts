@@ -16,6 +16,7 @@ import type {
   UpdateJob,
   UserProfile,
 } from '@/shared/schemas'
+import { isAccountRole } from '@/shared/lib/roles'
 
 type ApiRecord = Record<string, unknown>
 
@@ -45,6 +46,11 @@ function pickBoolean(record: ApiRecord, ...keys: string[]) {
     if (typeof value === 'boolean') return value
   }
   return undefined
+}
+
+function pickRole(record: ApiRecord) {
+  const role = pickString(record, 'role')
+  return isAccountRole(role) ? role : 'user'
 }
 
 function mapApiResponse<T, U>(response: ApiResponse<T>, mapper: (content: T) => U): ApiResponse<U> {
@@ -140,7 +146,7 @@ export function normalizeRecommendedCandidate(raw: unknown): RecommendedCandidat
     phone: pickString(record, 'phone'),
     birthDay: pickString(record, 'birthDay'),
     gender: pickString(record, 'gender'),
-    role: pickString(record, 'role'),
+    role: pickRole(record),
     skill: pickString(record, 'skill') ?? null,
     certification: pickString(record, 'certification') ?? null,
     headline: pickString(record, 'headline') ?? null,

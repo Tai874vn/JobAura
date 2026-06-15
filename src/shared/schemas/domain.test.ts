@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createCommentSchema, createJobSchema, paginatedContentSchema, recommendationScoreSchema, recommendedJobSchema, signInSchema } from './domain'
+import { createCommentSchema, createJobSchema, paginatedContentSchema, recommendationScoreSchema, recommendedJobSchema, signInSchema, signUpSchema } from './domain'
 
 describe('domain schemas', () => {
   it('normalizes sign in emails', () => {
@@ -45,5 +45,25 @@ describe('domain schemas', () => {
         recommendation,
       }).recommendation.finalScore
     ).toBe(0.79)
+  })
+
+  it('validates signup account roles', () => {
+    expect(
+      signUpSchema.parse({
+        name: 'Hiring Manager',
+        email: 'hiring@example.com',
+        password: 'password123',
+        role: 'employer',
+      }).role
+    ).toBe('employer')
+
+    expect(() =>
+      signUpSchema.parse({
+        name: 'Hiring Manager',
+        email: 'hiring@example.com',
+        password: 'password123',
+        role: 'recruiting-admin',
+      })
+    ).toThrow()
   })
 })

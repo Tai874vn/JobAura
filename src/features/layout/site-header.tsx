@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { initials } from '@/shared/lib/utils'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
@@ -76,6 +77,11 @@ export function SiteHeader() {
           <Link className="px-2 text-sm font-semibold text-muted hover:text-foreground" href="/jobs/new">
             Post a Job
           </Link>
+          {canAccessCandidateDirectory(user?.role) ? (
+            <Link className="px-2 text-sm font-semibold text-muted hover:text-foreground" href="/candidates">
+              Find Candidates
+            </Link>
+          ) : null}
           {user?.role === 'admin' ? (
             <Link className="px-2 text-sm font-semibold text-muted hover:text-foreground" href="/admin">
               Admin
@@ -134,6 +140,7 @@ export function SiteHeader() {
             <Link href="/jobs/new" className="flex items-center gap-2">
               <Plus className="h-4 w-4" /> Post a Job
             </Link>
+            {canAccessCandidateDirectory(user?.role) ? <Link href="/candidates">Find Candidates</Link> : null}
             {!hasHydrated ? null : user ? <Link href={`/profile/${user.id}`}>Profile</Link> : <Link href="/auth/login">Sign in</Link>}
           </div>
         </div>
