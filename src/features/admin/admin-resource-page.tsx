@@ -79,7 +79,7 @@ const resourceConfigs: Record<Resource, ResourceConfig> = {
   },
   comments: {
     title: 'Comments',
-    columns: ['ID', 'Job ID', 'User ID', 'Rating', 'Comment'],
+    columns: ['ID', 'Job ID', 'User', 'Rating', 'Comment'],
     load: async () => (await commentsApi.all()).content ?? [],
     remove: commentsApi.delete,
     renderCells: renderCommentCells,
@@ -430,11 +430,20 @@ function renderHiredJobCells(row: Row) {
 
 function renderCommentCells(row: Row) {
   const comment = row as Comment
+  const commenterId = comment.maNguoiBinhLuan ?? comment.nguoiDung?.id
   return (
     <>
       <td className="px-4 py-3 font-mono text-xs">#{comment.id}</td>
       <td className="px-4 py-3">{comment.maCongViec}</td>
-      <td className="px-4 py-3">{comment.maNguoiBinhLuan ?? '-'}</td>
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2">
+          {comment.nguoiDung?.name ? <Avatar name={comment.nguoiDung.name} /> : null}
+          <div>
+            <p className="font-semibold">{comment.nguoiDung?.name ?? 'Unknown user'}</p>
+            <p className="font-mono text-xs text-muted">{commenterId ? `#${commenterId}` : '-'}</p>
+          </div>
+        </div>
+      </td>
       <td className="px-4 py-3 text-rating">{comment.saoBinhLuan}</td>
       <td className="max-w-sm px-4 py-3">{comment.noiDung}</td>
     </>

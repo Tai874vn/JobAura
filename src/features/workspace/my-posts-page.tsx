@@ -9,6 +9,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
+import { getUserPosts } from '@/features/users/profile-posts'
 
 export function MyPostsPage() {
   const user = useAuthStore((state) => state.user)
@@ -22,7 +23,7 @@ export function MyPostsPage() {
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete service')),
   })
-  const jobs = (query.data?.content ?? []).filter((job) => job.nguoiTao === user?.id)
+  const jobs = getUserPosts(query.data?.content ?? [], user?.id)
 
   return (
     <div className="container-page py-8">

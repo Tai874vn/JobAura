@@ -10,7 +10,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const { id } = await params
   const [response, jobsResponse] = await Promise.all([
     serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`, { includeCookies: false }),
-    serverRequest<ApiResponse<Job[]>>('/api/jobs', { includeCookies: false, next: { revalidate: 60 } }),
+    serverRequest<ApiResponse<Job[]>>('/api/jobs'),
   ])
 
   if (!response.ok) return <ProfileLoadError id={id} message={response.error} />

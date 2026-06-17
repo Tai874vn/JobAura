@@ -7,6 +7,7 @@ import {
   normalizeJobResponse,
   normalizeJobsResponse,
   normalizePaginatedJobsResponse,
+  normalizePaginatedCandidatesResponse,
   normalizeRecommendedCandidatesResponse,
   normalizeRecommendedJobsResponse,
   normalizeSubcategory,
@@ -45,7 +46,18 @@ describe('normalizers', () => {
     })
     expect(job.tenCongViec).toBe('Landing page')
     expect(job.giaTien).toBe(120)
+    expect(job.nguoiTao).toBe(2)
     expect(job.chiTietLoaiCongViec?.tenChiTiet).toBe('Logo')
+
+    const aliasedOwner = normalizeJob({
+      id: 11,
+      title: 'Backend API',
+      price: 240,
+      userId: 6,
+      creator: { id: 6, name: 'Tai', avatar: null },
+    })
+    expect(aliasedOwner.nguoiTao).toBe(6)
+    expect(aliasedOwner.nguoiDung?.id).toBe(6)
 
     expect(normalizeComment({ id: 1, jobId: 10, userId: 2, content: 'Great', rating: 5 })).toEqual({
       id: 1,
@@ -60,6 +72,19 @@ describe('normalizers', () => {
       saoBinhLuan: 5,
       nguoiDung: undefined,
     })
+
+    const backendComment = normalizeComment({
+      id: 6,
+      jobId: 7,
+      commenterId: 6,
+      commentedAt: '2026-06-16T03:03:00.216Z',
+      content: 'Works well',
+      rating: 5,
+      user: { id: 6, name: 'Tai', avatar: '/avatar.png' },
+    })
+    expect(backendComment.maNguoiBinhLuan).toBe(6)
+    expect(backendComment.ngayBinhLuan).toBe('2026-06-16T03:03:00.216Z')
+    expect(backendComment.nguoiDung?.name).toBe('Tai')
 
     const hiredJob = normalizeHiredJob({ id: 4, jobId: 10, userId: 9, completed: true, job: { id: 10, title: 'Landing page', price: 120 } })
     expect(hiredJob.maCongViec).toBe(10)
@@ -84,6 +109,58 @@ describe('normalizers', () => {
     expect(response.content?.pageIndex).toBe(2)
     expect(response.content?.totalRow).toBe(21)
     expect(response.content?.data[0].tenCongViec).toBe('Test')
+  })
+
+  it('normalizes paginated candidate directory responses without private contact fields', () => {
+    const response = normalizePaginatedCandidatesResponse({
+      content: {
+        page: 2,
+        pageSize: 12,
+        total: 13,
+        totalPages: 2,
+        data: [
+          {
+            id: 10,
+            name: 'Lina Tran',
+            email: 'private@example.com',
+            phone: '+85511111111',
+            avatar: '/avatar.png',
+            headline: 'Senior Backend Engineer',
+            bio: 'Builds Python APIs',
+            location: 'Remote',
+            profileSkills: [{ id: 1, name: 'Python', level: 'advanced' }],
+            stats: {
+              portfolioItems: 2,
+              certifications: 1,
+              completedWork: 4,
+              rating: 4.8,
+            },
+            match: {
+              score: 0.84,
+              label: 'high_match',
+              keywordScore: 1,
+              skillScore: 1,
+              locationScore: 1,
+              qualityScore: 0.76,
+            },
+          },
+        ],
+      },
+    } as never)
+
+    expect(response.content?.pageIndex).toBe(2)
+    expect(response.content?.totalRow).toBe(13)
+    expect(response.content?.totalPages).toBe(2)
+    expect(response.content?.data[0]).toMatchObject({
+      id: 10,
+      name: 'Lina Tran',
+      headline: 'Senior Backend Engineer',
+      profileSkills: [{ id: 1, name: 'Python', level: 'advanced' }],
+      stats: { completedWork: 4, rating: 4.8 },
+      match: { score: 0.84, label: 'high_match' },
+    })
+    expect(response.content?.data[0]).not.toHaveProperty('email')
+    expect(response.content?.data[0]).not.toHaveProperty('phone')
   })
 
   it('normalizes detailed job response comments from either key', () => {

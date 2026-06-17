@@ -7,7 +7,7 @@ import { CheckCircle2, MapPin, MessageSquare, Pencil, Sparkles, Star, Trash2, Up
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { commentsApi, hiredJobsApi, jobsApi, recommendationsApi } from '@/shared/api/endpoints'
+import { chatApi, commentsApi, hiredJobsApi, jobsApi, recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Comment, Job, RecommendedCandidate } from '@/shared/schemas'
@@ -15,6 +15,7 @@ import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Badge, Button, Card, CardContent, Textarea } from '@/shared/ui'
 import { MatchBadge } from './recommendation-ui'
+import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
 
 function candidateSkills(candidate: RecommendedCandidate) {
   return (candidate.profileSkills ?? candidate.skills ?? []).filter((skill) => skill?.name).slice(0, 3)
@@ -27,10 +28,17 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const queryClient = useQueryClient()
   const user = useAuthStore((state) => state.user)
   const openChat = useChatStore((state) => state.openChat)
+  const openChatForRoom = useChatStore((state) => state.openChatForRoom)
   const [review, setReview] = useState('')
   const [rating, setRating] = useState(5)
   const isOwner = user?.id === job.nguoiTao
   const candidateParams = { topK: 5, poolSize: 100 }
+  const sellerId = getSellerId(job)
+  const sellerName = getSellerName(job)
+  const sellerHref = getSellerHref(job)
+  const sellerAvatarSource = getSellerAvatar(job)
+  const sellerAvatarUrl = resolveAssetUrl(sellerAvatarSource)
+  const bypassSellerAvatarOptimizer = shouldBypassImageOptimizer(sellerAvatarSource)
 
   const hireMutation = useMutation({
     mutationFn: () => hiredJobsApi.create({ maCongViec: job.id }),
@@ -55,6 +63,23 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
       router.push('/my-posts')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete service')),
+  })
+
+  const contactSellerMutation = useMutation({
+    mutationFn: async () => {
+      if (!sellerId) throw new Error('Seller is unavailable')
+      return chatApi.start(sellerId)
+    },
+    onSuccess: (response) => {
+      const room = response.content
+      if (room) {
+        openChatForRoom(room)
+        queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms })
+      } else {
+        openChat()
+      }
+    },
+    onError: (error) => toast.error(getErrorMessage(error, 'Unable to start chat')),
   })
 
   const candidateQuery = useQuery({
@@ -144,15 +169,47 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                 ))}
               </ul>
               <Button className="mt-6 w-full" size="lg" onClick={() => requireLogin(() => hireMutation.mutate())}>Continue ({currency(job.giaTien)})</Button>
-              <Button className="mt-3 w-full" variant="secondary" onClick={() => requireLogin(openChat)}><MessageSquare className="h-4 w-4" /> Contact seller</Button>
+              <Button
+                className="mt-3 w-full"
+                variant="secondary"
+                onClick={() => requireLogin(() => contactSellerMutation.mutate())}
+                disabled={contactSellerMutation.isPending}
+              >
+                <MessageSquare className="h-4 w-4" />
+                {contactSellerMutation.isPending ? 'Opening chat...' : 'Contact seller'}
+              </Button>
             </CardContent>
           </Card>
           <Card className="mt-4">
             <CardContent>
               <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">{initials(job.nguoiDung?.name)}</span>
+                {sellerHref ? (
+                  <Link
+                    href={sellerHref}
+                    className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white"
+                    aria-label={`View ${sellerName} profile`}
+                  >
+                    {sellerAvatarUrl ? (
+                      <Image src={sellerAvatarUrl} alt={sellerName} fill unoptimized={bypassSellerAvatarOptimizer} className="object-cover" sizes="48px" />
+                    ) : (
+                      initials(sellerName)
+                    )}
+                  </Link>
+                ) : (
+                  <span className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white">
+                    {sellerAvatarUrl ? (
+                      <Image src={sellerAvatarUrl} alt={sellerName} fill unoptimized={bypassSellerAvatarOptimizer} className="object-cover" sizes="48px" />
+                    ) : (
+                      initials(sellerName)
+                    )}
+                  </span>
+                )}
                 <div>
-                  <p className="font-bold">{job.nguoiDung?.name ?? 'JobAura seller'}</p>
+                  {sellerHref ? (
+                    <Link href={sellerHref} className="font-bold hover:text-primary">{sellerName}</Link>
+                  ) : (
+                    <p className="font-bold">{sellerName}</p>
+                  )}
                   <p className="text-xs text-muted">Top Rated Seller · 1h response</p>
                 </div>
               </div>

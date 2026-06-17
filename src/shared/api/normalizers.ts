@@ -1,5 +1,6 @@
 import type {
   ApiResponse,
+  CandidateProfile,
   Comment,
   CreateComment,
   CreateJob,
@@ -53,6 +54,14 @@ function pickRole(record: ApiRecord) {
   return isAccountRole(role) ? role : 'user'
 }
 
+function pickUser(record: ApiRecord, ...keys: string[]): Job['nguoiDung'] | undefined {
+  for (const key of keys) {
+    const value = record[key]
+    if (value && typeof value === 'object') return value as Job['nguoiDung']
+  }
+  return undefined
+}
+
 function mapApiResponse<T, U>(response: ApiResponse<T>, mapper: (content: T) => U): ApiResponse<U> {
   const { content, ...meta } = response
   return content === undefined ? meta : { ...meta, content: mapper(content) }
@@ -89,7 +98,7 @@ export function normalizeJob(raw: unknown): Job {
     moTaNgan: pickString(record, 'moTaNgan', 'shortDescription') ?? null,
     moTa: pickString(record, 'moTa', 'description') ?? null,
     maChiTietLoai: pickNumber(record, 'maChiTietLoai', 'subcategoryId'),
-    nguoiTao: pickNumber(record, 'nguoiTao', 'creatorId'),
+    nguoiTao: pickNumber(record, 'nguoiTao', 'creatorId', 'userId', 'ownerId', 'createdById', 'authorId', 'sellerId'),
     hinhAnh: pickString(record, 'hinhAnh', 'image') ?? null,
     danhGia: pickNumber(record, 'danhGia', 'reviews') ?? 0,
     saoCongViec: pickNumber(record, 'saoCongViec', 'rating') ?? 0,
@@ -100,7 +109,7 @@ export function normalizeJob(raw: unknown): Job {
       : record.subcategory
         ? normalizeSubcategory(record.subcategory)
         : undefined,
-    nguoiDung: record.nguoiDung && typeof record.nguoiDung === 'object' ? (record.nguoiDung as Job['nguoiDung']) : undefined,
+    nguoiDung: pickUser(record, 'nguoiDung', 'user', 'creator', 'owner', 'seller'),
   }
 }
 
@@ -158,17 +167,62 @@ export function normalizeRecommendedCandidate(raw: unknown): RecommendedCandidat
   }
 }
 
+export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
+  const record = asRecord(raw)
+  const profileSkills = Array.isArray(record.profileSkills)
+    ? record.profileSkills.map((skill) => {
+        const skillRecord = asRecord(skill)
+        return {
+          id: pickNumber(skillRecord, 'id'),
+          name: pickString(skillRecord, 'name') ?? '',
+          level: pickString(skillRecord, 'level') ?? null,
+          sortOrder: pickNumber(skillRecord, 'sortOrder'),
+        }
+      }).filter((skill) => skill.name)
+    : []
+  const statsRecord = asRecord(record.stats)
+  const matchRecord = asRecord(record.match)
+  const label = pickString(matchRecord, 'label')
+  const validLabel: CandidateProfile['match']['label'] =
+    label === 'high_match' || label === 'medium_match' || label === 'low_match' ? label : 'low_match'
+
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    name: pickString(record, 'name') ?? '',
+    avatar: pickString(record, 'avatar') ?? null,
+    headline: pickString(record, 'headline') ?? null,
+    bio: pickString(record, 'bio') ?? null,
+    location: pickString(record, 'location') ?? null,
+    profileSkills,
+    stats: {
+      portfolioItems: pickNumber(statsRecord, 'portfolioItems') ?? 0,
+      certifications: pickNumber(statsRecord, 'certifications') ?? 0,
+      completedWork: pickNumber(statsRecord, 'completedWork') ?? 0,
+      rating: pickNumber(statsRecord, 'rating') ?? 0,
+    },
+    match: {
+      score: pickNumber(matchRecord, 'score') ?? 0,
+      label: validLabel,
+      keywordScore: pickNumber(matchRecord, 'keywordScore') ?? 0,
+      skillScore: pickNumber(matchRecord, 'skillScore') ?? 0,
+      locationScore: pickNumber(matchRecord, 'locationScore') ?? 0,
+      qualityScore: pickNumber(matchRecord, 'qualityScore') ?? 0,
+    },
+  }
+}
+
 export function normalizeComment(raw: unknown): Comment {
   const record = asRecord(raw)
+  const user = pickUser(record, 'nguoiDung', 'user', 'commenter', 'author', 'createdBy')
   return {
     ...(record as Partial<Comment>),
     id: pickNumber(record, 'id') ?? 0,
     maCongViec: pickNumber(record, 'maCongViec', 'jobId') ?? 0,
-    maNguoiBinhLuan: pickNumber(record, 'maNguoiBinhLuan', 'userId'),
-    ngayBinhLuan: pickString(record, 'ngayBinhLuan', 'createdAt'),
+    maNguoiBinhLuan: pickNumber(record, 'maNguoiBinhLuan', 'userId', 'commenterId', 'authorId', 'createdById') ?? user?.id,
+    ngayBinhLuan: pickString(record, 'ngayBinhLuan', 'createdAt', 'commentedAt'),
     noiDung: pickString(record, 'noiDung', 'content', 'comment') ?? '',
     saoBinhLuan: pickNumber(record, 'saoBinhLuan', 'rating') ?? 0,
-    nguoiDung: record.nguoiDung && typeof record.nguoiDung === 'object' ? (record.nguoiDung as Comment['nguoiDung']) : undefined,
+    nguoiDung: user,
   }
 }
 
@@ -195,6 +249,23 @@ export function normalizePaginatedJobsResponse(response: ApiResponse<PaginatedCo
       pageIndex: pickNumber(record, 'pageIndex', 'page'),
       pageSize: pickNumber(record, 'pageSize'),
       totalRow: pickNumber(record, 'totalRow', 'total'),
+    }
+  })
+}
+
+export function normalizePaginatedCandidatesResponse(
+  response: ApiResponse<PaginatedContent<CandidateProfile>>
+): ApiResponse<PaginatedContent<CandidateProfile>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    const data = Array.isArray(record.data) ? record.data.map(normalizeCandidateProfile) : []
+    return {
+      ...content,
+      data,
+      pageIndex: pickNumber(record, 'pageIndex', 'page'),
+      pageSize: pickNumber(record, 'pageSize'),
+      totalRow: pickNumber(record, 'totalRow', 'total'),
+      totalPages: pickNumber(record, 'totalPages'),
     }
   })
 }

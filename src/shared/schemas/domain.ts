@@ -20,6 +20,7 @@ export const paginatedContentSchema = <T extends z.ZodType>(item: T) =>
     pageIndex: z.number().optional(),
     pageSize: z.number().optional(),
     totalRow: z.number().optional(),
+    totalPages: z.number().optional(),
     keywords: z.string().optional(),
     data: z.array(item).default([]),
   })
@@ -179,6 +180,34 @@ export const jobSchema = z.object({
 
 export const recommendationLabelSchema = z.enum(['high_match', 'medium_match', 'low_match'])
 
+export const candidateDirectoryStatsSchema = z.object({
+  portfolioItems: z.coerce.number().default(0),
+  certifications: z.coerce.number().default(0),
+  completedWork: z.coerce.number().default(0),
+  rating: z.coerce.number().default(0),
+})
+
+export const candidateDirectoryMatchSchema = z.object({
+  score: z.coerce.number().min(0).max(1),
+  label: recommendationLabelSchema,
+  keywordScore: z.coerce.number().min(0).max(1).default(0),
+  skillScore: z.coerce.number().min(0).max(1).default(0),
+  locationScore: z.coerce.number().min(0).max(1).default(0),
+  qualityScore: z.coerce.number().min(0).max(1).default(0),
+})
+
+export const candidateProfileSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  profileSkills: z.array(profileSkillSchema).default([]),
+  stats: candidateDirectoryStatsSchema,
+  match: candidateDirectoryMatchSchema,
+})
+
 export const recommendationScoreSchema = z.object({
   rank: z.coerce.number().int().positive(),
   aiScore: z.coerce.number().min(0).max(1),
@@ -269,6 +298,7 @@ export type ProfileSkill = z.infer<typeof profileSkillSchema>
 export type ProfileCertification = z.infer<typeof profileCertificationSchema>
 export type ProfilePortfolioItem = z.infer<typeof profilePortfolioItemSchema>
 export type UserProfile = z.infer<typeof userProfileSchema>
+export type CandidateProfile = z.infer<typeof candidateProfileSchema>
 export type ResumeData = z.infer<typeof resumeDataSchema>
 export type ImportResume = z.infer<typeof importResumeSchema>
 export type UserResume = z.infer<typeof userResumeSchema>
@@ -284,6 +314,10 @@ export type RecommendationContent<T> = {
   data: T[]
   model?: string
   elapsedMs?: number
+}
+export type CandidateDirectoryParams = PaginationParams & {
+  skill?: string
+  location?: string
 }
 export type CreateJob = z.infer<typeof createJobSchema>
 export type UpdateJob = z.infer<typeof updateJobSchema>

@@ -1,11 +1,11 @@
 'use client'
 
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowUpRight,
   Award,
-  Bookmark,
   BriefcaseBusiness,
   CheckCircle2,
   Clock3,
@@ -18,50 +18,67 @@ import {
   Users,
 } from 'lucide-react'
 import {
-  candidateLocationOptions,
-  candidateSkillOptions,
-  demoCandidates,
-  filterCandidates,
-  type CandidateAvailability,
-  type CandidateLevel,
-  type CandidateProfile,
+  formatCandidateRating,
+  getCandidateLocation,
+  getCandidateSkillNames,
+  getCandidateSummary,
 } from './candidate-directory'
+import { MatchBadge } from '@/features/jobs/recommendation-ui'
+import { usersApi } from '@/shared/api/endpoints'
+import { queryKeys } from '@/shared/api/query-keys'
 import { initials } from '@/shared/lib/utils'
-import { Badge, Button, Card, CardContent, Input } from '@/shared/ui'
+import type { CandidateProfile } from '@/shared/schemas'
+import { Button, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
 
-const levels: Array<{ value: CandidateLevel | 'all'; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'junior', label: 'Junior' },
-  { value: 'mid', label: 'Mid' },
-  { value: 'senior', label: 'Senior' },
-  { value: 'lead', label: 'Lead' },
-]
-
-const availabilityText: Record<CandidateAvailability, string> = {
-  available: 'Available now',
-  open_soon: 'Open soon',
-  busy: 'Booked',
-}
+const pageSize = 12
 
 export function CandidateDirectoryPage() {
   const [keyword, setKeyword] = useState('')
   const [skill, setSkill] = useState('')
   const [location, setLocation] = useState('')
-  const [level, setLevel] = useState<CandidateLevel | 'all'>('all')
-  const [availableOnly, setAvailableOnly] = useState(false)
+  const [page, setPage] = useState(1)
 
-  const candidates = useMemo(
-    () => filterCandidates(demoCandidates, { keyword, skill, location, level, availableOnly }),
-    [availableOnly, keyword, level, location, skill]
+  const params = useMemo(
+    () => ({
+      page,
+      pageSize,
+      keyword: keyword.trim() || undefined,
+      skill: skill.trim() || undefined,
+      location: location.trim() || undefined,
+    }),
+    [keyword, location, page, skill]
   )
-  const shortlisted = demoCandidates.slice(0, 3)
+  const query = useQuery({
+    queryKey: queryKeys.candidates(params),
+    queryFn: () => usersApi.candidates(params),
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60,
+  })
+  const content = query.data?.content
+  const candidates = content?.data ?? []
+  const total = content?.totalRow ?? 0
+  const totalPages = content?.totalPages ?? 1
 
   function clearFilters() {
     setKeyword('')
     setSkill('')
     setLocation('')
-    setLevel('all')
-    setAvailableOnly(false)
+    setPage(1)
+  }
+
+  function updateKeyword(value: string) {
+    setKeyword(value)
+    setPage(1)
+  }
+
+  function updateSkill(value: string) {
+    setSkill(value)
+    setPage(1)
+  }
+
+  function updateLocation(value: string) {
+    setLocation(value)
+    setPage(1)
   }
 
   return (
@@ -74,7 +91,7 @@ export function CandidateDirectoryPage() {
           </div>
           <h1 className="font-display text-4xl font-bold">Find candidates</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            Browse verified JobAura talent before starting AI matching.
+            Browse completed JobAura worker profiles before starting AI matching.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -99,56 +116,27 @@ export function CandidateDirectoryPage() {
                 className="pl-9"
                 placeholder="Search by name, role, skill, or project type"
                 value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
+                onChange={(event) => updateKeyword(event.target.value)}
               />
             </label>
-            <select
-              className="h-10 rounded-lg border border-border bg-white px-3 text-sm font-semibold outline-none focus:border-primary"
+            <Input
+              placeholder="Skill"
               value={skill}
-              onChange={(event) => setSkill(event.target.value)}
-            >
-              <option value="">Any skill</option>
-              {candidateSkillOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
-            <select
-              className="h-10 rounded-lg border border-border bg-white px-3 text-sm font-semibold outline-none focus:border-primary"
+              onChange={(event) => updateSkill(event.target.value)}
+            />
+            <Input
+              placeholder="Location"
               value={location}
-              onChange={(event) => setLocation(event.target.value)}
-            >
-              <option value="">Any location</option>
-              {candidateLocationOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-            </select>
+              onChange={(event) => updateLocation(event.target.value)}
+            />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-1 rounded-lg border border-border bg-surface-muted p-1">
-              {levels.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={`h-8 rounded px-3 text-xs font-bold transition ${
-                    level === option.value ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-foreground'
-                  }`}
-                  onClick={() => setLevel(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2 text-sm font-semibold text-muted">
+              {query.isFetching ? <Spinner className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+              {total} completed profiles
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <label className="inline-flex items-center gap-2 text-sm font-semibold text-muted">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-primary"
-                  checked={availableOnly}
-                  onChange={(event) => setAvailableOnly(event.target.checked)}
-                />
-                Available now
-              </label>
               <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
                 <SlidersHorizontal className="h-4 w-4" />
                 Reset
@@ -161,13 +149,27 @@ export function CandidateDirectoryPage() {
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_320px]">
         <section>
           <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="text-sm font-bold">{candidates.length} candidates</p>
+            <p className="text-sm font-bold">{total} candidates</p>
             <p className="text-xs font-semibold text-muted">Candidate directory</p>
           </div>
-          {candidates.length ? (
+          {query.isPending ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, index) => <CardSkeleton key={index} />)}
+            </div>
+          ) : candidates.length ? (
             <div className="grid gap-4 md:grid-cols-2">
               {candidates.map((candidate) => <CandidateCard key={candidate.id} candidate={candidate} />)}
             </div>
+          ) : query.isError ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+                <Search className="h-8 w-8 text-primary" />
+                <h2 className="mt-3 font-display text-2xl font-bold">Unable to load candidates</h2>
+                <p className="mt-2 max-w-md text-sm leading-6 text-muted">
+                  Refresh the page or try again after the backend is available.
+                </p>
+              </CardContent>
+            </Card>
           ) : (
             <Card>
               <CardContent className="flex flex-col items-center justify-center p-10 text-center">
@@ -180,6 +182,17 @@ export function CandidateDirectoryPage() {
               </CardContent>
             </Card>
           )}
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <Button type="button" variant="secondary" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+              Previous
+            </Button>
+            <span className="text-sm font-semibold text-muted">
+              Page {page} of {Math.max(totalPages, 1)}
+            </span>
+            <Button type="button" variant="secondary" disabled={page >= totalPages || query.isFetching} onClick={() => setPage((current) => current + 1)}>
+              Next
+            </Button>
+          </div>
         </section>
 
         <aside className="xl:sticky xl:top-24 xl:self-start">
@@ -187,27 +200,16 @@ export function CandidateDirectoryPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase text-primary">Shortlist</p>
-                  <h2 className="font-display text-xl font-bold">Saved candidates</h2>
+                  <p className="text-xs font-bold uppercase text-primary">Search focus</p>
+                  <h2 className="font-display text-xl font-bold">Current filters</h2>
                 </div>
-                <Bookmark className="h-5 w-5 text-primary" />
+                <Search className="h-5 w-5 text-primary" />
               </div>
-              <div className="mt-4 divide-y divide-border">
-                {shortlisted.map((candidate) => (
-                  <Link key={candidate.id} href={`/profile/${candidate.id}`} className="flex items-center gap-3 py-3 hover:text-primary">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-white">
-                      {initials(candidate.name)}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold">{candidate.name}</span>
-                      <span className="block truncate text-xs text-muted">{candidate.headline}</span>
-                    </span>
-                  </Link>
-                ))}
+              <div className="mt-4 grid gap-2 text-sm">
+                <FilterRow label="Keyword" value={keyword} />
+                <FilterRow label="Skill" value={skill} />
+                <FilterRow label="Location" value={location} />
               </div>
-              <p className="mt-3 rounded-lg bg-surface-muted p-3 text-xs leading-5 text-muted">
-                Keep a focused review list while comparing availability, skills, and recent work.
-              </p>
             </CardContent>
           </Card>
         </aside>
@@ -217,7 +219,8 @@ export function CandidateDirectoryPage() {
 }
 
 function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
-  const availabilityTone = candidate.availability === 'available' ? 'primary' : candidate.availability === 'open_soon' ? 'accent' : 'neutral'
+  const skills = getCandidateSkillNames(candidate)
+  const summary = getCandidateSummary(candidate)
 
   return (
     <Card className="transition hover:border-primary">
@@ -232,31 +235,31 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
                 <h2 className="truncate font-display text-xl font-bold">{candidate.name}</h2>
                 <p className="mt-0.5 line-clamp-1 text-sm font-semibold text-muted">{candidate.headline}</p>
               </div>
-              <Badge tone={availabilityTone}>{availabilityText[candidate.availability]}</Badge>
+              <MatchBadge label={candidate.match.label} score={candidate.match.score} />
             </div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
-              <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {candidate.location}</span>
-              <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> {candidate.responseTime}</span>
-              <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-rating" /> {candidate.rating.toFixed(1)}</span>
+              <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
+              <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> Profile complete</span>
+              <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 text-rating" /> {formatCandidateRating(candidate)}</span>
             </div>
           </div>
         </div>
 
-        <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted">{candidate.summary}</p>
+        <p className="mt-4 line-clamp-2 text-sm leading-6 text-muted">{summary}</p>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {candidate.skills.slice(0, 4).map((skill) => (
+          {skills.slice(0, 4).map((skill) => (
             <span key={skill} className="rounded bg-accent/30 px-2 py-1 text-xs font-bold text-foreground">{skill}</span>
           ))}
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-2 border-y border-border py-3 text-xs">
-          <Metric icon={<CheckCircle2 className="h-4 w-4" />} label="Completed" value={String(candidate.completedWork)} />
-          <Metric icon={<Award className="h-4 w-4" />} label="Certs" value={String(candidate.certifications)} />
-          <Metric icon={<FolderOpen className="h-4 w-4" />} label="Portfolio" value={String(candidate.portfolioItems)} />
+          <Metric icon={<CheckCircle2 className="h-4 w-4" />} label="Completed" value={String(candidate.stats.completedWork)} />
+          <Metric icon={<Award className="h-4 w-4" />} label="Certs" value={String(candidate.stats.certifications)} />
+          <Metric icon={<FolderOpen className="h-4 w-4" />} label="Portfolio" value={String(candidate.stats.portfolioItems)} />
         </div>
 
-        <p className="mt-3 text-xs leading-5 text-muted">{candidate.reason}</p>
+        <p className="mt-3 text-xs leading-5 text-muted">Profile quality {Math.round(candidate.match.qualityScore * 100)}%</p>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <Link href={`/profile/${candidate.id}`} className="flex-1">
@@ -272,6 +275,15 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function FilterRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-muted px-3 py-2">
+      <span className="text-muted">{label}</span>
+      <span className="max-w-36 truncate font-semibold">{value.trim() || 'Any'}</span>
+    </div>
   )
 }
 

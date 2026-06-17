@@ -18,6 +18,7 @@ interface ChatState {
   onlineUserIds: number[]
   typingUsers: TypingUser[]
   openChat: () => void
+  openChatForRoom: (room: ChatRoom) => void
   closeChat: () => void
   setRooms: (rooms: ChatRoom[]) => void
   setActiveRoom: (roomId: number | null) => void
@@ -37,6 +38,13 @@ export const useChatStore = create<ChatState>((set) => ({
   onlineUserIds: [],
   typingUsers: [],
   openChat: () => set({ isOpen: true, isSocketActive: true }),
+  openChatForRoom: (room) =>
+    set((state) => ({
+      isOpen: true,
+      isSocketActive: true,
+      activeRoomId: room.id,
+      rooms: [room, ...state.rooms.filter((item) => item.id !== room.id)],
+    })),
   closeChat: () => set({ isOpen: false }),
   setRooms: (rooms) => set({ rooms }),
   setActiveRoom: (activeRoomId) => set({ activeRoomId }),

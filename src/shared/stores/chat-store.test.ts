@@ -51,6 +51,25 @@ describe('chat store', () => {
     expect(state.rooms[0].lastMessage?.id).toBe(101)
   })
 
+  it('opens chat for a room without duplicating existing rooms', () => {
+    const room = {
+      id: 1,
+      name: 'Lina',
+      isGroup: false,
+      members: [],
+      unreadCount: 0,
+    }
+
+    useChatStore.getState().openChatForRoom(room)
+    useChatStore.getState().openChatForRoom({ ...room, name: 'Lina Tran' })
+
+    const state = useChatStore.getState()
+    expect(state.isOpen).toBe(true)
+    expect(state.isSocketActive).toBe(true)
+    expect(state.activeRoomId).toBe(1)
+    expect(state.rooms).toEqual([{ ...room, name: 'Lina Tran' }])
+  })
+
   it('resets full state', () => {
     useChatStore.getState().openChat()
     useChatStore.getState().setOnlineUserIds([1, 2])

@@ -3,7 +3,7 @@ import { ArrowRight, BriefcaseBusiness, Code2, Megaphone, Palette, Search, Star 
 import { JobCard } from './job-card'
 import { normalizeCategoriesResponse, normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
-import type { ApiResponse, Job, JobType, PaginatedContent } from '@/shared/schemas'
+import type { ApiResponse, Job, JobType, PaginatedContent, UserProfile } from '@/shared/schemas'
 import { Button, Card, CardContent } from '@/shared/ui'
 
 const categories = [
@@ -24,7 +24,7 @@ export async function HomePage() {
       next: { revalidate: 300 },
     }),
   ])
-  const jobs = jobsRes.ok ? (normalizePaginatedJobsResponse(jobsRes.data).content?.data ?? []) : []
+  const jobs = jobsRes.ok ? await withSellerProfiles(normalizePaginatedJobsResponse(jobsRes.data).content?.data ?? []) : []
   const jobTypes = typesRes.ok ? (normalizeCategoriesResponse(typesRes.data).content ?? []) : []
 
   return (
@@ -109,4 +109,37 @@ export async function HomePage() {
       </section>
     </div>
   )
+}
+
+async function withSellerProfiles(jobs: Job[]) {
+  const sellerIds = [
+    ...new Set(
+      jobs
+        .filter((job) => !job.nguoiDung?.name && job.nguoiTao)
+        .map((job) => Number(job.nguoiTao))
+    ),
+  ]
+
+  if (!sellerIds.length) return jobs
+
+  const sellers = new Map<number, Job['nguoiDung']>()
+  const responses = await Promise.all(
+    sellerIds.map(async (sellerId) => {
+      const response = await serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${sellerId}`, {
+        includeCookies: false,
+        next: { revalidate: 60 },
+      })
+      return { sellerId, response }
+    })
+  )
+
+  for (const { sellerId, response } of responses) {
+    const profile = response.ok ? response.data.content : null
+    if (profile) sellers.set(sellerId, { id: profile.id, name: profile.name, avatar: profile.avatar })
+  }
+
+  return jobs.map((job) => {
+    if (job.nguoiDung?.name || !job.nguoiTao) return job
+    return { ...job, nguoiDung: sellers.get(job.nguoiTao) ?? job.nguoiDung }
+  })
 }

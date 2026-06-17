@@ -1,6 +1,8 @@
 import { apiClient, uploadClient } from './client'
 import type {
   ApiResponse,
+  CandidateDirectoryParams,
+  CandidateProfile,
   ChatMessage,
   ChatRoom,
   Comment,
@@ -37,6 +39,7 @@ import {
   normalizeJobResponse,
   normalizeJobsResponse,
   normalizePaginatedJobsResponse,
+  normalizePaginatedCandidatesResponse,
   normalizeRecommendedCandidatesResponse,
   normalizeRecommendedJobsResponse,
   normalizeSubcategoriesResponse,
@@ -149,6 +152,10 @@ export const hiredJobsApi = {
 
 export const usersApi = {
   all: async () => (await apiClient.get<ApiResponse<User[]>>('/api/users')).data,
+  candidates: async (params: CandidateDirectoryParams) =>
+    normalizePaginatedCandidatesResponse(
+      (await apiClient.get<ApiResponse<PaginatedContent<CandidateProfile>>>('/api/users/candidates', { params })).data
+    ),
   profile: async (id: number) => (await apiClient.get<ApiResponse<UserProfile>>(`/api/users/profile/${id}`)).data,
   myProfile: async () => (await apiClient.get<ApiResponse<UserProfile>>('/api/users/me/profile')).data,
   myResume: async () => (await apiClient.get<ApiResponse<UserResume | null>>('/api/users/me/resume')).data,
