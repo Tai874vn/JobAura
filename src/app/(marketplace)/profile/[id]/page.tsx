@@ -1,22 +1,22 @@
 import { notFound } from 'next/navigation'
 import { ProfilePage } from '@/features/users/profile-page'
 import { getUserPosts } from '@/features/users/profile-posts'
-import { normalizeJobsResponse } from '@/shared/api/normalizers'
+import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
-import type { ApiResponse, Job, UserProfile } from '@/shared/schemas'
+import type { ApiResponse, Job, PaginatedContent, UserProfile } from '@/shared/schemas'
 import { Card, CardContent } from '@/shared/ui'
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const [response, jobsResponse] = await Promise.all([
     serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`, { includeCookies: false }),
-    serverRequest<ApiResponse<Job[]>>('/api/jobs'),
+    serverRequest<ApiResponse<PaginatedContent<Job>>>(`/api/jobs/by-creator/${id}?page=1&pageSize=20`),
   ])
 
   if (!response.ok) return <ProfileLoadError id={id} message={response.error} />
   if (!response.data.content) notFound()
 
-  const jobs = jobsResponse.ok ? normalizeJobsResponse(jobsResponse.data).content ?? [] : []
+  const jobs = jobsResponse.ok ? normalizePaginatedJobsResponse(jobsResponse.data).content?.data ?? [] : []
 
   return <ProfilePage user={response.data.content} posts={getUserPosts(jobs, response.data.content.id)} />
 }

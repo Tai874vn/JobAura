@@ -263,6 +263,72 @@ export const hiredJobSchema = z.object({
   congViec: jobSchema.optional(),
 })
 
+export const feedAuthorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+})
+
+export const postCommentSchema = z.object({
+  id: z.number(),
+  postId: z.number(),
+  authorId: z.number(),
+  content: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string().optional(),
+  author: feedAuthorSchema,
+})
+
+export const feedPostSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  imageUrl: z.string().optional().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  author: feedAuthorSchema,
+  likeCount: z.number().int().nonnegative(),
+  commentCount: z.number().int().nonnegative(),
+  viewerHasLiked: z.boolean(),
+  viewerHasSaved: z.boolean(),
+  recentComments: z.array(postCommentSchema).default([]),
+})
+
+export const feedPageSchema = z.object({
+  data: z.array(feedPostSchema).default([]),
+  nextCursor: z.string().nullable(),
+})
+
+export const connectionProfileSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  profileSkills: z.array(profileSkillSchema).default([]),
+})
+
+export const connectionSchema = z.object({
+  id: z.number(),
+  status: z.enum(['PENDING', 'ACCEPTED']),
+  direction: z.enum(['incoming', 'outgoing']).optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  user: connectionProfileSchema,
+})
+
+export const connectionSuggestionSchema = connectionProfileSchema.extend({
+  sharedSkills: z.array(z.string()).default([]),
+  sameLocation: z.boolean().default(false),
+  suggestionScore: z.number().default(0),
+})
+
+export const connectionStatusSchema = z.object({
+  state: z.enum(['self', 'none', 'incoming_pending', 'outgoing_pending', 'connected']),
+  connectionId: z.number().nullable(),
+})
+
 export const chatUserSchema = userSchema.pick({ id: true, name: true, avatar: true, email: true })
 
 export const chatMessageSchema = z.object({
@@ -326,6 +392,21 @@ export type JobDetailType = z.infer<typeof jobDetailTypeSchema>
 export type Comment = z.infer<typeof commentSchema>
 export type CreateComment = z.infer<typeof createCommentSchema>
 export type HiredJob = z.infer<typeof hiredJobSchema>
+export type FeedAuthor = z.infer<typeof feedAuthorSchema>
+export type PostComment = z.infer<typeof postCommentSchema>
+export type FeedPost = z.infer<typeof feedPostSchema>
+export type FeedPage = z.infer<typeof feedPageSchema>
+export type FeedStats = { posts: number; reactions: number }
+export type CursorPage<T> = { data: T[]; nextCursor: string | null }
+export type ConnectionProfile = z.infer<typeof connectionProfileSchema>
+export type Connection = z.infer<typeof connectionSchema>
+export type ConnectionSuggestion = z.infer<typeof connectionSuggestionSchema>
+export type ConnectionStatus = z.infer<typeof connectionStatusSchema>
+export type ConnectionRequests = {
+  incoming: Connection[]
+  outgoing: Connection[]
+  incomingCount: number
+}
 export type ChatRoom = z.infer<typeof chatRoomSchema>
 export type ChatMessage = z.infer<typeof chatMessageSchema>
 export type ChatUser = z.infer<typeof chatUserSchema>

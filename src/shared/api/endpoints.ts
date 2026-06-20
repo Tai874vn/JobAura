@@ -9,6 +9,15 @@ import type {
   CreateComment,
   CreateJob,
   HiredJob,
+  FeedPage,
+  FeedPost,
+  FeedStats,
+  Connection,
+  ConnectionRequests,
+  ConnectionStatus,
+  ConnectionSuggestion,
+  CursorPage,
+  PostComment,
   ImportResume,
   Job,
   JobDetailType,
@@ -35,6 +44,13 @@ import {
   normalizeCommentsResponse,
   normalizeHiredJob,
   normalizeHiredJobsResponse,
+  normalizeFeedPost,
+  normalizeFeedResponse,
+  normalizePostComment,
+  normalizeConnectionRequestsResponse,
+  normalizeConnectionsResponse,
+  normalizeConnectionSuggestionsResponse,
+  normalizeSavedJobsResponse,
   normalizeJob,
   normalizeJobResponse,
   normalizeJobsResponse,
@@ -68,6 +84,10 @@ export const jobsApi = {
   all: async () => normalizeJobsResponse((await apiClient.get<ApiResponse<Job[]>>('/api/jobs')).data),
   paginated: async (params: PaginationParams) =>
     normalizePaginatedJobsResponse((await apiClient.get<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search', { params })).data),
+  byCreator: async (creatorId: number, params: PaginationParams) =>
+    normalizePaginatedJobsResponse(
+      (await apiClient.get<ApiResponse<PaginatedContent<Job>>>(`/api/jobs/by-creator/${creatorId}`, { params })).data
+    ),
   detail: async (id: number) =>
     normalizeJobResponse((await apiClient.get<ApiResponse<Job & { binhLuans?: Comment[] }>>(`/api/jobs/details/${id}`)).data),
   byName: async (name: string) =>
@@ -99,6 +119,82 @@ export const recommendationsApi = {
     normalizeRecommendedCandidatesResponse(
       (await apiClient.get<ApiResponse<RecommendationContent<RecommendedCandidate>>>(`/api/recommendations/jobs/${jobId}/candidates`, { params })).data
     ),
+}
+
+export const postsApi = {
+  feed: async ({ cursor, limit = 10 }: { cursor?: string; limit?: number } = {}) =>
+    normalizeFeedResponse(
+      (await apiClient.get<ApiResponse<FeedPage>>('/api/posts/feed', { params: { cursor, limit } })).data
+    ),
+  stats: async () => (await apiClient.get<ApiResponse<FeedStats>>('/api/posts/me/stats')).data,
+  create: async (content: string, image?: File) => {
+    const formData = new FormData()
+    if (content.trim()) formData.append('content', content.trim())
+    if (image) formData.append('image', image)
+    const response = (await uploadClient.post<ApiResponse<FeedPost>>('/api/posts', formData)).data
+    return response.content ? { ...response, content: normalizeFeedPost(response.content) } : response
+  },
+  delete: async (id: number) => (await apiClient.delete<ApiResponse<void>>(`/api/posts/${id}`)).data,
+  like: async (id: number) => (await apiClient.put<ApiResponse<void>>(`/api/posts/${id}/like`)).data,
+  unlike: async (id: number) => (await apiClient.delete<ApiResponse<void>>(`/api/posts/${id}/like`)).data,
+  comments: async (postId: number, cursor?: number, limit = 5) => {
+    const response = (await apiClient.get<ApiResponse<{ data: PostComment[]; nextCursor: number | null }>>(
+      `/api/posts/${postId}/comments`,
+      { params: { cursor, limit } }
+    )).data
+    return response.content
+      ? {
+          ...response,
+          content: {
+            data: response.content.data.map(normalizePostComment),
+            nextCursor: response.content.nextCursor,
+          },
+        }
+      : response
+  },
+  createComment: async (postId: number, content: string) => {
+    const response = (await apiClient.post<ApiResponse<PostComment>>(`/api/posts/${postId}/comments`, { content })).data
+    return response.content ? { ...response, content: normalizePostComment(response.content) } : response
+  },
+  updateComment: async (postId: number, commentId: number, content: string) => {
+    const response = (await apiClient.put<ApiResponse<PostComment>>(
+      `/api/posts/${postId}/comments/${commentId}`,
+      { content }
+    )).data
+    return response.content ? { ...response, content: normalizePostComment(response.content) } : response
+  },
+  deleteComment: async (postId: number, commentId: number) =>
+    (await apiClient.delete<ApiResponse<void>>(`/api/posts/${postId}/comments/${commentId}`)).data,
+}
+
+export const savedItemsApi = {
+  posts: async (cursor?: string, limit = 10) =>
+    normalizeFeedResponse((await apiClient.get<ApiResponse<FeedPage>>('/api/saved/posts', { params: { cursor, limit } })).data),
+  savePost: async (postId: number) => (await apiClient.put<ApiResponse<void>>(`/api/saved/posts/${postId}`)).data,
+  unsavePost: async (postId: number) => (await apiClient.delete<ApiResponse<void>>(`/api/saved/posts/${postId}`)).data,
+  jobs: async (cursor?: string, limit = 12) =>
+    normalizeSavedJobsResponse((await apiClient.get<ApiResponse<CursorPage<Job>>>('/api/saved/jobs', { params: { cursor, limit } })).data),
+  saveJob: async (jobId: number) => (await apiClient.put<ApiResponse<void>>(`/api/saved/jobs/${jobId}`)).data,
+  unsaveJob: async (jobId: number) => (await apiClient.delete<ApiResponse<void>>(`/api/saved/jobs/${jobId}`)).data,
+}
+
+type ConnectionsParams = { page?: number; pageSize?: number; keyword?: string }
+
+export const connectionsApi = {
+  all: async (params: ConnectionsParams = {}) =>
+    normalizeConnectionsResponse((await apiClient.get<ApiResponse<PaginatedContent<Connection>>>('/api/connections', { params })).data),
+  requests: async () =>
+    normalizeConnectionRequestsResponse((await apiClient.get<ApiResponse<ConnectionRequests>>('/api/connections/requests')).data),
+  suggestions: async (params: ConnectionsParams = {}) =>
+    normalizeConnectionSuggestionsResponse((await apiClient.get<ApiResponse<PaginatedContent<ConnectionSuggestion>>>('/api/connections/suggestions', { params })).data),
+  status: async (userId: number) =>
+    (await apiClient.get<ApiResponse<ConnectionStatus>>(`/api/connections/status/${userId}`)).data,
+  send: async (userId: number) =>
+    (await apiClient.post<ApiResponse<Connection>>(`/api/connections/requests/${userId}`)).data,
+  accept: async (connectionId: number) =>
+    (await apiClient.put<ApiResponse<Connection>>(`/api/connections/requests/${connectionId}/accept`)).data,
+  remove: async (connectionId: number) =>
+    (await apiClient.delete<ApiResponse<void>>(`/api/connections/${connectionId}`)).data,
 }
 
 export const jobTypesApi = {
@@ -206,4 +302,9 @@ export const chatApi = {
   start: async (userId: number) => (await apiClient.get<ApiResponse<ChatRoom>>(`/api/chat/start/${userId}`)).data,
   createRoom: async (data: { name?: string; memberIds: number[] }) =>
     (await apiClient.post<ApiResponse<ChatRoom>>('/api/chat/rooms', data)).data,
+}
+
+export const adminApi = {
+  stats: async () =>
+    (await apiClient.get<ApiResponse<{ users: number; jobs: number; hires: number; comments: number }>>('/api/admin/stats')).data,
 }

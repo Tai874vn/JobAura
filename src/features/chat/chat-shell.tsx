@@ -12,6 +12,7 @@ import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Skeleton } from '@/shared/ui'
+import { shouldLoadRoomMessages } from './chat-data'
 
 export function ChatShell() {
   const user = useAuthStore((state) => state.user)
@@ -50,8 +51,6 @@ export function ChatShell() {
     })
 
     nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
-    nextSocket.on('rooms', (payload: ChatRoom[]) => setRooms(payload))
-    nextSocket.on('rooms-list', (payload: ChatRoom[]) => setRooms(payload))
     nextSocket.on('new-message', (message: ChatMessage) => addMessage(message))
     nextSocket.on('online-users', (ids: number[]) => setOnlineUserIds(ids))
     nextSocket.on('user-online', ({ userId: onlineUserId }: { userId: number }) => {
@@ -67,20 +66,22 @@ export function ChatShell() {
       nextSocket.disconnect()
       socketRef.current = null
     }
-  }, [addMessage, isSocketActive, setOnlineUserIds, setRooms, userId])
+  }, [addMessage, isSocketActive, setOnlineUserIds, userId])
 
   const activeMessages = activeRoomId ? messagesByRoom[activeRoomId] ?? [] : []
   const activeRoom = rooms.find((room) => room.id === activeRoomId)
 
   useEffect(() => {
-    if (!activeRoomId || messagesByRoom[activeRoomId]) return
+    if (!shouldLoadRoomMessages(activeRoomId, messagesByRoom)) return
+    const roomId = activeRoomId
+    if (!roomId) return
 
     let cancelled = false
-    socketRef.current?.emit('join-room', { roomId: activeRoomId })
-    void chatApi.messages(activeRoomId).then((result) => {
+    socketRef.current?.emit('join-room', { roomId })
+    void chatApi.messages(roomId).then((result) => {
       if (cancelled) return
-      setMessages(activeRoomId, result.content ?? [])
-      socketRef.current?.emit('mark-as-read', { roomId: activeRoomId })
+      setMessages(roomId, result.content ?? [])
+      socketRef.current?.emit('mark-as-read', { roomId })
     })
 
     return () => {
@@ -88,12 +89,8 @@ export function ChatShell() {
     }
   }, [activeRoomId, messagesByRoom, setMessages])
 
-  async function openRoom(room: ChatRoom) {
+  function openRoom(room: ChatRoom) {
     setActiveRoom(room.id)
-    socketRef.current?.emit('join-room', { roomId: room.id })
-    const result = await chatApi.messages(room.id)
-    setMessages(room.id, result.content ?? [])
-    socketRef.current?.emit('mark-as-read', { roomId: room.id })
   }
 
   function sendMessage(event: React.FormEvent<HTMLFormElement>) {

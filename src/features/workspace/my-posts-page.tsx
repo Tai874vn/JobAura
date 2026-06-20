@@ -9,21 +9,25 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
-import { getUserPosts } from '@/features/users/profile-posts'
 
 export function MyPostsPage() {
   const user = useAuthStore((state) => state.user)
   const queryClient = useQueryClient()
-  const query = useQuery({ queryKey: queryKeys.jobs({ owner: user?.id }), queryFn: jobsApi.all, enabled: Boolean(user) })
+  const params = { page: 1, pageSize: 50 }
+  const query = useQuery({
+    queryKey: queryKeys.jobsByCreator(user?.id ?? 0, params),
+    queryFn: () => jobsApi.byCreator(user!.id, params),
+    enabled: Boolean(user),
+  })
   const deleteMutation = useMutation({
     mutationFn: jobsApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.jobs({ owner: user?.id }) })
+      queryClient.invalidateQueries({ queryKey: ['jobs', 'creator', user?.id] })
       toast.success('Service deleted')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete service')),
   })
-  const jobs = getUserPosts(query.data?.content ?? [], user?.id)
+  const jobs = query.data?.content?.data ?? []
 
   return (
     <div className="container-page py-8">

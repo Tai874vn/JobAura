@@ -1,12 +1,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, Star } from 'lucide-react'
-import { Badge, Button, Card } from '@/shared/ui'
+import { Star } from 'lucide-react'
+import { Badge, Card } from '@/shared/ui'
 import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Job } from '@/shared/schemas'
 import { getSellerAvatar, getSellerHref, getSellerName } from './seller-profile'
+import { JobSaveButton } from './job-save-button'
 
-export function JobCard({ job, priority = false }: { job: Job; priority?: boolean }) {
+export function JobCard({ job, priority = false, initialSaved = false }: { job: Job; priority?: boolean; initialSaved?: boolean }) {
   const imageUrl = resolveAssetUrl(job.hinhAnh)
   const bypassOptimizer = shouldBypassImageOptimizer(job.hinhAnh)
   const sellerName = getSellerName(job)
@@ -37,9 +38,7 @@ export function JobCard({ job, priority = false }: { job: Job; priority?: boolea
             )}
           </div>
         </Link>
-        <Button className="absolute right-3 top-3 bg-white/90" variant="secondary" size="icon" type="button" aria-label="Save service">
-          <Heart className="h-4 w-4" />
-        </Button>
+        <JobSaveButton jobId={job.id} initialSaved={initialSaved} />
       </div>
       <div className="p-4">
         {sellerHref ? (

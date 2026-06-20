@@ -5,6 +5,15 @@ import type {
   CreateComment,
   CreateJob,
   HiredJob,
+  FeedAuthor,
+  FeedPage,
+  FeedPost,
+  PostComment,
+  Connection,
+  ConnectionProfile,
+  ConnectionRequests,
+  ConnectionSuggestion,
+  CursorPage,
   Job,
   JobDetailType,
   JobType,
@@ -60,6 +69,163 @@ function pickUser(record: ApiRecord, ...keys: string[]): Job['nguoiDung'] | unde
     if (value && typeof value === 'object') return value as Job['nguoiDung']
   }
   return undefined
+}
+
+function normalizeFeedAuthor(raw: unknown): FeedAuthor {
+  const record = asRecord(raw)
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    name: pickString(record, 'name') ?? 'JobAura member',
+    avatar: pickString(record, 'avatar') ?? null,
+    headline: pickString(record, 'headline') ?? null,
+  }
+}
+
+export function normalizePostComment(raw: unknown): PostComment {
+  const record = asRecord(raw)
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    postId: pickNumber(record, 'postId') ?? 0,
+    authorId: pickNumber(record, 'authorId') ?? 0,
+    content: pickString(record, 'content') ?? '',
+    createdAt: pickString(record, 'createdAt') ?? '',
+    updatedAt: pickString(record, 'updatedAt'),
+    author: normalizeFeedAuthor(record.author),
+  }
+}
+
+export function normalizeFeedPost(raw: unknown): FeedPost {
+  const record = asRecord(raw)
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    content: pickString(record, 'content') ?? '',
+    imageUrl: pickString(record, 'imageUrl') ?? null,
+    createdAt: pickString(record, 'createdAt') ?? '',
+    updatedAt: pickString(record, 'updatedAt') ?? '',
+    author: normalizeFeedAuthor(record.author),
+    likeCount: pickNumber(record, 'likeCount') ?? 0,
+    commentCount: pickNumber(record, 'commentCount') ?? 0,
+    viewerHasLiked: pickBoolean(record, 'viewerHasLiked') ?? false,
+    viewerHasSaved: pickBoolean(record, 'viewerHasSaved') ?? false,
+    recentComments: Array.isArray(record.recentComments)
+      ? record.recentComments.map(normalizePostComment)
+      : [],
+  }
+}
+
+export function normalizeFeedResponse(response: ApiResponse<FeedPage>): ApiResponse<FeedPage> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      data: Array.isArray(record.data) ? record.data.map(normalizeFeedPost) : [],
+      nextCursor: pickString(record, 'nextCursor') ?? null,
+    }
+  })
+}
+
+export function normalizeSavedJobsResponse(
+  response: ApiResponse<CursorPage<Job>>
+): ApiResponse<CursorPage<Job>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      data: Array.isArray(record.data) ? record.data.map(normalizeJob) : [],
+      nextCursor: pickString(record, 'nextCursor') ?? null,
+    }
+  })
+}
+
+function normalizeConnectionProfile(raw: unknown): ConnectionProfile {
+  const record = asRecord(raw)
+  const skills = Array.isArray(record.profileSkills)
+    ? record.profileSkills.map((item) => {
+        const skill = asRecord(item)
+        return {
+          id: pickNumber(skill, 'id'),
+          name: pickString(skill, 'name') ?? '',
+          level: pickString(skill, 'level') ?? null,
+          sortOrder: pickNumber(skill, 'sortOrder'),
+        }
+      }).filter((skill) => skill.name)
+    : []
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    name: pickString(record, 'name') ?? 'JobAura member',
+    avatar: pickString(record, 'avatar') ?? null,
+    headline: pickString(record, 'headline') ?? null,
+    bio: pickString(record, 'bio') ?? null,
+    location: pickString(record, 'location') ?? null,
+    profileSkills: skills,
+  }
+}
+
+function normalizeConnection(raw: unknown): Connection {
+  const record = asRecord(raw)
+  const direction = pickString(record, 'direction')
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    status: pickString(record, 'status') === 'PENDING' ? 'PENDING' : 'ACCEPTED',
+    direction: direction === 'incoming' || direction === 'outgoing' ? direction : undefined,
+    createdAt: pickString(record, 'createdAt'),
+    updatedAt: pickString(record, 'updatedAt'),
+    user: normalizeConnectionProfile(record.user),
+  }
+}
+
+export function normalizeConnectionsResponse(
+  response: ApiResponse<PaginatedContent<Connection>>
+): ApiResponse<PaginatedContent<Connection>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      ...content,
+      data: Array.isArray(record.data) ? record.data.map(normalizeConnection) : [],
+      pageIndex: pickNumber(record, 'pageIndex', 'page'),
+      pageSize: pickNumber(record, 'pageSize'),
+      totalRow: pickNumber(record, 'totalRow', 'total'),
+      totalPages: pickNumber(record, 'totalPages'),
+    }
+  })
+}
+
+export function normalizeConnectionRequestsResponse(
+  response: ApiResponse<ConnectionRequests>
+): ApiResponse<ConnectionRequests> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      incoming: Array.isArray(record.incoming) ? record.incoming.map(normalizeConnection) : [],
+      outgoing: Array.isArray(record.outgoing) ? record.outgoing.map(normalizeConnection) : [],
+      incomingCount: pickNumber(record, 'incomingCount') ?? 0,
+    }
+  })
+}
+
+export function normalizeConnectionSuggestionsResponse(
+  response: ApiResponse<PaginatedContent<ConnectionSuggestion>>
+): ApiResponse<PaginatedContent<ConnectionSuggestion>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    const data = Array.isArray(record.data) ? record.data.map((item) => {
+      const itemRecord = asRecord(item)
+      return {
+        ...normalizeConnectionProfile(item),
+        sharedSkills: Array.isArray(itemRecord.sharedSkills)
+          ? itemRecord.sharedSkills.filter((skill): skill is string => typeof skill === 'string')
+          : [],
+        sameLocation: pickBoolean(itemRecord, 'sameLocation') ?? false,
+        suggestionScore: pickNumber(itemRecord, 'suggestionScore') ?? 0,
+      }
+    }) : []
+    return {
+      ...content,
+      data,
+      pageIndex: pickNumber(record, 'pageIndex', 'page'),
+      pageSize: pickNumber(record, 'pageSize'),
+      totalRow: pickNumber(record, 'totalRow', 'total'),
+      totalPages: pickNumber(record, 'totalPages'),
+    }
+  })
 }
 
 function mapApiResponse<T, U>(response: ApiResponse<T>, mapper: (content: T) => U): ApiResponse<U> {

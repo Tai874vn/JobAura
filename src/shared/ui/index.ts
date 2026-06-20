@@ -1,6 +1,7 @@
 export * from './badge'
 export * from './button'
 export * from './card'
+export * from './confirmation-dialog'
 export * from './input'
 export * from './skeleton'
 export * from './spinner'

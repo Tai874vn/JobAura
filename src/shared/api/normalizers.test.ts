@@ -3,6 +3,10 @@ import {
   normalizeCategory,
   normalizeComment,
   normalizeHiredJob,
+  normalizeFeedResponse,
+  normalizeConnectionRequestsResponse,
+  normalizeConnectionsResponse,
+  normalizeSavedJobsResponse,
   normalizeJob,
   normalizeJobResponse,
   normalizeJobsResponse,
@@ -18,6 +22,81 @@ import {
 } from './normalizers'
 
 describe('normalizers', () => {
+  it('normalizes the social feed contract and preserves its cursor', () => {
+    const response = normalizeFeedResponse({
+      content: {
+        data: [
+          {
+            id: 12,
+            content: 'Shipping a new portfolio today.',
+            imageUrl: '/posts/work.png',
+            createdAt: '2026-06-19T02:00:00.000Z',
+            updatedAt: '2026-06-19T02:00:00.000Z',
+            author: { id: 6, name: 'Tai', avatar: null, headline: 'Backend developer' },
+            likeCount: 4,
+            commentCount: 1,
+            viewerHasLiked: true,
+            recentComments: [
+              {
+                id: 3,
+                postId: 12,
+                authorId: 8,
+                content: 'Looks strong.',
+                createdAt: '2026-06-19T02:05:00.000Z',
+                author: { id: 8, name: 'Lina', avatar: null, headline: null },
+              },
+            ],
+          },
+        ],
+        nextCursor: 'connections-cursor',
+      },
+    } as never)
+
+    expect(response.content?.nextCursor).toBe('connections-cursor')
+    expect(response.content?.data[0]).toMatchObject({
+      id: 12,
+      likeCount: 4,
+      viewerHasLiked: true,
+      author: { id: 6, name: 'Tai' },
+      recentComments: [{ id: 3, content: 'Looks strong.' }],
+    })
+  })
+
+  it('normalizes saved jobs and connection responses', () => {
+    const savedJobs = normalizeSavedJobsResponse({
+      content: {
+        data: [{ id: 4, title: 'NestJS API', price: 500 }],
+        nextCursor: 'saved-cursor',
+      },
+    } as never)
+    expect(savedJobs.content?.data[0].tenCongViec).toBe('NestJS API')
+    expect(savedJobs.content?.nextCursor).toBe('saved-cursor')
+
+    const connections = normalizeConnectionsResponse({
+      content: {
+        pageIndex: 1,
+        pageSize: 12,
+        totalRow: 1,
+        data: [{
+          id: 3,
+          status: 'ACCEPTED',
+          user: { id: 8, name: 'Maya', headline: 'Developer', profileSkills: [{ name: 'NestJS' }] },
+        }],
+      },
+    } as never)
+    expect(connections.content?.data[0].user).toMatchObject({ id: 8, name: 'Maya' })
+
+    const requests = normalizeConnectionRequestsResponse({
+      content: {
+        incoming: [{ id: 4, direction: 'incoming', user: { id: 9, name: 'Alex' } }],
+        outgoing: [],
+        incomingCount: 1,
+      },
+    } as never)
+    expect(requests.content?.incomingCount).toBe(1)
+    expect(requests.content?.incoming[0].direction).toBe('incoming')
+  })
+
   it('normalizes category and subcategory using fallback keys', () => {
     expect(normalizeCategory({ id: 3, name: 'Design' })).toEqual({ id: 3, name: 'Design', tenLoaiCongViec: 'Design' })
 

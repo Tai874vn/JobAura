@@ -11,7 +11,6 @@ import {
   Clock3,
   FolderOpen,
   MapPin,
-  MessageSquare,
   Search,
   SlidersHorizontal,
   Star,
@@ -24,9 +23,10 @@ import {
   getCandidateSummary,
 } from './candidate-directory'
 import { MatchBadge } from '@/features/jobs/recommendation-ui'
+import { ConnectionActions } from '@/features/connections/connect-button'
+import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { initials } from '@/shared/lib/utils'
 import type { CandidateProfile } from '@/shared/schemas'
 import { Button, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
 
@@ -226,9 +226,7 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
     <Card className="transition hover:border-primary">
       <CardContent className="p-4">
         <div className="flex gap-4">
-          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary text-base font-bold text-white">
-            {initials(candidate.name)}
-          </span>
+          <FeedAvatar user={candidate} size="lg" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
@@ -268,10 +266,7 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
               <ArrowUpRight className="h-4 w-4" />
             </Button>
           </Link>
-          <Button className="flex-1" type="button">
-            <MessageSquare className="h-4 w-4" />
-            Message
-          </Button>
+          <ConnectionActions className="flex-1" userId={candidate.id} userName={candidate.name} />
         </div>
       </CardContent>
     </Card>

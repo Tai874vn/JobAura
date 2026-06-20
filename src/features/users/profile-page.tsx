@@ -46,6 +46,7 @@ import {
   type ResumeDraft,
   type ResumeFieldKey,
 } from '@/features/users/resume'
+import { ConnectionActions } from '@/features/connections/connect-button'
 
 type ProfileSkill = {
   id?: number
@@ -294,6 +295,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                         Edit profile
                       </button>
                     ) : null}
+                    {!isOwner ? <ConnectionActions className="mt-3" userId={profile.id} userName={profile.name} /> : null}
                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
                       {profile.location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={profile.location} /> : null}
                       {profile.website ? (

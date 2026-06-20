@@ -13,10 +13,12 @@ export function RequireAuth({
   children,
   admin = false,
   allowedRoles,
+  anonymousRedirect,
 }: {
   children: React.ReactNode
   admin?: boolean
   allowedRoles?: readonly AccountRole[]
+  anonymousRedirect?: string
 }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -51,7 +53,7 @@ export function RequireAuth({
 
     if (!verifiedUser) {
       hasRedirectedRef.current = true
-      router.replace(`/auth/login?next=${encodeURIComponent(pathname)}`)
+      router.replace(anonymousRedirect ?? `/auth/login?next=${encodeURIComponent(pathname)}`)
       return
     }
 
@@ -59,7 +61,7 @@ export function RequireAuth({
       hasRedirectedRef.current = true
       router.replace('/')
     }
-  }, [hasRequiredRole, isChecking, pathname, router, verifiedUser])
+  }, [anonymousRedirect, hasRequiredRole, isChecking, pathname, router, verifiedUser])
 
   if (isChecking || !verifiedUser || !isStoreSynced || !hasRequiredRole) {
     return (
