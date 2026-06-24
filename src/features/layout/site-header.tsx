@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import { BriefcaseBusiness, Home, LayoutDashboard, LogOut, Menu, MessageCircle, Plus, Search, Settings, User } from 'lucide-react'
 import Link from 'next/link'
@@ -16,7 +16,6 @@ import { Button } from '@/shared/ui'
 
 export function SiteHeader() {
   const router = useRouter()
-  const queryClient = useQueryClient()
   const [query, setQuery] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, hasHydrated, clearSession, setUser } = useAuthStore()
@@ -43,18 +42,14 @@ export function SiteHeader() {
     if (meQuery.isError) clearSession()
   }, [clearSession, hasHydrated, meQuery.data, meQuery.isError, meQuery.isSuccess, setUser])
 
-  const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
-    onSettled: () => {
-      clearSession()
-      queryClient.invalidateQueries({ queryKey: queryKeys.me })
-      router.push('/auth/login')
-    },
-  })
-
   function submitSearch(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     router.push(`/jobs?keyword=${encodeURIComponent(query.trim())}`)
+  }
+
+  function goToLogout() {
+    setMenuOpen(false)
+    router.push('/logout')
   }
 
   return (
@@ -122,7 +117,7 @@ export function SiteHeader() {
                 <MenuLink href="/settings" icon={<Settings className="h-4 w-4" />} label="Settings" />
                 <button
                   className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-semibold text-danger hover:bg-danger/5"
-                  onClick={() => logoutMutation.mutate()}
+                  onClick={goToLogout}
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -151,7 +146,16 @@ export function SiteHeader() {
               <Plus className="h-4 w-4" /> Post a Job
             </Link>
             {canAccessCandidateDirectory(user?.role) ? <Link href="/candidates">Find Candidates</Link> : null}
-            {!hasHydrated ? null : user ? <Link href={`/profile/${user.id}`}>Profile</Link> : <Link href="/auth/login">Sign in</Link>}
+            {!hasHydrated ? null : user ? (
+              <>
+                <Link href={`/profile/${user.id}`}>Profile</Link>
+                <button className="flex items-center gap-2 text-left text-danger" onClick={goToLogout}>
+                  <LogOut className="h-4 w-4" /> Logout
+                </button>
+              </>
+            ) : (
+              <Link href="/auth/login">Sign in</Link>
+            )}
           </div>
         </div>
       ) : null}

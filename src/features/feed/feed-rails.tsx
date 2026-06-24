@@ -26,6 +26,7 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
               src={coverUrl}
               alt=""
               fill
+              loading="eager"
               unoptimized={shouldBypassImageOptimizer(coverSource)}
               className="object-cover"
               sizes="240px"

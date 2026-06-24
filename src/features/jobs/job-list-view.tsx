@@ -1,7 +1,8 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { SlidersHorizontal } from 'lucide-react'
+import Link from 'next/link'
+import { SlidersHorizontal, Sparkles } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -26,10 +27,19 @@ export function JobListView() {
           <h1 className="font-display text-4xl font-bold">Explore services</h1>
           <p className="mt-1 text-sm text-muted">{keyword ? `Results for "${keyword}"` : 'Search and compare marketplace services.'}</p>
         </div>
-        <button className="flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold">
-          <SlidersHorizontal className="h-4 w-4" />
-          Filters
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/recommendations/jobs"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-bright focus-visible:ring-2 focus-visible:ring-primary-bright"
+          >
+            <Sparkles className="h-4 w-4" />
+            AI recommendations
+          </Link>
+          <button className="flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold">
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+          </button>
+        </div>
       </div>
       {query.isPending ? (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
