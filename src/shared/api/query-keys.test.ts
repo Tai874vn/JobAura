@@ -18,6 +18,10 @@ describe('query keys', () => {
     expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'jobs', 12, 'candidates', { topK: 5 }])
   })
 
+  it('returns stable cursor job keys', () => {
+    expect(queryKeys.jobsCursor({ keyword: 'python' })).toEqual(['jobs', 'cursor', { keyword: 'python' }])
+  })
+
   it('separates finite saved-job previews from infinite saved-job pages', () => {
     expect(queryKeys.savedJobsPreview).not.toEqual(queryKeys.savedJobs)
     expect(queryKeys.savedJobs).toEqual(['saved', 'jobs', 'pages'])

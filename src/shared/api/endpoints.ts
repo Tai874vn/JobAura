@@ -50,6 +50,7 @@ import {
   normalizeConnectionRequestsResponse,
   normalizeConnectionsResponse,
   normalizeConnectionSuggestionsResponse,
+  normalizeCursorJobsResponse,
   normalizeSavedJobsResponse,
   normalizeJob,
   normalizeJobResponse,
@@ -72,6 +73,12 @@ type RecommendationParams = {
   poolSize?: number
 }
 
+type JobCursorParams = {
+  cursor?: string
+  limit?: number
+  keyword?: string
+}
+
 export const authApi = {
   signIn: async (data: SignIn) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signin', data)).data,
   signUp: async (data: SignUp) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signup', data)).data,
@@ -82,6 +89,8 @@ export const authApi = {
 
 export const jobsApi = {
   all: async () => normalizeJobsResponse((await apiClient.get<ApiResponse<Job[]>>('/api/jobs')).data),
+  cursor: async (params?: JobCursorParams) =>
+    normalizeCursorJobsResponse((await apiClient.get<ApiResponse<CursorPage<Job>>>('/api/jobs/cursor', { params })).data),
   paginated: async (params: PaginationParams) =>
     normalizePaginatedJobsResponse((await apiClient.get<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search', { params })).data),
   byCreator: async (creatorId: number, params: PaginationParams) =>

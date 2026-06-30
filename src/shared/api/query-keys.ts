@@ -1,6 +1,7 @@
 export const queryKeys = {
   me: ['auth', 'me'] as const,
   jobs: (params?: object) => ['jobs', params ?? {}] as const,
+  jobsCursor: (params?: object) => ['jobs', 'cursor', params ?? {}] as const,
   jobsByCreator: (creatorId: number, params?: object) => ['jobs', 'creator', creatorId, params ?? {}] as const,
   job: (id: number) => ['jobs', id] as const,
   jobTypes: ['job-types'] as const,

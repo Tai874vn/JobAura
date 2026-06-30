@@ -135,6 +135,12 @@ export function normalizeSavedJobsResponse(
   })
 }
 
+export function normalizeCursorJobsResponse(
+  response: ApiResponse<CursorPage<Job>>
+): ApiResponse<CursorPage<Job>> {
+  return normalizeSavedJobsResponse(response)
+}
+
 function normalizeConnectionProfile(raw: unknown): ConnectionProfile {
   const record = asRecord(raw)
   const skills = Array.isArray(record.profileSkills)
@@ -415,6 +421,7 @@ export function normalizePaginatedJobsResponse(response: ApiResponse<PaginatedCo
       pageIndex: pickNumber(record, 'pageIndex', 'page'),
       pageSize: pickNumber(record, 'pageSize'),
       totalRow: pickNumber(record, 'totalRow', 'total'),
+      totalPages: pickNumber(record, 'totalPages'),
     }
   })
 }
