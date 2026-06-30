@@ -100,7 +100,10 @@ export function ChatShell() {
     setDraft('')
   }
 
-  const title = useMemo(() => activeRoom?.name ?? activeRoom?.members.find((member) => member.id !== userId)?.name ?? 'Messages', [activeRoom, userId])
+  const title = useMemo(
+    () => activeRoom?.name ?? activeRoom?.members.find((member) => member.id !== userId)?.name ?? 'Select a conversation',
+    [activeRoom, userId]
+  )
 
   if (!user) return null
 
@@ -119,7 +122,7 @@ export function ChatShell() {
         <section className="fixed bottom-5 right-5 z-50 grid h-[560px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[260px_1fr] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
           <aside className="border-r border-border bg-surface-muted">
             <div className="flex h-14 items-center justify-between border-b border-border px-4">
-              <h2 className="font-display text-lg font-bold">Messages</h2>
+              <h2 className="font-display text-lg font-bold">Inbox</h2>
               <Button variant="ghost" size="icon" onClick={closeChat}>
                 <X className="h-4 w-4" />
               </Button>
@@ -149,7 +152,7 @@ export function ChatShell() {
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-semibold">{name}</span>
-                      <span className="block truncate text-xs text-muted">{room.lastMessage?.content ?? 'No messages yet'}</span>
+                      <span className="block truncate text-xs text-muted">{room.lastMessage?.content ?? 'No replies yet'}</span>
                     </span>
                   </button>
                 )
@@ -170,13 +173,13 @@ export function ChatShell() {
                   </div>
                 ))
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted">Choose a room to start messaging.</div>
+                <div className="flex h-full items-center justify-center text-sm text-muted">Choose a conversation to start chatting.</div>
               )}
             </div>
             <form className="flex gap-2 border-t border-border p-3" onSubmit={sendMessage}>
               <input
                 className="h-10 flex-1 rounded-lg border border-border px-3 text-sm outline-none focus:border-primary"
-                placeholder="Type a message"
+                placeholder="Write a reply"
                 value={draft}
                 onChange={(event) => {
                   setDraft(event.target.value)
