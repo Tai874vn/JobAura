@@ -12,4 +12,24 @@ describe('query keys', () => {
     expect(queryKeys.jobs()).toEqual(['jobs', {}])
     expect(queryKeys.users()).toEqual(['users', {}])
   })
+
+  it('returns stable recommendation keys', () => {
+    expect(queryKeys.recommendedJobs({ topK: 4 })).toEqual(['recommendations', 'jobs', { topK: 4 }])
+    expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'jobs', 12, 'candidates', { topK: 5 }])
+  })
+
+  it('returns stable cursor job keys', () => {
+    expect(queryKeys.jobsCursor({ keyword: 'python' })).toEqual(['jobs', 'cursor', { keyword: 'python' }])
+  })
+
+  it('separates finite saved-job previews from infinite saved-job pages', () => {
+    expect(queryKeys.savedJobsPreview).not.toEqual(queryKeys.savedJobs)
+    expect(queryKeys.savedJobs).toEqual(['saved', 'jobs', 'pages'])
+    expect(queryKeys.savedJobsPreview).toEqual(['saved', 'jobs', 'preview'])
+  })
+
+  it('uses distinct keys for creator jobs and admin statistics', () => {
+    expect(queryKeys.jobsByCreator(8, { page: 1 })).toEqual(['jobs', 'creator', 8, { page: 1 }])
+    expect(queryKeys.adminStats).toEqual(['admin', 'stats'])
+  })
 })

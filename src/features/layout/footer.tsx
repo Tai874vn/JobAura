@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="border-t border-border bg-white">
       <div className="container-page grid gap-8 py-10 md:grid-cols-4">
         <div>
-          <Link href="/" className="font-display text-2xl font-bold text-primary">
+          <Link href="/welcome" className="font-display text-2xl font-bold text-primary">
             JobAura
           </Link>
           <p className="mt-3 text-sm text-muted">A focused marketplace for trusted freelance services.</p>

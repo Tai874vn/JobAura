@@ -1,13 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { getServerEnv } from '@/shared/config/env'
 
-const backendBaseUrl = process.env.BACKEND_API_BASE_URL ?? 'http://localhost:3000'
+const { backendApiBaseUrl } = getServerEnv()
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const cookie = request.headers.get('cookie')
 
   try {
-    const response = await fetch(`${backendBaseUrl}/api/users/profile/${id}`, {
+    const response = await fetch(`${backendApiBaseUrl}/api/users/profile/${id}`, {
       headers: cookie ? { cookie } : undefined,
       cache: 'no-store',
     })

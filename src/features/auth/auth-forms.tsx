@@ -11,6 +11,7 @@ import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { env } from '@/shared/config/env'
 import { GoogleIcon } from '@/shared/icons'
+import { getSignedInRedirect, signupRoleOptions } from '@/shared/lib/roles'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { signInSchema, signUpSchema, type SignIn, type SignUp } from '@/shared/schemas'
 import { useAuthStore } from '@/shared/stores/auth-store'
@@ -96,6 +97,7 @@ function RegisterFormFields() {
     resolver: zodResolver(signUpSchema),
     defaultValues: { name: '', email: '', password: '', role: 'user' },
   })
+  const selectedRole = form.watch('role') ?? 'user'
 
   const mutation = useMutation({
     mutationFn: authApi.signUp,
@@ -120,6 +122,25 @@ function RegisterFormFields() {
         <FieldError message={form.formState.errors.password?.message}>
           <Input placeholder="Password" type="password" {...form.register('password')} />
         </FieldError>
+        <div className="grid gap-2">
+          <p className="text-xs font-semibold uppercase text-muted">Account type</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {signupRoleOptions.map((option) => (
+              <label
+                key={option.value}
+                className={`cursor-pointer rounded-lg border p-3 transition ${
+                  selectedRole === option.value
+                    ? 'border-primary bg-primary/5 text-foreground'
+                    : 'border-border bg-white text-muted hover:border-primary hover:text-foreground'
+                }`}
+              >
+                <input className="sr-only" type="radio" value={option.value} {...form.register('role')} />
+                <span className="block text-sm font-bold">{option.label}</span>
+                <span className="mt-1 block text-xs leading-5">{option.description}</span>
+              </label>
+            ))}
+          </div>
+        </div>
         <Button className="w-full" type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'Creating account...' : 'Create account'}
         </Button>
@@ -168,11 +189,6 @@ function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextP
   }
 
   return <>{children}</>
-}
-
-function getSignedInRedirect(user?: { role?: string } | null, nextPath?: string | null) {
-  if (nextPath?.startsWith('/') && !nextPath.startsWith('//')) return nextPath
-  return user?.role === 'admin' ? '/admin' : '/'
 }
 
 function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {

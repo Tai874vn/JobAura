@@ -2,8 +2,10 @@
 
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { env } from '@/shared/config/env'
+import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
+import { csrfTokenForMethod } from './csrf'
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
 type QueueItem = {
@@ -33,16 +35,32 @@ export const uploadClient = axios.create({
   withCredentials: true,
 })
 
+function installCsrfInterceptor(instance: typeof apiClient | typeof uploadClient) {
+  instance.interceptors.request.use((config) => {
+    const token = csrfTokenForMethod(config.method)
+    if (token) config.headers.set('X-CSRF-Token', token)
+    return config
+  })
+}
+
+installCsrfInterceptor(apiClient)
+installCsrfInterceptor(uploadClient)
+
 function handleSessionExpired() {
   useAuthStore.getState().clearSession()
   useChatStore.getState().reset()
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth/login')) {
-    window.location.href = '/auth/login'
+  if (typeof window !== 'undefined') {
+    const redirect = getSessionExpiredRedirect(window.location.pathname)
+    if (redirect) window.location.href = redirect
   }
 }
 
 async function refreshSession() {
-  await axios.post(`${env.apiBaseUrl}/api/auth/refresh`, {}, { withCredentials: true })
+  const csrfToken = csrfTokenForMethod('post')
+  await axios.post(`${env.apiBaseUrl}/api/auth/refresh`, {}, {
+    withCredentials: true,
+    headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
+  })
 }
 
 function shouldSkipRefresh(request: RetryConfig) {

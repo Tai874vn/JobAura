@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ChatShell } from '@/features/chat/chat-shell'
 import { AppProviders } from '@/shared/providers/app-providers'
 
 export const metadata: Metadata = {
@@ -11,7 +12,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders>
+          {children}
+          <ChatShell />
+        </AppProviders>
       </body>
     </html>
   )

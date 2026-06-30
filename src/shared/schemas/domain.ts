@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { accountRoles, signupRoles } from '@/shared/lib/roles'
 
 export const apiResponseSchema = <T extends z.ZodType>(content: T) =>
   z.object({
@@ -19,6 +20,7 @@ export const paginatedContentSchema = <T extends z.ZodType>(item: T) =>
     pageIndex: z.number().optional(),
     pageSize: z.number().optional(),
     totalRow: z.number().optional(),
+    totalPages: z.number().optional(),
     keywords: z.string().optional(),
     data: z.array(item).default([]),
   })
@@ -32,7 +34,7 @@ export const userSchema = z.object({
   birthDay: z.string().optional(),
   avatar: z.string().optional().nullable(),
   gender: z.string().optional(),
-  role: z.string().optional(),
+  role: z.enum(accountRoles).optional(),
   skill: z.string().optional().nullable(),
   certification: z.string().optional().nullable(),
   googleId: z.string().optional().nullable(),
@@ -75,7 +77,9 @@ export const userProfileSchema = userSchema.extend({
   cover: z.string().optional().nullable(),
   coverImage: z.string().optional().nullable(),
   skills: z.array(profileSkillSchema).optional().nullable(),
+  profileSkills: z.array(profileSkillSchema).optional().nullable(),
   certifications: z.array(profileCertificationSchema).optional().nullable(),
+  profileCertifications: z.array(profileCertificationSchema).optional().nullable(),
   portfolio: z.array(profilePortfolioItemSchema).optional().nullable(),
   portfolioItems: z.array(profilePortfolioItemSchema).optional().nullable(),
 })
@@ -139,7 +143,7 @@ export const signUpSchema = z.object({
   phone: z.string().optional(),
   birthDay: z.string().optional(),
   gender: z.string().optional(),
-  role: z.string().optional(),
+  role: z.enum(signupRoles).optional(),
   skill: z.string().optional(),
   certification: z.string().optional(),
 })
@@ -172,6 +176,54 @@ export const jobSchema = z.object({
   updatedAt: z.string().optional(),
   chiTietLoaiCongViec: jobDetailTypeSchema.optional(),
   nguoiDung: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
+})
+
+export const recommendationLabelSchema = z.enum(['high_match', 'medium_match', 'low_match'])
+
+export const candidateDirectoryStatsSchema = z.object({
+  portfolioItems: z.coerce.number().default(0),
+  certifications: z.coerce.number().default(0),
+  completedWork: z.coerce.number().default(0),
+  rating: z.coerce.number().default(0),
+})
+
+export const candidateDirectoryMatchSchema = z.object({
+  score: z.coerce.number().min(0).max(1),
+  label: recommendationLabelSchema,
+  keywordScore: z.coerce.number().min(0).max(1).default(0),
+  skillScore: z.coerce.number().min(0).max(1).default(0),
+  locationScore: z.coerce.number().min(0).max(1).default(0),
+  qualityScore: z.coerce.number().min(0).max(1).default(0),
+})
+
+export const candidateProfileSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  profileSkills: z.array(profileSkillSchema).default([]),
+  stats: candidateDirectoryStatsSchema,
+  match: candidateDirectoryMatchSchema,
+})
+
+export const recommendationScoreSchema = z.object({
+  rank: z.coerce.number().int().positive(),
+  aiScore: z.coerce.number().min(0).max(1),
+  finalScore: z.coerce.number().min(0).max(1),
+  label: recommendationLabelSchema,
+  skillScore: z.coerce.number().min(0).max(1).optional().default(0),
+  seniorityScore: z.coerce.number().min(0).max(1).optional().default(0),
+  categoryScore: z.coerce.number().min(0).max(1).optional().default(0),
+})
+
+export const recommendedJobSchema = jobSchema.extend({
+  recommendation: recommendationScoreSchema,
+})
+
+export const recommendedCandidateSchema = userProfileSchema.extend({
+  recommendation: recommendationScoreSchema,
 })
 
 export const createJobSchema = z.object({
@@ -211,6 +263,72 @@ export const hiredJobSchema = z.object({
   congViec: jobSchema.optional(),
 })
 
+export const feedAuthorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+})
+
+export const postCommentSchema = z.object({
+  id: z.number(),
+  postId: z.number(),
+  authorId: z.number(),
+  content: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string().optional(),
+  author: feedAuthorSchema,
+})
+
+export const feedPostSchema = z.object({
+  id: z.number(),
+  content: z.string(),
+  imageUrl: z.string().optional().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  author: feedAuthorSchema,
+  likeCount: z.number().int().nonnegative(),
+  commentCount: z.number().int().nonnegative(),
+  viewerHasLiked: z.boolean(),
+  viewerHasSaved: z.boolean(),
+  recentComments: z.array(postCommentSchema).default([]),
+})
+
+export const feedPageSchema = z.object({
+  data: z.array(feedPostSchema).default([]),
+  nextCursor: z.string().nullable(),
+})
+
+export const connectionProfileSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  profileSkills: z.array(profileSkillSchema).default([]),
+})
+
+export const connectionSchema = z.object({
+  id: z.number(),
+  status: z.enum(['PENDING', 'ACCEPTED']),
+  direction: z.enum(['incoming', 'outgoing']).optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  user: connectionProfileSchema,
+})
+
+export const connectionSuggestionSchema = connectionProfileSchema.extend({
+  sharedSkills: z.array(z.string()).default([]),
+  sameLocation: z.boolean().default(false),
+  suggestionScore: z.number().default(0),
+})
+
+export const connectionStatusSchema = z.object({
+  state: z.enum(['self', 'none', 'incoming_pending', 'outgoing_pending', 'connected']),
+  connectionId: z.number().nullable(),
+})
+
 export const chatUserSchema = userSchema.pick({ id: true, name: true, avatar: true, email: true })
 
 export const chatMessageSchema = z.object({
@@ -246,6 +364,7 @@ export type ProfileSkill = z.infer<typeof profileSkillSchema>
 export type ProfileCertification = z.infer<typeof profileCertificationSchema>
 export type ProfilePortfolioItem = z.infer<typeof profilePortfolioItemSchema>
 export type UserProfile = z.infer<typeof userProfileSchema>
+export type CandidateProfile = z.infer<typeof candidateProfileSchema>
 export type ResumeData = z.infer<typeof resumeDataSchema>
 export type ImportResume = z.infer<typeof importResumeSchema>
 export type UserResume = z.infer<typeof userResumeSchema>
@@ -253,6 +372,19 @@ export type UpdateProfile = z.infer<typeof updateProfileSchema>
 export type SignIn = z.infer<typeof signInSchema>
 export type SignUp = z.infer<typeof signUpSchema>
 export type Job = z.infer<typeof jobSchema>
+export type RecommendationLabel = z.infer<typeof recommendationLabelSchema>
+export type RecommendationScore = z.infer<typeof recommendationScoreSchema>
+export type RecommendedJob = z.infer<typeof recommendedJobSchema>
+export type RecommendedCandidate = z.infer<typeof recommendedCandidateSchema>
+export type RecommendationContent<T> = {
+  data: T[]
+  model?: string
+  elapsedMs?: number
+}
+export type CandidateDirectoryParams = PaginationParams & {
+  skill?: string
+  location?: string
+}
 export type CreateJob = z.infer<typeof createJobSchema>
 export type UpdateJob = z.infer<typeof updateJobSchema>
 export type JobType = z.infer<typeof jobTypeSchema>
@@ -260,6 +392,21 @@ export type JobDetailType = z.infer<typeof jobDetailTypeSchema>
 export type Comment = z.infer<typeof commentSchema>
 export type CreateComment = z.infer<typeof createCommentSchema>
 export type HiredJob = z.infer<typeof hiredJobSchema>
+export type FeedAuthor = z.infer<typeof feedAuthorSchema>
+export type PostComment = z.infer<typeof postCommentSchema>
+export type FeedPost = z.infer<typeof feedPostSchema>
+export type FeedPage = z.infer<typeof feedPageSchema>
+export type FeedStats = { posts: number; reactions: number }
+export type CursorPage<T> = { data: T[]; nextCursor: string | null }
+export type ConnectionProfile = z.infer<typeof connectionProfileSchema>
+export type Connection = z.infer<typeof connectionSchema>
+export type ConnectionSuggestion = z.infer<typeof connectionSuggestionSchema>
+export type ConnectionStatus = z.infer<typeof connectionStatusSchema>
+export type ConnectionRequests = {
+  incoming: Connection[]
+  outgoing: Connection[]
+  incomingCount: number
+}
 export type ChatRoom = z.infer<typeof chatRoomSchema>
 export type ChatMessage = z.infer<typeof chatMessageSchema>
 export type ChatUser = z.infer<typeof chatUserSchema>

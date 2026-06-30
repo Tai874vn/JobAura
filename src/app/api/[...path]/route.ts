@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { getServerEnv } from '@/shared/config/env'
 
-const backendBaseUrl = process.env.BACKEND_API_BASE_URL ?? 'http://localhost:3000'
+const { backendApiBaseUrl } = getServerEnv()
 
 async function proxyRequest(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params
-  const targetUrl = new URL(`/api/${path.join('/')}`, backendBaseUrl)
+  const targetUrl = new URL(`/api/${path.join('/')}`, backendApiBaseUrl)
   targetUrl.search = request.nextUrl.search
 
   const headers = new Headers(request.headers)

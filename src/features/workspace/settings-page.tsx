@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { usersApi } from '@/shared/api/endpoints'
+import { authApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile, UserResume } from '@/shared/schemas'
 import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
@@ -79,9 +79,9 @@ const settingSections: Array<{
 export function SettingsPage() {
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
-  const profileQuery = useQuery({ queryKey: queryKeys.myProfile, queryFn: usersApi.myProfile })
-  const resumeQuery = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume })
+  const profileQuery = useQuery({ queryKey: queryKeys.me, queryFn: authApi.me })
   const profile = profileQuery.data?.content
+  const resumeQuery = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume, enabled: Boolean(profile) })
   const resume = resumeQuery.data?.content ?? null
 
   const [activeSection, setActiveSection] = useState<SettingSection>('overview')
@@ -106,9 +106,9 @@ export function SettingsPage() {
         location: profile.location ?? '',
         website: profile.website ?? '',
       })
-      setSkills((profile.skills ?? []).map(({ name, level, sortOrder }, index) => ({ name, level: level ?? '', sortOrder: sortOrder ?? index })))
+      setSkills(getProfileSkills(profile).map(({ name, level, sortOrder }, index) => ({ name, level: level ?? '', sortOrder: sortOrder ?? index })))
       setCertifications(
-        (profile.certifications ?? []).map((item, index) => ({
+        getProfileCertifications(profile).map((item, index) => ({
           name: item.name,
           issuer: item.issuer ?? '',
           issuedAt: toDateInput(item.issuedAt),
@@ -125,10 +125,9 @@ export function SettingsPage() {
 
   function refreshProfile(next?: UserProfile) {
     if (next) {
-      queryClient.setQueryData(queryKeys.myProfile, { ...profileQuery.data, content: next })
+      queryClient.setQueryData(queryKeys.me, { ...profileQuery.data, content: next })
       setUser(next)
     }
-    queryClient.invalidateQueries({ queryKey: queryKeys.myProfile })
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
   }
 
@@ -444,6 +443,13 @@ export function SettingsPage() {
   )
 }
 
+function getProfileSkills(profile: UserProfile): ProfileSkill[] {
+  return profile.profileSkills ?? profile.skills ?? []
+}
+
+function getProfileCertifications(profile: UserProfile): ProfileCertification[] {
+  return profile.profileCertifications ?? profile.certifications ?? []
+}
 function SettingsOverview({
   profile,
   completion,

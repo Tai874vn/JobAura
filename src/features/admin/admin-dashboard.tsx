@@ -2,21 +2,19 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { BriefcaseBusiness, MessageSquare, ShoppingBag, Users } from 'lucide-react'
-import { commentsApi, hiredJobsApi, jobsApi, usersApi } from '@/shared/api/endpoints'
+import { adminApi } from '@/shared/api/endpoints'
+import { queryKeys } from '@/shared/api/query-keys'
 import { Card, CardContent, Skeleton } from '@/shared/ui'
 import { AdminResourcePage } from './admin-resource-page'
 
 export function AdminDashboard() {
-  const jobs = useQuery({ queryKey: ['admin', 'jobs', 'count'], queryFn: jobsApi.all })
-  const users = useQuery({ queryKey: ['admin', 'users', 'count'], queryFn: usersApi.all })
-  const hires = useQuery({ queryKey: ['admin', 'hires', 'count'], queryFn: hiredJobsApi.all })
-  const comments = useQuery({ queryKey: ['admin', 'comments', 'count'], queryFn: commentsApi.all })
+  const stats = useQuery({ queryKey: queryKeys.adminStats, queryFn: adminApi.stats })
 
   const metrics = [
-    { label: 'Total Users', value: users.data?.content?.length ?? 0, loading: users.isPending, icon: Users },
-    { label: 'Active Jobs', value: jobs.data?.content?.length ?? 0, loading: jobs.isPending, icon: BriefcaseBusiness },
-    { label: 'Total Hires', value: hires.data?.content?.length ?? 0, loading: hires.isPending, icon: ShoppingBag },
-    { label: 'Comments', value: comments.data?.content?.length ?? 0, loading: comments.isPending, icon: MessageSquare },
+    { label: 'Total Users', value: stats.data?.content?.users ?? 0, loading: stats.isPending, icon: Users },
+    { label: 'Active Jobs', value: stats.data?.content?.jobs ?? 0, loading: stats.isPending, icon: BriefcaseBusiness },
+    { label: 'Total Hires', value: stats.data?.content?.hires ?? 0, loading: stats.isPending, icon: ShoppingBag },
+    { label: 'Comments', value: stats.data?.content?.comments ?? 0, loading: stats.isPending, icon: MessageSquare },
   ]
 
   return (

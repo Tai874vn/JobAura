@@ -12,18 +12,30 @@ import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Skeleton } from '@/shared/ui'
+import { shouldLoadRoomMessages } from './chat-data'
 
 export function ChatShell() {
   const user = useAuthStore((state) => state.user)
-  const { isOpen, isSocketActive, rooms, activeRoomId, messagesByRoom, openChat, closeChat, setRooms, setActiveRoom, setMessages, addMessage, setOnlineUserIds } =
-    useChatStore()
+  const userId = user?.id
+  const isOpen = useChatStore((state) => state.isOpen)
+  const isSocketActive = useChatStore((state) => state.isSocketActive)
+  const rooms = useChatStore((state) => state.rooms)
+  const activeRoomId = useChatStore((state) => state.activeRoomId)
+  const messagesByRoom = useChatStore((state) => state.messagesByRoom)
+  const openChat = useChatStore((state) => state.openChat)
+  const closeChat = useChatStore((state) => state.closeChat)
+  const setRooms = useChatStore((state) => state.setRooms)
+  const setActiveRoom = useChatStore((state) => state.setActiveRoom)
+  const setMessages = useChatStore((state) => state.setMessages)
+  const addMessage = useChatStore((state) => state.addMessage)
+  const setOnlineUserIds = useChatStore((state) => state.setOnlineUserIds)
   const socketRef = useRef<Socket | null>(null)
   const [draft, setDraft] = useState('')
 
   const roomsQuery = useQuery({
     queryKey: queryKeys.chatRooms,
     queryFn: chatApi.rooms,
-    enabled: Boolean(user && isSocketActive),
+    enabled: Boolean(userId && isSocketActive),
   })
 
   useEffect(() => {
@@ -31,7 +43,7 @@ export function ChatShell() {
   }, [roomsQuery.data, setRooms])
 
   useEffect(() => {
-    if (!user || !isSocketActive) return
+    if (!userId || !isSocketActive) return
     const nextSocket = io(`${env.apiBaseUrl}/chat`, {
       withCredentials: true,
       autoConnect: true,
@@ -39,26 +51,46 @@ export function ChatShell() {
     })
 
     nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
-    nextSocket.on('rooms', (payload: ChatRoom[]) => setRooms(payload))
     nextSocket.on('new-message', (message: ChatMessage) => addMessage(message))
     nextSocket.on('online-users', (ids: number[]) => setOnlineUserIds(ids))
+    nextSocket.on('user-online', ({ userId: onlineUserId }: { userId: number }) => {
+      const current = useChatStore.getState().onlineUserIds
+      if (!current.includes(onlineUserId)) setOnlineUserIds([...current, onlineUserId])
+    })
+    nextSocket.on('user-offline', ({ userId: offlineUserId }: { userId: number }) => {
+      setOnlineUserIds(useChatStore.getState().onlineUserIds.filter((id) => id !== offlineUserId))
+    })
     socketRef.current = nextSocket
 
     return () => {
       nextSocket.disconnect()
       socketRef.current = null
     }
-  }, [addMessage, isSocketActive, setOnlineUserIds, setRooms, user])
+  }, [addMessage, isSocketActive, setOnlineUserIds, userId])
 
   const activeMessages = activeRoomId ? messagesByRoom[activeRoomId] ?? [] : []
   const activeRoom = rooms.find((room) => room.id === activeRoomId)
 
-  async function openRoom(room: ChatRoom) {
+  useEffect(() => {
+    if (!shouldLoadRoomMessages(activeRoomId, messagesByRoom)) return
+    const roomId = activeRoomId
+    if (!roomId) return
+
+    let cancelled = false
+    socketRef.current?.emit('join-room', { roomId })
+    void chatApi.messages(roomId).then((result) => {
+      if (cancelled) return
+      setMessages(roomId, result.content ?? [])
+      socketRef.current?.emit('mark-as-read', { roomId })
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeRoomId, messagesByRoom, setMessages])
+
+  function openRoom(room: ChatRoom) {
     setActiveRoom(room.id)
-    socketRef.current?.emit('join-room', { roomId: room.id })
-    const result = await chatApi.messages(room.id)
-    setMessages(room.id, result.content ?? [])
-    socketRef.current?.emit('mark-as-read', { roomId: room.id })
   }
 
   function sendMessage(event: React.FormEvent<HTMLFormElement>) {
@@ -68,7 +100,10 @@ export function ChatShell() {
     setDraft('')
   }
 
-  const title = useMemo(() => activeRoom?.name ?? activeRoom?.members.find((member) => member.id !== user?.id)?.name ?? 'Messages', [activeRoom, user])
+  const title = useMemo(
+    () => activeRoom?.name ?? activeRoom?.members.find((member) => member.id !== userId)?.name ?? 'Select a conversation',
+    [activeRoom, userId]
+  )
 
   if (!user) return null
 
@@ -87,7 +122,7 @@ export function ChatShell() {
         <section className="fixed bottom-5 right-5 z-50 grid h-[560px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[260px_1fr] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
           <aside className="border-r border-border bg-surface-muted">
             <div className="flex h-14 items-center justify-between border-b border-border px-4">
-              <h2 className="font-display text-lg font-bold">Messages</h2>
+              <h2 className="font-display text-lg font-bold">Inbox</h2>
               <Button variant="ghost" size="icon" onClick={closeChat}>
                 <X className="h-4 w-4" />
               </Button>
@@ -102,7 +137,7 @@ export function ChatShell() {
                   </span>
                 </div>
               )) : rooms.map((room) => {
-                const name = room.name ?? room.members.find((member) => member.id !== user.id)?.name ?? 'Conversation'
+                const name = room.name ?? room.members.find((member) => member.id !== userId)?.name ?? 'Conversation'
                 return (
                   <button
                     key={room.id}
@@ -117,7 +152,7 @@ export function ChatShell() {
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate font-semibold">{name}</span>
-                      <span className="block truncate text-xs text-muted">{room.lastMessage?.content ?? 'No messages yet'}</span>
+                      <span className="block truncate text-xs text-muted">{room.lastMessage?.content ?? 'No replies yet'}</span>
                     </span>
                   </button>
                 )
@@ -138,17 +173,17 @@ export function ChatShell() {
                   </div>
                 ))
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted">Choose a room to start messaging.</div>
+                <div className="flex h-full items-center justify-center text-sm text-muted">Choose a conversation to start chatting.</div>
               )}
             </div>
             <form className="flex gap-2 border-t border-border p-3" onSubmit={sendMessage}>
               <input
                 className="h-10 flex-1 rounded-lg border border-border px-3 text-sm outline-none focus:border-primary"
-                placeholder="Type a message"
+                placeholder="Write a reply"
                 value={draft}
                 onChange={(event) => {
                   setDraft(event.target.value)
-                  if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId })
+                  if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
                 }}
                 disabled={!activeRoomId}
               />

@@ -16,3 +16,6 @@ pnpm-debug.log*
 .DS_Store
 .superpowers/
 repomix-output.xml
+
+# Sentry Config File
+.env.sentry-build-plugin
