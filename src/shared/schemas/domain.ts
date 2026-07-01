@@ -329,7 +329,13 @@ export const connectionStatusSchema = z.object({
   connectionId: z.number().nullable(),
 })
 
-export const chatUserSchema = userSchema.pick({ id: true, name: true, avatar: true, email: true })
+export const chatUserSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  email: z.string().optional(),
+  lastReadAt: z.string().optional().nullable(),
+})
 
 export const chatMessageSchema = z.object({
   id: z.number(),
@@ -349,6 +355,40 @@ export const chatRoomSchema = z.object({
   unreadCount: z.number().default(0),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+})
+
+export const notificationTypes = [
+  'CONNECTION_REQUEST',
+  'CONNECTION_ACCEPTED',
+  'POST_LIKE',
+  'POST_COMMENT',
+  'HIRE_CREATED',
+  'HIRE_COMPLETED',
+  'CHAT_MESSAGE',
+] as const
+
+export const notificationActorSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  avatar: z.string().optional().nullable(),
+  headline: z.string().optional().nullable(),
+})
+
+export const notificationSchema = z.object({
+  id: z.number(),
+  recipientId: z.number(),
+  actorId: z.number().nullable().optional(),
+  type: z.enum(notificationTypes),
+  title: z.string(),
+  body: z.string(),
+  entityType: z.string().optional().nullable(),
+  entityId: z.number().optional().nullable(),
+  actionUrl: z.string().optional().nullable(),
+  metadata: z.record(z.string(), z.unknown()).optional().nullable(),
+  readAt: z.string().optional().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string().optional(),
+  actor: notificationActorSchema.optional().nullable(),
 })
 
 export type ApiResponse<T> = {
@@ -410,3 +450,6 @@ export type ConnectionRequests = {
 export type ChatRoom = z.infer<typeof chatRoomSchema>
 export type ChatMessage = z.infer<typeof chatMessageSchema>
 export type ChatUser = z.infer<typeof chatUserSchema>
+export type NotificationType = z.infer<typeof notificationSchema>['type']
+export type AppNotification = z.infer<typeof notificationSchema>
+export type NotificationPage = { data: AppNotification[]; nextCursor: number | null }

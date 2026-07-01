@@ -12,6 +12,8 @@ export const queryKeys = {
   users: (params?: object) => ['users', params ?? {}] as const,
   myProfile: ['users', 'me', 'profile'] as const,
   myResume: ['users', 'me', 'resume'] as const,
+  notifications: ['notifications', 'list'] as const,
+  notificationUnreadCount: ['notifications', 'unread-count'] as const,
   comments: ['comments'] as const,
   hiredJobs: ['hired-jobs'] as const,
   feed: ['posts', 'feed'] as const,

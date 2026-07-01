@@ -3,10 +3,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   ArrowUpRight,
   Award,
-  BriefcaseBusiness,
   CheckCircle2,
   Clock3,
   FolderOpen,
@@ -33,7 +33,14 @@ import { Button, Card, CardContent, CardSkeleton, Input, Spinner } from '@/share
 const pageSize = 12
 
 export function CandidateDirectoryPage() {
-  const [keyword, setKeyword] = useState('')
+  const searchParams = useSearchParams()
+  const initialKeyword = searchParams.get('keyword') ?? ''
+
+  return <CandidateDirectoryContent key={initialKeyword} initialKeyword={initialKeyword} />
+}
+
+function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string }) {
+  const [keyword, setKeyword] = useState(initialKeyword)
   const [skill, setSkill] = useState('')
   const [location, setLocation] = useState('')
   const [page, setPage] = useState(1)
@@ -91,17 +98,20 @@ export function CandidateDirectoryPage() {
           </div>
           <h1 className="font-display text-4xl font-bold">Find candidates</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            Browse completed JobAura worker profiles before starting AI matching.
+            Search public worker profiles, review fit signals, and start hiring conversations.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/jobs">
-            <Button variant="secondary">Explore jobs</Button>
+          <Link href="/connections">
+            <Button variant="secondary">
+              <Users className="h-4 w-4" />
+              Connections
+            </Button>
           </Link>
-          <Link href="/jobs/new">
+          <Link href="/settings">
             <Button>
-              <BriefcaseBusiness className="h-4 w-4" />
-              Post a job
+              <SlidersHorizontal className="h-4 w-4" />
+              Hiring profile
             </Button>
           </Link>
         </div>

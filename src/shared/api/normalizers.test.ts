@@ -10,6 +10,7 @@ import {
   normalizeJob,
   normalizeJobResponse,
   normalizeJobsResponse,
+  normalizeNotificationsResponse,
   normalizePaginatedJobsResponse,
   normalizePaginatedCandidatesResponse,
   normalizeRecommendedCandidatesResponse,
@@ -59,6 +60,39 @@ describe('normalizers', () => {
       viewerHasLiked: true,
       author: { id: 6, name: 'Tai' },
       recentComments: [{ id: 3, content: 'Looks strong.' }],
+    })
+  })
+
+  it('normalizes notifications with actor metadata and numeric cursors', () => {
+    const response = normalizeNotificationsResponse({
+      content: {
+        data: [
+          {
+            id: 9,
+            recipientId: 6,
+            actorId: 7,
+            type: 'POST_COMMENT',
+            title: 'New comment',
+            body: 'Looks great.',
+            entityType: 'post_comment',
+            entityId: 4,
+            actionUrl: '/?postId=3',
+            metadata: { postId: 3, commentId: 4 },
+            readAt: null,
+            createdAt: '2026-07-01T02:00:00.000Z',
+            actor: { id: 7, name: 'Lina', avatar: null, headline: 'Security analyst' },
+          },
+        ],
+        nextCursor: 8,
+      },
+    } as never)
+
+    expect(response.content?.nextCursor).toBe(8)
+    expect(response.content?.data[0]).toMatchObject({
+      id: 9,
+      type: 'POST_COMMENT',
+      actor: { id: 7, name: 'Lina' },
+      metadata: { postId: 3, commentId: 4 },
     })
   })
 

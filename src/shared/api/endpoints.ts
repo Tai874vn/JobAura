@@ -1,6 +1,7 @@
 import { apiClient, uploadClient } from './client'
 import type {
   ApiResponse,
+  AppNotification,
   CandidateDirectoryParams,
   CandidateProfile,
   ChatMessage,
@@ -22,6 +23,7 @@ import type {
   Job,
   JobDetailType,
   JobType,
+  NotificationPage,
   PaginatedContent,
   PaginationParams,
   ProfileCertification,
@@ -46,6 +48,8 @@ import {
   normalizeHiredJobsResponse,
   normalizeFeedPost,
   normalizeFeedResponse,
+  normalizeNotification,
+  normalizeNotificationsResponse,
   normalizePostComment,
   normalizeConnectionRequestsResponse,
   normalizeConnectionsResponse,
@@ -79,12 +83,32 @@ type JobCursorParams = {
   keyword?: string
 }
 
+type NotificationParams = {
+  cursor?: number
+  limit?: number
+}
+
 export const authApi = {
   signIn: async (data: SignIn) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signin', data)).data,
   signUp: async (data: SignUp) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signup', data)).data,
   me: async () => (await apiClient.get<ApiResponse<UserProfile>>('/api/auth/me')).data,
   refresh: async () => (await apiClient.post<ApiResponse<void>>('/api/auth/refresh')).data,
   logout: async () => (await apiClient.post<ApiResponse<void>>('/api/auth/logout')).data,
+}
+
+export const notificationsApi = {
+  list: async (params: NotificationParams = {}) =>
+    normalizeNotificationsResponse(
+      (await apiClient.get<ApiResponse<NotificationPage>>('/api/notifications', { params })).data
+    ),
+  unreadCount: async () =>
+    (await apiClient.get<ApiResponse<{ unreadCount: number }>>('/api/notifications/unread-count')).data,
+  markRead: async (id: number) => {
+    const response = (await apiClient.patch<ApiResponse<AppNotification>>(`/api/notifications/${id}/read`)).data
+    return response.content ? { ...response, content: normalizeNotification(response.content) } : response
+  },
+  markAllRead: async () =>
+    (await apiClient.patch<ApiResponse<{ unreadCount: number }>>('/api/notifications/read-all')).data,
 }
 
 export const jobsApi = {

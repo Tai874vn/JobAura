@@ -1,5 +1,5 @@
-import { FeedPage } from '@/features/feed/feed-page'
+import { RoleHomePage } from '@/features/feed/role-home-page'
 
 export default function Page() {
-  return <FeedPage />
+  return <RoleHomePage />
 }

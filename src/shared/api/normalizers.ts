@@ -1,5 +1,6 @@
 import type {
   ApiResponse,
+  AppNotification,
   CandidateProfile,
   Comment,
   CreateComment,
@@ -17,6 +18,7 @@ import type {
   Job,
   JobDetailType,
   JobType,
+  NotificationPage,
   PaginatedContent,
   RecommendationContent,
   RecommendationLabel,
@@ -26,6 +28,7 @@ import type {
   UpdateJob,
   UserProfile,
 } from '@/shared/schemas'
+import { notificationTypes } from '@/shared/schemas'
 import { isAccountRole } from '@/shared/lib/roles'
 
 type ApiRecord = Record<string, unknown>
@@ -79,6 +82,57 @@ function normalizeFeedAuthor(raw: unknown): FeedAuthor {
     avatar: pickString(record, 'avatar') ?? null,
     headline: pickString(record, 'headline') ?? null,
   }
+}
+
+const notificationTypeSet = new Set<string>(notificationTypes)
+
+function pickNotificationType(record: ApiRecord): AppNotification['type'] {
+  const type = pickString(record, 'type')
+  return type && notificationTypeSet.has(type) ? (type as AppNotification['type']) : 'CHAT_MESSAGE'
+}
+
+function normalizeNotificationActor(raw: unknown): AppNotification['actor'] {
+  if (!raw || typeof raw !== 'object') return null
+  const record = asRecord(raw)
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    name: pickString(record, 'name') ?? 'JobAura member',
+    avatar: pickString(record, 'avatar') ?? null,
+    headline: pickString(record, 'headline') ?? null,
+  }
+}
+
+export function normalizeNotification(raw: unknown): AppNotification {
+  const record = asRecord(raw)
+  const metadata = record.metadata && typeof record.metadata === 'object'
+    ? (record.metadata as Record<string, unknown>)
+    : null
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    recipientId: pickNumber(record, 'recipientId') ?? 0,
+    actorId: pickNumber(record, 'actorId') ?? null,
+    type: pickNotificationType(record),
+    title: pickString(record, 'title') ?? 'Notification',
+    body: pickString(record, 'body') ?? '',
+    entityType: pickString(record, 'entityType') ?? null,
+    entityId: pickNumber(record, 'entityId') ?? null,
+    actionUrl: pickString(record, 'actionUrl') ?? null,
+    metadata,
+    readAt: pickString(record, 'readAt') ?? null,
+    createdAt: pickString(record, 'createdAt') ?? '',
+    updatedAt: pickString(record, 'updatedAt'),
+    actor: normalizeNotificationActor(record.actor),
+  }
+}
+
+export function normalizeNotificationsResponse(response: ApiResponse<NotificationPage>): ApiResponse<NotificationPage> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      data: Array.isArray(record.data) ? record.data.map(normalizeNotification) : [],
+      nextCursor: pickNumber(record, 'nextCursor') ?? null,
+    }
+  })
 }
 
 export function normalizePostComment(raw: unknown): PostComment {

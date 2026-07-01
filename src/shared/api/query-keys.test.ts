@@ -6,6 +6,8 @@ describe('query keys', () => {
     expect(queryKeys.me).toEqual(['auth', 'me'])
     expect(queryKeys.job(3)).toEqual(['jobs', 3])
     expect(queryKeys.chatMessages(7)).toEqual(['chat', 'messages', 7])
+    expect(queryKeys.notifications).toEqual(['notifications', 'list'])
+    expect(queryKeys.notificationUnreadCount).toEqual(['notifications', 'unread-count'])
   })
 
   it('uses empty objects for missing params', () => {
