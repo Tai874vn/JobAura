@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { HomePage } from '@/features/jobs/home-page'
+import { JsonLd, organizationJsonLd, websiteJsonLd } from '@/shared/lib/seo'
 
 export const metadata: Metadata = {
   title: 'Welcome',
@@ -10,5 +11,10 @@ export const metadata: Metadata = {
 }
 
 export default function WelcomePage() {
-  return <HomePage />
+  return (
+    <>
+      <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
+      <HomePage />
+    </>
+  )
 }

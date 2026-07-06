@@ -146,10 +146,10 @@ export function JobListView() {
           </form>
         </CardContent>
       </Card>
-      <section className="min-h-[760px]" aria-busy={query.isPending} aria-live="polite">
+      <section className="min-h-[1180px] sm:min-h-[980px] lg:min-h-[860px]" aria-busy={query.isPending} aria-live="polite">
         {query.isPending ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, index) => <CardSkeleton key={index} />)}
+            {Array.from({ length: pageSize }).map((_, index) => <CardSkeleton key={index} />)}
           </div>
         ) : query.isError ? (
           <Card>
@@ -160,7 +160,7 @@ export function JobListView() {
         ) : jobs.length ? (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index < 4} />)}
+              {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index === 0} />)}
             </div>
             <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref} />
           </>

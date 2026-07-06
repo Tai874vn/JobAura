@@ -17,5 +17,21 @@ pnpm-debug.log*
 .superpowers/
 repomix-output.xml
 
+# Documentation files
+docs/
+**/docs/
+*.md
+*.mdx
+*.markdown
+*.doc
+*.docx
+*.pdf
+*.rtf
+*.txt
+
+# Seed files
+**/seed/
+**/*seed*
+
 # Sentry Config File
 .env.sentry-build-plugin

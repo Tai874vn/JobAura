@@ -12,7 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const origin = siteOrigin()
   const now = new Date()
 
-  return ['/', '/welcome', '/jobs'].map((path) => ({
+  return ['/welcome', '/jobs'].map((path) => ({
     url: `${origin}${path}`,
     lastModified: now,
   }))

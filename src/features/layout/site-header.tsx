@@ -22,17 +22,18 @@ export function SiteHeader() {
   const avatarUrl = resolveAssetUrl(user?.avatar)
   const isRecruiter = user?.role === 'employer'
   const homeHref = user ? (isRecruiter ? '/candidates' : '/') : '/welcome'
+  const shouldVerifyUser = hasHydrated && Boolean(user)
 
   const meQuery = useQuery({
     queryKey: queryKeys.me,
     queryFn: authApi.me,
-    enabled: hasHydrated,
+    enabled: shouldVerifyUser,
     retry: false,
     staleTime: 60_000,
   })
 
   useEffect(() => {
-    if (!hasHydrated) return
+    if (!shouldVerifyUser) return
 
     if (meQuery.isSuccess) {
       const verifiedUser = meQuery.data.content ?? null
@@ -41,7 +42,7 @@ export function SiteHeader() {
     }
 
     if (meQuery.isError) clearSession()
-  }, [clearSession, hasHydrated, meQuery.data, meQuery.isError, meQuery.isSuccess, setUser])
+  }, [clearSession, meQuery.data, meQuery.isError, meQuery.isSuccess, setUser, shouldVerifyUser])
 
   function submitSearch(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -108,7 +109,7 @@ export function SiteHeader() {
             </Link>
           ) : null}
         </nav>
-        {!hasHydrated || (meQuery.isPending && !user) ? (
+        {!hasHydrated || (shouldVerifyUser && meQuery.isPending) ? (
           <div className="hidden items-center gap-2 md:flex">
             <div className="h-10 w-20 rounded-lg bg-surface-muted" />
             <div className="h-10 w-16 rounded-lg bg-surface-muted" />

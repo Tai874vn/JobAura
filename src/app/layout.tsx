@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { ChatShell } from '@/features/chat/chat-shell'
+import { LazyChatShell } from '@/features/chat/lazy-chat-shell'
 import { AppProviders } from '@/shared/providers/app-providers'
 
 const defaultDescription = 'Find trusted freelance services and manage work in one marketplace.'
@@ -21,9 +21,6 @@ export const metadata: Metadata = {
     template: '%s | JobAura',
   },
   description: defaultDescription,
-  alternates: {
-    canonical: '/',
-  },
   openGraph: {
     title: 'JobAura',
     description: defaultDescription,
@@ -48,7 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="font-sans antialiased">
         <AppProviders>
           {children}
-          <ChatShell />
+          <LazyChatShell />
         </AppProviders>
       </body>
     </html>

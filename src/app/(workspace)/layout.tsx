@@ -1,6 +1,14 @@
+import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/require-auth'
 import { Footer } from '@/features/layout/footer'
 import { SiteHeader } from '@/features/layout/site-header'
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (

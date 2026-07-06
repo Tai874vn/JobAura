@@ -157,12 +157,12 @@ function RegisterFormFields() {
 
 function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextPath?: string | null }) {
   const router = useRouter()
-  const { hasHydrated, setUser, clearSession } = useAuthStore()
+  const { user, hasHydrated, setUser, clearSession } = useAuthStore()
 
   const meQuery = useQuery({
     queryKey: queryKeys.me,
     queryFn: authApi.me,
-    enabled: hasHydrated,
+    enabled: hasHydrated && Boolean(user),
     retry: false,
   })
 
@@ -180,7 +180,7 @@ function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextP
     if (meQuery.isError) clearSession()
   }, [clearSession, hasHydrated, meQuery.data, meQuery.isError, meQuery.isSuccess, nextPath, router, setUser])
 
-  if (!hasHydrated || meQuery.isPending || Boolean(meQuery.data?.content)) {
+  if (!hasHydrated || (Boolean(user) && (meQuery.isPending || Boolean(meQuery.data?.content)))) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background" aria-labelledby="auth-status-title">
         <h1 id="auth-status-title" className="sr-only">Checking authentication</h1>
