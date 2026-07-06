@@ -22,6 +22,7 @@ import type {
   ImportResume,
   Job,
   JobDetailType,
+  JobSearchParams,
   JobType,
   NotificationPage,
   PaginatedContent,
@@ -30,6 +31,7 @@ import type {
   ProfilePortfolioItem,
   ProfileSkill,
   RecommendationContent,
+  RecommendationQuota,
   RecommendedCandidate,
   RecommendedJob,
   SignIn,
@@ -88,6 +90,12 @@ type NotificationParams = {
   limit?: number
 }
 
+function definedParams<T extends Record<string, unknown>>(params: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== null && value !== '')
+  ) as Partial<T>
+}
+
 export const authApi = {
   signIn: async (data: SignIn) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signin', data)).data,
   signUp: async (data: SignUp) => (await apiClient.post<ApiResponse<{ user: UserProfile }>>('/api/auth/signup', data)).data,
@@ -114,9 +122,9 @@ export const notificationsApi = {
 export const jobsApi = {
   all: async () => normalizeJobsResponse((await apiClient.get<ApiResponse<Job[]>>('/api/jobs')).data),
   cursor: async (params?: JobCursorParams) =>
-    normalizeCursorJobsResponse((await apiClient.get<ApiResponse<CursorPage<Job>>>('/api/jobs/cursor', { params })).data),
-  paginated: async (params: PaginationParams) =>
-    normalizePaginatedJobsResponse((await apiClient.get<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search', { params })).data),
+    normalizeCursorJobsResponse((await apiClient.get<ApiResponse<CursorPage<Job>>>('/api/jobs/cursor', { params: params ? definedParams(params) : undefined })).data),
+  paginated: async (params: JobSearchParams) =>
+    normalizePaginatedJobsResponse((await apiClient.get<ApiResponse<PaginatedContent<Job>>>('/api/jobs/paginated-search', { params: definedParams(params) })).data),
   byCreator: async (creatorId: number, params: PaginationParams) =>
     normalizePaginatedJobsResponse(
       (await apiClient.get<ApiResponse<PaginatedContent<Job>>>(`/api/jobs/by-creator/${creatorId}`, { params })).data
@@ -144,6 +152,8 @@ export const jobsApi = {
 }
 
 export const recommendationsApi = {
+  quota: async () =>
+    (await apiClient.get<ApiResponse<RecommendationQuota>>('/api/recommendations/quota')).data,
   jobs: async (params?: RecommendationParams) =>
     normalizeRecommendedJobsResponse(
       (await apiClient.get<ApiResponse<RecommendationContent<RecommendedJob>>>('/api/recommendations/jobs', { params })).data

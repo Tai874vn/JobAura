@@ -132,7 +132,17 @@ describe('normalizers', () => {
   })
 
   it('normalizes category and subcategory using fallback keys', () => {
-    expect(normalizeCategory({ id: 3, name: 'Design' })).toEqual({ id: 3, name: 'Design', tenLoaiCongViec: 'Design' })
+    expect(normalizeCategory({ id: 3, name: 'Design' })).toEqual({
+      id: 3,
+      name: 'Design',
+      tenLoaiCongViec: 'Design',
+      subcategories: undefined,
+    })
+    expect(normalizeCategory({ id: 3, name: 'Design', subcategories: [{ id: 8, name: 'Logo', categoryId: 3 }] }).subcategories?.[0]).toMatchObject({
+      id: 8,
+      tenChiTiet: 'Logo',
+      maLoaiCongViec: 3,
+    })
 
     expect(normalizeSubcategory({ id: 8, name: 'Logo', image: '/logo.png', categoryId: 3 })).toMatchObject({
       id: 8,

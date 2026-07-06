@@ -7,10 +7,10 @@ const labelText: Record<RecommendationLabel, string> = {
   low_match: 'Low match',
 }
 
-const labelTone: Record<RecommendationLabel, 'primary' | 'accent' | 'neutral'> = {
-  high_match: 'primary',
-  medium_match: 'accent',
-  low_match: 'neutral',
+const labelClass: Record<RecommendationLabel, string> = {
+  high_match: 'border border-primary/20 bg-primary/10 text-primary',
+  medium_match: 'border border-[#b7791f]/35 bg-[#fff3bf] text-[#6f4600]',
+  low_match: 'border border-border bg-surface-muted text-foreground',
 }
 
 export function formatMatchScore(score: number) {
@@ -19,7 +19,7 @@ export function formatMatchScore(score: number) {
 
 export function MatchBadge({ label, score }: { label: RecommendationLabel; score: number }) {
   return (
-    <Badge tone={labelTone[label]}>
+    <Badge tone="neutral" className={labelClass[label]}>
       {labelText[label]} - {formatMatchScore(score)}
     </Badge>
   )

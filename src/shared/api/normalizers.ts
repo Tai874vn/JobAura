@@ -53,6 +53,16 @@ function pickNumber(record: ApiRecord, ...keys: string[]) {
   return undefined
 }
 
+function pickStringArray(record: ApiRecord, ...keys: string[]) {
+  for (const key of keys) {
+    const value = record[key]
+    if (Array.isArray(value)) {
+      return value.filter((item): item is string => typeof item === 'string')
+    }
+  }
+  return []
+}
+
 function pickBoolean(record: ApiRecord, ...keys: string[]) {
   for (const key of keys) {
     const value = record[key]
@@ -299,6 +309,7 @@ export function normalizeCategory(raw: unknown): JobType {
     ...(record as Partial<JobType>),
     id: pickNumber(record, 'id') ?? 0,
     tenLoaiCongViec: pickString(record, 'tenLoaiCongViec', 'name') ?? '',
+    subcategories: Array.isArray(record.subcategories) ? record.subcategories.map(normalizeSubcategory) : undefined,
   }
 }
 
@@ -353,6 +364,20 @@ export function normalizeRecommendationScore(raw: unknown): RecommendationScore 
     skillScore: pickNumber(record, 'skillScore', 'skill_score') ?? 0,
     seniorityScore: pickNumber(record, 'seniorityScore', 'seniority_score') ?? 0,
     categoryScore: pickNumber(record, 'categoryScore', 'category_score') ?? 0,
+    requiredSkills: pickStringArray(record, 'requiredSkills', 'required_skills'),
+    matchedSkills: pickStringArray(record, 'matchedSkills', 'matched_skills'),
+    missingSkills: pickStringArray(record, 'missingSkills', 'missing_skills'),
+    improvementTips: pickStringArray(record, 'improvementTips', 'improvement_tips'),
+  }
+}
+
+export function normalizeRecommendationQuota(raw: unknown) {
+  const record = asRecord(raw)
+  return {
+    limit: pickNumber(record, 'limit') ?? 0,
+    used: pickNumber(record, 'used') ?? 0,
+    remaining: pickNumber(record, 'remaining') ?? 0,
+    resetAt: pickString(record, 'resetAt') ?? '',
   }
 }
 
@@ -513,6 +538,7 @@ export function normalizeRecommendedJobsResponse(
       data,
       model: pickString(record, 'model'),
       elapsedMs: pickNumber(record, 'elapsedMs', 'elapsed_ms'),
+      quota: record.quota ? normalizeRecommendationQuota(record.quota) : undefined,
     }
   })
 }
@@ -529,6 +555,7 @@ export function normalizeRecommendedCandidatesResponse(
       data,
       model: pickString(record, 'model'),
       elapsedMs: pickNumber(record, 'elapsedMs', 'elapsed_ms'),
+      quota: record.quota ? normalizeRecommendationQuota(record.quota) : undefined,
     }
   })
 }

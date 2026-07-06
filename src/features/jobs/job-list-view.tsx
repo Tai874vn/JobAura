@@ -3,11 +3,13 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { SlidersHorizontal, Sparkles } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { jobsApi } from '@/shared/api/endpoints'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useMemo } from 'react'
+import { jobTypesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import type { JobSearchParams } from '@/shared/schemas'
 import { JobCard } from './job-card'
-import { Card, CardContent, CardSkeleton } from '@/shared/ui'
+import { Button, Card, CardContent, CardSkeleton, Input } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -19,18 +21,30 @@ function pageWindow(currentPage: number, totalPages: number) {
 }
 
 export function JobListView() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1)
   const keyword = searchParams.get('keyword') ?? undefined
+  const categoryId = positiveNumber(searchParams.get('category') ?? searchParams.get('categoryId'))
+  const subcategoryId = positiveNumber(searchParams.get('subcategory') ?? searchParams.get('subcategoryId'))
+  const minPrice = nonNegativeNumber(searchParams.get('minPrice'))
+  const maxPrice = nonNegativeNumber(searchParams.get('maxPrice'))
+  const minRating = nonNegativeNumber(searchParams.get('minRating'))
+  const sort = jobSort(searchParams.get('sort'))
+  const categoriesQuery = useQuery({ queryKey: queryKeys.jobTypes, queryFn: jobTypesApi.all, staleTime: 5 * 60 * 1000 })
+  const categories = useMemo(() => categoriesQuery.data?.content ?? [], [categoriesQuery.data?.content])
+  const subcategories = useMemo(() => categories.flatMap((category) => category.subcategories ?? []), [categories])
+  const apiParams: JobSearchParams = { page, pageSize, keyword, categoryId, subcategoryId, minPrice, maxPrice, minRating, sort }
   const query = useQuery({
-    queryKey: queryKeys.jobs({ page, keyword }),
-    queryFn: () => jobsApi.paginated({ page, pageSize, keyword }),
+    queryKey: queryKeys.jobs(apiParams),
+    queryFn: () => jobsApi.paginated(apiParams),
     placeholderData: keepPreviousData,
   })
   const content = query.data?.content
   const jobs = content?.data ?? []
   const calculatedTotalPages = Math.ceil((content?.totalRow ?? 0) / pageSize) || 1
   const totalPages = Math.max(1, content?.totalPages ?? calculatedTotalPages)
+  const activeFilterCount = [keyword, categoryId, subcategoryId, minPrice, maxPrice, minRating, sort].filter(Boolean).length
 
   function pageHref(targetPage: number) {
     const params = new URLSearchParams(searchParams.toString())
@@ -38,6 +52,22 @@ export function JobListView() {
     else params.set('page', String(targetPage))
     const queryString = params.toString()
     return queryString ? `/jobs?${queryString}` : '/jobs'
+  }
+
+  function applyFilters(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const params = new URLSearchParams(searchParams.toString())
+    setParam(params, 'keyword', stringValue(data.get('keyword')))
+    setParam(params, 'category', stringValue(data.get('category')))
+    setParam(params, 'subcategory', stringValue(data.get('subcategory')))
+    setParam(params, 'minPrice', stringValue(data.get('minPrice')))
+    setParam(params, 'maxPrice', stringValue(data.get('maxPrice')))
+    setParam(params, 'minRating', stringValue(data.get('minRating')))
+    setParam(params, 'sort', stringValue(data.get('sort')))
+    params.delete('page')
+    const queryString = params.toString()
+    router.push(queryString ? `/jobs?${queryString}` : '/jobs')
   }
 
   return (
@@ -55,30 +85,118 @@ export function JobListView() {
             <Sparkles className="h-4 w-4" />
             AI recommendations
           </Link>
-          <button className="flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold">
+          <a href="#service-filters" className="flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold">
             <SlidersHorizontal className="h-4 w-4" />
-            Filters
-          </button>
+            Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}
+          </a>
         </div>
       </div>
-      {query.isPending ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, index) => <CardSkeleton key={index} />)}
-        </div>
-      ) : jobs.length ? (
-        <>
+      <Card id="service-filters" className="mb-6">
+        <CardContent className="p-4">
+          <form className="grid gap-3 lg:grid-cols-[1fr_180px_180px_120px_120px_140px_160px_auto]" onSubmit={applyFilters}>
+            <Input name="keyword" defaultValue={keyword ?? ''} placeholder="Search services or sellers" aria-label="Search services or sellers" />
+            <select
+              name="category"
+              aria-label="Category"
+              className="h-10 rounded-lg border border-border bg-white px-3 text-sm"
+              defaultValue={categoryId ?? ''}
+            >
+              <option value="">All categories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>{category.tenLoaiCongViec}</option>
+              ))}
+            </select>
+            <select
+              name="subcategory"
+              aria-label="Subcategory"
+              className="h-10 rounded-lg border border-border bg-white px-3 text-sm"
+              defaultValue={subcategoryId ?? ''}
+            >
+              <option value="">All specialties</option>
+              {subcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>{subcategory.tenChiTiet}</option>
+              ))}
+            </select>
+            <Input name="minPrice" type="number" min={0} defaultValue={minPrice ?? ''} placeholder="Min $" aria-label="Minimum price" />
+            <Input name="maxPrice" type="number" min={0} defaultValue={maxPrice ?? ''} placeholder="Max $" aria-label="Maximum price" />
+            <select
+              name="minRating"
+              aria-label="Minimum rating"
+              className="h-10 rounded-lg border border-border bg-white px-3 text-sm"
+              defaultValue={minRating ?? ''}
+            >
+              <option value="">Any rating</option>
+              <option value="3">3+ stars</option>
+              <option value="4">4+ stars</option>
+              <option value="5">5 stars</option>
+            </select>
+            <select name="sort" aria-label="Sort services" className="h-10 rounded-lg border border-border bg-white px-3 text-sm" defaultValue={sort ?? ''}>
+              <option value="">Default</option>
+              <option value="newest">Newest</option>
+              <option value="rating_desc">Top rated</option>
+              <option value="price_asc">Price low</option>
+              <option value="price_desc">Price high</option>
+            </select>
+            <div className="flex gap-2">
+              <Button type="submit">Apply</Button>
+              <Link href="/jobs" className="inline-flex h-10 items-center rounded-lg border border-border bg-white px-3 text-sm font-semibold hover:border-primary hover:text-primary">
+                Reset
+              </Link>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+      <section className="min-h-[760px]" aria-busy={query.isPending} aria-live="polite">
+        {query.isPending ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index < 4} />)}
+            {Array.from({ length: 8 }).map((_, index) => <CardSkeleton key={index} />)}
           </div>
-          <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref} />
-        </>
-      ) : (
-        <Card>
-          <CardContent className="p-10 text-center text-sm text-muted">No services found. Try another keyword.</CardContent>
-        </Card>
-      )}
+        ) : query.isError ? (
+          <Card>
+            <CardContent className="p-10 text-center text-sm text-muted">
+              Unable to load services right now. Please check the backend connection and try again.
+            </CardContent>
+          </Card>
+        ) : jobs.length ? (
+          <>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index < 4} />)}
+            </div>
+            <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref} />
+          </>
+        ) : (
+          <Card>
+            <CardContent className="p-10 text-center text-sm text-muted">No services found. Try another search or filter.</CardContent>
+          </Card>
+        )}
+      </section>
     </div>
   )
+}
+
+function positiveNumber(value: string | null) {
+  const parsed = Number(value)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function nonNegativeNumber(value: string | null) {
+  if (value === null || value.trim() === '') return undefined
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
+}
+
+function stringValue(value: FormDataEntryValue | null) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function setParam(params: URLSearchParams, key: string, value: string) {
+  if (value) params.set(key, value)
+  else params.delete(key)
+}
+
+function jobSort(value: string | null): JobSearchParams['sort'] {
+  if (value === 'newest' || value === 'price_asc' || value === 'price_desc' || value === 'rating_desc') return value
+  return undefined
 }
 
 function PaginationControls({

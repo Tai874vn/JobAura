@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -97,7 +97,7 @@ function RegisterFormFields() {
     resolver: zodResolver(signUpSchema),
     defaultValues: { name: '', email: '', password: '', role: 'user' },
   })
-  const selectedRole = form.watch('role') ?? 'user'
+  const selectedRole = useWatch({ control: form.control, name: 'role' }) ?? 'user'
 
   const mutation = useMutation({
     mutationFn: authApi.signUp,
@@ -182,9 +182,11 @@ function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextP
 
   if (!hasHydrated || meQuery.isPending || Boolean(meQuery.data?.content)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <main className="flex min-h-screen items-center justify-center bg-background" aria-labelledby="auth-status-title">
+        <h1 id="auth-status-title" className="sr-only">Checking authentication</h1>
         <Spinner className="h-7 w-7" />
-      </div>
+        <span className="sr-only" role="status">Checking authentication</span>
+      </main>
     )
   }
 
@@ -193,7 +195,7 @@ function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextP
 
 function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
         <CardContent className="p-6">
           <Link href="/" className="mb-8 inline-block font-display text-2xl font-bold text-primary">
@@ -204,7 +206,7 @@ function AuthCard({ title, subtitle, children }: { title: string; subtitle: stri
           {children}
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }
 

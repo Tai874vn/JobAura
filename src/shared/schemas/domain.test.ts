@@ -34,9 +34,14 @@ describe('domain schemas', () => {
       skillScore: 0.75,
       seniorityScore: 1,
       categoryScore: 0.5,
+      requiredSkills: ['Python', 'Docker'],
+      matchedSkills: ['Python'],
+      missingSkills: ['Docker'],
+      improvementTips: ['Add Docker project evidence.'],
     })
 
     expect(recommendation.label).toBe('high_match')
+    expect(recommendation.missingSkills).toEqual(['Docker'])
     expect(
       recommendedJobSchema.parse({
         id: 9,

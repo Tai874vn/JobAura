@@ -7,6 +7,7 @@ export const queryKeys = {
   jobTypes: ['job-types'] as const,
   jobDetailTypes: ['job-detail-types'] as const,
   recommendedJobs: (params?: object) => ['recommendations', 'jobs', params ?? {}] as const,
+  recommendationQuota: ['recommendations', 'quota'] as const,
   recommendedCandidates: (jobId: number, params?: object) => ['recommendations', 'jobs', jobId, 'candidates', params ?? {}] as const,
   candidates: (params?: object) => ['users', 'candidates', params ?? {}] as const,
   users: (params?: object) => ['users', params ?? {}] as const,

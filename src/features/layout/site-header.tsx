@@ -66,6 +66,7 @@ export function SiteHeader() {
           <input
             className="h-10 flex-1 bg-transparent px-3 text-sm outline-none"
             placeholder={isRecruiter ? 'Search candidates, roles, or skills' : 'Search services, skills, or experts'}
+            aria-label={isRecruiter ? 'Search candidates, roles, or skills' : 'Search services, skills, or experts'}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -158,12 +159,20 @@ export function SiteHeader() {
           </div>
         )}
         {user ? <div className="ml-auto md:hidden"><NotificationBell /></div> : null}
-        <Button className={user ? 'md:hidden' : 'ml-auto md:hidden'} variant="ghost" size="icon" onClick={() => setMenuOpen((value) => !value)}>
+        <Button
+          className={user ? 'md:hidden' : 'ml-auto md:hidden'}
+          variant="ghost"
+          size="icon"
+          onClick={() => setMenuOpen((value) => !value)}
+          aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-controls="mobile-navigation"
+          aria-expanded={menuOpen}
+        >
           <Menu className="h-5 w-5" />
         </Button>
       </div>
       {menuOpen ? (
-        <div className="border-t border-border bg-white p-4 md:hidden">
+        <div id="mobile-navigation" className="border-t border-border bg-white p-4 md:hidden">
           <div className="grid gap-2 text-sm font-semibold">
             {user && !isRecruiter ? <Link href="/">Home feed</Link> : null}
             {isRecruiter ? <Link href="/candidates">Find Candidates</Link> : null}

@@ -3,9 +3,43 @@ import './globals.css'
 import { ChatShell } from '@/features/chat/chat-shell'
 import { AppProviders } from '@/shared/providers/app-providers'
 
+const defaultDescription = 'Find trusted freelance services and manage work in one marketplace.'
+
+function siteUrl() {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001')
+  } catch {
+    return new URL('http://localhost:3001')
+  }
+}
+
 export const metadata: Metadata = {
-  title: 'JobAura',
-  description: 'Find trusted freelance services and manage work in one marketplace.',
+  metadataBase: siteUrl(),
+  applicationName: 'JobAura',
+  title: {
+    default: 'JobAura',
+    template: '%s | JobAura',
+  },
+  description: defaultDescription,
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'JobAura',
+    description: defaultDescription,
+    url: '/',
+    siteName: 'JobAura',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'JobAura',
+    description: defaultDescription,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

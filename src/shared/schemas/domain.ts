@@ -148,7 +148,7 @@ export const signUpSchema = z.object({
   certification: z.string().optional(),
 })
 
-export const jobTypeSchema = z.object({
+const baseJobTypeSchema = z.object({
   id: z.number(),
   tenLoaiCongViec: z.string(),
 })
@@ -158,7 +158,11 @@ export const jobDetailTypeSchema = z.object({
   tenChiTiet: z.string(),
   hinhAnh: z.string().optional().nullable(),
   maLoaiCongViec: z.number().optional(),
-  loaiCongViec: jobTypeSchema.optional(),
+  loaiCongViec: baseJobTypeSchema.optional(),
+})
+
+export const jobTypeSchema = baseJobTypeSchema.extend({
+  subcategories: z.array(jobDetailTypeSchema).optional(),
 })
 
 export const jobSchema = z.object({
@@ -216,6 +220,10 @@ export const recommendationScoreSchema = z.object({
   skillScore: z.coerce.number().min(0).max(1).optional().default(0),
   seniorityScore: z.coerce.number().min(0).max(1).optional().default(0),
   categoryScore: z.coerce.number().min(0).max(1).optional().default(0),
+  requiredSkills: z.array(z.string()).optional().default([]),
+  matchedSkills: z.array(z.string()).optional().default([]),
+  missingSkills: z.array(z.string()).optional().default([]),
+  improvementTips: z.array(z.string()).optional().default([]),
 })
 
 export const recommendedJobSchema = jobSchema.extend({
@@ -420,10 +428,27 @@ export type RecommendationContent<T> = {
   data: T[]
   model?: string
   elapsedMs?: number
+  quota?: RecommendationQuota
+}
+export type RecommendationQuota = {
+  limit: number
+  used: number
+  remaining: number
+  resetAt: string
 }
 export type CandidateDirectoryParams = PaginationParams & {
   skill?: string
   location?: string
+  hasPortfolio?: boolean
+  hasCertification?: boolean
+}
+export type JobSearchParams = PaginationParams & {
+  categoryId?: number
+  subcategoryId?: number
+  minPrice?: number
+  maxPrice?: number
+  minRating?: number
+  sort?: 'newest' | 'price_asc' | 'price_desc' | 'rating_desc'
 }
 export type CreateJob = z.infer<typeof createJobSchema>
 export type UpdateJob = z.infer<typeof updateJobSchema>

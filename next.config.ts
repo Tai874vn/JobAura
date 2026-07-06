@@ -1,16 +1,135 @@
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next'
 
+type ImageRemotePattern = {
+  protocol: 'http' | 'https'
+  hostname: string
+  port?: string
+  pathname?: string
+}
+
+function imagePatternFromUrl(value: string | undefined): ImageRemotePattern | null {
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+
+    return {
+      protocol: url.protocol.slice(0, -1) as 'http' | 'https',
+      hostname: url.hostname,
+      port: url.port || undefined,
+      pathname: '/**',
+    }
+  } catch {
+    return null
+  }
+}
+
+function imagePatternFromHost(value: string): ImageRemotePattern | null {
+  const host = value.trim()
+  if (!host) return null
+  return imagePatternFromUrl(host.includes('://') ? host : `https://${host}`)
+}
+
+const configuredImagePatterns = [
+  { protocol: 'http', hostname: 'localhost', pathname: '/**' },
+  { protocol: 'https', hostname: 'res.cloudinary.com', pathname: '/**' },
+  imagePatternFromUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
+  imagePatternFromUrl(process.env.BACKEND_API_BASE_URL),
+  ...(process.env.NEXT_PUBLIC_IMAGE_HOSTS?.split(',').map(imagePatternFromHost) ?? []),
+].filter((pattern): pattern is ImageRemotePattern => Boolean(pattern))
+
+const imageRemotePatterns = Array.from(
+  new Map(
+    configuredImagePatterns.map((pattern) => [
+      `${pattern.protocol}:${pattern.hostname}:${pattern.port ?? ''}:${pattern.pathname ?? ''}`,
+      pattern,
+    ])
+  ).values()
+)
+
+function originFromUrl(value: string | undefined): string | null {
+  if (!value) return null
+
+  try {
+    return new URL(value).origin
+  } catch {
+    return null
+  }
+}
+
+function websocketOriginFromUrl(value: string | undefined): string | null {
+  if (!value) return null
+
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+    const protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${protocol}//${url.host}`
+  } catch {
+    return null
+  }
+}
+
+function sourceFromImagePattern(pattern: ImageRemotePattern): string {
+  return `${pattern.protocol}://${pattern.hostname}${pattern.port ? `:${pattern.port}` : ''}`
+}
+
+function cspDirective(name: string, values: Array<string | null | undefined>): string {
+  return `${name} ${Array.from(new Set(values.filter(Boolean))).join(' ')}`
+}
+
+const apiOrigins = [
+  originFromUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
+  originFromUrl(process.env.BACKEND_API_BASE_URL),
+]
+const websocketOrigins = [
+  websocketOriginFromUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
+  websocketOriginFromUrl(process.env.BACKEND_API_BASE_URL),
+]
+const contentSecurityPolicy = [
+  cspDirective('default-src', ["'self'"]),
+  cspDirective('base-uri', ["'self'"]),
+  cspDirective('object-src', ["'none'"]),
+  cspDirective('frame-ancestors', ["'none'"]),
+  cspDirective('form-action', ["'self'"]),
+  cspDirective('script-src', ["'self'", "'unsafe-inline'", "'unsafe-eval'"]),
+  cspDirective('style-src', ["'self'", "'unsafe-inline'"]),
+  cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
+  cspDirective('font-src', ["'self'", 'data:']),
+  cspDirective('connect-src', ["'self'", ...apiOrigins, ...websocketOrigins, 'https://*.ingest.sentry.io', 'https://*.sentry.io']),
+  cspDirective('frame-src', ["'self'", 'https://accounts.google.com']),
+  cspDirective('worker-src', ["'self'", 'blob:']),
+  cspDirective('media-src', ["'self'", 'blob:', 'data:']),
+].join('; ')
+
+const securityHeaders = [
+  { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  {
+    key: 'Permissions-Policy',
+    value: 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
+  },
+]
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   turbopack: {
     root: __dirname,
   },
   images: {
-    remotePatterns: [
-      { protocol: 'http', hostname: 'localhost' },
-      { protocol: 'https', hostname: '**' },
-    ],
+    remotePatterns: imageRemotePatterns,
+  },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ]
   },
 }
 

@@ -65,9 +65,11 @@ export function RequireAuth({
 
   if (isChecking || !verifiedUser || !isStoreSynced || !hasRequiredRole) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <main className="flex min-h-screen items-center justify-center" aria-labelledby="auth-status-title">
+        <h1 id="auth-status-title" className="sr-only">Checking access</h1>
         <Spinner className="h-7 w-7" />
-      </div>
+        <span className="sr-only" role="status">Checking access</span>
+      </main>
     )
   }
 
