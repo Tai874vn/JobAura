@@ -2,9 +2,13 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
-import { AlertCircle, ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, RefreshCw, Sparkles, Zap } from 'lucide-react'
+import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, RefreshCw, Sparkles, Zap } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { getErrorMessage } from '@/shared/lib/utils'
+import type { RecommendationContent, RecommendedJob } from '@/shared/schemas'
 import { Button, Card, CardContent, CardSkeleton, Spinner } from '@/shared/ui'
 import { JobCard } from './job-card'
 import { MatchBadge } from './recommendation-ui'
@@ -13,6 +17,7 @@ const recommendationParams = { topK: 12, poolSize: 50 }
 
 export function RecommendedJobsPage() {
   const queryClient = useQueryClient()
+  const [lastContent, setLastContent] = useState<RecommendationContent<RecommendedJob> | null>(null)
   const quotaQuery = useQuery({
     queryKey: queryKeys.recommendationQuota,
     queryFn: recommendationsApi.quota,
@@ -21,12 +26,16 @@ export function RecommendedJobsPage() {
   })
   const runMutation = useMutation({
     mutationFn: () => recommendationsApi.jobs(recommendationParams),
-    onSuccess: () => {
+    onSuccess: (response) => {
+      setLastContent(response.content ?? null)
       queryClient.invalidateQueries({ queryKey: queryKeys.recommendationQuota })
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, 'AI recommendations are unavailable'))
     },
   })
 
-  const content = runMutation.data?.content
+  const content = lastContent
   const quota = content?.quota ?? quotaQuery.data?.content
   const jobs = content?.data ?? []
   const canRun = (quota?.remaining ?? 0) > 0
@@ -58,13 +67,7 @@ export function RecommendedJobsPage() {
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section>
-          {runMutation.isPending ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, index) => <CardSkeleton key={index} />)}
-            </div>
-          ) : runMutation.isError ? (
-            <ErrorCard onRetry={() => runMutation.mutate()} canRun={canRun} isRunning={runMutation.isPending} />
-          ) : !content ? (
+          {!content ? (
             <StartRecommendationCard
               isLoadingQuota={quotaQuery.isPending}
               isRunning={runMutation.isPending}
@@ -82,15 +85,17 @@ export function RecommendedJobsPage() {
                 <span>{jobs.length} recommendations</span>
               </div>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {jobs.map((job, index) => (
-                  <div key={job.id} className="relative">
-                    <div className="absolute left-3 top-3 z-10">
-                      <MatchBadge label={job.recommendation.label} score={job.recommendation.finalScore} />
-                    </div>
-                    <JobCard job={job} priority={index < 3} />
-                    <SkillGapPanel recommendation={job.recommendation} />
-                  </div>
-                ))}
+                {runMutation.isPending
+                  ? Array.from({ length: Math.min(6, recommendationParams.topK) }).map((_, index) => <CardSkeleton key={index} />)
+                  : jobs.map((job, index) => (
+                      <div key={job.id} className="relative">
+                        <div className="absolute left-3 top-3 z-10">
+                          <MatchBadge label={job.recommendation.label} score={job.recommendation.finalScore} />
+                        </div>
+                        <JobCard job={job} priority={index < 3} />
+                        <SkillGapPanel recommendation={job.recommendation} />
+                      </div>
+                    ))}
               </div>
             </>
           ) : (
@@ -250,23 +255,6 @@ function QuotaCard({ quota, loading }: { quota?: { limit: number; used: number; 
             </p>
           </>
         )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function ErrorCard({ onRetry, canRun, isRunning }: { onRetry: () => void; canRun: boolean; isRunning: boolean }) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-        <AlertCircle className="h-8 w-8 text-primary" />
-        <h2 className="mt-3 font-display text-2xl font-bold">AI recommendations are unavailable</h2>
-        <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-          Check that the backend and AI service are running, then try again.
-        </p>
-        <Button className="mt-4" type="button" onClick={onRetry} disabled={isRunning || !canRun}>
-          Try again
-        </Button>
       </CardContent>
     </Card>
   )

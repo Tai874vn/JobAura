@@ -37,6 +37,7 @@ const configuredImagePatterns = [
   { protocol: 'https', hostname: 'res.cloudinary.com', pathname: '/**' },
   { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
   { protocol: 'https', hostname: 'i.pravatar.cc', pathname: '/**' },
+  { protocol: 'https', hostname: 'lh3.googleusercontent.com', pathname: '/**' },
   imagePatternFromUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
   imagePatternFromUrl(process.env.BACKEND_API_BASE_URL),
   ...(process.env.NEXT_PUBLIC_IMAGE_HOSTS?.split(',').map(imagePatternFromHost) ?? []),

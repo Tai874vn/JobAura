@@ -15,7 +15,10 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/admin',
+        '/auth/callback',
+        '/candidates',
         '/connections',
+        '/jobs/new',
         '/logout',
         '/my-jobs',
         '/my-posts',

@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Image from 'next/image'
-import { BriefcaseBusiness, Home, LayoutDashboard, LogOut, Menu, Plus, Search, Settings, User } from 'lucide-react'
+import { BriefcaseBusiness, Home, LayoutDashboard, LogOut, Menu, Plus, Search, Settings, Sparkles, User } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -83,6 +83,11 @@ export function SiteHeader() {
               Find Candidates
             </Link>
           ) : null}
+          {isRecruiter ? (
+            <Link className="px-2 text-sm font-semibold text-muted hover:text-foreground" href="/recommendations/candidates">
+              AI Matching
+            </Link>
+          ) : null}
           {!isRecruiter ? (
             <>
               <Link className="px-2 text-sm font-semibold text-muted hover:text-foreground" href="/jobs">
@@ -132,6 +137,7 @@ export function SiteHeader() {
                 {isRecruiter ? (
                   <>
                     <MenuLink href="/candidates" icon={<Search className="h-4 w-4" />} label="Find candidates" />
+                    <MenuLink href="/recommendations/candidates" icon={<Sparkles className="h-4 w-4" />} label="AI matching" />
                     <MenuLink href="/connections" icon={<LayoutDashboard className="h-4 w-4" />} label="Connections" />
                   </>
                 ) : (
@@ -177,6 +183,7 @@ export function SiteHeader() {
           <div className="grid gap-2 text-sm font-semibold">
             {user && !isRecruiter ? <Link href="/">Home feed</Link> : null}
             {isRecruiter ? <Link href="/candidates">Find Candidates</Link> : null}
+            {isRecruiter ? <Link href="/recommendations/candidates">AI Matching</Link> : null}
             {!isRecruiter ? <Link href="/jobs">Explore</Link> : null}
             {!isRecruiter ? (
               <Link href="/jobs/new" className="flex items-center gap-2">

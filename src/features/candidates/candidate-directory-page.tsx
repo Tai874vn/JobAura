@@ -13,6 +13,7 @@ import {
   MapPin,
   Search,
   SlidersHorizontal,
+  Sparkles,
   Star,
   Users,
 } from 'lucide-react'
@@ -102,6 +103,12 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href="/recommendations/candidates">
+            <Button>
+              <Sparkles className="h-4 w-4" />
+              AI matching
+            </Button>
+          </Link>
           <Link href="/connections">
             <Button variant="secondary">
               <Users className="h-4 w-4" />
