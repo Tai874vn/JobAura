@@ -3,7 +3,9 @@
 import Image from 'next/image'
 import { ImagePlus, Send, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import type { UserProfile } from '@/shared/schemas'
+import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { Button, Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 
@@ -54,6 +56,25 @@ export function PostComposer({
     } catch {
       // The mutation displays the request error and keeps the draft open.
     }
+  }
+
+  function selectImage(file?: File) {
+    if (!file) {
+      setImageSelection(undefined)
+      return
+    }
+
+    const validation = validateImageFile(file, { label: 'Post image' })
+    if (!validation.valid) {
+      toast.error(validation.message)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
+    setImageSelection((current) => {
+      if (current?.preview) URL.revokeObjectURL(current.preview)
+      return { file, preview: URL.createObjectURL(file) }
+    })
   }
 
   return (
@@ -130,11 +151,10 @@ export function PostComposer({
             <input
               ref={fileRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept={imageUploadAccept}
               className="sr-only"
               onChange={(event) => {
-                const file = event.target.files?.[0]
-                setImageSelection(file ? { file, preview: URL.createObjectURL(file) } : undefined)
+                selectImage(event.target.files?.[0])
               }}
               id={`${inputId}-image`}
             />

@@ -366,8 +366,6 @@ describe('normalizers', () => {
       shortDescription: 'short',
       description: 'long',
       subcategoryId: 7,
-      reviews: 2,
-      rating: 3,
     })
 
     expect(toCategoryPayload({ tenLoaiCongViec: 'Web' })).toEqual({ name: 'Web' })

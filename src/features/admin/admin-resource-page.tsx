@@ -3,14 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { type FormEvent, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { commentsApi, hiredJobsApi, jobDetailTypesApi, jobTypesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Comment, HiredJob, Job, JobDetailType, JobType, User } from '@/shared/schemas'
-import { Badge, Button, Card, CardContent, Input, Skeleton } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, Input, Skeleton } from '@/shared/ui'
 
 type Resource = 'jobs' | 'users' | 'job-types' | 'job-detail-types' | 'hired-jobs' | 'comments'
 type Row = Job | User | JobType | JobDetailType | HiredJob | Comment
@@ -228,12 +227,10 @@ function getResourceConfig(resource: Resource) {
 function CreateButton({ config, onCreate }: { config: ResourceConfig; onCreate: () => void }) {
   if (config.createHref) {
     return (
-      <Link href={config.createHref}>
-        <Button>
-          <Plus className="h-4 w-4" />
-          {config.createLabel ?? 'Create'}
-        </Button>
-      </Link>
+      <ButtonLink href={config.createHref}>
+        <Plus className="h-4 w-4" />
+        {config.createLabel ?? 'Create'}
+      </ButtonLink>
     )
   }
 
@@ -320,7 +317,7 @@ function CreateResourceDialog({
         </div>
         <label className="block text-sm font-semibold">
           Name
-          <Input className="mt-2" value={name} onChange={(event) => setName(event.target.value)} autoFocus />
+          <Input className="mt-2" value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoFocus />
         </label>
         {config.create.needsParentType ? (
           <label className="mt-4 block text-sm font-semibold">

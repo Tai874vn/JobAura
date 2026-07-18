@@ -107,8 +107,32 @@ const contentSecurityPolicy = [
   cspDirective('media-src', ["'self'", 'blob:', 'data:']),
 ].join('; ')
 
+const contentSecurityPolicyReportOnly = [
+  cspDirective('default-src', ["'self'"]),
+  cspDirective('base-uri', ["'self'"]),
+  cspDirective('object-src', ["'none'"]),
+  cspDirective('frame-ancestors', ["'none'"]),
+  cspDirective('form-action', ["'self'"]),
+  cspDirective('script-src', ["'self'", "'report-sample'"]),
+  cspDirective('style-src', ["'self'", "'report-sample'"]),
+  cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
+  cspDirective('font-src', ["'self'", 'data:']),
+  cspDirective('connect-src', ["'self'", ...apiOrigins, ...websocketOrigins, 'https://*.ingest.sentry.io', 'https://*.sentry.io']),
+  cspDirective('frame-src', ["'self'", 'https://accounts.google.com']),
+  cspDirective('worker-src', ["'self'", 'blob:']),
+  cspDirective('media-src', ["'self'", 'blob:', 'data:']),
+  cspDirective('report-uri', ['/api/csp-report']),
+].join('; ')
+
+const enforceStrictCsp = process.env.CSP_ENFORCE_STRICT === 'true'
+const emitCspReportOnly = process.env.CSP_REPORT_ONLY !== 'false'
+
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+  { key: 'Content-Security-Policy', value: enforceStrictCsp ? contentSecurityPolicyReportOnly : contentSecurityPolicy },
+  ...(emitCspReportOnly && !enforceStrictCsp
+    ? [{ key: 'Content-Security-Policy-Report-Only', value: contentSecurityPolicyReportOnly }]
+    : []),
+  { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
@@ -120,6 +144,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   turbopack: {
     root: __dirname,
   },

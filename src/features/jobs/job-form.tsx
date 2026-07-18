@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import type { z } from 'zod'
 import { jobsApi, jobDetailTypesApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { createJobSchema, type CreateJob } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea } from '@/shared/ui'
@@ -27,6 +28,11 @@ export function JobForm() {
 
   const mutation = useMutation({
     mutationFn: async (values: CreateJob) => {
+      if (file) {
+        const validation = validateImageFile(file, { label: 'Service image' })
+        if (!validation.valid) throw new Error(validation.message)
+      }
+
       const created = await jobsApi.create(values)
       if (file && created.content?.id) await jobsApi.uploadImage(created.content.id, file)
       return created
@@ -37,6 +43,23 @@ export function JobForm() {
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to create service')),
   })
+
+  function selectImage(nextFile?: File) {
+    if (!nextFile) {
+      setFile(null)
+      return
+    }
+
+    const validation = validateImageFile(nextFile, { label: 'Service image' })
+    if (!validation.valid) {
+      toast.error(validation.message)
+      setFile(null)
+      if (fileRef.current) fileRef.current.value = ''
+      return
+    }
+
+    setFile(nextFile)
+  }
 
   return (
     <div className="container-page py-8">
@@ -66,7 +89,7 @@ export function JobForm() {
               <Textarea {...form.register('moTa')} placeholder="Explain process, deliverables, and what buyers get." />
             </Field>
             <div>
-              <input ref={fileRef} className="hidden" type="file" accept="image/*" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+              <input ref={fileRef} className="hidden" type="file" accept={imageUploadAccept} onChange={(event) => selectImage(event.target.files?.[0])} />
               <Button type="button" variant="secondary" onClick={() => fileRef.current?.click()}>{file ? file.name : 'Choose image'}</Button>
             </div>
             <Button className="w-fit" type="submit" disabled={mutation.isPending}>{mutation.isPending ? 'Publishing...' : 'Publish service'}</Button>

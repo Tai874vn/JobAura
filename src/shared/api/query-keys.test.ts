@@ -17,7 +17,7 @@ describe('query keys', () => {
 
   it('returns stable recommendation keys', () => {
     expect(queryKeys.recommendedJobs({ topK: 4 })).toEqual(['recommendations', 'jobs', { topK: 4 }])
-    expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'jobs', 12, 'candidates', { topK: 5 }])
+    expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'hiring-posts', 12, 'candidates', { topK: 5 }])
   })
 
   it('returns stable cursor job keys', () => {

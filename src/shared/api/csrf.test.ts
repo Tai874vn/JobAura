@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { csrfTokenFromCookie } from './csrf'
+import { csrfTokenFromCookie, hasCsrfTokenCookie } from './csrf'
 
 describe('csrfTokenFromCookie', () => {
   it('reads and decodes the CSRF token from a cookie header', () => {
@@ -8,5 +8,10 @@ describe('csrfTokenFromCookie', () => {
 
   it('returns undefined when the CSRF cookie is absent', () => {
     expect(csrfTokenFromCookie('theme=dark')).toBeUndefined()
+  })
+
+  it('detects whether a CSRF cookie is present', () => {
+    expect(hasCsrfTokenCookie('theme=dark; csrf_token=abc123')).toBe(true)
+    expect(hasCsrfTokenCookie('theme=dark')).toBe(false)
   })
 })

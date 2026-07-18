@@ -217,6 +217,7 @@ export function ChatShell() {
                 className="h-10 flex-1 rounded-lg border border-border px-3 text-sm outline-none focus:border-primary"
                 placeholder="Write a reply"
                 value={draft}
+                maxLength={5000}
                 onChange={(event) => {
                   setDraft(event.target.value)
                   if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })

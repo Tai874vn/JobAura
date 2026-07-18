@@ -12,7 +12,7 @@ export const apiResponseSchema = <T extends z.ZodType>(content: T) =>
 export const paginationParamsSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().default(12),
-  keyword: z.string().optional(),
+  keyword: z.string().trim().max(80).optional(),
 })
 
 export const paginatedContentSchema = <T extends z.ZodType>(item: T) =>
@@ -118,34 +118,32 @@ export const userResumeSchema = importResumeSchema.extend({
   updatedAt: z.string().optional(),
 })
 
-export const updateProfileSchema = userProfileSchema
-  .pick({
-    name: true,
-    phone: true,
-    birthDay: true,
-    gender: true,
-    headline: true,
-    bio: true,
-    location: true,
-    website: true,
-  })
-  .partial()
+export const updateProfileSchema = z.object({
+  name: z.string().trim().max(100, 'Name must be 100 characters or fewer').optional(),
+  phone: z.string().trim().max(30, 'Phone must be 30 characters or fewer').optional(),
+  birthDay: z.string().trim().max(30, 'Birthday must be 30 characters or fewer').optional(),
+  gender: z.string().trim().max(30, 'Gender must be 30 characters or fewer').optional(),
+  headline: z.string().trim().max(160, 'Headline must be 160 characters or fewer').optional(),
+  bio: z.string().trim().max(2000, 'Bio must be 2000 characters or fewer').optional(),
+  location: z.string().trim().max(120, 'Location must be 120 characters or fewer').optional(),
+  website: z.string().trim().max(300, 'Website must be 300 characters or fewer').optional(),
+})
 
 export const signInSchema = z.object({
   email: z.string().trim().pipe(z.email('Enter a valid email').toLowerCase()),
-  password: z.string().min(1, 'Password is required'),
+  password: z.string().min(1, 'Password is required').max(128, 'Password must be 128 characters or fewer'),
 })
 
 export const signUpSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  name: z.string().trim().min(2, 'Name must be at least 2 characters').max(100, 'Name must be 100 characters or fewer'),
   email: z.string().trim().pipe(z.email('Enter a valid email').toLowerCase()),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  phone: z.string().optional(),
-  birthDay: z.string().optional(),
-  gender: z.string().optional(),
+  password: z.string().min(6, 'Password must be at least 6 characters').max(128, 'Password must be 128 characters or fewer'),
+  phone: z.string().trim().max(30, 'Phone must be 30 characters or fewer').optional(),
+  birthDay: z.string().trim().max(30, 'Birthday must be 30 characters or fewer').optional(),
+  gender: z.string().trim().max(30, 'Gender must be 30 characters or fewer').optional(),
   role: z.enum(signupRoles).optional(),
-  skill: z.string().optional(),
-  certification: z.string().optional(),
+  skill: z.string().trim().optional(),
+  certification: z.string().trim().optional(),
 })
 
 const baseJobTypeSchema = z.object({
@@ -180,6 +178,58 @@ export const jobSchema = z.object({
   updatedAt: z.string().optional(),
   chiTietLoaiCongViec: jobDetailTypeSchema.optional(),
   nguoiDung: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
+})
+
+export const hiringPostStatusSchema = z.enum(['OPEN', 'CLOSED'])
+export const hiringApplicationStatusSchema = z.enum(['APPLIED', 'REVIEWING', 'ACCEPTED', 'REJECTED', 'WITHDRAWN'])
+
+export const hiringPostSchema = z.object({
+  id: z.number(),
+  recruiterId: z.number(),
+  title: z.string(),
+  description: z.string(),
+  requirements: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  employmentType: z.string().optional().nullable(),
+  salaryMin: z.number().optional().nullable(),
+  salaryMax: z.number().optional().nullable(),
+  status: hiringPostStatusSchema.default('OPEN'),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  recruiter: userSchema.pick({ id: true, name: true, avatar: true }).extend({
+    headline: z.string().optional().nullable(),
+  }).optional(),
+  applicationCount: z.number().optional().default(0),
+  viewerHasApplied: z.boolean().optional().default(false),
+})
+
+export const createHiringPostSchema = z.object({
+  title: z.string().trim().min(3, 'Role title is required').max(160, 'Role title must be 160 characters or fewer'),
+  description: z.string().trim().min(20, 'Description should explain the role').max(5000, 'Description must be 5000 characters or fewer'),
+  requirements: z.string().trim().max(3000, 'Requirements must be 3000 characters or fewer').optional(),
+  location: z.string().trim().max(120, 'Location must be 120 characters or fewer').optional(),
+  employmentType: z.string().trim().max(80, 'Employment type must be 80 characters or fewer').optional(),
+  salaryMin: z.coerce.number().min(0).optional(),
+  salaryMax: z.coerce.number().min(0).optional(),
+}).refine((data) => data.salaryMin === undefined || data.salaryMax === undefined || data.salaryMin <= data.salaryMax, {
+  message: 'Maximum salary must be greater than or equal to minimum salary',
+  path: ['salaryMax'],
+})
+
+export const applyHiringPostSchema = z.object({
+  coverLetter: z.string().trim().max(3000, 'Message must be 3000 characters or fewer').optional(),
+})
+
+export const hiringApplicationSchema = z.object({
+  id: z.number(),
+  hiringPostId: z.number(),
+  applicantId: z.number(),
+  coverLetter: z.string().optional().nullable(),
+  status: hiringApplicationStatusSchema,
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  hiringPost: hiringPostSchema.optional(),
+  applicant: userProfileSchema.optional(),
 })
 
 export const recommendationLabelSchema = z.enum(['high_match', 'medium_match', 'low_match'])
@@ -235,10 +285,10 @@ export const recommendedCandidateSchema = userProfileSchema.extend({
 })
 
 export const createJobSchema = z.object({
-  tenCongViec: z.string().min(3, 'Service title is required'),
+  tenCongViec: z.string().trim().min(3, 'Service title is required').max(160, 'Service title must be 160 characters or fewer'),
   giaTien: z.coerce.number().min(1, 'Price must be greater than zero'),
-  moTaNgan: z.string().optional(),
-  moTa: z.string().optional(),
+  moTaNgan: z.string().trim().max(500, 'Short description must be 500 characters or fewer').optional(),
+  moTa: z.string().trim().max(5000, 'Description must be 5000 characters or fewer').optional(),
   maChiTietLoai: z.coerce.number().min(1, 'Choose a category detail'),
   danhGia: z.coerce.number().default(0),
   saoCongViec: z.coerce.number().min(0).max(5).default(0),
@@ -258,7 +308,7 @@ export const commentSchema = z.object({
 
 export const createCommentSchema = z.object({
   maCongViec: z.number(),
-  noiDung: z.string().min(1, 'Comment is required'),
+  noiDung: z.string().trim().min(1, 'Comment is required').max(2000, 'Comment must be 2000 characters or fewer'),
   saoBinhLuan: z.coerce.number().min(1).max(5),
 })
 
@@ -420,6 +470,10 @@ export type UpdateProfile = z.infer<typeof updateProfileSchema>
 export type SignIn = z.infer<typeof signInSchema>
 export type SignUp = z.infer<typeof signUpSchema>
 export type Job = z.infer<typeof jobSchema>
+export type HiringPost = z.infer<typeof hiringPostSchema>
+export type CreateHiringPost = z.infer<typeof createHiringPostSchema>
+export type ApplyHiringPost = z.infer<typeof applyHiringPostSchema>
+export type HiringApplication = z.infer<typeof hiringApplicationSchema>
 export type RecommendationLabel = z.infer<typeof recommendationLabelSchema>
 export type RecommendationScore = z.infer<typeof recommendationScoreSchema>
 export type RecommendedJob = z.infer<typeof recommendedJobSchema>
@@ -428,7 +482,13 @@ export type RecommendationContent<T> = {
   data: T[]
   model?: string
   elapsedMs?: number
+  generatedAt?: string | null
   quota?: RecommendationQuota
+  cache?: {
+    hit: boolean
+    ttlSeconds: number
+    source?: 'redis' | 'database'
+  }
 }
 export type RecommendationQuota = {
   limit: number

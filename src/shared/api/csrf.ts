@@ -9,6 +9,12 @@ export function csrfTokenFromCookie(cookieHeader: string): string | undefined {
   return value ? decodeURIComponent(value) : undefined
 }
 
+export function hasCsrfTokenCookie(cookieHeader?: string): boolean {
+  if (typeof cookieHeader === 'string') return Boolean(csrfTokenFromCookie(cookieHeader))
+  if (typeof document === 'undefined') return false
+  return Boolean(csrfTokenFromCookie(document.cookie))
+}
+
 export function csrfTokenForMethod(method?: string): string | undefined {
   if (typeof document === 'undefined' || !method || !UNSAFE_METHODS.has(method.toLowerCase())) return undefined
   return csrfTokenFromCookie(document.cookie)

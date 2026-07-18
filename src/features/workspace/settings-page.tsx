@@ -25,6 +25,7 @@ import { toast } from 'sonner'
 import { authApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile, UserResume } from '@/shared/schemas'
+import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, Card, CardContent, Input, Spinner, Textarea } from '@/shared/ui'
@@ -831,10 +832,14 @@ function UploadField({ label, icon, onChange }: { label: string; icon: React.Rea
       <input
         className="sr-only"
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={imageUploadAccept}
         onChange={(event) => {
           const file = event.target.files?.[0]
-          if (file) onChange(file)
+          if (file) {
+            const validation = validateImageFile(file, { label })
+            if (validation.valid) onChange(file)
+            else toast.error(validation.message)
+          }
           event.target.value = ''
         }}
       />

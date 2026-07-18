@@ -1,26 +1,42 @@
-import type { RecommendationLabel } from '@/shared/schemas'
-import { Badge } from '@/shared/ui'
+import type { RecommendationLabel } from "@/shared/schemas";
+import { Badge } from "@/shared/ui";
+import { cn } from "@/shared/lib/utils";
 
 const labelText: Record<RecommendationLabel, string> = {
-  high_match: 'High match',
-  medium_match: 'Medium match',
-  low_match: 'Low match',
-}
+  high_match: "High match",
+  medium_match: "Medium match",
+  low_match: "Low match",
+};
 
 const labelClass: Record<RecommendationLabel, string> = {
-  high_match: 'border border-primary/20 bg-primary/10 text-primary',
-  medium_match: 'border border-[#b7791f]/35 bg-[#fff3bf] text-[#6f4600]',
-  low_match: 'border border-border bg-surface-muted text-foreground',
-}
+  high_match: "border border-primary/20 bg-white text-primary",
+  medium_match: "border border-[#b7791f]/35 bg-white text-[#6f4600]",
+  low_match: "border border-border bg-white text-foreground",
+};
 
 export function formatMatchScore(score: number) {
-  return `${Math.round(score * 100)}%`
+  return `${Math.round(score * 100)}%`;
 }
 
-export function MatchBadge({ label, score }: { label: RecommendationLabel; score: number }) {
+export function MatchBadge({
+  label,
+  score,
+  className,
+}: {
+  label: RecommendationLabel;
+  score: number;
+  className?: string;
+}) {
   return (
-    <Badge tone="neutral" className={labelClass[label]}>
+    <Badge
+      tone="neutral"
+      className={cn(
+        "transform-gpu shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.14)] group-hover/recommendation:-translate-y-0.5 group-hover/recommendation:shadow-[0_10px_24px_rgba(0,0,0,0.14)] group-focus-within/recommendation:-translate-y-0.5 group-focus-within/recommendation:shadow-[0_10px_24px_rgba(0,0,0,0.14)]",
+        labelClass[label],
+        className,
+      )}
+    >
       {labelText[label]} - {formatMatchScore(score)}
     </Badge>
-  )
+  );
 }

@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     template: '%s | JobAura',
   },
   description: defaultDescription,
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: ['/icon.svg'],
+  },
   openGraph: {
     title: 'JobAura',
     description: defaultDescription,

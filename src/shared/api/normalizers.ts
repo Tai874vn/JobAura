@@ -6,6 +6,8 @@ import type {
   CreateComment,
   CreateJob,
   HiredJob,
+  HiringApplication,
+  HiringPost,
   FeedAuthor,
   FeedPage,
   FeedPost,
@@ -350,6 +352,85 @@ export function normalizeJob(raw: unknown): Job {
   }
 }
 
+export function normalizeHiringPost(raw: unknown): HiringPost {
+  const record = asRecord(raw)
+  const status = pickString(record, 'status')
+  const recruiter = record.recruiter && typeof record.recruiter === 'object'
+    ? asRecord(record.recruiter)
+    : null
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    recruiterId: pickNumber(record, 'recruiterId') ?? 0,
+    title: pickString(record, 'title') ?? '',
+    description: pickString(record, 'description') ?? '',
+    requirements: pickString(record, 'requirements') ?? null,
+    location: pickString(record, 'location') ?? null,
+    employmentType: pickString(record, 'employmentType') ?? null,
+    salaryMin: pickNumber(record, 'salaryMin') ?? null,
+    salaryMax: pickNumber(record, 'salaryMax') ?? null,
+    status: status === 'CLOSED' ? 'CLOSED' : 'OPEN',
+    createdAt: pickString(record, 'createdAt'),
+    updatedAt: pickString(record, 'updatedAt'),
+    recruiter: recruiter
+      ? {
+          id: pickNumber(recruiter, 'id') ?? 0,
+          name: pickString(recruiter, 'name') ?? 'Recruiter',
+          avatar: pickString(recruiter, 'avatar') ?? null,
+          headline: pickString(recruiter, 'headline') ?? null,
+        }
+      : undefined,
+    applicationCount: pickNumber(record, 'applicationCount') ?? 0,
+    viewerHasApplied: pickBoolean(record, 'viewerHasApplied') ?? false,
+  }
+}
+
+export function normalizeHiringApplication(raw: unknown): HiringApplication {
+  const record = asRecord(raw)
+  const status = pickString(record, 'status')
+  const applicantRecord = record.applicant && typeof record.applicant === 'object'
+    ? asRecord(record.applicant)
+    : null
+  return {
+    id: pickNumber(record, 'id') ?? 0,
+    hiringPostId: pickNumber(record, 'hiringPostId') ?? 0,
+    applicantId: pickNumber(record, 'applicantId') ?? 0,
+    coverLetter: pickString(record, 'coverLetter') ?? null,
+    status:
+      status === 'REVIEWING' ||
+      status === 'ACCEPTED' ||
+      status === 'REJECTED' ||
+      status === 'WITHDRAWN'
+        ? status
+        : 'APPLIED',
+    createdAt: pickString(record, 'createdAt'),
+    updatedAt: pickString(record, 'updatedAt'),
+    hiringPost: record.hiringPost ? normalizeHiringPost(record.hiringPost) : undefined,
+    applicant: applicantRecord
+      ? {
+          id: pickNumber(applicantRecord, 'id') ?? 0,
+          name: pickString(applicantRecord, 'name') ?? 'Candidate',
+          email: pickString(applicantRecord, 'email') ?? '',
+          avatar: pickString(applicantRecord, 'avatar') ?? null,
+          headline: pickString(applicantRecord, 'headline') ?? null,
+          bio: pickString(applicantRecord, 'bio') ?? null,
+          location: pickString(applicantRecord, 'location') ?? null,
+          role: pickRole(applicantRecord),
+          profileSkills: Array.isArray(applicantRecord.profileSkills)
+            ? applicantRecord.profileSkills.map((skill) => {
+                const skillRecord = asRecord(skill)
+                return {
+                  id: pickNumber(skillRecord, 'id'),
+                  name: pickString(skillRecord, 'name') ?? '',
+                  level: pickString(skillRecord, 'level') ?? null,
+                  sortOrder: pickNumber(skillRecord, 'sortOrder'),
+                }
+              }).filter((skill) => skill.name)
+            : [],
+        }
+      : undefined,
+  }
+}
+
 export function normalizeRecommendationScore(raw: unknown): RecommendationScore {
   const record = asRecord(raw)
   const label = pickString(record, 'label', 'matchLabel')
@@ -378,6 +459,17 @@ export function normalizeRecommendationQuota(raw: unknown) {
     used: pickNumber(record, 'used') ?? 0,
     remaining: pickNumber(record, 'remaining') ?? 0,
     resetAt: pickString(record, 'resetAt') ?? '',
+  }
+}
+
+function normalizeRecommendationCache(raw: unknown): RecommendationContent<unknown>['cache'] | undefined {
+  if (!raw || typeof raw !== 'object') return undefined
+  const record = asRecord(raw)
+  const source = pickString(record, 'source')
+  return {
+    hit: pickBoolean(record, 'hit') ?? false,
+    ttlSeconds: pickNumber(record, 'ttlSeconds', 'ttl_seconds') ?? 0,
+    source: source === 'redis' || source === 'database' ? source : undefined,
   }
 }
 
@@ -505,6 +597,38 @@ export function normalizePaginatedJobsResponse(response: ApiResponse<PaginatedCo
   })
 }
 
+export function normalizePaginatedHiringPostsResponse(
+  response: ApiResponse<PaginatedContent<HiringPost>>
+): ApiResponse<PaginatedContent<HiringPost>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      ...content,
+      data: Array.isArray(record.data) ? record.data.map(normalizeHiringPost) : [],
+      pageIndex: pickNumber(record, 'pageIndex', 'page'),
+      pageSize: pickNumber(record, 'pageSize'),
+      totalRow: pickNumber(record, 'totalRow', 'total'),
+      totalPages: pickNumber(record, 'totalPages'),
+    }
+  })
+}
+
+export function normalizePaginatedHiringApplicationsResponse(
+  response: ApiResponse<PaginatedContent<HiringApplication>>
+): ApiResponse<PaginatedContent<HiringApplication>> {
+  return mapApiResponse(response, (content) => {
+    const record = asRecord(content)
+    return {
+      ...content,
+      data: Array.isArray(record.data) ? record.data.map(normalizeHiringApplication) : [],
+      pageIndex: pickNumber(record, 'pageIndex', 'page'),
+      pageSize: pickNumber(record, 'pageSize'),
+      totalRow: pickNumber(record, 'totalRow', 'total'),
+      totalPages: pickNumber(record, 'totalPages'),
+    }
+  })
+}
+
 export function normalizePaginatedCandidatesResponse(
   response: ApiResponse<PaginatedContent<CandidateProfile>>
 ): ApiResponse<PaginatedContent<CandidateProfile>> {
@@ -538,7 +662,9 @@ export function normalizeRecommendedJobsResponse(
       data,
       model: pickString(record, 'model'),
       elapsedMs: pickNumber(record, 'elapsedMs', 'elapsed_ms'),
+      generatedAt: pickString(record, 'generatedAt', 'generated_at') ?? null,
       quota: record.quota ? normalizeRecommendationQuota(record.quota) : undefined,
+      cache: normalizeRecommendationCache(record.cache),
     }
   })
 }
@@ -555,7 +681,9 @@ export function normalizeRecommendedCandidatesResponse(
       data,
       model: pickString(record, 'model'),
       elapsedMs: pickNumber(record, 'elapsedMs', 'elapsed_ms'),
+      generatedAt: pickString(record, 'generatedAt', 'generated_at') ?? null,
       quota: record.quota ? normalizeRecommendationQuota(record.quota) : undefined,
+      cache: normalizeRecommendationCache(record.cache),
     }
   })
 }
@@ -595,8 +723,6 @@ export function toJobPayload(data: CreateJob | UpdateJob) {
     shortDescription: data.moTaNgan,
     description: data.moTa,
     subcategoryId: data.maChiTietLoai,
-    reviews: data.danhGia,
-    rating: data.saoCongViec,
   }
 }
 

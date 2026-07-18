@@ -2,7 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query'
-import { Bell, CheckCheck, Loader2 } from 'lucide-react'
+import {
+  Bell,
+  BriefcaseBusiness,
+  CheckCheck,
+  CheckCircle2,
+  Heart,
+  Loader2,
+  MessageCircle,
+  MessageSquare,
+  UserCheck,
+  UserPlus,
+  type LucideIcon,
+} from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { io } from 'socket.io-client'
@@ -18,6 +30,50 @@ import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Skeleton } from '@/shared/ui'
 
 const previewLimit = 8
+
+type NotificationMeta = {
+  icon: LucideIcon
+  iconClassName: string
+  unreadClassName: string
+}
+
+const notificationMeta: Record<AppNotification['type'], NotificationMeta> = {
+  CHAT_MESSAGE: {
+    icon: MessageCircle,
+    iconClassName: 'bg-blue-50 text-blue-700 ring-blue-100',
+    unreadClassName: 'border-blue-200 bg-blue-50/60',
+  },
+  CONNECTION_REQUEST: {
+    icon: UserPlus,
+    iconClassName: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+    unreadClassName: 'border-emerald-200 bg-emerald-50/60',
+  },
+  CONNECTION_ACCEPTED: {
+    icon: UserCheck,
+    iconClassName: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+    unreadClassName: 'border-emerald-200 bg-emerald-50/60',
+  },
+  POST_LIKE: {
+    icon: Heart,
+    iconClassName: 'bg-rose-50 text-rose-700 ring-rose-100',
+    unreadClassName: 'border-rose-200 bg-rose-50/60',
+  },
+  POST_COMMENT: {
+    icon: MessageSquare,
+    iconClassName: 'bg-amber-50 text-amber-700 ring-amber-100',
+    unreadClassName: 'border-amber-200 bg-amber-50/60',
+  },
+  HIRE_CREATED: {
+    icon: BriefcaseBusiness,
+    iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100',
+    unreadClassName: 'border-violet-200 bg-violet-50/60',
+  },
+  HIRE_COMPLETED: {
+    icon: CheckCircle2,
+    iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100',
+    unreadClassName: 'border-violet-200 bg-violet-50/60',
+  },
+}
 
 export function NotificationBell() {
   const router = useRouter()
@@ -100,10 +156,12 @@ export function NotificationBell() {
       }
     }
 
-    if (notification.actionUrl) router.push(notification.actionUrl)
+    const actionUrl = safeInternalActionUrl(notification.actionUrl)
+    if (actionUrl) router.push(actionUrl)
+    else if (notification.actionUrl) toast.error('This notification link is unavailable')
   }
 
-  const notifications = listQuery.data?.content?.data ?? []
+  const notifications = sortNotificationsByActivity(listQuery.data?.content?.data ?? [])
   const unreadNotifications = notifications.filter((notification) => !notification.readAt)
   const readNotifications = notifications.filter((notification) => notification.readAt)
   const unreadCount = countQuery.data?.content?.unreadCount ?? 0
@@ -127,11 +185,13 @@ export function NotificationBell() {
       </Button>
 
       {open ? (
-        <div className="absolute right-0 top-11 z-50 w-[360px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
+        <div className="absolute right-0 top-11 z-50 w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <h2 className="font-display text-lg font-bold">Notifications</h2>
-              <p className="text-xs font-semibold text-muted">{unreadCount} unread</p>
+              <p className="text-xs font-semibold text-muted">
+                {unreadCount ? `${unreadCount} unread update${unreadCount === 1 ? '' : 's'}` : 'All caught up'}
+              </p>
             </div>
             <Button
               size="sm"
@@ -144,7 +204,7 @@ export function NotificationBell() {
             </Button>
           </div>
 
-          <div className="max-h-[420px] overflow-y-auto p-2">
+          <div className="max-h-[460px] overflow-y-auto p-2">
             {listQuery.isPending ? (
               <NotificationSkeleton />
             ) : listQuery.isError ? (
@@ -152,14 +212,16 @@ export function NotificationBell() {
             ) : notifications.length ? (
               <>
                 <NotificationSection
-                  title="New messages"
+                  title="Unread"
                   notifications={unreadNotifications}
                   onOpen={openNotification}
+                  emptyText="No unread notifications"
                 />
                 <NotificationSection
-                  title="Old messages"
+                  title="Read"
                   notifications={readNotifications}
                   onOpen={openNotification}
+                  emptyText="Read notifications will move here"
                 />
               </>
             ) : (
@@ -180,52 +242,84 @@ function NotificationSection({
   title,
   notifications,
   onOpen,
+  emptyText,
 }: {
   title: string
   notifications: AppNotification[]
   onOpen: (notification: AppNotification) => Promise<void>
+  emptyText: string
 }) {
-  if (!notifications.length) return null
-
   return (
     <section className="mb-2">
-      <div className="sticky top-0 z-10 bg-white px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-muted">
-        {title}
+      <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+        <span>{title}</span>
+        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] text-muted">{notifications.length}</span>
       </div>
+      {!notifications.length ? (
+        <div className="mx-1 mb-2 rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs font-semibold text-muted">
+          {emptyText}
+        </div>
+      ) : null}
       {notifications.map((notification) => (
-        <button
+        <NotificationRow
           key={notification.id}
-          className={cn(
-            'mb-1 flex w-full gap-3 rounded-lg p-3 text-left transition hover:bg-surface-muted',
-            !notification.readAt && 'bg-primary/5'
-          )}
+          notification={notification}
           onClick={() => void onOpen(notification)}
-        >
-          <NotificationAvatar notification={notification} />
-          <span className="min-w-0 flex-1">
-            <span className="flex items-start justify-between gap-2">
-              <span className="min-w-0">
-                <span className="block truncate text-sm font-bold">
-                  {notification.actor?.name ?? notification.title}
-                </span>
-                {notification.actor?.name ? (
-                  <span className="mt-0.5 block text-xs font-bold uppercase tracking-wide text-muted">
-                    {notification.title}
-                  </span>
-                ) : null}
-              </span>
-              {!notification.readAt ? <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" /> : null}
-            </span>
-            <span className="mt-1 block line-clamp-2 text-sm leading-5 text-muted">
-              {notificationBody(notification)}
-            </span>
-            <span className="mt-2 block text-xs font-semibold text-muted">
-              {formatNotificationTime(notification.createdAt)}
-            </span>
-          </span>
-        </button>
+        />
       ))}
     </section>
+  )
+}
+
+function NotificationRow({
+  notification,
+  onClick,
+}: {
+  notification: AppNotification
+  onClick: () => void
+}) {
+  const meta = notificationMeta[notification.type]
+  const Icon = meta.icon
+  const isUnread = !notification.readAt
+  const context = notificationContext(notification)
+  const detail = notificationDetail(notification)
+
+  return (
+    <button
+      className={cn(
+        'group relative mb-1 flex w-full gap-3 rounded-lg border border-transparent p-3 pr-7 text-left transition hover:border-border hover:bg-surface-muted',
+        isUnread && meta.unreadClassName
+      )}
+      onClick={onClick}
+    >
+      <NotificationAvatar notification={notification} />
+      <span className={cn('mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ring-1', meta.iconClassName)}>
+        <Icon className="h-3.5 w-3.5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-start justify-between gap-2">
+          <span className={cn('block min-w-0 truncate text-sm', isUnread ? 'font-bold text-foreground' : 'font-semibold text-muted')}>
+            {notificationHeadline(notification)}
+          </span>
+          <time className="shrink-0 text-xs font-semibold text-muted" dateTime={notificationActivityTime(notification)}>
+            {formatNotificationTime(notificationActivityTime(notification))}
+          </time>
+        </span>
+
+        {context ? (
+          <span className={cn('mt-1 block truncate text-xs font-semibold uppercase tracking-wide', isUnread ? 'text-foreground' : 'text-muted')}>
+            {context}
+          </span>
+        ) : null}
+
+        {detail ? (
+          <span className={cn('mt-1.5 block line-clamp-2 text-sm leading-5', isUnread ? 'text-foreground' : 'text-muted')}>
+            {detail}
+          </span>
+        ) : null}
+      </span>
+      {isUnread ? <span className="absolute right-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-danger" aria-label="Unread" /> : null}
+    </button>
   )
 }
 
@@ -234,9 +328,9 @@ function NotificationAvatar({ notification }: { notification: AppNotification })
   const avatarUrl = resolveAssetUrl(actor?.avatar)
 
   return (
-    <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-bold text-white">
+    <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-bold text-white">
       {avatarUrl && actor ? (
-        <Image src={avatarUrl} alt={actor.name} fill unoptimized={shouldBypassImageOptimizer(actor.avatar)} className="object-cover" sizes="40px" />
+        <Image src={avatarUrl} alt={actor.name} fill unoptimized={shouldBypassImageOptimizer(actor.avatar)} className="object-cover" sizes="44px" />
       ) : initials(actor?.name)}
     </span>
   )
@@ -269,10 +363,57 @@ function roomIdFromNotification(notification: AppNotification) {
   return null
 }
 
-function notificationBody(notification: AppNotification) {
-  if (notification.type !== 'CHAT_MESSAGE') return notification.body
-  const count = unreadMessageCount(notification)
-  return count === 1 ? '1 new message' : `${count} new messages`
+function safeInternalActionUrl(value: string | null | undefined) {
+  const path = value?.trim()
+  if (!path || !path.startsWith('/') || path.startsWith('//')) return null
+
+  try {
+    const url = new URL(path, 'https://jobaura.local')
+    if (url.origin !== 'https://jobaura.local') return null
+    return `${url.pathname}${url.search}${url.hash}`
+  } catch {
+    return null
+  }
+}
+
+function notificationHeadline(notification: AppNotification) {
+  const actorName = notification.actor?.name?.trim()
+  if (!actorName) return notification.title
+  if (notification.readAt) return actorName
+
+  if (notification.type === 'CHAT_MESSAGE') {
+    const count = unreadMessageCount(notification)
+    return count === 1 ? `New message from ${actorName}` : `${count} new messages from ${actorName}`
+  }
+
+  if (notification.type === 'CONNECTION_REQUEST') return `${actorName} sent a connection request`
+  if (notification.type === 'CONNECTION_ACCEPTED') return `${actorName} accepted your request`
+  if (notification.type === 'POST_LIKE') return `${actorName} reacted to your post`
+  if (notification.type === 'POST_COMMENT') return `${actorName} commented on your post`
+  if (notification.type === 'HIRE_CREATED') return `${actorName} created a hire update`
+  if (notification.type === 'HIRE_COMPLETED') return `${actorName} completed a hire update`
+
+  return actorName
+}
+
+function notificationContext(notification: AppNotification) {
+  if (notification.type === 'CHAT_MESSAGE') return 'Message'
+  if (notification.type === 'POST_COMMENT' || notification.type === 'POST_LIKE') {
+    return metadataString(notification, 'postTitle') ?? 'Post'
+  }
+  if (notification.type === 'CONNECTION_REQUEST' || notification.type === 'CONNECTION_ACCEPTED') return 'Connection'
+  if (notification.type === 'HIRE_CREATED' || notification.type === 'HIRE_COMPLETED') return 'Hiring'
+  return null
+}
+
+function notificationDetail(notification: AppNotification) {
+  if (notification.type === 'CHAT_MESSAGE') return null
+  return notification.body || null
+}
+
+function metadataString(notification: AppNotification, key: string) {
+  const value = notification.metadata?.[key]
+  return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
 function unreadMessageCount(notification: AppNotification) {
@@ -292,7 +433,7 @@ function prependNotification(queryClient: QueryClient, notification: AppNotifica
     return {
       ...(current ?? {}),
       content: {
-        data: [notification, ...nextItems].slice(0, previewLimit),
+        data: sortNotificationsByActivity([notification, ...nextItems]).slice(0, previewLimit),
         nextCursor: current?.content?.nextCursor ?? null,
       },
     }
@@ -306,7 +447,7 @@ function updateNotificationInCache(queryClient: QueryClient, notification: AppNo
       ...current,
       content: {
         ...current.content,
-        data: current.content.data.map((item) => item.id === notification.id ? notification : item),
+        data: sortNotificationsByActivity(current.content.data.map((item) => item.id === notification.id ? notification : item)),
       },
     }
   })
@@ -320,14 +461,40 @@ function markCachedNotificationsRead(queryClient: QueryClient) {
       ...current,
       content: {
         ...current.content,
-        data: current.content.data.map((item) => ({ ...item, readAt: item.readAt ?? readAt })),
+        data: sortNotificationsByActivity(current.content.data.map((item) => ({ ...item, readAt: item.readAt ?? readAt }))),
       },
     }
   })
 }
 
+function sortNotificationsByActivity(notifications: AppNotification[]) {
+  return [...notifications].sort((left, right) => {
+    const leftUnread = left.readAt ? 0 : 1
+    const rightUnread = right.readAt ? 0 : 1
+    if (leftUnread !== rightUnread) return rightUnread - leftUnread
+
+    const timeDifference = notificationTimeValue(right) - notificationTimeValue(left)
+    if (timeDifference) return timeDifference
+    return right.id - left.id
+  })
+}
+
+function notificationActivityTime(notification: AppNotification) {
+  return notification.updatedAt ?? notification.createdAt
+}
+
+function notificationTimeValue(notification: AppNotification) {
+  const value = new Date(notificationActivityTime(notification)).getTime()
+  return Number.isNaN(value) ? 0 : value
+}
+
 function formatNotificationTime(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return ''
+  const diffMs = Date.now() - date.getTime()
+  if (diffMs < 60_000) return 'Just now'
+  if (diffMs < 3_600_000) return `${Math.max(1, Math.floor(diffMs / 60_000))}m ago`
+  if (diffMs < 86_400_000) return `${Math.floor(diffMs / 3_600_000)}h ago`
+  if (diffMs < 172_800_000) return 'Yesterday'
   return date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }

@@ -1,9 +1,9 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { chatApi, connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -18,13 +18,38 @@ type ConnectionsTab = 'connections' | 'requests' | 'discover'
 export function ConnectionsPage() {
   const [tab, setTab] = useState<ConnectionsTab>('connections')
   const [keyword, setKeyword] = useState('')
+  const [debouncedKeyword, setDebouncedKeyword] = useState('')
   const [connectionToRemove, setConnectionToRemove] = useState<Connection | null>(null)
   const queryClient = useQueryClient()
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
-  const params = { page: 1, pageSize: 24, keyword: keyword.trim() || undefined }
-  const connectionsQuery = useQuery({ queryKey: queryKeys.connections(params), queryFn: () => connectionsApi.all(params), enabled: tab === 'connections' })
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedKeyword(keyword.trim())
+    }, 400)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [keyword])
+
+  const params = useMemo(
+    () => ({ page: 1, pageSize: 24, keyword: debouncedKeyword || undefined }),
+    [debouncedKeyword]
+  )
+  const connectionsQuery = useQuery({
+    queryKey: queryKeys.connections(params),
+    queryFn: () => connectionsApi.all(params),
+    enabled: tab === 'connections',
+    placeholderData: keepPreviousData,
+    staleTime: 10_000,
+  })
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests, queryFn: connectionsApi.requests })
-  const suggestionsQuery = useQuery({ queryKey: queryKeys.connectionSuggestions(params), queryFn: () => connectionsApi.suggestions(params), enabled: tab === 'discover' })
+  const suggestionsQuery = useQuery({
+    queryKey: queryKeys.connectionSuggestions(params),
+    queryFn: () => connectionsApi.suggestions(params),
+    enabled: tab === 'discover',
+    placeholderData: keepPreviousData,
+    staleTime: 10_000,
+  })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['connections'] })
   const sendMutation = useMutation({ mutationFn: connectionsApi.send, onSuccess: refresh, onError: (error) => toast.error(getErrorMessage(error, 'Could not send request')) })
@@ -54,7 +79,7 @@ export function ConnectionsPage() {
         {tab !== 'requests' ? (
           <label className="flex h-10 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-white px-3">
             <Search className="h-4 w-4 text-muted" />
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Search people, skills, or location" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+            <input value={keyword} maxLength={80} onChange={(event) => setKeyword(event.target.value)} placeholder="Search people, skills, or location" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
           </label>
         ) : null}
       </div>

@@ -9,20 +9,28 @@ describe('domain schemas', () => {
 
   it('coerces create job fields and validates ranges', () => {
     const parsed = createJobSchema.parse({
-      tenCongViec: 'Landing Page',
+      tenCongViec: '  Landing Page  ',
       giaTien: '150',
       maChiTietLoai: '3',
       saoCongViec: '5',
     })
+    expect(parsed.tenCongViec).toBe('Landing Page')
     expect(parsed.giaTien).toBe(150)
     expect(parsed.maChiTietLoai).toBe(3)
     expect(parsed.saoCongViec).toBe(5)
+    expect(() =>
+      createJobSchema.parse({
+        tenCongViec: '   ',
+        giaTien: '150',
+        maChiTietLoai: '3',
+      })
+    ).toThrow()
   })
 
   it('provides defaults for paginated content and rejects invalid comments', () => {
     const schema = paginatedContentSchema(createCommentSchema)
     expect(schema.parse({}).data).toEqual([])
-    expect(() => createCommentSchema.parse({ maCongViec: 1, noiDung: '', saoBinhLuan: 0 })).toThrow()
+    expect(() => createCommentSchema.parse({ maCongViec: 1, noiDung: '   ', saoBinhLuan: 0 })).toThrow()
   })
 
   it('validates recommendation labels and recommended jobs', () => {

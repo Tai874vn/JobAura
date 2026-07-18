@@ -1,8 +1,7 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
   ArrowUpRight,
@@ -29,7 +28,7 @@ import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { CandidateProfile } from '@/shared/schemas'
-import { Button, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -44,17 +43,30 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
   const [keyword, setKeyword] = useState(initialKeyword)
   const [skill, setSkill] = useState('')
   const [location, setLocation] = useState('')
+  const [debouncedKeyword, setDebouncedKeyword] = useState(initialKeyword.trim())
+  const [debouncedSkill, setDebouncedSkill] = useState('')
+  const [debouncedLocation, setDebouncedLocation] = useState('')
   const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedKeyword(keyword.trim())
+      setDebouncedSkill(skill.trim())
+      setDebouncedLocation(location.trim())
+    }, 400)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [keyword, location, skill])
 
   const params = useMemo(
     () => ({
       page,
       pageSize,
-      keyword: keyword.trim() || undefined,
-      skill: skill.trim() || undefined,
-      location: location.trim() || undefined,
+      keyword: debouncedKeyword || undefined,
+      skill: debouncedSkill || undefined,
+      location: debouncedLocation || undefined,
     }),
-    [keyword, location, page, skill]
+    [debouncedKeyword, debouncedLocation, debouncedSkill, page]
   )
   const query = useQuery({
     queryKey: queryKeys.candidates(params),
@@ -71,6 +83,9 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
     setKeyword('')
     setSkill('')
     setLocation('')
+    setDebouncedKeyword('')
+    setDebouncedSkill('')
+    setDebouncedLocation('')
     setPage(1)
   }
 
@@ -103,24 +118,18 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/recommendations/candidates">
-            <Button>
-              <Sparkles className="h-4 w-4" />
-              AI matching
-            </Button>
-          </Link>
-          <Link href="/connections">
-            <Button variant="secondary">
-              <Users className="h-4 w-4" />
-              Connections
-            </Button>
-          </Link>
-          <Link href="/settings">
-            <Button>
-              <SlidersHorizontal className="h-4 w-4" />
-              Hiring profile
-            </Button>
-          </Link>
+          <ButtonLink href="/recommendations/candidates">
+            <Sparkles className="h-4 w-4" />
+            AI matching
+          </ButtonLink>
+          <ButtonLink href="/connections" variant="secondary">
+            <Users className="h-4 w-4" />
+            Connections
+          </ButtonLink>
+          <ButtonLink href="/settings">
+            <SlidersHorizontal className="h-4 w-4" />
+            Hiring profile
+          </ButtonLink>
         </div>
       </div>
 
@@ -277,12 +286,10 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
         <p className="mt-3 text-xs leading-5 text-muted">Profile quality {Math.round(candidate.match.qualityScore * 100)}%</p>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href={`/profile/${candidate.id}`} className="flex-1">
-            <Button className="w-full" variant="secondary">
-              View profile
-              <ArrowUpRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <ButtonLink href={`/profile/${candidate.id}`} className="flex-1" variant="secondary">
+            View profile
+            <ArrowUpRight className="h-4 w-4" />
+          </ButtonLink>
           <ConnectionActions className="flex-1" userId={candidate.id} userName={candidate.name} />
         </div>
       </CardContent>

@@ -3,13 +3,42 @@ import { getServerEnv } from '@/shared/config/env'
 
 const { backendApiBaseUrl } = getServerEnv()
 
+const requestHeadersToStrip = [
+  'accept-encoding',
+  'connection',
+  'content-length',
+  'host',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
+  'x-forwarded-for',
+  'x-forwarded-host',
+  'x-forwarded-proto',
+  'x-real-ip',
+]
+
+const responseHeadersToStrip = [
+  'connection',
+  'content-length',
+  'keep-alive',
+  'proxy-authenticate',
+  'proxy-authorization',
+  'te',
+  'trailer',
+  'transfer-encoding',
+  'upgrade',
+]
+
 async function proxyRequest(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params
   const targetUrl = new URL(`/api/${path.join('/')}`, backendApiBaseUrl)
   targetUrl.search = request.nextUrl.search
 
-  const headers = new Headers(request.headers)
-  headers.delete('host')
+  const headers = strippedHeaders(request.headers, requestHeadersToStrip)
 
   try {
     const response = await fetch(targetUrl, {
@@ -23,7 +52,7 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
     return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers,
+      headers: strippedHeaders(response.headers, responseHeadersToStrip),
     })
   } catch (error) {
     return NextResponse.json(
@@ -38,3 +67,9 @@ export const POST = proxyRequest
 export const PATCH = proxyRequest
 export const PUT = proxyRequest
 export const DELETE = proxyRequest
+
+function strippedHeaders(source: Headers, names: string[]) {
+  const headers = new Headers(source)
+  names.forEach((name) => headers.delete(name))
+  return headers
+}

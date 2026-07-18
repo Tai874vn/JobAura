@@ -1,5 +1,7 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { RegisterForm } from '@/features/auth/auth-forms'
+import { Spinner } from '@/shared/ui'
 
 export const metadata: Metadata = {
   title: 'Create account',
@@ -11,5 +13,9 @@ export const metadata: Metadata = {
 }
 
 export default function RegisterPage() {
-  return <RegisterForm />
+  return (
+    <Suspense fallback={<main className="flex min-h-screen items-center justify-center" aria-label="Loading registration"><Spinner /></main>}>
+      <RegisterForm />
+    </Suspense>
+  )
 }

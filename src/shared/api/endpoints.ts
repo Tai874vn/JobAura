@@ -8,8 +8,12 @@ import type {
   ChatRoom,
   Comment,
   CreateComment,
+  ApplyHiringPost,
+  CreateHiringPost,
   CreateJob,
   HiredJob,
+  HiringApplication,
+  HiringPost,
   FeedPage,
   FeedPost,
   FeedStats,
@@ -58,6 +62,10 @@ import {
   normalizeConnectionSuggestionsResponse,
   normalizeCursorJobsResponse,
   normalizeSavedJobsResponse,
+  normalizeHiringApplication,
+  normalizeHiringPost,
+  normalizePaginatedHiringApplicationsResponse,
+  normalizePaginatedHiringPostsResponse,
   normalizeJob,
   normalizeJobResponse,
   normalizeJobsResponse,
@@ -73,10 +81,13 @@ import {
   toJobPayload,
   toSubcategoryPayload,
 } from './normalizers'
+import { assertValidImageFile } from '@/shared/lib/file-validation'
 
 type RecommendationParams = {
   topK?: number
   poolSize?: number
+  cacheOnly?: boolean
+  forceRefresh?: boolean
 }
 
 type JobCursorParams = {
@@ -143,6 +154,7 @@ export const jobsApi = {
   },
   delete: async (id: number) => (await apiClient.delete<ApiResponse<void>>(`/api/jobs/${id}`)).data,
   uploadImage: async (jobId: number, file: File) => {
+    assertValidImageFile(file, { label: 'Service image' })
     const formData = new FormData()
     formData.append('file', file)
     const response = (await uploadClient.post<ApiResponse<Job>>(`/api/jobs/upload-image/${jobId}`, formData)).data
@@ -158,9 +170,41 @@ export const recommendationsApi = {
     normalizeRecommendedJobsResponse(
       (await apiClient.get<ApiResponse<RecommendationContent<RecommendedJob>>>('/api/recommendations/jobs', { params })).data
     ),
-  candidates: async (jobId: number, params?: RecommendationParams) =>
+  candidates: async (hiringPostId: number, params?: RecommendationParams) =>
     normalizeRecommendedCandidatesResponse(
-      (await apiClient.get<ApiResponse<RecommendationContent<RecommendedCandidate>>>(`/api/recommendations/jobs/${jobId}/candidates`, { params })).data
+      (await apiClient.get<ApiResponse<RecommendationContent<RecommendedCandidate>>>(`/api/recommendations/hiring-posts/${hiringPostId}/candidates`, { params })).data
+    ),
+}
+
+export const hiringPostsApi = {
+  open: async (params: PaginationParams) =>
+    normalizePaginatedHiringPostsResponse(
+      (await apiClient.get<ApiResponse<PaginatedContent<HiringPost>>>('/api/hiring-posts', { params: definedParams(params) })).data
+    ),
+  mine: async (params: PaginationParams) =>
+    normalizePaginatedHiringPostsResponse(
+      (await apiClient.get<ApiResponse<PaginatedContent<HiringPost>>>('/api/hiring-posts/mine', { params: definedParams(params) })).data
+    ),
+  create: async (data: CreateHiringPost) => {
+    const response = (await apiClient.post<ApiResponse<HiringPost>>('/api/hiring-posts', data)).data
+    return response.content ? { ...response, content: normalizeHiringPost(response.content) } : response
+  },
+  update: async (id: number, data: Partial<CreateHiringPost> & { status?: HiringPost['status'] }) => {
+    const response = (await apiClient.patch<ApiResponse<HiringPost>>(`/api/hiring-posts/${id}`, data)).data
+    return response.content ? { ...response, content: normalizeHiringPost(response.content) } : response
+  },
+  delete: async (id: number) => (await apiClient.delete<ApiResponse<void>>(`/api/hiring-posts/${id}`)).data,
+  apply: async (id: number, data: ApplyHiringPost = {}) => {
+    const response = (await apiClient.post<ApiResponse<HiringApplication>>(`/api/hiring-posts/${id}/applications`, data)).data
+    return response.content ? { ...response, content: normalizeHiringApplication(response.content) } : response
+  },
+  applications: async (id: number, params: PaginationParams) =>
+    normalizePaginatedHiringApplicationsResponse(
+      (await apiClient.get<ApiResponse<PaginatedContent<HiringApplication>>>(`/api/hiring-posts/${id}/applications`, { params: definedParams(params) })).data
+    ),
+  myApplications: async (params: PaginationParams) =>
+    normalizePaginatedHiringApplicationsResponse(
+      (await apiClient.get<ApiResponse<PaginatedContent<HiringApplication>>>('/api/hiring-posts/applications/me', { params: definedParams(params) })).data
     ),
 }
 
@@ -171,6 +215,7 @@ export const postsApi = {
     ),
   stats: async () => (await apiClient.get<ApiResponse<FeedStats>>('/api/posts/me/stats')).data,
   create: async (content: string, image?: File) => {
+    if (image) assertValidImageFile(image, { label: 'Post image' })
     const formData = new FormData()
     if (content.trim()) formData.append('content', content.trim())
     if (image) formData.append('image', image)
@@ -322,11 +367,13 @@ export const usersApi = {
   update: async (id: number, data: Partial<User>) => (await apiClient.put<ApiResponse<User>>(`/api/users/${id}`, data)).data,
   delete: async (id: number) => (await apiClient.delete<ApiResponse<void>>(`/api/users/${id}`)).data,
   uploadAvatar: async (file: File) => {
+    assertValidImageFile(file, { label: 'Avatar' })
     const formData = new FormData()
     formData.append('file', file)
     return (await uploadClient.post<ApiResponse<UserProfile>>('/api/users/upload-avatar', formData)).data
   },
   uploadCover: async (file: File) => {
+    assertValidImageFile(file, { label: 'Cover image' })
     const formData = new FormData()
     formData.append('file', file)
     return (await uploadClient.post<ApiResponse<UserProfile>>('/api/users/upload-cover', formData)).data

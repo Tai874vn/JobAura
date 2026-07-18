@@ -2,16 +2,17 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { env } from '@/shared/config/env'
 import { GoogleIcon } from '@/shared/icons'
-import { getSignedInRedirect, signupRoleOptions } from '@/shared/lib/roles'
+import { getSignedInRedirect, signupRoleOptions, type SignupRole } from '@/shared/lib/roles'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { signInSchema, signUpSchema, type SignIn, type SignUp } from '@/shared/schemas'
 import { useAuthStore } from '@/shared/stores/auth-store'
@@ -20,19 +21,26 @@ import { Button, Card, CardContent, Input, Spinner } from '@/shared/ui'
 export function LoginForm() {
   const searchParams = useSearchParams()
   const nextPath = searchParams.get('next')
+  const notice = searchParams.get('notice')
 
   return (
     <AuthPageGate nextPath={nextPath}>
-      <LoginFormFields nextPath={nextPath} />
+      <LoginFormFields nextPath={nextPath} notice={notice} />
     </AuthPageGate>
   )
 }
 
-function LoginFormFields({ nextPath }: { nextPath: string | null }) {
+function LoginFormFields({ nextPath, notice }: { nextPath: string | null; notice?: string | null }) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
+  const [roleModalOpen, setRoleModalOpen] = useState(notice === 'google-role-required')
+  const [googleSignupRole, setGoogleSignupRole] = useState<SignupRole | null>(null)
   const form = useForm<SignIn>({ resolver: zodResolver(signInSchema), defaultValues: { email: '', password: '' } })
+
+  useEffect(() => {
+    if (notice === 'google-role-required') setRoleModalOpen(true)
+  }, [notice])
 
   const mutation = useMutation({
     mutationFn: authApi.signIn,
@@ -47,6 +55,15 @@ function LoginFormFields({ nextPath }: { nextPath: string | null }) {
 
   function continueWithGoogle() {
     window.location.assign(`${env.apiBaseUrl}/api/auth/google`)
+  }
+
+  function continueGoogleSignupWithRole() {
+    if (!googleSignupRole) {
+      toast.error('Choose an account type first')
+      return
+    }
+
+    window.location.assign(`${env.apiBaseUrl}/api/auth/google?role=${encodeURIComponent(googleSignupRole)}`)
   }
 
   return (
@@ -71,6 +88,13 @@ function LoginFormFields({ nextPath }: { nextPath: string | null }) {
         <GoogleIcon />
         Continue with Google
       </Button>
+      <GoogleSignupRoleModal
+        open={roleModalOpen}
+        selectedRole={googleSignupRole}
+        onSelect={setGoogleSignupRole}
+        onClose={() => setRoleModalOpen(false)}
+        onContinue={continueGoogleSignupWithRole}
+      />
       <p className="mt-5 text-center text-sm text-muted">
         New here?{' '}
         <Link className="font-semibold text-primary" href="/auth/register">
@@ -81,23 +105,116 @@ function LoginFormFields({ nextPath }: { nextPath: string | null }) {
   )
 }
 
+function GoogleSignupRoleModal({
+  open,
+  selectedRole,
+  onSelect,
+  onClose,
+  onContinue,
+}: {
+  open: boolean
+  selectedRole: SignupRole | null
+  onSelect: (role: SignupRole) => void
+  onClose: () => void
+  onContinue: () => void
+}) {
+  useEffect(() => {
+    if (!open) return
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, open])
+
+  if (!open) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="google-role-title"
+        aria-describedby="google-role-description"
+        className="relative w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl"
+      >
+        <Button
+          className="absolute right-2 top-2"
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          title="Close account type selection"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+        <div className="pr-9">
+          <h2 id="google-role-title" className="font-display text-xl font-bold">
+            Choose your account type
+          </h2>
+          <p id="google-role-description" className="mt-2 text-sm leading-6 text-muted">
+            This Google account is not registered yet. Choose how you want to use JobAura before creating it.
+          </p>
+        </div>
+        <div className="mt-5 grid gap-2 sm:grid-cols-2">
+          {signupRoleOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={`rounded-lg border p-3 text-left transition ${
+                selectedRole === option.value
+                  ? 'border-primary bg-primary/5 text-foreground'
+                  : 'border-border bg-white text-muted hover:border-primary hover:text-foreground'
+              }`}
+              aria-pressed={selectedRole === option.value}
+              onClick={() => onSelect(option.value)}
+            >
+              <span className="block text-sm font-bold">{option.label}</span>
+              <span className="mt-1 block text-xs leading-5">{option.description}</span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Not now
+          </Button>
+          <Button type="button" onClick={onContinue} disabled={!selectedRole}>
+            Continue with Google
+          </Button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export function RegisterForm() {
+  const searchParams = useSearchParams()
+  const notice = searchParams.get('notice')
+
   return (
     <AuthPageGate>
-      <RegisterFormFields />
+      <RegisterFormFields notice={notice} />
     </AuthPageGate>
   )
 }
 
-function RegisterFormFields() {
+function RegisterFormFields({ notice }: { notice?: string | null }) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
   const form = useForm<SignUp>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { name: '', email: '', password: '', role: 'user' },
+    defaultValues: { name: '', email: '', password: '' },
   })
-  const selectedRole = useWatch({ control: form.control, name: 'role' }) ?? 'user'
+  const selectedRole = useWatch({ control: form.control, name: 'role' })
+  const roleRegistration = form.register('role', {
+    onChange: () => form.clearErrors('role'),
+  })
 
   const mutation = useMutation({
     mutationFn: authApi.signUp,
@@ -110,9 +227,37 @@ function RegisterFormFields() {
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to create account')),
   })
 
+  function requireRole() {
+    if (selectedRole === 'user' || selectedRole === 'employer') return selectedRole
+
+    form.setError('role', {
+      type: 'manual',
+      message: 'Choose Worker or Employer before continuing.',
+    })
+    toast.error('Choose an account type first')
+    return null
+  }
+
+  function createAccount(values: SignUp) {
+    const role = requireRole()
+    if (!role) return
+    mutation.mutate({ ...values, role })
+  }
+
+  function continueWithGoogle() {
+    const role = requireRole()
+    if (!role) return
+    window.location.assign(`${env.apiBaseUrl}/api/auth/google?role=${encodeURIComponent(role)}`)
+  }
+
   return (
     <AuthCard title="Create your JobAura account" subtitle="Start buying or selling trusted freelance services.">
-      <form className="space-y-4" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
+      {notice === 'google-role-required' ? (
+        <p className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary">
+          Choose an account type, then continue with Google again or complete your account with email and password.
+        </p>
+      ) : null}
+      <form className="space-y-4" onSubmit={form.handleSubmit(createAccount)}>
         <FieldError message={form.formState.errors.name?.message}>
           <Input placeholder="Full name" {...form.register('name')} />
         </FieldError>
@@ -134,12 +279,24 @@ function RegisterFormFields() {
                     : 'border-border bg-white text-muted hover:border-primary hover:text-foreground'
                 }`}
               >
-                <input className="sr-only" type="radio" value={option.value} {...form.register('role')} />
+                <input className="sr-only" type="radio" value={option.value} {...roleRegistration} />
                 <span className="block text-sm font-bold">{option.label}</span>
                 <span className="mt-1 block text-xs leading-5">{option.description}</span>
               </label>
             ))}
           </div>
+          {form.formState.errors.role?.message ? (
+            <span className="text-xs font-medium text-danger">{form.formState.errors.role.message}</span>
+          ) : null}
+        </div>
+        <Button className="w-full bg-white" type="button" variant="secondary" onClick={continueWithGoogle}>
+          <GoogleIcon />
+          Continue with Google
+        </Button>
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">or</span>
+          <span className="h-px flex-1 bg-border" />
         </div>
         <Button className="w-full" type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? 'Creating account...' : 'Create account'}

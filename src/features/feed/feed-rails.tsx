@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Bookmark, BriefcaseBusiness, FileText, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { connectionsApi, jobsApi, skillsApi } from '@/shared/api/endpoints'
+import { connectionsApi, hiringPostsApi, skillsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { UserProfile } from '@/shared/schemas'
@@ -41,6 +41,7 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
         <nav className="border-t border-border p-2" aria-label="Personal shortcuts">
           <UtilityLink href="/saved" icon={<Bookmark className="h-4 w-4" />} label="Saved" />
           <UtilityLink href="/connections" icon={<Users className="h-4 w-4" />} label="Connections" badge={pending} />
+          <UtilityLink href="/hiring-posts" icon={<BriefcaseBusiness className="h-4 w-4" />} label="Hiring posts" />
           <UtilityLink href="/my-posts" icon={<FileText className="h-4 w-4" />} label="My posts" />
           <UtilityLink href="/my-jobs" icon={<BriefcaseBusiness className="h-4 w-4" />} label="My jobs" />
         </nav>
@@ -51,10 +52,10 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
 
 export function RightFeedRail() {
   const skillsQuery = useQuery({ queryKey: ['skills', 'feed'], queryFn: skillsApi.all, staleTime: 300_000 })
-  const jobsQuery = useQuery({ queryKey: queryKeys.jobs({ feedRail: true }), queryFn: () => jobsApi.paginated({ page: 1, pageSize: 4 }), staleTime: 120_000 })
+  const jobsQuery = useQuery({ queryKey: queryKeys.hiringPosts({ feedRail: true }), queryFn: () => hiringPostsApi.open({ page: 1, pageSize: 4 }), staleTime: 120_000 })
   const skills = skillsQuery.data?.content?.slice(0, 8) ?? []
   const jobs = jobsQuery.data?.content?.data.slice(0, 4) ?? []
-  return <aside className="sticky top-20 hidden h-fit space-y-4 xl:block"><Card className="p-4"><h2 className="text-sm font-bold">Skills people are hiring for</h2><div className="mt-3 flex flex-wrap gap-2">{skills.map((skill) => <Link key={skill} href={`/jobs?keyword=${encodeURIComponent(skill)}`} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary hover:text-primary">{skill}</Link>)}</div></Card><Card className="p-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold">Fresh opportunities</h2><Link href="/jobs" className="text-xs font-bold text-primary">View all</Link></div><div className="mt-2 divide-y divide-border">{jobs.map((job) => <Link key={job.id} href={`/jobs/${job.id}`} className="block py-3 hover:text-primary"><p className="line-clamp-2 text-sm font-semibold">{job.tenCongViec}</p><p className="mt-1 truncate text-xs text-muted">{job.chiTietLoaiCongViec?.tenChiTiet || 'New opportunity'}</p></Link>)}</div></Card></aside>
+  return <aside className="sticky top-20 hidden h-fit space-y-4 xl:block"><Card className="p-4"><h2 className="text-sm font-bold">Skills people are hiring for</h2><div className="mt-3 flex flex-wrap gap-2">{skills.map((skill) => <Link key={skill} href={`/hiring-posts?keyword=${encodeURIComponent(skill)}`} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary hover:text-primary">{skill}</Link>)}</div></Card><Card className="p-4"><div className="flex items-center justify-between"><h2 className="text-sm font-bold">Fresh hiring posts</h2><Link href="/hiring-posts" className="text-xs font-bold text-primary">View all</Link></div><div className="mt-2 divide-y divide-border">{jobs.map((job) => <Link key={job.id} href="/hiring-posts" className="block py-3 hover:text-primary"><p className="line-clamp-2 text-sm font-semibold">{job.title}</p><p className="mt-1 truncate text-xs text-muted">{job.location || job.employmentType || 'New role'}</p></Link>)}</div></Card></aside>
 }
 
 function UtilityLink({ href, icon, label, badge = 0 }: { href: string; icon: React.ReactNode; label: string; badge?: number }) {
