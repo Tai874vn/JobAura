@@ -3,14 +3,17 @@ import { NextResponse } from 'next/server'
 const maxReportBodyBytes = 64 * 1024
 
 export async function POST(request: Request) {
-  const text = await request.text()
+  if (declaredBodyTooLarge(request)) {
+    return NextResponse.json({ message: 'CSP report is too large' }, { status: 413 })
+  }
 
-  if (new TextEncoder().encode(text).byteLength > maxReportBodyBytes) {
+  const body = await readLimitedText(request, maxReportBodyBytes)
+  if (!body.ok) {
     return NextResponse.json({ message: 'CSP report is too large' }, { status: 413 })
   }
 
   try {
-    const payload = JSON.parse(text) as unknown
+    const payload = JSON.parse(body.text) as unknown
     const reports = Array.isArray(payload) ? payload : [payload]
     const normalizedReports = reports.map(normalizeCspReport).filter(Boolean)
 
@@ -22,6 +25,38 @@ export async function POST(request: Request) {
   }
 
   return new NextResponse(null, { status: 204 })
+}
+
+function declaredBodyTooLarge(request: Request) {
+  const contentLength = request.headers.get('content-length')
+  if (!contentLength) return false
+  const parsed = Number(contentLength)
+  return Number.isFinite(parsed) && parsed > maxReportBodyBytes
+}
+
+async function readLimitedText(request: Request, maxBytes: number) {
+  if (!request.body) return { ok: true, text: '' }
+
+  const reader = request.body.getReader()
+  const decoder = new TextDecoder()
+  let bytes = 0
+  let text = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    bytes += value.byteLength
+    if (bytes > maxBytes) {
+      await reader.cancel()
+      return { ok: false, text: '' }
+    }
+
+    text += decoder.decode(value, { stream: true })
+  }
+
+  text += decoder.decode()
+  return { ok: true, text }
 }
 
 function normalizeCspReport(value: unknown) {

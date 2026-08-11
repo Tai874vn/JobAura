@@ -40,3 +40,13 @@ export function connectionControlsFor(state: ConnectionStatus['state']): Connect
     ],
   }
 }
+
+export function pageWindow(currentPage: number, totalPages: number, maxVisible = 5) {
+  const safeTotal = Math.max(1, Math.floor(totalPages))
+  const safeCurrent = Math.min(Math.max(1, Math.floor(currentPage)), safeTotal)
+  const visible = Math.min(Math.max(1, Math.floor(maxVisible)), safeTotal)
+  const half = Math.floor(visible / 2)
+  const start = Math.min(Math.max(1, safeCurrent - half), safeTotal - visible + 1)
+
+  return Array.from({ length: visible }, (_, index) => start + index)
+}

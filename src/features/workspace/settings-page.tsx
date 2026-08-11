@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSearchParams } from 'next/navigation'
 import {
   Bell,
   CheckCircle2,
@@ -76,9 +77,11 @@ const settingSections: Array<{
   { id: 'notifications', title: 'Notifications', description: 'Marketplace alerts and email', icon: <Bell className="h-4 w-4" /> },
   { id: 'billing', title: 'Billing', description: 'Payments and invoices', icon: <CreditCard className="h-4 w-4" /> },
 ]
+const settingSectionIds = new Set<SettingSection>(settingSections.map((section) => section.id))
 
 export function SettingsPage() {
   const queryClient = useQueryClient()
+  const searchParams = useSearchParams()
   const setUser = useAuthStore((state) => state.setUser)
   const profileQuery = useQuery({ queryKey: queryKeys.me, queryFn: authApi.me })
   const profile = profileQuery.data?.content
@@ -93,6 +96,13 @@ export function SettingsPage() {
   const [newPortfolio, setNewPortfolio] = useState<PortfolioDraft>(emptyPortfolio)
   const [resumeDraft, setResumeDraft] = useState<Partial<ResumeDraft>>({})
   const [attachedResumeFile, setAttachedResumeFile] = useState<File | null>(null)
+
+  useEffect(() => {
+    const section = searchParams.get('section')
+    if (isSettingSection(section)) {
+      setActiveSection(section)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!profile) return
@@ -216,6 +226,15 @@ export function SettingsPage() {
       toast.success(attachedResumeFile ? 'Resume file and details saved' : 'Resume imported')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to save resume')),
+  })
+  const predictResumeSeniority = useMutation({
+    mutationFn: usersApi.predictResumeSeniority,
+    onSuccess: (response) => {
+      queryClient.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content ?? null })
+      queryClient.invalidateQueries({ queryKey: queryKeys.myResume })
+      toast.success('Resume seniority predicted')
+    },
+    onError: (error) => toast.error(getErrorMessage(error, 'Unable to predict resume seniority')),
   })
 
   const isSaving = useMemo(
@@ -430,9 +449,11 @@ export function SettingsPage() {
               attachedFile={attachedResumeFile}
               isLoading={resumeQuery.isPending}
               isImporting={saveResume.isPending}
+              isPredicting={predictResumeSeniority.isPending}
               onFieldChange={updateResumeField}
               onClearAttachedFile={() => setAttachedResumeFile(null)}
               onImport={submitResumeImport}
+              onPredictSeniority={() => predictResumeSeniority.mutate()}
               onResumeFile={loadResumeFile}
             />
           ) : null}
@@ -450,6 +471,10 @@ function getProfileSkills(profile: UserProfile): ProfileSkill[] {
 
 function getProfileCertifications(profile: UserProfile): ProfileCertification[] {
   return profile.profileCertifications ?? profile.certifications ?? []
+}
+
+function isSettingSection(value: string | null): value is SettingSection {
+  return Boolean(value && settingSectionIds.has(value as SettingSection))
 }
 function SettingsOverview({
   profile,
@@ -518,9 +543,11 @@ function ResumeImportSection({
   attachedFile,
   isLoading,
   isImporting,
+  isPredicting,
   onFieldChange,
   onClearAttachedFile,
   onImport,
+  onPredictSeniority,
   onResumeFile,
 }: {
   resume: UserResume | null
@@ -528,9 +555,11 @@ function ResumeImportSection({
   attachedFile: File | null
   isLoading: boolean
   isImporting: boolean
+  isPredicting: boolean
   onFieldChange: (field: ResumeFieldKey, value: string) => void
   onClearAttachedFile: () => void
   onImport: () => void
+  onPredictSeniority: () => void
   onResumeFile: (file: File) => void
 }) {
   const canImport = hasResumeDraftInput(draft)
@@ -564,6 +593,9 @@ function ResumeImportSection({
               <Field label="Email" value={draft.Email} onChange={(value) => onFieldChange('Email', value)} />
               <Field label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
               <Field label="Location" value={draft.Location} onChange={(value) => onFieldChange('Location', value)} />
+              <Field label="Role" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
+              <Field label="Industry" value={draft.Industry} onChange={(value) => onFieldChange('Industry', value)} />
+              <Field label="Years experience" value={draft.YearsExperience} onChange={(value) => onFieldChange('YearsExperience', value)} />
             </div>
 
             <label className="grid gap-1">
@@ -631,7 +663,13 @@ function ResumeImportSection({
           </CardContent>
         </Card>
 
-        <ResumePreviewCard resume={resume} data={draft} isLoading={isLoading} />
+        <ResumePreviewCard
+          resume={resume}
+          data={draft}
+          isLoading={isLoading}
+          isPredicting={isPredicting}
+          onPredictSeniority={onPredictSeniority}
+        />
       </div>
     </div>
   )
@@ -641,12 +679,20 @@ function ResumePreviewCard({
   resume,
   data,
   isLoading,
+  isPredicting,
+  onPredictSeniority,
 }: {
   resume: UserResume | null
   data: ResumeDraft
   isLoading: boolean
+  isPredicting: boolean
+  onPredictSeniority: () => void
 }) {
   const skills = resumeSkills(data?.Skills)
+  const confidence =
+    resume?.predictedSeniorityConfidence != null
+      ? Math.round(resume.predictedSeniorityConfidence * 100)
+      : null
 
   return (
     <Card>
@@ -657,6 +703,32 @@ function ResumePreviewCard({
             <p className="mt-1 text-sm text-muted">{resume?.updatedAt ? `Last imported ${formatSettingsDate(resume.updatedAt)}` : 'Resume data preview'}</p>
           </div>
           {resume ? <CheckCircle2 className="h-5 w-5 text-primary" /> : null}
+        </div>
+
+        <div className="mt-4 rounded-lg border border-border bg-surface-muted p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">AI seniority</p>
+              <h4 className="mt-1 font-display text-xl font-bold">
+                {resume?.predictedSeniority ?? 'Not evaluated yet'}
+              </h4>
+              <p className="mt-1 text-xs leading-5 text-muted">
+                {resume?.predictedSeniorityAt
+                  ? `Evaluated ${formatSettingsDate(resume.predictedSeniorityAt)}${confidence != null ? ` with ${confidence}% confidence` : ''}.`
+                  : 'Save your resume, then run AI evaluation when you need it.'}
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={!resume || isPredicting}
+              onClick={onPredictSeniority}
+            >
+              <Sparkles className="h-4 w-4" />
+              {isPredicting ? 'Evaluating...' : resume?.predictedSeniority ? 'Run again' : 'Predict'}
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -670,6 +742,9 @@ function ResumePreviewCard({
               <ResumeMeta label="Email" value={data.Email} />
               <ResumeMeta label="Phone" value={data.Phone} />
               <ResumeMeta label="Location" value={data.Location} />
+              <ResumeMeta label="Role" value={data.Role} />
+              <ResumeMeta label="Industry" value={data.Industry} />
+              <ResumeMeta label="Years experience" value={data.YearsExperience} />
             </div>
             {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
             {skills.length ? (

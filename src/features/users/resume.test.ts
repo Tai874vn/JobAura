@@ -46,6 +46,9 @@ describe('resume helpers', () => {
       ResumeID: 'REAL_0001',
       Category: 'Java Developer',
       Name: 'Chad Griffin',
+      Role: 'Frontend Engineer',
+      Industry: 'Software',
+      YearsExperience: '1',
       Skills: 'Python, SQL',
       Summary: '',
       Source: 'ResumeAtlas',
@@ -56,6 +59,9 @@ describe('resume helpers', () => {
     expect(payload).toEqual({
       data: {
         Name: 'Chad Griffin',
+        Role: 'Frontend Engineer',
+        Industry: 'Software',
+        YearsExperience: '1',
         Skills: 'Python, SQL',
       },
       schemaVersion: resumeSchemaVersion,
@@ -93,6 +99,8 @@ describe('resume helpers', () => {
         Email: 'contact@email.com',
         Phone: '94105 555 4321000',
         Location: 'City, State',
+        Role: 'Java Developer',
+        YearsExperience: '10',
         Summary: 'Highly skilled software development professional bringing 10 years software design development integration.',
         Skills: 'Python, SQL, Git, Linux',
         Experience: 'Senior Java Developer / Tech Lead Built customer facing internal web applications.',

@@ -94,8 +94,8 @@ export function MatchingPolicyCard() {
           />
           <PolicyRow
             icon={<SlidersHorizontal className="h-4 w-4" />}
-            label="Reranking"
-            text="AI similarity is combined with skills, seniority, and category signals."
+            label="Classifier"
+            text="The recruiter AI returns a binary match or no-match decision with a match probability."
           />
         </div>
       </CardContent>

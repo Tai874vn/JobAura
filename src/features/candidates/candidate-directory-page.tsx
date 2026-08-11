@@ -22,11 +22,11 @@ import {
   getCandidateSkillNames,
   getCandidateSummary,
 } from './candidate-directory'
-import { MatchBadge } from '@/features/jobs/recommendation-ui'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { cn } from '@/shared/lib/utils'
 import type { CandidateProfile } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
 
@@ -259,7 +259,7 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
                 <h2 className="truncate font-display text-xl font-bold">{candidate.name}</h2>
                 <p className="mt-0.5 line-clamp-1 text-sm font-semibold text-muted">{candidate.headline}</p>
               </div>
-              <MatchBadge label={candidate.match.label} score={candidate.match.score} />
+              <CandidateFitBadge candidate={candidate} />
             </div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
               <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
@@ -294,6 +294,21 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function CandidateFitBadge({ candidate }: { candidate: CandidateProfile }) {
+  const isMatch = candidate.match.label !== 'low_match'
+
+  return (
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center gap-1 rounded px-2.5 py-1 text-xs font-bold',
+        isMatch ? 'bg-primary/10 text-primary' : 'bg-surface-muted text-muted',
+      )}
+    >
+      {isMatch ? 'Match' : 'No match'}
+    </span>
   )
 }
 

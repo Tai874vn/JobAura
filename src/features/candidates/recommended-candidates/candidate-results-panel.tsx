@@ -1,11 +1,7 @@
-import { ArrowUpRight, MapPin, Users } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, MapPin, Users, XCircle } from "lucide-react";
 import Link from "next/link";
 import { ConnectionActions } from "@/features/connections/connect-button";
 import { FeedAvatar } from "@/features/feed/feed-avatar";
-import {
-  formatMatchScore,
-  MatchBadge,
-} from "@/features/jobs/recommendation-ui";
 import { cn } from "@/shared/lib/utils";
 import type { HiringPost, RecommendedCandidate } from "@/shared/schemas";
 import { Button, ButtonLink, Card, CardContent } from "@/shared/ui";
@@ -19,6 +15,13 @@ export function CandidateResultsPanel({
   candidates,
   selectedHiringPost,
 }: CandidateResultsPanelProps) {
+  const matchedCandidates = candidates.filter((candidate) =>
+    isClassifierMatch(candidate.recommendation),
+  );
+  const noMatchCandidates = candidates.filter(
+    (candidate) => !isClassifierMatch(candidate.recommendation),
+  );
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -36,14 +39,59 @@ export function CandidateResultsPanel({
                 : "For the selected hiring post"}
             </p>
           </div>
+          <div className="flex flex-wrap gap-2 text-xs font-bold">
+            <span className="rounded bg-primary/10 px-2.5 py-1 text-primary">
+              {matchedCandidates.length} match
+            </span>
+            <span className="rounded bg-surface-muted px-2.5 py-1 text-muted">
+              {noMatchCandidates.length} no match
+            </span>
+          </div>
         </div>
         <div className="grid gap-4">
-          {candidates.map((candidate) => (
-            <CandidateMatchCard key={candidate.id} candidate={candidate} />
-          ))}
+          <CandidateResultSection
+            title="Matches"
+            candidates={matchedCandidates}
+            emptyText="No candidates met the classifier threshold yet."
+          />
+          <CandidateResultSection
+            title="No match"
+            candidates={noMatchCandidates}
+            emptyText="No rejected candidates in this result set."
+          />
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CandidateResultSection({
+  title,
+  candidates,
+  emptyText,
+}: {
+  title: string;
+  candidates: RecommendedCandidate[];
+  emptyText: string;
+}) {
+  return (
+    <section className="grid gap-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border pb-2">
+        <h3 className="text-xs font-bold uppercase text-muted">{title}</h3>
+        <span className="text-xs font-semibold text-muted">
+          {candidates.length}
+        </span>
+      </div>
+      {candidates.length ? (
+        candidates.map((candidate) => (
+          <CandidateMatchCard key={candidate.id} candidate={candidate} />
+        ))
+      ) : (
+        <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4 text-sm font-semibold text-muted">
+          {emptyText}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -56,9 +104,15 @@ function CandidateMatchCard({
     .map((skill) => skill.name?.trim())
     .filter((skill): skill is string => Boolean(skill));
   const recommendation = candidate.recommendation;
+  const isMatch = isClassifierMatch(recommendation);
 
   return (
-    <div className="group/recommendation rounded-lg border border-border bg-white p-4">
+    <div
+      className={cn(
+        "group/recommendation rounded-lg border bg-white p-4",
+        isMatch ? "border-primary/35" : "border-border",
+      )}
+    >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <FeedAvatar user={candidate} size="lg" />
         <div className="min-w-0 flex-1">
@@ -74,10 +128,7 @@ function CandidateMatchCard({
                 {candidate.headline || candidate.bio || "Candidate profile"}
               </p>
             </div>
-            <MatchBadge
-              label={recommendation.label}
-              score={recommendation.finalScore}
-            />
+            <ClassifierDecisionBadge recommendation={recommendation} />
           </div>
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
             <span className="inline-flex items-center gap-1">
@@ -85,7 +136,6 @@ function CandidateMatchCard({
               {candidate.location || "Location not listed"}
             </span>
             <span>Rank #{recommendation.rank}</span>
-            <span>Semantic {formatMatchScore(recommendation.aiScore)}</span>
           </div>
           {skills.length ? (
             <div className="mt-3 flex flex-wrap gap-2">
@@ -99,7 +149,6 @@ function CandidateMatchCard({
               ))}
             </div>
           ) : null}
-          <ScoreBreakdown recommendation={recommendation} />
           <SkillEvidencePanel recommendation={recommendation} />
         </div>
         <div className="flex shrink-0 flex-wrap gap-2 lg:w-44 lg:flex-col">
@@ -118,6 +167,41 @@ function CandidateMatchCard({
   );
 }
 
+function ClassifierDecisionBadge({
+  recommendation,
+}: {
+  recommendation: RecommendedCandidate["recommendation"];
+}) {
+  const isMatch = isClassifierMatch(recommendation);
+  const Icon = isMatch ? CheckCircle2 : XCircle;
+
+  return (
+    <div
+      className={cn(
+        "inline-flex shrink-0 items-center gap-2 rounded px-3 py-2 text-xs font-bold",
+        isMatch
+          ? "bg-primary/10 text-primary"
+          : "bg-surface-muted text-muted",
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      <span>{isMatch ? "Match" : "No match"}</span>
+    </div>
+  );
+}
+
+function isClassifierMatch(
+  recommendation: RecommendedCandidate["recommendation"],
+) {
+  if (typeof recommendation.isMatch === "boolean") {
+    return recommendation.isMatch;
+  }
+  if (recommendation.matchLabel) {
+    return recommendation.matchLabel === "match";
+  }
+  return recommendation.label === "high_match";
+}
+
 function SkillEvidencePanel({
   recommendation,
 }: {
@@ -128,12 +212,7 @@ function SkillEvidencePanel({
   const hasEvidence = matchedSkills.length > 0 || missingSkills.length > 0;
 
   if (!hasEvidence) {
-    return (
-      <p className="mt-3 rounded-lg bg-surface-muted p-3 text-xs font-semibold leading-5 text-muted">
-        No explicit skill requirements were detected from this hiring post.
-        The rank is mostly based on semantic resume similarity.
-      </p>
-    );
+    return null;
   }
 
   return (
@@ -187,37 +266,6 @@ function SkillEvidenceList({
       ) : (
         <p className="mt-2 text-xs font-semibold text-muted">{emptyText}</p>
       )}
-    </div>
-  );
-}
-
-function ScoreBreakdown({
-  recommendation,
-}: {
-  recommendation: RecommendedCandidate["recommendation"];
-}) {
-  const rows = [
-    ["Skills", recommendation.skillScore],
-    ["Seniority", recommendation.seniorityScore],
-    ["Category", recommendation.categoryScore],
-  ] as const;
-
-  return (
-    <div className="mt-4 grid gap-2 sm:grid-cols-3">
-      {rows.map(([label, value]) => (
-        <div key={label} className="rounded-lg bg-surface-muted p-3">
-          <div className="flex items-center justify-between gap-2 text-xs font-semibold">
-            <span className="text-muted">{label}</span>
-            <span>{formatMatchScore(value)}</span>
-          </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
-            <div
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${Math.round(value * 100)}%` }}
-            />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

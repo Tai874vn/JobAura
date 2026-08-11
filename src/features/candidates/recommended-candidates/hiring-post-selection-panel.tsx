@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BriefcaseBusiness, CheckCircle2 } from "lucide-react";
+import { BriefcaseBusiness, CheckCircle2, Sparkles } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -59,6 +59,20 @@ export function HiringPostSelectionPanel({
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Could not create hiring post"));
+    },
+  });
+  const predictSeniority = useMutation({
+    mutationFn: hiringPostsApi.predictSeniority,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.myHiringPosts(hiringPostPageParams),
+      });
+      toast.success("Hiring post seniority predicted");
+    },
+    onError: (error) => {
+      toast.error(
+        getErrorMessage(error, "Could not predict hiring post seniority"),
+      );
     },
   });
 
@@ -249,34 +263,55 @@ export function HiringPostSelectionPanel({
         ) : hiringPosts.length ? (
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {hiringPosts.slice(0, 6).map((post) => (
-              <button
+              <div
                 key={post.id}
-                type="button"
                 className={cn(
                   "rounded-lg border p-4 text-left transition hover:border-primary",
                   selectedHiringPostId === post.id
                     ? "border-primary bg-primary/5"
                     : "border-border bg-white",
                 )}
-                onClick={() => onSelectHiringPost(post.id)}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="line-clamp-2 font-display text-lg font-bold leading-snug">
-                    {post.title}
-                  </h3>
-                  {selectedHiringPostId === post.id ? (
-                    <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
-                  ) : null}
+                <button
+                  type="button"
+                  className="w-full text-left"
+                  onClick={() => onSelectHiringPost(post.id)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="line-clamp-2 font-display text-lg font-bold leading-snug">
+                      {post.title}
+                    </h3>
+                    {selectedHiringPostId === post.id ? (
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
+                    ) : null}
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
+                    <Badge tone={post.status === "OPEN" ? "accent" : "neutral"}>
+                      {post.status === "OPEN" ? "Open" : "Closed"}
+                    </Badge>
+                    <span>{post.employmentType || "Role"}</span>
+                    <span>{post.location || "Location flexible"}</span>
+                    <span>{post.applicationCount} applicants</span>
+                  </div>
+                </button>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+                  <SeniorityBadge post={post} />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    disabled={predictSeniority.isPending}
+                    onClick={() => predictSeniority.mutate(post.id)}
+                  >
+                    {predictSeniority.isPending ? (
+                      <Spinner className="h-4 w-4" />
+                    ) : (
+                      <Sparkles className="h-4 w-4" />
+                    )}
+                    Predict level
+                  </Button>
                 </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
-                  <Badge tone={post.status === "OPEN" ? "accent" : "neutral"}>
-                    {post.status === "OPEN" ? "Open" : "Closed"}
-                  </Badge>
-                  <span>{post.employmentType || "Role"}</span>
-                  <span>{post.location || "Location flexible"}</span>
-                  <span>{post.applicationCount} applicants</span>
-                </div>
-              </button>
+              </div>
             ))}
           </div>
         ) : (
@@ -316,6 +351,28 @@ export function HiringPostSelectionPanel({
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function SeniorityBadge({ post }: { post: HiringPost }) {
+  if (!post.predictedSeniority) {
+    return (
+      <span className="text-xs font-semibold text-muted">
+        AI level not predicted
+      </span>
+    );
+  }
+
+  const confidence =
+    post.predictedSeniorityConfidence != null
+      ? ` ${Math.round(post.predictedSeniorityConfidence * 100)}%`
+      : "";
+
+  return (
+    <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+      {post.predictedSeniority}
+      {confidence}
+    </span>
   );
 }
 

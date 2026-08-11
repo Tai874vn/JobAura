@@ -20,7 +20,10 @@ import { useEffect, useState } from "react";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { authApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
-import { canAccessCandidateDirectory } from "@/shared/lib/roles";
+import {
+  canAccessCandidateDirectory,
+  canAccessEmployeeTools,
+} from "@/shared/lib/roles";
 import {
   initials,
   resolveAssetUrl,
@@ -36,7 +39,15 @@ export function SiteHeader() {
   const { user, hasHydrated, clearSession, setUser } = useAuthStore();
   const avatarUrl = resolveAssetUrl(user?.avatar);
   const isRecruiter = user?.role === "employer";
-  const homeHref = user ? (isRecruiter ? "/candidates" : "/") : "/welcome";
+  const canUseRecruiterTools = canAccessCandidateDirectory(user?.role);
+  const canUseEmployeeTools = canAccessEmployeeTools(user?.role);
+  const homeHref = user
+    ? user.role === "admin"
+      ? "/admin"
+      : isRecruiter
+        ? "/candidates"
+        : "/"
+    : "/welcome";
   const shouldVerifyUser = hasHydrated && Boolean(user);
 
   const meQuery = useQuery({
@@ -111,7 +122,7 @@ export function SiteHeader() {
           />
         </form>
         <nav className="hidden items-center gap-2 md:flex">
-          {user && !isRecruiter ? (
+          {user && canUseEmployeeTools ? (
             <Link
               className="flex items-center gap-1.5 px-2 text-sm font-semibold text-muted hover:text-foreground"
               href="/"
@@ -119,23 +130,7 @@ export function SiteHeader() {
               <Home className="h-4 w-4" /> Home
             </Link>
           ) : null}
-          {isRecruiter ? (
-            <Link
-              className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-              href="/candidates"
-            >
-              Find Candidates
-            </Link>
-          ) : null}
-          {isRecruiter ? (
-            <Link
-              className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-              href="/recommendations/candidates"
-            >
-              AI Matching
-            </Link>
-          ) : null}
-          {!isRecruiter ? (
+          {canUseEmployeeTools ? (
             <>
               <Link
                 className="px-2 text-sm font-semibold text-muted hover:text-foreground"
@@ -145,33 +140,43 @@ export function SiteHeader() {
               </Link>
               <Link
                 className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/hiring-posts"
-              >
-                Hiring Posts
-              </Link>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
                 href="/jobs/new"
               >
                 Post Service
               </Link>
             </>
           ) : null}
-          {isRecruiter ? (
-            <Link
-              className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-              href="/connections"
-            >
-              Connections
-            </Link>
+          {canUseRecruiterTools ? (
+            <>
+              <Link
+                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
+                href="/candidates"
+              >
+                Find Candidates
+              </Link>
+              <Link
+                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
+                href="/recommendations/candidates"
+              >
+                AI Matching
+              </Link>
+            </>
           ) : null}
-          {canAccessCandidateDirectory(user?.role) && !isRecruiter ? (
-            <Link
-              className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-              href="/candidates"
-            >
-              Find Candidates
-            </Link>
+          {user ? (
+            <>
+              <Link
+                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
+                href="/hiring-posts"
+              >
+                Hiring Posts
+              </Link>
+              <Link
+                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
+                href="/connections"
+              >
+                Connections
+              </Link>
+            </>
           ) : null}
           {user?.role === "admin" ? (
             <Link
@@ -219,25 +224,7 @@ export function SiteHeader() {
                   icon={<User className="h-4 w-4" />}
                   label="Profile"
                 />
-                {isRecruiter ? (
-                  <>
-                    <MenuLink
-                      href="/candidates"
-                      icon={<Search className="h-4 w-4" />}
-                      label="Find candidates"
-                    />
-                    <MenuLink
-                      href="/recommendations/candidates"
-                      icon={<Sparkles className="h-4 w-4" />}
-                      label="AI matching"
-                    />
-                    <MenuLink
-                      href="/connections"
-                      icon={<LayoutDashboard className="h-4 w-4" />}
-                      label="Connections"
-                    />
-                  </>
-                ) : (
+                {canUseEmployeeTools ? (
                   <>
                     <MenuLink
                       href="/my-posts"
@@ -249,13 +236,32 @@ export function SiteHeader() {
                       icon={<LayoutDashboard className="h-4 w-4" />}
                       label="My jobs"
                     />
+                  </>
+                ) : null}
+                {canUseRecruiterTools ? (
+                  <>
                     <MenuLink
-                      href="/hiring-posts"
+                      href="/candidates"
                       icon={<Search className="h-4 w-4" />}
-                      label="Hiring posts"
+                      label="Find candidates"
+                    />
+                    <MenuLink
+                      href="/recommendations/candidates"
+                      icon={<Sparkles className="h-4 w-4" />}
+                      label="AI matching"
                     />
                   </>
-                )}
+                ) : null}
+                <MenuLink
+                  href="/hiring-posts"
+                  icon={<BriefcaseBusiness className="h-4 w-4" />}
+                  label="Hiring posts"
+                />
+                <MenuLink
+                  href="/connections"
+                  icon={<LayoutDashboard className="h-4 w-4" />}
+                  label="Connections"
+                />
                 <MenuLink
                   href="/settings"
                   icon={<Settings className="h-4 w-4" />}
@@ -302,26 +308,24 @@ export function SiteHeader() {
           className="border-t border-border bg-white p-4 md:hidden"
         >
           <div className="grid gap-2 text-sm font-semibold">
-            {user && !isRecruiter ? <Link href="/">Home feed</Link> : null}
-            {isRecruiter ? (
-              <Link href="/candidates">Find Candidates</Link>
-            ) : null}
-            {isRecruiter ? (
-              <Link href="/recommendations/candidates">AI Matching</Link>
-            ) : null}
-            {!isRecruiter ? <Link href="/jobs">Explore</Link> : null}
-            {!isRecruiter ? (
-              <Link href="/hiring-posts">Hiring Posts</Link>
-            ) : null}
-            {!isRecruiter ? (
+            {user && canUseEmployeeTools ? <Link href="/">Home feed</Link> : null}
+            {canUseEmployeeTools ? <Link href="/jobs">Explore</Link> : null}
+            {canUseEmployeeTools ? (
               <Link href="/jobs/new" className="flex items-center gap-2">
                 <Plus className="h-4 w-4" /> Post Service
               </Link>
             ) : null}
-            {isRecruiter ? <Link href="/connections">Connections</Link> : null}
-            {canAccessCandidateDirectory(user?.role) && !isRecruiter ? (
+            {canUseRecruiterTools ? (
               <Link href="/candidates">Find Candidates</Link>
             ) : null}
+            {canUseRecruiterTools ? (
+              <Link href="/recommendations/candidates">AI Matching</Link>
+            ) : null}
+            {user ? (
+              <Link href="/hiring-posts">Hiring Posts</Link>
+            ) : null}
+            {user ? <Link href="/connections">Connections</Link> : null}
+            {user?.role === "admin" ? <Link href="/admin">Admin</Link> : null}
             {!hasHydrated ? null : user ? (
               <>
                 <Link href={`/profile/${user.id}`}>Profile</Link>

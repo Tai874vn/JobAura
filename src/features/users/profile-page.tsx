@@ -6,8 +6,10 @@ import {
   ArrowUpRight,
   Award,
   BriefcaseBusiness,
+  Building2,
   Calendar,
   CheckCircle2,
+  Clock3,
   Download,
   Edit3,
   ExternalLink,
@@ -583,6 +585,9 @@ function ResumeShowcase({
                       {draft.Email ? <InlineInfo icon={<Mail className="h-4 w-4" />} value={draft.Email} /> : null}
                       {draft.Phone ? <InlineInfo icon={<Phone className="h-4 w-4" />} value={draft.Phone} /> : null}
                       {draft.Location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={draft.Location} /> : null}
+                      {draft.Role ? <InlineInfo icon={<BriefcaseBusiness className="h-4 w-4" />} value={draft.Role} /> : null}
+                      {draft.Industry ? <InlineInfo icon={<Building2 className="h-4 w-4" />} value={draft.Industry} /> : null}
+                      {draft.YearsExperience ? <InlineInfo icon={<Clock3 className="h-4 w-4" />} value={`${draft.YearsExperience} years`} /> : null}
                     </div>
                   </div>
                   {fileUrl ? (
@@ -752,6 +757,9 @@ function ProfileEditDrawer({
                 <EditField label="Email" value={resumeDraft.Email} onChange={(value) => onResumeFieldChange('Email', value)} />
                 <EditField label="Phone" value={resumeDraft.Phone} onChange={(value) => onResumeFieldChange('Phone', value)} />
                 <EditField label="Location" value={resumeDraft.Location} onChange={(value) => onResumeFieldChange('Location', value)} />
+                <EditField label="Role" value={resumeDraft.Role} onChange={(value) => onResumeFieldChange('Role', value)} />
+                <EditField label="Industry" value={resumeDraft.Industry} onChange={(value) => onResumeFieldChange('Industry', value)} />
+                <EditField label="Years experience" value={resumeDraft.YearsExperience} onChange={(value) => onResumeFieldChange('YearsExperience', value)} />
               </div>
               <EditText label="Summary" value={resumeDraft.Summary} onChange={(value) => onResumeFieldChange('Summary', value)} />
               <EditField label="Skills" value={resumeDraft.Skills} onChange={(value) => onResumeFieldChange('Skills', value)} />

@@ -52,7 +52,7 @@ export function ChatShell() {
     })
 
     nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
-    nextSocket.on('new-message', (message: ChatMessage) => addMessage(message))
+    nextSocket.on('new-message', (message: ChatMessage) => addMessage(message, userId))
     nextSocket.on('messages-read', ({ roomId, userId: readerId }: { roomId: number; userId: number }) => {
       setReadReceipts((current) => {
         const readers = current[roomId] ?? []

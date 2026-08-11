@@ -55,8 +55,9 @@ async function proxyRequest(request: NextRequest, { params }: { params: Promise<
       headers: strippedHeaders(response.headers, responseHeadersToStrip),
     })
   } catch (error) {
+    console.warn('[API proxy] Unable to reach backend API', error)
     return NextResponse.json(
-      { message: error instanceof Error ? error.message : 'Unable to reach backend API' },
+      { message: 'Unable to reach backend API' },
       { status: 502 }
     )
   }

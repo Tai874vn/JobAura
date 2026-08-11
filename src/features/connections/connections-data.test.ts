@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { connectionControlsFor } from './connections-data'
+import { connectionControlsFor, pageWindow } from './connections-data'
 
 describe('connection actions', () => {
   it('maps every relationship state to explicit commands', () => {
@@ -26,5 +26,13 @@ describe('connection actions', () => {
         { action: 'unfriend', label: 'Unfriend', destructive: true },
       ],
     })
+  })
+})
+
+describe('connection pagination', () => {
+  it('keeps a stable window around the active page', () => {
+    expect(pageWindow(1, 10)).toEqual([1, 2, 3, 4, 5])
+    expect(pageWindow(5, 10)).toEqual([3, 4, 5, 6, 7])
+    expect(pageWindow(10, 10)).toEqual([6, 7, 8, 9, 10])
   })
 })
