@@ -1,9 +1,9 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { chatApi, connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -12,19 +12,53 @@ import type { Connection, ConnectionProfile, ConnectionSuggestion } from '@/shar
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Card, ConfirmationDialog, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
+import { pageWindow } from './connections-data'
 
 type ConnectionsTab = 'connections' | 'requests' | 'discover'
 
 export function ConnectionsPage() {
   const [tab, setTab] = useState<ConnectionsTab>('connections')
   const [keyword, setKeyword] = useState('')
+  const [debouncedKeyword, setDebouncedKeyword] = useState('')
+  const [connectionsPage, setConnectionsPage] = useState(1)
+  const [discoverPage, setDiscoverPage] = useState(1)
   const [connectionToRemove, setConnectionToRemove] = useState<Connection | null>(null)
   const queryClient = useQueryClient()
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
-  const params = { page: 1, pageSize: 24, keyword: keyword.trim() || undefined }
-  const connectionsQuery = useQuery({ queryKey: queryKeys.connections(params), queryFn: () => connectionsApi.all(params), enabled: tab === 'connections' })
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedKeyword(keyword.trim())
+      setConnectionsPage(1)
+      setDiscoverPage(1)
+    }, 400)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [keyword])
+
+  const connectionsParams = useMemo(
+    () => ({ page: connectionsPage, pageSize: 24, keyword: debouncedKeyword || undefined }),
+    [connectionsPage, debouncedKeyword]
+  )
+  const suggestionsParams = useMemo(
+    () => ({ page: discoverPage, pageSize: 24, keyword: debouncedKeyword || undefined }),
+    [discoverPage, debouncedKeyword]
+  )
+  const connectionsQuery = useQuery({
+    queryKey: queryKeys.connections(connectionsParams),
+    queryFn: () => connectionsApi.all(connectionsParams),
+    enabled: tab === 'connections',
+    placeholderData: keepPreviousData,
+    staleTime: 10_000,
+  })
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests, queryFn: connectionsApi.requests })
-  const suggestionsQuery = useQuery({ queryKey: queryKeys.connectionSuggestions(params), queryFn: () => connectionsApi.suggestions(params), enabled: tab === 'discover' })
+  const suggestionsQuery = useQuery({
+    queryKey: queryKeys.connectionSuggestions(suggestionsParams),
+    queryFn: () => connectionsApi.suggestions(suggestionsParams),
+    enabled: tab === 'discover',
+    placeholderData: keepPreviousData,
+    staleTime: 10_000,
+  })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['connections'] })
   const sendMutation = useMutation({ mutationFn: connectionsApi.send, onSuccess: refresh, onError: (error) => toast.error(getErrorMessage(error, 'Could not send request')) })
@@ -54,7 +88,7 @@ export function ConnectionsPage() {
         {tab !== 'requests' ? (
           <label className="flex h-10 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-white px-3">
             <Search className="h-4 w-4 text-muted" />
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Search people, skills, or location" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
+            <input value={keyword} maxLength={80} onChange={(event) => setKeyword(event.target.value)} placeholder="Search people, skills, or location" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
           </label>
         ) : null}
       </div>
@@ -67,9 +101,17 @@ export function ConnectionsPage() {
 
       <div className="mt-6">
         {tab === 'connections' ? (
-          <PeopleGrid loading={connectionsQuery.isPending} empty="No connections yet. Discover people to start building your network.">
-            {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
-          </PeopleGrid>
+          <>
+            <PeopleGrid loading={connectionsQuery.isPending} empty="No connections yet. Discover people to start building your network.">
+              {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
+            </PeopleGrid>
+            <PaginationControls
+              pageIndex={connectionsQuery.data?.content?.pageIndex}
+              totalPages={connectionsQuery.data?.content?.totalPages}
+              isFetching={connectionsQuery.isFetching}
+              onPageChange={setConnectionsPage}
+            />
+          </>
         ) : null}
 
         {tab === 'requests' ? (
@@ -84,9 +126,17 @@ export function ConnectionsPage() {
         ) : null}
 
         {tab === 'discover' ? (
-          <PeopleGrid loading={suggestionsQuery.isPending} empty="No new suggestions match this search.">
-            {suggestions.map((person) => <SuggestionCard key={person.id} person={person} pending={sendMutation.isPending && sendMutation.variables === person.id} onConnect={() => sendMutation.mutate(person.id)} />)}
-          </PeopleGrid>
+          <>
+            <PeopleGrid loading={suggestionsQuery.isPending} empty="No new suggestions match this search.">
+              {suggestions.map((person) => <SuggestionCard key={person.id} person={person} pending={sendMutation.isPending && sendMutation.variables === person.id} onConnect={() => sendMutation.mutate(person.id)} />)}
+            </PeopleGrid>
+            <PaginationControls
+              pageIndex={suggestionsQuery.data?.content?.pageIndex}
+              totalPages={suggestionsQuery.data?.content?.totalPages}
+              isFetching={suggestionsQuery.isFetching}
+              onPageChange={setDiscoverPage}
+            />
+          </>
         ) : null}
       </div>
       <ConfirmationDialog
@@ -113,6 +163,47 @@ function PeopleGrid({ loading, empty, children }: { loading: boolean; empty: str
   if (loading) return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{[1, 2, 3].map((id) => <Skeleton key={id} className="h-48" />)}</div>
   if (!count) return <Card className="p-10 text-center"><Users className="mx-auto h-6 w-6 text-primary" /><p className="mt-3 text-sm text-muted">{empty}</p></Card>
   return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
+}
+
+function PaginationControls({
+  pageIndex = 1,
+  totalPages = 1,
+  isFetching,
+  onPageChange,
+}: {
+  pageIndex?: number | null
+  totalPages?: number | null
+  isFetching: boolean
+  onPageChange: (page: number) => void
+}) {
+  const current = pageIndex ?? 1
+  const total = totalPages ?? 1
+  if (total <= 1) return null
+  const pages = pageWindow(current, total)
+
+  return (
+    <nav className="mt-6 flex flex-wrap items-center justify-center gap-2" aria-label="Connection pages">
+      <Button type="button" variant="secondary" size="sm" disabled={current <= 1 || isFetching} onClick={() => onPageChange(current - 1)}>
+        <ChevronLeft className="h-4 w-4" /> Previous
+      </Button>
+      {pages.map((page) => (
+        <Button
+          key={page}
+          type="button"
+          variant={page === current ? 'primary' : 'secondary'}
+          size="sm"
+          disabled={isFetching && page === current}
+          onClick={() => onPageChange(page)}
+          aria-current={page === current ? 'page' : undefined}
+        >
+          {page}
+        </Button>
+      ))}
+      <Button type="button" variant="secondary" size="sm" disabled={current >= total || isFetching} onClick={() => onPageChange(current + 1)}>
+        Next <ChevronRight className="h-4 w-4" />
+      </Button>
+    </nav>
+  )
 }
 
 function ProfileSummary({ user }: { user: ConnectionProfile }) {

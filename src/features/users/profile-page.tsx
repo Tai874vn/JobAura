@@ -6,8 +6,10 @@ import {
   ArrowUpRight,
   Award,
   BriefcaseBusiness,
+  Building2,
   Calendar,
   CheckCircle2,
+  Clock3,
   Download,
   Edit3,
   ExternalLink,
@@ -34,7 +36,8 @@ import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { Job, UpdateProfile, User, UserProfile, UserResume } from '@/shared/schemas'
-import { Badge, Button, Card, CardContent, CardHeader, Input, Textarea } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, CardHeader, Input, Textarea } from '@/shared/ui'
+import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import {
@@ -532,11 +535,9 @@ function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile |
               From <strong className="text-foreground">{currency(post.giaTien)}</strong>
             </span>
             <div className="flex gap-2">
-              <Link href={`/jobs/${post.id}`}>
-                <Button variant="secondary" size="sm">
-                  View details
-                </Button>
-              </Link>
+              <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
+                View details
+              </ButtonLink>
               <Button size="sm">Contact</Button>
             </div>
           </div>
@@ -584,6 +585,9 @@ function ResumeShowcase({
                       {draft.Email ? <InlineInfo icon={<Mail className="h-4 w-4" />} value={draft.Email} /> : null}
                       {draft.Phone ? <InlineInfo icon={<Phone className="h-4 w-4" />} value={draft.Phone} /> : null}
                       {draft.Location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={draft.Location} /> : null}
+                      {draft.Role ? <InlineInfo icon={<BriefcaseBusiness className="h-4 w-4" />} value={draft.Role} /> : null}
+                      {draft.Industry ? <InlineInfo icon={<Building2 className="h-4 w-4" />} value={draft.Industry} /> : null}
+                      {draft.YearsExperience ? <InlineInfo icon={<Clock3 className="h-4 w-4" />} value={`${draft.YearsExperience} years`} /> : null}
                     </div>
                   </div>
                   {fileUrl ? (
@@ -753,6 +757,9 @@ function ProfileEditDrawer({
                 <EditField label="Email" value={resumeDraft.Email} onChange={(value) => onResumeFieldChange('Email', value)} />
                 <EditField label="Phone" value={resumeDraft.Phone} onChange={(value) => onResumeFieldChange('Phone', value)} />
                 <EditField label="Location" value={resumeDraft.Location} onChange={(value) => onResumeFieldChange('Location', value)} />
+                <EditField label="Role" value={resumeDraft.Role} onChange={(value) => onResumeFieldChange('Role', value)} />
+                <EditField label="Industry" value={resumeDraft.Industry} onChange={(value) => onResumeFieldChange('Industry', value)} />
+                <EditField label="Years experience" value={resumeDraft.YearsExperience} onChange={(value) => onResumeFieldChange('YearsExperience', value)} />
               </div>
               <EditText label="Summary" value={resumeDraft.Summary} onChange={(value) => onResumeFieldChange('Summary', value)} />
               <EditField label="Skills" value={resumeDraft.Skills} onChange={(value) => onResumeFieldChange('Skills', value)} />
@@ -845,11 +852,15 @@ function OwnerUploadButton({
       <input
         className="sr-only"
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={imageUploadAccept}
         disabled={disabled}
         onChange={(event) => {
           const file = event.target.files?.[0]
-          if (file) onChange(file)
+          if (file) {
+            const validation = validateImageFile(file, { label })
+            if (validation.valid) onChange(file)
+            else toast.error(validation.message)
+          }
           event.target.value = ''
         }}
       />

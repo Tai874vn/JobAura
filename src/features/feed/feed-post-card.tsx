@@ -45,7 +45,7 @@ export function FeedPostCard({
               {post.author.name}
             </Link>
             <p className="truncate text-xs text-muted">
-              {post.author.headline || 'JobAura member'} · {formatPostDate(post.createdAt)}
+              {post.author.headline || 'JobAura member'} - {formatPostDate(post.createdAt)}
             </p>
           </div>
           {post.author.id === currentUserId ? (

@@ -2,12 +2,11 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Trash2 } from 'lucide-react'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { hiredJobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { currency, getErrorMessage } from '@/shared/lib/utils'
-import { Badge, Button, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
 
 export function MyJobsPage() {
   const queryClient = useQueryClient()
@@ -43,7 +42,7 @@ export function MyJobsPage() {
                 <p className="text-sm text-muted">{currency(item.congViec?.giaTien)}</p>
               </div>
               <div className="flex gap-2">
-                <Link href={`/jobs/${item.maCongViec}`}><Button variant="secondary">View</Button></Link>
+                <ButtonLink href={`/jobs/${item.maCongViec}`} variant="secondary">View</ButtonLink>
                 <Button variant="secondary" onClick={() => completeMutation.mutate(item.id)}><CheckCircle2 className="h-4 w-4" /> Complete</Button>
                 <Button variant="danger" onClick={() => deleteMutation.mutate(item.id)}><Trash2 className="h-4 w-4" /> Remove</Button>
               </div>

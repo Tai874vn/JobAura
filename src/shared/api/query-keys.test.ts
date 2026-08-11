@@ -6,6 +6,8 @@ describe('query keys', () => {
     expect(queryKeys.me).toEqual(['auth', 'me'])
     expect(queryKeys.job(3)).toEqual(['jobs', 3])
     expect(queryKeys.chatMessages(7)).toEqual(['chat', 'messages', 7])
+    expect(queryKeys.notifications).toEqual(['notifications', 'list'])
+    expect(queryKeys.notificationUnreadCount).toEqual(['notifications', 'unread-count'])
   })
 
   it('uses empty objects for missing params', () => {
@@ -15,7 +17,7 @@ describe('query keys', () => {
 
   it('returns stable recommendation keys', () => {
     expect(queryKeys.recommendedJobs({ topK: 4 })).toEqual(['recommendations', 'jobs', { topK: 4 }])
-    expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'jobs', 12, 'candidates', { topK: 5 }])
+    expect(queryKeys.recommendedCandidates(12, { topK: 5 })).toEqual(['recommendations', 'hiring-posts', 12, 'candidates', { topK: 5 }])
   })
 
   it('returns stable cursor job keys', () => {

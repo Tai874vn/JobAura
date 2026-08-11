@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { env } from '@/shared/config/env'
+import { getServerEnv } from '@/shared/config/env'
 
 type RequestOptions = Omit<RequestInit, 'body'> & {
   body?: BodyInit | object
@@ -35,6 +35,7 @@ async function readResponseBody(response: Response): Promise<unknown> {
 }
 
 export async function serverRequest<T>(path: string, options: RequestOptions = {}): Promise<ServerRequestResult<T>> {
+  const { backendApiBaseUrl } = getServerEnv()
   const { body: requestBody, includeCookies = true, ...requestOptions } = options
   const headers = new Headers(requestOptions.headers)
   const cookieHeader = includeCookies ? (await cookies()).toString() : ''
@@ -46,7 +47,7 @@ export async function serverRequest<T>(path: string, options: RequestOptions = {
   }
 
   try {
-    const response = await fetch(`${env.apiBaseUrl}${path}`, {
+    const response = await fetch(`${backendApiBaseUrl}${path}`, {
       ...requestOptions,
       headers,
       body:

@@ -23,7 +23,7 @@ interface ChatState {
   setRooms: (rooms: ChatRoom[]) => void
   setActiveRoom: (roomId: number | null) => void
   setMessages: (roomId: number, messages: ChatMessage[]) => void
-  addMessage: (message: ChatMessage) => void
+  addMessage: (message: ChatMessage, viewerId?: number) => void
   setOnlineUserIds: (ids: number[]) => void
   setTypingUsers: (users: TypingUser[]) => void
   reset: () => void
@@ -47,16 +47,43 @@ export const useChatStore = create<ChatState>((set) => ({
     })),
   closeChat: () => set({ isOpen: false }),
   setRooms: (rooms) => set({ rooms }),
-  setActiveRoom: (activeRoomId) => set({ activeRoomId }),
+  setActiveRoom: (activeRoomId) =>
+    set((state) => ({
+      activeRoomId,
+      rooms: activeRoomId
+        ? state.rooms.map((room) =>
+            room.id === activeRoomId ? { ...room, unreadCount: 0 } : room
+          )
+        : state.rooms,
+    })),
   setMessages: (roomId, messages) =>
     set((state) => ({ messagesByRoom: { ...state.messagesByRoom, [roomId]: messages } })),
-  addMessage: (message) =>
+  addMessage: (message, viewerId) =>
     set((state) => {
       const messages = state.messagesByRoom[message.roomId] ?? []
+      const exists = messages.some((item) => item.id === message.id)
+      const shouldIncrementUnread =
+        !exists &&
+        message.sender.id !== viewerId &&
+        state.activeRoomId !== message.roomId
       const rooms = state.rooms.map((room) =>
-        room.id === message.roomId ? { ...room, lastMessage: message, unreadCount: room.unreadCount + 1 } : room
+        room.id === message.roomId
+          ? {
+              ...room,
+              lastMessage: message,
+              unreadCount: shouldIncrementUnread
+                ? room.unreadCount + 1
+                : room.unreadCount,
+            }
+          : room
       )
-      return { messagesByRoom: { ...state.messagesByRoom, [message.roomId]: [...messages, message] }, rooms }
+      return {
+        messagesByRoom: {
+          ...state.messagesByRoom,
+          [message.roomId]: exists ? messages : [...messages, message],
+        },
+        rooms,
+      }
     }),
   setOnlineUserIds: (onlineUserIds) => set({ onlineUserIds }),
   setTypingUsers: (typingUsers) => set({ typingUsers }),

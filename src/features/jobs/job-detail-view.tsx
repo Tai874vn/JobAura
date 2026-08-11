@@ -2,24 +2,20 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, MapPin, MessageSquare, Pencil, Sparkles, Star, Trash2, Upload } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { CheckCircle2, MessageSquare, Pencil, Sparkles, Star, Trash2, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { chatApi, commentsApi, hiredJobsApi, jobsApi, recommendationsApi } from '@/shared/api/endpoints'
+import { chatApi, commentsApi, hiredJobsApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import type { Comment, Job, RecommendedCandidate } from '@/shared/schemas'
+import type { Comment, Job } from '@/shared/schemas'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Badge, Button, Card, CardContent, Textarea } from '@/shared/ui'
-import { MatchBadge } from './recommendation-ui'
+import { Badge, Button, ButtonLink, Card, CardContent, Textarea } from '@/shared/ui'
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
-
-function candidateSkills(candidate: RecommendedCandidate) {
-  return (candidate.profileSkills ?? candidate.skills ?? []).filter((skill) => skill?.name).slice(0, 3)
-}
 
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
   const imageUrl = resolveAssetUrl(job.hinhAnh)
@@ -32,7 +28,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const [review, setReview] = useState('')
   const [rating, setRating] = useState(5)
   const isOwner = user?.id === job.nguoiTao
-  const candidateParams = { topK: 5, poolSize: 100 }
+  const canViewCandidateMatches = Boolean(user?.role === 'admin' || (isOwner && canAccessCandidateDirectory(user?.role)))
   const sellerId = getSellerId(job)
   const sellerName = getSellerName(job)
   const sellerHref = getSellerHref(job)
@@ -81,14 +77,6 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to start chat')),
   })
-
-  const candidateQuery = useQuery({
-    queryKey: queryKeys.recommendedCandidates(job.id, candidateParams),
-    queryFn: () => recommendationsApi.candidates(job.id, candidateParams),
-    enabled: Boolean(isOwner),
-    staleTime: 1000 * 60 * 5,
-  })
-  const recommendedCandidates = candidateQuery.data?.content?.data ?? []
 
   function requireLogin(action: () => void) {
     if (!user) router.push(`/auth/login?next=/jobs/${job.id}`)
@@ -216,76 +204,31 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
             </CardContent>
           </Card>
           {isOwner ? (
-            <>
-              <div className="mt-4 grid gap-2">
-                <Button variant="secondary"><Pencil className="h-4 w-4" /> Edit service</Button>
-                <Button variant="secondary"><Upload className="h-4 w-4" /> Upload image</Button>
-                <Button variant="danger" onClick={() => deleteMutation.mutate()}><Trash2 className="h-4 w-4" /> Delete</Button>
-              </div>
-              <Card className="mt-4">
-                <CardContent>
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <div>
-                      <p className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
-                        <Sparkles className="h-4 w-4" />
-                        AI matches
-                      </p>
-                      <h2 className="mt-1 font-display text-xl font-bold">Candidate matches</h2>
-                    </div>
-                    {candidateQuery.data?.content?.elapsedMs ? (
-                      <span className="text-xs font-semibold text-muted">{Math.round(candidateQuery.data.content.elapsedMs)}ms</span>
-                    ) : null}
-                  </div>
-                  {candidateQuery.isPending ? (
-                    <div className="space-y-3">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div key={index} className="h-16 animate-pulse rounded bg-surface-muted" />
-                      ))}
-                    </div>
-                  ) : candidateQuery.isError ? (
-                    <p className="text-sm text-muted">Candidate matches are unavailable.</p>
-                  ) : recommendedCandidates.length ? (
-                    <div className="divide-y divide-border">
-                      {recommendedCandidates.map((candidate) => {
-                        const skills = candidateSkills(candidate)
-
-                        return (
-                          <Link key={candidate.id} href={`/profile/${candidate.id}`} className="block py-3 transition hover:text-primary">
-                            <div className="flex items-start gap-3">
-                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-                                {initials(candidate.name)}
-                              </span>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center justify-between gap-2">
-                                  <p className="truncate text-sm font-bold text-foreground">{candidate.name}</p>
-                                  <MatchBadge label={candidate.recommendation.label} score={candidate.recommendation.finalScore} />
-                                </div>
-                                <p className="mt-1 line-clamp-2 text-xs text-muted">{candidate.headline || candidate.bio || 'Candidate profile'}</p>
-                                {candidate.location ? (
-                                  <p className="mt-2 flex items-center gap-1 text-xs text-muted">
-                                    <MapPin className="h-3 w-3" />
-                                    {candidate.location}
-                                  </p>
-                                ) : null}
-                                {skills.length ? (
-                                  <div className="mt-2 flex flex-wrap gap-1">
-                                    {skills.map((skill) => (
-                                      <Badge key={skill.id ?? skill.name} tone="neutral">{skill.name}</Badge>
-                                    ))}
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted">No candidate matches yet.</p>
-                  )}
-                </CardContent>
-              </Card>
-            </>
+            <div className="mt-4 grid gap-2">
+              <Button variant="secondary"><Pencil className="h-4 w-4" /> Edit service</Button>
+              <Button variant="secondary"><Upload className="h-4 w-4" /> Upload image</Button>
+              <Button variant="danger" onClick={() => deleteMutation.mutate()}><Trash2 className="h-4 w-4" /> Delete</Button>
+            </div>
+          ) : null}
+          {canViewCandidateMatches ? (
+            <Card className="mt-4">
+              <CardContent>
+                <div>
+                  <p className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
+                    <Sparkles className="h-4 w-4" />
+                    Recruiter AI
+                  </p>
+                  <h2 className="mt-1 font-display text-xl font-bold">Find matching candidates</h2>
+                  <p className="mt-2 text-sm leading-6 text-muted">
+                    Run AI matching from the recruiter page when you are ready. This avoids spending daily AI uses while browsing job details.
+                  </p>
+                </div>
+                <ButtonLink href="/recommendations/candidates" className="mt-4 w-full" variant="secondary">
+                  <Sparkles className="h-4 w-4" />
+                  Open AI matching
+                </ButtonLink>
+              </CardContent>
+            </Card>
           ) : null}
         </aside>
       </div>

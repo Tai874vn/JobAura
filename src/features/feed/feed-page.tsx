@@ -2,6 +2,7 @@
 
 import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { RefreshCw } from 'lucide-react'
+import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { postsApi, savedItemsApi } from '@/shared/api/endpoints'
@@ -226,7 +227,7 @@ export function FeedPage() {
 }
 
 function MobileTab({ href, label }: { href: string; label: string }) {
-  return <a href={href} className="shrink-0 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold">{label}</a>
+  return <Link href={href} className="shrink-0 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold">{label}</Link>
 }
 
 function FeedSkeleton() {

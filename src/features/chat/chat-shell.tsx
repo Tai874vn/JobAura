@@ -31,6 +31,7 @@ export function ChatShell() {
   const setOnlineUserIds = useChatStore((state) => state.setOnlineUserIds)
   const socketRef = useRef<Socket | null>(null)
   const [draft, setDraft] = useState('')
+  const [readReceipts, setReadReceipts] = useState<Record<number, number[]>>({})
 
   const roomsQuery = useQuery({
     queryKey: queryKeys.chatRooms,
@@ -51,7 +52,14 @@ export function ChatShell() {
     })
 
     nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
-    nextSocket.on('new-message', (message: ChatMessage) => addMessage(message))
+    nextSocket.on('new-message', (message: ChatMessage) => addMessage(message, userId))
+    nextSocket.on('messages-read', ({ roomId, userId: readerId }: { roomId: number; userId: number }) => {
+      setReadReceipts((current) => {
+        const readers = current[roomId] ?? []
+        if (readers.includes(readerId)) return current
+        return { ...current, [roomId]: [...readers, readerId] }
+      })
+    })
     nextSocket.on('online-users', (ids: number[]) => setOnlineUserIds(ids))
     nextSocket.on('user-online', ({ userId: onlineUserId }: { userId: number }) => {
       const current = useChatStore.getState().onlineUserIds
@@ -68,7 +76,10 @@ export function ChatShell() {
     }
   }, [addMessage, isSocketActive, setOnlineUserIds, userId])
 
-  const activeMessages = activeRoomId ? messagesByRoom[activeRoomId] ?? [] : []
+  const activeMessages = useMemo(
+    () => activeRoomId ? messagesByRoom[activeRoomId] ?? [] : [],
+    [activeRoomId, messagesByRoom]
+  )
   const activeRoom = rooms.find((room) => room.id === activeRoomId)
 
   useEffect(() => {
@@ -89,6 +100,14 @@ export function ChatShell() {
     }
   }, [activeRoomId, messagesByRoom, setMessages])
 
+  useEffect(() => {
+    if (!activeRoomId || !userId || !activeMessages.length) return
+    const latestMessage = activeMessages[activeMessages.length - 1]
+    if (latestMessage?.sender.id !== userId) {
+      socketRef.current?.emit('mark-as-read', { roomId: activeRoomId })
+    }
+  }, [activeMessages, activeRoomId, userId])
+
   function openRoom(room: ChatRoom) {
     setActiveRoom(room.id)
   }
@@ -104,6 +123,16 @@ export function ChatShell() {
     () => activeRoom?.name ?? activeRoom?.members.find((member) => member.id !== userId)?.name ?? 'Select a conversation',
     [activeRoom, userId]
   )
+  const latestOwnMessageId = useMemo(
+    () => userId ? [...activeMessages].reverse().find((message) => message.sender.id === userId)?.id : undefined,
+    [activeMessages, userId]
+  )
+  const latestOwnMessage = activeMessages.find((message) => message.id === latestOwnMessageId)
+  const activeRoomReaders = activeRoomId ? readReceipts[activeRoomId] ?? [] : []
+  const otherMembers = activeRoom?.members.filter((member) => member.id !== userId) ?? []
+  const latestOwnMessageSeen = Boolean(latestOwnMessage && otherMembers.length > 0 && otherMembers.every((member) =>
+    activeRoomReaders.includes(member.id) || wasReadAfter(member.lastReadAt, latestOwnMessage.createdAt)
+  ))
 
   if (!user) return null
 
@@ -121,11 +150,8 @@ export function ChatShell() {
       {isOpen ? (
         <section className="fixed bottom-5 right-5 z-50 grid h-[560px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[260px_1fr] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
           <aside className="border-r border-border bg-surface-muted">
-            <div className="flex h-14 items-center justify-between border-b border-border px-4">
+            <div className="flex h-14 items-center border-b border-border px-4">
               <h2 className="font-display text-lg font-bold">Inbox</h2>
-              <Button variant="ghost" size="icon" onClick={closeChat}>
-                <X className="h-4 w-4" />
-              </Button>
             </div>
             <div className="max-h-[506px] overflow-y-auto p-2">
               {roomsQuery.isPending ? Array.from({ length: 4 }).map((_, index) => (
@@ -160,15 +186,25 @@ export function ChatShell() {
             </div>
           </aside>
           <main className="flex min-w-0 flex-col">
-            <div className="flex h-14 items-center border-b border-border px-4">
-              <h3 className="font-semibold">{title}</h3>
+            <div className="flex h-14 items-center justify-between gap-3 border-b border-border px-4">
+              <h3 className="min-w-0 truncate font-semibold">{title}</h3>
+              <Button variant="ghost" size="icon" onClick={closeChat} aria-label="Close chat">
+                <X className="h-4 w-4" />
+              </Button>
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto bg-background p-4">
               {activeRoomId ? (
                 activeMessages.map((message) => (
                   <div key={message.id} className={cn('flex', message.sender.id === user.id ? 'justify-end' : 'justify-start')}>
-                    <div className={cn('max-w-[72%] rounded-lg px-3 py-2 text-sm', message.sender.id === user.id ? 'bg-primary text-white' : 'bg-white border border-border')}>
-                      {message.content}
+                    <div className="max-w-[72%]">
+                      <div className={cn('rounded-lg px-3 py-2 text-sm', message.sender.id === user.id ? 'bg-primary text-white' : 'bg-white border border-border')}>
+                        {message.content}
+                      </div>
+                      {message.sender.id === user.id && message.id === latestOwnMessageId ? (
+                        <div className="mt-1 text-right text-[11px] font-semibold text-muted">
+                          {latestOwnMessageSeen ? 'Seen' : 'Sent'}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ))
@@ -181,6 +217,7 @@ export function ChatShell() {
                 className="h-10 flex-1 rounded-lg border border-border px-3 text-sm outline-none focus:border-primary"
                 placeholder="Write a reply"
                 value={draft}
+                maxLength={5000}
                 onChange={(event) => {
                   setDraft(event.target.value)
                   if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
@@ -196,4 +233,11 @@ export function ChatShell() {
       ) : null}
     </>
   )
+}
+
+function wasReadAfter(readAt: string | null | undefined, messageCreatedAt: string) {
+  if (!readAt) return false
+  const readTime = new Date(readAt).getTime()
+  const messageTime = new Date(messageCreatedAt).getTime()
+  return Number.isFinite(readTime) && Number.isFinite(messageTime) && readTime >= messageTime
 }

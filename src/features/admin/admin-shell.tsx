@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart3, BriefcaseBusiness, Home, MessageSquare, Settings, Tags, Users } from 'lucide-react'
+import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Settings, Tags, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn, initials } from '@/shared/lib/utils'
@@ -14,6 +14,7 @@ const nav = [
   { href: '/admin/job-detail-types', label: 'Detail types', icon: BarChart3 },
   { href: '/admin/hired-jobs', label: 'Hired jobs', icon: Settings },
   { href: '/admin/comments', label: 'Comments', icon: MessageSquare },
+  { href: '/settings?section=resume', activePath: '/settings', label: 'My resume', icon: FileJson },
 ]
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -29,13 +30,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="grid gap-1 p-3">
-          {nav.map(({ href, label, icon: Icon }) => (
+          {nav.map(({ href, activePath, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-muted hover:bg-surface-muted hover:text-foreground',
-                pathname === href && 'bg-primary text-white hover:bg-primary hover:text-white'
+                pathname === (activePath ?? href) && 'bg-primary text-white hover:bg-primary hover:text-white'
               )}
             >
               <Icon className="h-4 w-4" />

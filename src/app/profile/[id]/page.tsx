@@ -1,24 +1,128 @@
+import { cache } from 'react'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ProfilePage } from '@/features/users/profile-page'
 import { getUserPosts } from '@/features/users/profile-posts'
 import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
+import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
 import type { ApiResponse, Job, PaginatedContent, UserProfile } from '@/shared/schemas'
 import { Card, CardContent } from '@/shared/ui'
 
-export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+const getProfileData = cache(async (id: string) => {
   const [response, jobsResponse] = await Promise.all([
     serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`, { includeCookies: false }),
-    serverRequest<ApiResponse<PaginatedContent<Job>>>(`/api/jobs/by-creator/${id}?page=1&pageSize=20`),
+    serverRequest<ApiResponse<PaginatedContent<Job>>>(`/api/jobs/by-creator/${id}?page=1&pageSize=20`, {
+      includeCookies: false,
+      next: { revalidate: 300 },
+    }),
   ])
+
+  return { response, jobsResponse }
+})
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  const { response } = await getProfileData(id)
+  const user = response.ok ? response.data.content : null
+
+  if (!user) {
+    return {
+      title: 'Profile not found',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    }
+  }
+
+  const title = `${user.name} - JobAura profile`
+  const description = seoDescription(user.headline || user.bio, `View ${user.name}'s public JobAura profile, skills, services, and marketplace activity.`)
+  const image = absoluteAssetUrl(user.avatar ?? user.coverImage ?? user.cover)
+  const canonical = `/profile/${user.id}`
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      siteName: 'JobAura',
+      type: 'website',
+      images: image ? [{ url: image, alt: user.name }] : undefined,
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title,
+      description,
+      images: image ? [image] : undefined,
+    },
+  }
+}
+
+function profileSkills(user: UserProfile) {
+  return (user.profileSkills ?? user.skills ?? legacySkills(user.skill)).map((skill) => skill.name).filter(Boolean)
+}
+
+function legacySkills(value?: string | null) {
+  if (!value) return []
+  return value
+    .split(',')
+    .map((name, sortOrder) => ({ name: name.trim(), sortOrder }))
+    .filter((skill) => skill.name)
+}
+
+function personJsonLd(user: UserProfile, posts: Job[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': absoluteSiteUrl(`/profile/${user.id}#person`),
+    name: user.name,
+    url: absoluteSiteUrl(`/profile/${user.id}`),
+    image: absoluteAssetUrl(user.avatar),
+    jobTitle: user.headline,
+    description: seoDescription(user.bio || user.headline, `${user.name}'s public JobAura profile.`, 500),
+    email: user.email,
+    address: user.location
+      ? {
+          '@type': 'PostalAddress',
+          addressLocality: user.location,
+        }
+      : undefined,
+    knowsAbout: profileSkills(user),
+    makesOffer: posts.slice(0, 10).map((job) => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'Service',
+        name: job.tenCongViec,
+        url: absoluteSiteUrl(`/jobs/${job.id}`),
+      },
+      priceCurrency: 'USD',
+      price: job.giaTien,
+    })),
+  }
+}
+
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const { response, jobsResponse } = await getProfileData(id)
 
   if (!response.ok) return <ProfileLoadError id={id} message={response.error} />
   if (!response.data.content) notFound()
 
   const jobs = jobsResponse.ok ? normalizePaginatedJobsResponse(jobsResponse.data).content?.data ?? [] : []
+  const posts = getUserPosts(jobs, response.data.content.id)
 
-  return <ProfilePage user={response.data.content} posts={getUserPosts(jobs, response.data.content.id)} />
+  return (
+    <>
+      <JsonLd data={personJsonLd(response.data.content, posts)} />
+      <ProfilePage user={response.data.content} posts={posts} />
+    </>
+  )
 }
 
 function ProfileLoadError({ id, message }: { id: string; message: string | string[] }) {

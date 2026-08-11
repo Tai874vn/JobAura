@@ -16,7 +16,7 @@ describe('chat store', () => {
     expect(useChatStore.getState().isSocketActive).toBe(true)
   })
 
-  it('stores room messages and increments unread count on new message', () => {
+  it('stores room messages and increments unread count for unread incoming messages', () => {
     useChatStore.getState().setRooms([
       {
         id: 1,
@@ -43,12 +43,44 @@ describe('chat store', () => {
       content: 'new message',
       createdAt: '2025-01-01T00:01:00.000Z',
       sender: { id: 10, name: 'B', email: 'b@example.com', avatar: null },
-    })
+    }, 9)
 
     const state = useChatStore.getState()
     expect(state.messagesByRoom[1]).toHaveLength(2)
     expect(state.rooms[0].unreadCount).toBe(1)
     expect(state.rooms[0].lastMessage?.id).toBe(101)
+  })
+
+  it('does not increment unread count for own, active, or duplicate messages', () => {
+    const message = {
+      id: 101,
+      roomId: 1,
+      content: 'new message',
+      createdAt: '2025-01-01T00:01:00.000Z',
+      sender: { id: 9, name: 'A', email: 'a@example.com', avatar: null },
+    }
+    useChatStore.getState().setRooms([
+      {
+        id: 1,
+        name: 'General',
+        isGroup: false,
+        members: [],
+        unreadCount: 3,
+      },
+    ])
+
+    useChatStore.getState().addMessage(message, 9)
+    expect(useChatStore.getState().rooms[0].unreadCount).toBe(3)
+
+    useChatStore.getState().setActiveRoom(1)
+    expect(useChatStore.getState().rooms[0].unreadCount).toBe(0)
+
+    useChatStore.getState().addMessage({ ...message, id: 102, sender: { ...message.sender, id: 10 } }, 9)
+    useChatStore.getState().addMessage({ ...message, id: 102, sender: { ...message.sender, id: 10 } }, 9)
+
+    const state = useChatStore.getState()
+    expect(state.rooms[0].unreadCount).toBe(0)
+    expect(state.messagesByRoom[1].map((item) => item.id)).toEqual([101, 102])
   })
 
   it('opens chat for a room without duplicating existing rooms', () => {

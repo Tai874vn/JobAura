@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+node_modules
+.next
+out
+dist
+coverage
+docs
+*.log
+*.tsbuildinfo
+repomix-output.xml
+.env.sentry-build-plugin

@@ -5,7 +5,7 @@ import { env } from '@/shared/config/env'
 import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { csrfTokenForMethod } from './csrf'
+import { csrfTokenForMethod, hasCsrfTokenCookie } from './csrf'
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
 type QueueItem = {
@@ -81,6 +81,11 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
       const originalRequest = error.config as RetryConfig | undefined
 
       if (error.response?.status !== 401 || !originalRequest || originalRequest._retry || shouldSkipRefresh(originalRequest)) {
+        return Promise.reject(error)
+      }
+
+      if (!hasCsrfTokenCookie()) {
+        handleSessionExpired()
         return Promise.reject(error)
       }
 

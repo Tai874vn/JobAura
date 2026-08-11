@@ -1,5 +1,4 @@
-import Link from 'next/link'
-import { Button, Card, CardContent } from '@/shared/ui'
+import { ButtonLink, Card, CardContent } from '@/shared/ui'
 
 export default function NotFound() {
   return (
@@ -9,7 +8,7 @@ export default function NotFound() {
           <p className="font-display text-6xl font-bold text-primary/30">404</p>
           <h1 className="mt-3 font-display text-2xl font-bold">Page not found</h1>
           <p className="mt-2 text-sm text-muted">The JobAura page you requested does not exist.</p>
-          <Link href="/"><Button className="mt-5">Back home</Button></Link>
+          <ButtonLink href="/" className="mt-5">Back home</ButtonLink>
         </CardContent>
       </Card>
     </div>

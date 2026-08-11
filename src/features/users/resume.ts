@@ -8,6 +8,9 @@ export const resumeFieldKeys = [
   'Email',
   'Phone',
   'Location',
+  'Role',
+  'Industry',
+  'YearsExperience',
   'Summary',
   'Skills',
   'Experience',
@@ -20,6 +23,9 @@ export const userResumeFieldKeys = [
   'Email',
   'Phone',
   'Location',
+  'Role',
+  'Industry',
+  'YearsExperience',
   'Summary',
   'Skills',
   'Experience',
@@ -107,6 +113,9 @@ export const emptyResumeDraft: ResumeDraft = {
   Email: '',
   Phone: '',
   Location: '',
+  Role: '',
+  Industry: '',
+  YearsExperience: '',
   Summary: '',
   Skills: '',
   Experience: '',
@@ -220,6 +229,9 @@ export function extractResumeFromText(text: string, sourceFileName?: string): Im
       Email: extractEmail(normalizedText),
       Phone: extractPhone(normalizedText),
       Location: findLabeledValue(normalizedText, 'Location') ?? inferLocation(lines),
+      Role: findLabeledValue(normalizedText, 'Role') ?? findLabeledValue(normalizedText, 'Title') ?? inferResumeRole(lines),
+      Industry: findLabeledValue(normalizedText, 'Industry') ?? '',
+      YearsExperience: findLabeledValue(normalizedText, 'Years Experience') ?? inferYearsExperience(normalizedText),
       Summary: summary,
       Skills: skills,
       Experience: experience,
@@ -356,6 +368,28 @@ function inferLocation(lines: string[]) {
   )
 }
 
+function inferResumeRole(lines: string[]) {
+  const skipped = new Set(['email', 'phone', 'location', 'summary', 'skills', 'education'])
+  return (
+    lines
+      .slice(1, 5)
+      .find((line) => {
+        const normalized = line.toLowerCase()
+        return (
+          !skipped.has(normalized) &&
+          !line.includes('@') &&
+          !extractPhone(line) &&
+          !/^\d{4,}$/.test(line.replace(/\D/g, ''))
+        )
+      }) ?? ''
+  )
+}
+
+function inferYearsExperience(text: string) {
+  const match = text.match(/\b(\d{1,2})\+?\s*(?:years?|yrs?)\b/i)
+  return match?.[1] ?? ''
+}
+
 function inferResumeName(lines: string[]) {
   return (
     lines.slice(0, 8).find((line) => {
@@ -376,7 +410,7 @@ function inferResumeCategory(lines: string[]) {
   )
 }
 
-function findLabeledValue(text: string, label: ResumeFieldKey) {
+function findLabeledValue(text: string, label: string) {
   const expression = new RegExp(`^\\s*${label}\\s*[:\\-]\\s*(.+)$`, 'im')
   return text.match(expression)?.[1]?.trim()
 }

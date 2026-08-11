@@ -29,6 +29,10 @@ export function canAccessCandidateDirectory(role?: string | null) {
   return role === 'employer' || role === 'admin'
 }
 
+export function canAccessEmployeeTools(role?: string | null) {
+  return role === 'user' || role === 'admin'
+}
+
 export function canAccessRole(role: string | null | undefined, allowedRoles?: readonly AccountRole[]) {
   if (!allowedRoles?.length) return true
   return isAccountRole(role) && allowedRoles.includes(role)

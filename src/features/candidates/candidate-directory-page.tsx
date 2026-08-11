@@ -1,18 +1,18 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   ArrowUpRight,
   Award,
-  BriefcaseBusiness,
   CheckCircle2,
   Clock3,
   FolderOpen,
   MapPin,
   Search,
   SlidersHorizontal,
+  Sparkles,
   Star,
   Users,
 } from 'lucide-react'
@@ -22,31 +22,51 @@ import {
   getCandidateSkillNames,
   getCandidateSummary,
 } from './candidate-directory'
-import { MatchBadge } from '@/features/jobs/recommendation-ui'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { cn } from '@/shared/lib/utils'
 import type { CandidateProfile } from '@/shared/schemas'
-import { Button, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
 
 const pageSize = 12
 
 export function CandidateDirectoryPage() {
-  const [keyword, setKeyword] = useState('')
+  const searchParams = useSearchParams()
+  const initialKeyword = searchParams.get('keyword') ?? ''
+
+  return <CandidateDirectoryContent key={initialKeyword} initialKeyword={initialKeyword} />
+}
+
+function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string }) {
+  const [keyword, setKeyword] = useState(initialKeyword)
   const [skill, setSkill] = useState('')
   const [location, setLocation] = useState('')
+  const [debouncedKeyword, setDebouncedKeyword] = useState(initialKeyword.trim())
+  const [debouncedSkill, setDebouncedSkill] = useState('')
+  const [debouncedLocation, setDebouncedLocation] = useState('')
   const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedKeyword(keyword.trim())
+      setDebouncedSkill(skill.trim())
+      setDebouncedLocation(location.trim())
+    }, 400)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [keyword, location, skill])
 
   const params = useMemo(
     () => ({
       page,
       pageSize,
-      keyword: keyword.trim() || undefined,
-      skill: skill.trim() || undefined,
-      location: location.trim() || undefined,
+      keyword: debouncedKeyword || undefined,
+      skill: debouncedSkill || undefined,
+      location: debouncedLocation || undefined,
     }),
-    [keyword, location, page, skill]
+    [debouncedKeyword, debouncedLocation, debouncedSkill, page]
   )
   const query = useQuery({
     queryKey: queryKeys.candidates(params),
@@ -63,6 +83,9 @@ export function CandidateDirectoryPage() {
     setKeyword('')
     setSkill('')
     setLocation('')
+    setDebouncedKeyword('')
+    setDebouncedSkill('')
+    setDebouncedLocation('')
     setPage(1)
   }
 
@@ -91,19 +114,22 @@ export function CandidateDirectoryPage() {
           </div>
           <h1 className="font-display text-4xl font-bold">Find candidates</h1>
           <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            Browse completed JobAura worker profiles before starting AI matching.
+            Search public worker profiles, review fit signals, and start hiring conversations.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/jobs">
-            <Button variant="secondary">Explore jobs</Button>
-          </Link>
-          <Link href="/jobs/new">
-            <Button>
-              <BriefcaseBusiness className="h-4 w-4" />
-              Post a job
-            </Button>
-          </Link>
+          <ButtonLink href="/recommendations/candidates">
+            <Sparkles className="h-4 w-4" />
+            AI matching
+          </ButtonLink>
+          <ButtonLink href="/connections" variant="secondary">
+            <Users className="h-4 w-4" />
+            Connections
+          </ButtonLink>
+          <ButtonLink href="/settings">
+            <SlidersHorizontal className="h-4 w-4" />
+            Hiring profile
+          </ButtonLink>
         </div>
       </div>
 
@@ -233,7 +259,7 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
                 <h2 className="truncate font-display text-xl font-bold">{candidate.name}</h2>
                 <p className="mt-0.5 line-clamp-1 text-sm font-semibold text-muted">{candidate.headline}</p>
               </div>
-              <MatchBadge label={candidate.match.label} score={candidate.match.score} />
+              <CandidateFitBadge candidate={candidate} />
             </div>
             <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
               <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
@@ -260,16 +286,29 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
         <p className="mt-3 text-xs leading-5 text-muted">Profile quality {Math.round(candidate.match.qualityScore * 100)}%</p>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Link href={`/profile/${candidate.id}`} className="flex-1">
-            <Button className="w-full" variant="secondary">
-              View profile
-              <ArrowUpRight className="h-4 w-4" />
-            </Button>
-          </Link>
+          <ButtonLink href={`/profile/${candidate.id}`} className="flex-1" variant="secondary">
+            View profile
+            <ArrowUpRight className="h-4 w-4" />
+          </ButtonLink>
           <ConnectionActions className="flex-1" userId={candidate.id} userName={candidate.name} />
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function CandidateFitBadge({ candidate }: { candidate: CandidateProfile }) {
+  const isMatch = candidate.match.label !== 'low_match'
+
+  return (
+    <span
+      className={cn(
+        'inline-flex shrink-0 items-center gap-1 rounded px-2.5 py-1 text-xs font-bold',
+        isMatch ? 'bg-primary/10 text-primary' : 'bg-surface-muted text-muted',
+      )}
+    >
+      {isMatch ? 'Match' : 'No match'}
+    </span>
   )
 }
 
