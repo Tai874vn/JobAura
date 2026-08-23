@@ -3,30 +3,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import {
-  Bell,
-  CreditCard,
-  FileJson,
-  ImageUp,
-  KeyRound,
-  LayoutDashboard,
-  Palette,
-  Plus,
-  Save,
-  ShieldCheck,
-  Trash2,
-  Upload,
-  UserRound,
-} from 'lucide-react'
+import { ImageUp, Save, Trash2, Upload } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
-import { authApi, usersApi } from '@/shared/api/endpoints'
+import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
-import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile, UserResume } from '@/shared/schemas'
-import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
+import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
 import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import { Button, Card, CardContent, Input, Spinner, Textarea } from '@/shared/ui'
+import { Button, Card, CardContent, ConfirmationDialog, Input, Spinner, Textarea } from '@/shared/ui'
 import { calculateProfileCompletion } from '@/features/users/profile-posts'
 import { cleanObject, removeListItem, toDateInput, updateList } from '@/features/users/profile-form-utils'
 import { useProfileUpload } from '@/features/users/use-profile-upload'
@@ -41,11 +26,12 @@ import {
   type ResumeFieldKey,
 } from '@/features/users/resume'
 import { ResumeSettingsSection } from './resume-settings-section'
+import { useSession } from '@/features/auth/use-session'
+import { isSettingSection, settingSections, SettingsOverview, SettingsPlaceholder, type SettingSection } from './settings/setting-sections'
+import { EditorSection, Field, IconButton, PortfolioFields, UploadField, type PortfolioDraft } from './settings/settings-form-controls'
 
 type SkillDraft = Omit<ProfileSkill, 'id'>
 type CertificationDraft = Omit<ProfileCertification, 'id'>
-type PortfolioDraft = Omit<ProfilePortfolioItem, 'id'>
-type SettingSection = 'overview' | 'profile' | 'resume' | 'account' | 'security' | 'appearance' | 'notifications' | 'billing'
 
 const emptySkill: SkillDraft = { name: '', level: '', sortOrder: 0 }
 const emptyCertification: CertificationDraft = {
@@ -59,30 +45,13 @@ const emptyCertification: CertificationDraft = {
 }
 const emptyPortfolio: PortfolioDraft = { title: '', description: '', image: '', url: '', sortOrder: 0 }
 
-const settingSections: Array<{
-  id: SettingSection
-  title: string
-  description: string
-  icon: React.ReactNode
-}> = [
-  { id: 'overview', title: 'Overview', description: 'Choose what to configure', icon: <LayoutDashboard className="h-4 w-4" /> },
-  { id: 'profile', title: 'Profile', description: 'Public identity and portfolio', icon: <UserRound className="h-4 w-4" /> },
-  { id: 'resume', title: 'Resume', description: 'Import CV data for AI matching', icon: <FileJson className="h-4 w-4" /> },
-  { id: 'account', title: 'Account', description: 'Email, role, and basic account data', icon: <ShieldCheck className="h-4 w-4" /> },
-  { id: 'security', title: 'Security', description: 'Password and session controls', icon: <KeyRound className="h-4 w-4" /> },
-  { id: 'appearance', title: 'Appearance', description: 'Theme and display preferences', icon: <Palette className="h-4 w-4" /> },
-  { id: 'notifications', title: 'Notifications', description: 'Marketplace alerts and email', icon: <Bell className="h-4 w-4" /> },
-  { id: 'billing', title: 'Billing', description: 'Payments and invoices', icon: <CreditCard className="h-4 w-4" /> },
-]
-const settingSectionIds = new Set<SettingSection>(settingSections.map((section) => section.id))
 
 export function SettingsPage() {
   const queryClient = useQueryClient()
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const profileQuery = useQuery({ queryKey: queryKeys.me, queryFn: authApi.me })
-  const profile = profileQuery.data?.content
+  const { user: profile, isLoading: isProfileLoading } = useSession()
   const resumeQuery = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume, enabled: Boolean(profile) })
   const resume = resumeQuery.data?.content ?? null
 
@@ -95,6 +64,7 @@ export function SettingsPage() {
   const [newPortfolio, setNewPortfolio] = useState<PortfolioDraft>(emptyPortfolio)
   const [resumeDraft, setResumeDraft] = useState<Partial<ResumeDraft>>({})
   const [attachedResumeFile, setAttachedResumeFile] = useState<File | null>(null)
+  const [pendingPortfolioDelete, setPendingPortfolioDelete] = useState<ProfilePortfolioItem | null>(null)
 
   function selectSection(section: SettingSection) {
     const params = new URLSearchParams(searchParams.toString())
@@ -134,7 +104,6 @@ export function SettingsPage() {
 
   function refreshProfile(next?: UserProfile) {
     if (next) {
-      queryClient.setQueryData(queryKeys.me, { ...profileQuery.data, content: next })
       setCachedSession(next, queryClient)
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
@@ -193,6 +162,7 @@ export function SettingsPage() {
     mutationFn: usersApi.deletePortfolioItem,
     onSuccess: () => {
       refreshProfile()
+      setPendingPortfolioDelete(null)
       toast.success('Portfolio item deleted')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete portfolio item')),
@@ -279,7 +249,7 @@ export function SettingsPage() {
     }
   }
 
-  if (profileQuery.isPending) {
+  if (isProfileLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Spinner className="h-7 w-7" />
@@ -427,7 +397,7 @@ export function SettingsPage() {
                           <Button variant="secondary" size="sm" disabled={!item.id} onClick={() => updatePortfolio.mutate(item)}>
                             Save
                           </Button>
-                          <Button variant="danger" size="sm" disabled={!item.id} onClick={() => item.id && deletePortfolio.mutate(item.id)}>
+                          <Button variant="danger" size="sm" disabled={!item.id} onClick={() => setPendingPortfolioDelete(item)}>
                             <Trash2 className="h-4 w-4" />
                             Delete
                           </Button>
@@ -459,6 +429,17 @@ export function SettingsPage() {
           {activeSection !== 'overview' && activeSection !== 'profile' && activeSection !== 'resume' ? <SettingsPlaceholder section={activeSection} /> : null}
         </main>
       </div>
+      <ConfirmationDialog
+        open={Boolean(pendingPortfolioDelete)}
+        title="Delete this portfolio item?"
+        description={`“${pendingPortfolioDelete?.title ?? ''}” will be permanently removed. This action cannot be undone.`}
+        confirmLabel="Delete portfolio item"
+        pending={deletePortfolio.isPending}
+        onCancel={() => setPendingPortfolioDelete(null)}
+        onConfirm={() => {
+          if (pendingPortfolioDelete?.id) deletePortfolio.mutate(pendingPortfolioDelete.id)
+        }}
+      />
     </div>
   )
 }
@@ -469,191 +450,4 @@ function getProfileSkills(profile: UserProfile): ProfileSkill[] {
 
 function getProfileCertifications(profile: UserProfile): ProfileCertification[] {
   return profile.profileCertifications ?? profile.certifications ?? []
-}
-
-function isSettingSection(value: string | null): value is SettingSection {
-  return Boolean(value && settingSectionIds.has(value as SettingSection))
-}
-function SettingsOverview({
-  profile,
-  completion,
-  resume,
-  onSelect,
-}: {
-  profile: UserProfile
-  completion: number
-  resume: UserResume | null
-  onSelect: (section: SettingSection) => void
-}) {
-  const cards = settingSections.filter((section) => section.id !== 'overview')
-
-  return (
-    <div className="grid gap-6">
-      <Card>
-        <CardContent className="grid gap-5 p-5 lg:grid-cols-[1fr_240px]">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">Profile readiness</p>
-            <h2 className="mt-1 font-display text-3xl font-bold">{completion}% complete</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-              A complete profile gives buyers enough context to trust your services before they open a conversation.
-            </p>
-            <div className="mt-5 h-2 overflow-hidden rounded-full bg-surface-muted">
-              <div className="h-full rounded-full bg-primary" style={{ width: `${completion}%` }} />
-            </div>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Signed in as</p>
-            <p className="mt-2 truncate font-display text-xl font-bold">{profile.name}</p>
-            <p className="mt-1 truncate text-sm text-muted">{profile.email}</p>
-            <div className="mt-4 grid gap-2">
-              <Button className="w-full" variant="secondary" onClick={() => onSelect('profile')}>
-                Edit profile
-              </Button>
-              <Button className="w-full" variant={resume ? 'secondary' : 'primary'} onClick={() => onSelect('resume')}>
-                {resume ? 'View resume' : 'Import resume'}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {cards.map((section) => (
-          <button
-            key={section.id}
-            type="button"
-            className="rounded-lg border border-border bg-white p-4 text-left transition hover:border-primary hover:shadow-[0_8px_24px_rgba(0,0,0,0.06)]"
-            onClick={() => onSelect(section.id)}
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">{section.icon}</span>
-            <span className="mt-4 block font-display text-xl font-bold">{section.title}</span>
-            <span className="mt-1 block text-sm leading-6 text-muted">{section.description}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function SettingsPlaceholder({ section }: { section: SettingSection }) {
-  const current = settingSections.find((item) => item.id === section)
-
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Coming next</p>
-          <h2 className="mt-1 font-display text-3xl font-bold">{current?.title ?? 'Settings'}</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            This section is reserved for {current?.description.toLowerCase() ?? 'future account controls'}. The settings hub is ready, and this panel can be wired to backend APIs as those controls become available.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function EditorSection({
-  title,
-  children,
-  onAdd,
-  onSave,
-  saveLabel = 'Save',
-  hideActions = false,
-}: {
-  title: string
-  children: React.ReactNode
-  onAdd?: () => void
-  onSave?: () => void
-  saveLabel?: string
-  hideActions?: boolean
-}) {
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="font-display text-2xl font-bold">{title}</h2>
-          {!hideActions ? (
-            <div className="flex gap-2">
-              {onAdd ? (
-                <Button variant="secondary" size="sm" onClick={onAdd}>
-                  <Plus className="h-4 w-4" />
-                  Add
-                </Button>
-              ) : null}
-              {onSave ? (
-                <Button size="sm" onClick={onSave}>
-                  {saveLabel}
-                </Button>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-        <div className="grid gap-3">{children}</div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  className,
-}: {
-  label: string
-  value?: string | null
-  onChange: (value: string) => void
-  type?: string
-  className?: string
-}) {
-  return (
-    <label className={`grid gap-1 ${className ?? ''}`}>
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-      <Input type={type} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  )
-}
-
-function PortfolioFields({ item, onChange }: { item: PortfolioDraft; onChange: (patch: Partial<PortfolioDraft>) => void }) {
-  return (
-    <>
-      <Input value={item.title} placeholder="Project title" onChange={(event) => onChange({ title: event.target.value })} />
-      <Textarea value={item.description ?? ''} placeholder="Description" onChange={(event) => onChange({ description: event.target.value })} />
-      <Input value={item.image ?? ''} placeholder="Image URL" onChange={(event) => onChange({ image: event.target.value })} />
-      <Input value={item.url ?? ''} placeholder="Project URL" onChange={(event) => onChange({ url: event.target.value })} />
-    </>
-  )
-}
-
-function UploadField({ label, icon, onChange }: { label: string; icon: React.ReactNode; onChange: (file: File) => void }) {
-  return (
-    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
-      {icon}
-      {label}
-      <input
-        className="sr-only"
-        type="file"
-        accept={imageUploadAccept}
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) {
-            const validation = validateImageFile(file, { label })
-            if (validation.valid) onChange(file)
-            else toast.error(validation.message)
-          }
-          event.target.value = ''
-        }}
-      />
-    </label>
-  )
-}
-
-function IconButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <Button variant="ghost" size="icon" aria-label={label} onClick={onClick}>
-      <Trash2 className="h-4 w-4" />
-    </Button>
-  )
 }

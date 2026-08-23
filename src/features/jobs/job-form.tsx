@@ -25,6 +25,8 @@ export function JobForm() {
     defaultValues: { tenCongViec: '', giaTien: 25, moTaNgan: '', moTa: '', maChiTietLoai: 0, danhGia: 0, saoCongViec: 0 },
   })
   const detailsQuery = useQuery({ queryKey: queryKeys.jobDetailTypes, queryFn: jobDetailTypesApi.all })
+  const details = detailsQuery.data?.content ?? []
+  const detailsUnavailable = detailsQuery.isError && !details.length
 
   const mutation = useMutation({
     mutationFn: async (values: CreateJob) => {
@@ -75,10 +77,14 @@ export function JobForm() {
               <Field label="Price" error={form.formState.errors.giaTien?.message}>
                 <Input type="number" {...form.register('giaTien')} />
               </Field>
-              <Field label="Category detail" error={form.formState.errors.maChiTietLoai?.message}>
-                <select className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm" disabled={detailsQuery.isPending} {...form.register('maChiTietLoai')}>
-                  <option value={0}>{detailsQuery.isPending ? 'Loading details...' : 'Choose detail'}</option>
-                  {(detailsQuery.data?.content ?? []).map((detail) => <option key={detail.id} value={detail.id}>{detail.tenChiTiet}</option>)}
+              <Field
+                label="Category detail"
+                error={form.formState.errors.maChiTietLoai?.message}
+                hint={detailsUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">Categories could not be loaded.<Button type="button" size="sm" variant="secondary" onClick={() => detailsQuery.refetch()}>Retry</Button></span> : undefined}
+              >
+                <select className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm" disabled={detailsQuery.isPending || detailsUnavailable} {...form.register('maChiTietLoai')}>
+                  <option value={0}>{detailsQuery.isPending ? 'Loading details...' : detailsUnavailable ? 'Categories unavailable' : 'Choose detail'}</option>
+                  {details.map((detail) => <option key={detail.id} value={detail.id}>{detail.tenChiTiet}</option>)}
                 </select>
               </Field>
             </div>
@@ -100,6 +106,6 @@ export function JobForm() {
   )
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return <label className="grid gap-2 text-sm font-semibold">{label}{children}{error ? <span className="text-xs text-danger">{error}</span> : null}</label>
+function Field({ label, error, hint, children }: { label: string; error?: string; hint?: React.ReactNode; children: React.ReactNode }) {
+  return <div className="grid gap-2 text-sm font-semibold"><label className="grid gap-2">{label}{children}</label>{error ? <span className="text-xs text-danger">{error}</span> : null}{hint}</div>
 }

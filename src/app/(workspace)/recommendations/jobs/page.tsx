@@ -3,7 +3,7 @@ import { RecommendedJobsPage } from '@/features/jobs/recommended-jobs-page'
 
 export default function JobRecommendationsRoute() {
   return (
-    <RequireAuth>
+    <RequireAuth allowedRoles={['user', 'admin']}>
       <RecommendedJobsPage />
     </RequireAuth>
   )

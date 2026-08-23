@@ -3,7 +3,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import { Toaster } from 'sonner'
-import { appQueryClient } from '@/shared/api/query-client'
+import { getQueryClient } from '@/shared/api/query-client'
 
 const ReactQueryDevtools =
   process.env.NODE_ENV === 'development'
@@ -11,8 +11,10 @@ const ReactQueryDevtools =
     : null
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
+  const queryClient = getQueryClient()
+
   return (
-    <QueryClientProvider client={appQueryClient}>
+    <QueryClientProvider client={queryClient}>
       {children}
       <Toaster richColors position="top-right" />
       {ReactQueryDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}

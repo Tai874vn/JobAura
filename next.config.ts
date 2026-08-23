@@ -91,13 +91,18 @@ const websocketOrigins = [
   websocketOriginFromUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
   websocketOriginFromUrl(process.env.BACKEND_API_BASE_URL),
 ]
+const scriptSources = [
+  "'self'",
+  "'unsafe-inline'",
+  ...(process.env.NODE_ENV === 'development' ? ["'unsafe-eval'"] : []),
+]
 const contentSecurityPolicy = [
   cspDirective('default-src', ["'self'"]),
   cspDirective('base-uri', ["'self'"]),
   cspDirective('object-src', ["'none'"]),
   cspDirective('frame-ancestors', ["'none'"]),
   cspDirective('form-action', ["'self'"]),
-  cspDirective('script-src', ["'self'", "'unsafe-inline'", "'unsafe-eval'"]),
+  cspDirective('script-src', scriptSources),
   cspDirective('style-src', ["'self'", "'unsafe-inline'"]),
   cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
   cspDirective('font-src', ["'self'", 'data:']),

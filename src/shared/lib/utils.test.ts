@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios'
 import { describe, expect, it } from 'vitest'
 import { cn, currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from './utils'
+import { safeExternalUrl } from './urls'
 
 describe('utils', () => {
   it('merges class names and formats currency', () => {
@@ -29,7 +30,15 @@ describe('utils', () => {
     expect(resolveAssetUrl('https://example.com/a.png')).toBe('https://example.com/a.png')
     expect(resolveAssetUrl('images\\avatar.png')).toBe(`${process.env.NEXT_PUBLIC_API_BASE_URL}/images/avatar.png`)
     expect(resolveAssetUrl('blob:http://example.com/a')).toBeUndefined()
+    expect(resolveAssetUrl('javascript:alert(1)')).toBeUndefined()
     expect(resolveAssetUrl('http://[invalid')).toBeUndefined()
+  })
+
+  it('allows only HTTP(S) links and normalizes host-only websites', () => {
+    expect(safeExternalUrl('example.com/profile')).toBe('https://example.com/profile')
+    expect(safeExternalUrl('https://example.com/profile')).toBe('https://example.com/profile')
+    expect(safeExternalUrl('javascript:alert(1)')).toBeUndefined()
+    expect(safeExternalUrl('data:text/html,hello')).toBeUndefined()
   })
 
   it('detects localhost images for optimizer bypass', () => {

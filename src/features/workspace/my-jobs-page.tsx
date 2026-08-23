@@ -2,14 +2,16 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { hiredJobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { currency, getErrorMessage } from '@/shared/lib/utils'
-import { Badge, Button, ButtonLink, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog, ListRowSkeleton } from '@/shared/ui'
 
 export function MyJobsPage() {
   const queryClient = useQueryClient()
+  const [pendingRemove, setPendingRemove] = useState<number | null>(null)
   const query = useQuery({ queryKey: queryKeys.hiredJobs, queryFn: hiredJobsApi.mine })
   const completeMutation = useMutation({
     mutationFn: hiredJobsApi.complete,
@@ -23,8 +25,10 @@ export function MyJobsPage() {
     mutationFn: hiredJobsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.hiredJobs })
+      setPendingRemove(null)
       toast.success('Removed hired job')
     },
+    onError: (error) => toast.error(getErrorMessage(error, 'Unable to remove hired job')),
   })
   const jobs = query.data?.content ?? []
 
@@ -43,14 +47,34 @@ export function MyJobsPage() {
               </div>
               <div className="flex gap-2">
                 <ButtonLink href={`/jobs/${item.maCongViec}`} variant="secondary">View</ButtonLink>
-                <Button variant="secondary" onClick={() => completeMutation.mutate(item.id)}><CheckCircle2 className="h-4 w-4" /> Complete</Button>
-                <Button variant="danger" onClick={() => deleteMutation.mutate(item.id)}><Trash2 className="h-4 w-4" /> Remove</Button>
+                <Button
+                  variant="secondary"
+                  disabled={item.hoanThanh || (completeMutation.isPending && completeMutation.variables === item.id)}
+                  onClick={() => completeMutation.mutate(item.id)}
+                >
+                  <CheckCircle2 className="h-4 w-4" /> {item.hoanThanh ? 'Completed' : 'Complete'}
+                </Button>
+                <Button variant="danger" onClick={() => setPendingRemove(item.id)}><Trash2 className="h-4 w-4" /> Remove</Button>
               </div>
             </CardContent>
           </Card>
         ))}
-        {!query.isPending && !jobs.length ? <Card><CardContent className="p-8 text-sm text-muted">No hired jobs yet.</CardContent></Card> : null}
+        {query.isError ? (
+          <Card><CardContent className="p-8 text-center text-sm text-muted">Hired jobs could not be loaded.<Button className="mx-auto mt-3" variant="secondary" onClick={() => query.refetch()}>Retry</Button></CardContent></Card>
+        ) : null}
+        {!query.isPending && !query.isError && !jobs.length ? <Card><CardContent className="p-8 text-sm text-muted">No hired jobs yet.</CardContent></Card> : null}
       </div>
+      <ConfirmationDialog
+        open={pendingRemove !== null}
+        title="Remove this hired job?"
+        description="The hired-job record will be permanently removed. This action cannot be undone."
+        confirmLabel="Remove hired job"
+        pending={deleteMutation.isPending}
+        onCancel={() => setPendingRemove(null)}
+        onConfirm={() => {
+          if (pendingRemove !== null) deleteMutation.mutate(pendingRemove)
+        }}
+      />
     </div>
   )
 }

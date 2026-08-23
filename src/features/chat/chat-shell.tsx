@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
 import { MessageCircle, Send, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -89,11 +90,15 @@ export function ChatShell() {
 
     let cancelled = false
     socketRef.current?.emit('join-room', { roomId })
-    void chatApi.messages(roomId).then((result) => {
-      if (cancelled) return
-      setMessages(roomId, result.content ?? [])
-      socketRef.current?.emit('mark-as-read', { roomId })
-    })
+    void chatApi.messages(roomId)
+      .then((result) => {
+        if (cancelled) return
+        setMessages(roomId, result.content ?? [])
+        socketRef.current?.emit('mark-as-read', { roomId })
+      })
+      .catch(() => {
+        if (!cancelled) toast.error('Could not load this conversation')
+      })
 
     return () => {
       cancelled = true
@@ -115,7 +120,12 @@ export function ChatShell() {
   function sendMessage(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!draft.trim() || !activeRoomId) return
-    socketRef.current?.emit('send-message', { roomId: activeRoomId, content: draft.trim() })
+    const socket = socketRef.current
+    if (!socket?.connected) {
+      toast.error('Chat is reconnecting. Your message was not sent.')
+      return
+    }
+    socket.emit('send-message', { roomId: activeRoomId, content: draft.trim() })
     setDraft('')
   }
 
@@ -162,7 +172,14 @@ export function ChatShell() {
                     <Skeleton className="h-3 w-1/2" />
                   </span>
                 </div>
-              )) : rooms.map((room) => {
+              )) : roomsQuery.isError && !roomsQuery.data ? (
+                <div className="p-4 text-center text-sm text-muted">
+                  Conversations could not be loaded.
+                  <Button className="mx-auto mt-3" size="sm" variant="secondary" onClick={() => roomsQuery.refetch()}>
+                    Retry
+                  </Button>
+                </div>
+              ) : rooms.length ? rooms.map((room) => {
                 const name = room.name ?? room.members.find((member) => member.id !== userId)?.name ?? 'Conversation'
                 return (
                   <button
@@ -182,7 +199,9 @@ export function ChatShell() {
                     </span>
                   </button>
                 )
-              })}
+              }) : (
+                <p className="p-4 text-center text-sm text-muted">No conversations yet.</p>
+              )}
             </div>
           </aside>
           <main className="flex min-w-0 flex-col">

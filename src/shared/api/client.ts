@@ -5,7 +5,7 @@ import { env } from '@/shared/config/env'
 import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { csrfTokenForMethod, hasCsrfTokenCookie } from './csrf'
-import { setCachedSession } from './session-cache'
+import { resetClientSession } from './session-cache'
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
 type QueueItem = {
@@ -47,7 +47,7 @@ installCsrfInterceptor(apiClient)
 installCsrfInterceptor(uploadClient)
 
 function handleSessionExpired() {
-  setCachedSession(null)
+  resetClientSession()
   useChatStore.getState().reset()
   if (typeof window !== 'undefined') {
     const redirect = getSessionExpiredRedirect(window.location.pathname)

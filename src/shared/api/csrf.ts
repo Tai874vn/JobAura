@@ -6,7 +6,13 @@ export function csrfTokenFromCookie(cookieHeader: string): string | undefined {
     .map((item) => item.trim())
     .find((item) => item.startsWith('csrf_token='))
     ?.slice('csrf_token='.length)
-  return value ? decodeURIComponent(value) : undefined
+  if (!value) return undefined
+
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return undefined
+  }
 }
 
 export function hasCsrfTokenCookie(cookieHeader?: string): boolean {

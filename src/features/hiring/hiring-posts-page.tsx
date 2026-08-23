@@ -3,40 +3,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BriefcaseBusiness,
-  CheckCircle2,
-  Clock3,
-  MapPin,
   Plus,
   Search,
-  Send,
   Sparkles,
-  Users,
-  X,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/features/auth/use-session";
-import { FeedAvatar } from "@/features/feed/feed-avatar";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
-import { cn, getErrorMessage } from "@/shared/lib/utils";
-import type { CreateHiringPost, HiringPost } from "@/shared/schemas";
+import { getErrorMessage } from "@/shared/lib/utils";
+import type { CreateHiringPost } from "@/shared/schemas";
 import { createHiringPostSchema } from "@/shared/schemas";
-import { Badge, Button, ButtonLink, Card, CardContent, Input, Spinner, Textarea } from "@/shared/ui";
+import { Button, ButtonLink, Card, CardContent, Input } from "@/shared/ui";
+import {
+  CreateHiringPostModal,
+  emptyHiringPostDraft,
+} from "./create-hiring-post-modal";
+import { HiringPostCard } from "./hiring-post-card";
+import { RecruiterHiringPostPanel } from "./recruiter-hiring-post-panel";
 
 const pageSize = 10;
 const myPostPreviewParams = { page: 1, pageSize: 5 };
-const emptyHiringPostDraft: CreateHiringPost = {
-  title: "",
-  description: "",
-  requirements: "",
-  location: "",
-  employmentType: "",
-  salaryMin: undefined,
-  salaryMax: undefined,
-};
-
 function pageWindow(currentPage: number, totalPages: number) {
   const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
   return Array.from(pages)
@@ -235,7 +224,7 @@ export function HiringPostsPage() {
               canApply={canApply}
               active={activePostId === post.id}
               coverLetter={coverLetter}
-              applying={applyMutation.isPending}
+              applying={applyMutation.isPending && applyMutation.variables?.postId === post.id}
               onToggleApply={() => {
                 setActivePostId((current) => (current === post.id ? null : post.id));
                 setCoverLetter("");
@@ -295,240 +284,6 @@ export function HiringPostsPage() {
   );
 }
 
-function RecruiterHiringPostPanel({
-  posts,
-  loading,
-  onCreate,
-  onPredict,
-  predictingId,
-  predicting,
-}: {
-  posts: HiringPost[];
-  loading: boolean;
-  onCreate: () => void;
-  onPredict: (postId: number) => void;
-  predictingId: number | null;
-  predicting: boolean;
-}) {
-  return (
-    <Card className="mt-6">
-      <CardContent className="p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase text-primary">Your hiring posts</p>
-            <h2 className="mt-1 font-display text-2xl font-bold">Recruiter workspace</h2>
-          </div>
-          <Button type="button" variant="secondary" onClick={onCreate}>
-            <Plus className="h-4 w-4" />
-            Create post
-          </Button>
-        </div>
-
-        {loading ? (
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="h-28 animate-pulse rounded-lg bg-surface-muted" />
-            ))}
-          </div>
-        ) : posts.length ? (
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {posts.map((post) => (
-              <div key={post.id} className="rounded-lg border border-border bg-surface p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="line-clamp-2 font-display text-lg font-bold leading-snug">{post.title}</h3>
-                  <Badge tone={post.status === "OPEN" ? "accent" : "neutral"}>
-                    {post.status === "OPEN" ? "Open" : "Closed"}
-                  </Badge>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs font-semibold text-muted">
-                  <span>{post.employmentType || "Role"}</span>
-                  <span>{post.location || "Flexible"}</span>
-                  <span>{post.applicationCount} applicants</span>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <HiringPostSeniorityBadge post={post} />
-                </div>
-                <div className="mt-4 grid gap-2">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    disabled={predicting}
-                    onClick={() => onPredict(post.id)}
-                  >
-                    {predicting && predictingId === post.id ? (
-                      <Spinner className="h-4 w-4" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
-                    Predict level
-                  </Button>
-                  <ButtonLink href="/recommendations/candidates" className="w-full" variant="secondary" size="sm">
-                    <Sparkles className="h-4 w-4" />
-                    Match candidates
-                  </ButtonLink>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-4 rounded-lg border border-dashed border-border bg-surface-muted p-5">
-            <h3 className="font-display text-xl font-bold">No hiring posts yet</h3>
-            <p className="mt-1 text-sm leading-6 text-muted">
-              Create a recruiter post first, then use AI candidate matching against saved candidate resumes.
-            </p>
-            <Button className="mt-4" type="button" onClick={onCreate}>
-              <Plus className="h-4 w-4" />
-              Create hiring post
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function HiringPostSeniorityBadge({ post }: { post: HiringPost }) {
-  if (!post.predictedSeniority) {
-    return (
-      <span className="rounded bg-surface-muted px-2.5 py-1 text-xs font-bold text-muted">
-        AI level not predicted
-      </span>
-    );
-  }
-
-  const confidence =
-    post.predictedSeniorityConfidence != null
-      ? ` ${Math.round(post.predictedSeniorityConfidence * 100)}%`
-      : "";
-
-  return (
-    <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-      AI level {post.predictedSeniority}
-      {confidence}
-    </span>
-  );
-}
-
-function CreateHiringPostModal({
-  open,
-  draft,
-  saving,
-  onClose,
-  onChange,
-  onSubmit,
-}: {
-  open: boolean;
-  draft: CreateHiringPost;
-  saving: boolean;
-  onClose: () => void;
-  onChange: <K extends keyof CreateHiringPost>(key: K, value: CreateHiringPost[K]) => void;
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="create-hiring-post-title">
-      <div className="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-white shadow-xl">
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-white p-5">
-          <div>
-            <p className="text-xs font-bold uppercase text-primary">Recruiter post</p>
-            <h2 id="create-hiring-post-title" className="mt-1 font-display text-2xl font-bold">Create hiring post</h2>
-          </div>
-          <Button type="button" size="icon" variant="ghost" aria-label="Close create hiring post" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <form className="grid gap-4 p-5" onSubmit={onSubmit}>
-          <div className="grid gap-4 md:grid-cols-2">
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">Role title</span>
-              <Input
-                value={draft.title}
-                maxLength={160}
-                onChange={(event) => onChange("title", event.target.value)}
-                placeholder="Frontend Developer"
-              />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">Employment type</span>
-              <Input
-                value={draft.employmentType ?? ""}
-                maxLength={80}
-                onChange={(event) => onChange("employmentType", event.target.value)}
-                placeholder="Full-time, contract, remote"
-              />
-            </label>
-          </div>
-
-          <label className="grid gap-1">
-            <span className="text-xs font-bold uppercase text-muted">Description</span>
-            <Textarea
-              className="min-h-32"
-              value={draft.description}
-              maxLength={5000}
-              onChange={(event) => onChange("description", event.target.value)}
-              placeholder="Describe the role, team context, responsibilities, and expected outcomes."
-            />
-          </label>
-
-          <label className="grid gap-1">
-            <span className="text-xs font-bold uppercase text-muted">Requirements</span>
-            <Textarea
-              className="min-h-28"
-              value={draft.requirements ?? ""}
-              maxLength={3000}
-              onChange={(event) => onChange("requirements", event.target.value)}
-              placeholder="React, TypeScript, REST APIs, PostgreSQL, portfolio projects..."
-            />
-          </label>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">Location</span>
-              <Input
-                value={draft.location ?? ""}
-                maxLength={120}
-                onChange={(event) => onChange("location", event.target.value)}
-                placeholder="Ho Chi Minh or Remote"
-              />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">Salary min</span>
-              <Input
-                type="number"
-                min={0}
-                value={draft.salaryMin ?? ""}
-                onChange={(event) => onChange("salaryMin", event.target.value ? Number(event.target.value) : undefined)}
-              />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">Salary max</span>
-              <Input
-                type="number"
-                min={0}
-                value={draft.salaryMax ?? ""}
-                onChange={(event) => onChange("salaryMax", event.target.value ? Number(event.target.value) : undefined)}
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-            <Button type="button" variant="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-              Create hiring post
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 function FragmentWithGap({
   children,
   showGap,
@@ -542,148 +297,4 @@ function FragmentWithGap({
       {children}
     </>
   );
-}
-
-function HiringPostCard({
-  post,
-  canApply,
-  active,
-  coverLetter,
-  applying,
-  onToggleApply,
-  onCoverLetterChange,
-  onApply,
-}: {
-  post: HiringPost;
-  canApply: boolean;
-  active: boolean;
-  coverLetter: string;
-  applying: boolean;
-  onToggleApply: () => void;
-  onCoverLetterChange: (value: string) => void;
-  onApply: () => void;
-}) {
-  const salary = formatSalary(post);
-  const disabled = post.viewerHasApplied || !canApply || applying;
-
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-          <div className="flex min-w-0 flex-1 gap-4">
-            {post.recruiter ? (
-              <FeedAvatar user={post.recruiter} size="lg" />
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-                HR
-              </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="accent">Open</Badge>
-                {post.employmentType ? (
-                  <Badge tone="neutral">{post.employmentType}</Badge>
-                ) : null}
-              </div>
-              <h2 className="mt-2 font-display text-2xl font-bold leading-tight">
-                {post.title}
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
-                <span className="inline-flex items-center gap-1">
-                  <Users className="h-3.5 w-3.5" />
-                  {post.recruiter?.name ?? "Recruiter"}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="h-3.5 w-3.5" />
-                  {post.location || "Location flexible"}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock3 className="h-3.5 w-3.5" />
-                  {post.applicationCount} applicants
-                </span>
-                {salary ? <span>{salary}</span> : null}
-              </div>
-              <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted">
-                {post.description}
-              </p>
-              {post.requirements ? (
-                <p className="mt-3 rounded-lg bg-surface-muted p-3 text-sm leading-6">
-                  {post.requirements}
-                </p>
-              ) : null}
-            </div>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2 lg:w-44 lg:flex-col">
-            <Button
-              type="button"
-              disabled={disabled}
-              onClick={onToggleApply}
-              className={cn(post.viewerHasApplied && "bg-primary/80")}
-            >
-              {post.viewerHasApplied ? (
-                <CheckCircle2 className="h-4 w-4" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-              {post.viewerHasApplied
-                ? "Applied"
-                : canApply
-                  ? "Apply"
-                  : "Employee only"}
-            </Button>
-            {post.recruiter ? (
-              <ButtonLink href={`/profile/${post.recruiter.id}`} className="w-full" variant="secondary">
-                Recruiter
-              </ButtonLink>
-            ) : null}
-          </div>
-        </div>
-
-        {active && !post.viewerHasApplied ? (
-          <div className="mt-4 rounded-lg border border-border bg-surface-muted p-4">
-            <label className="grid gap-2">
-              <span className="text-xs font-bold uppercase text-muted">
-                Short message
-              </span>
-              <Textarea
-                className="min-h-28 bg-white"
-                value={coverLetter}
-                onChange={(event) => onCoverLetterChange(event.target.value)}
-                placeholder="Write a short note about why you are a good fit."
-              />
-            </label>
-            <div className="mt-3 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={onApply}
-                disabled={applying}
-              >
-                {applying ? (
-                  <Spinner className="h-4 w-4" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-                Send application
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </CardContent>
-    </Card>
-  );
-}
-
-function formatSalary(post: HiringPost) {
-  if (post.salaryMin == null && post.salaryMax == null) return "";
-  const formatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
-  if (post.salaryMin != null && post.salaryMax != null) {
-    return `${formatter.format(post.salaryMin)} - ${formatter.format(post.salaryMax)}`;
-  }
-  if (post.salaryMin != null) return `From ${formatter.format(post.salaryMin)}`;
-  return `Up to ${formatter.format(post.salaryMax ?? 0)}`;
 }

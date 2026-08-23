@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RequireAuth anonymousRedirect="/welcome">
+    <RequireAuth allowedRoles={['user', 'admin']} anonymousRedirect="/welcome">
       <SiteHeader />
       <main className="min-h-[calc(100vh-64px)]">{children}</main>
     </RequireAuth>

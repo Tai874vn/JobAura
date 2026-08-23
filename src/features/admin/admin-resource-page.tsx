@@ -1,94 +1,20 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Eye, Pencil, Plus, Search, Trash2, Upload } from 'lucide-react'
-import Image from 'next/image'
+import { Eye, Plus, Search, Trash2 } from 'lucide-react'
 import { type FormEvent, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { commentsApi, hiredJobsApi, jobDetailTypesApi, jobTypesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
+import { jobTypesApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import type { Comment, HiredJob, Job, JobDetailType, JobType, User } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent, Input, Skeleton } from '@/shared/ui'
-
-type Resource = 'jobs' | 'users' | 'job-types' | 'job-detail-types' | 'hired-jobs' | 'comments'
-type Row = Job | User | JobType | JobDetailType | HiredJob | Comment
-type CreateValues = { name: string; parentTypeId?: number }
-type ResourceConfig = {
-  title: string
-  columns: string[]
-  load: () => Promise<Row[]>
-  remove: (id: number) => Promise<unknown>
-  renderCells: (row: Row) => React.ReactNode
-  create?: {
-    label: string
-    submit: (values: CreateValues) => Promise<unknown>
-    needsParentType?: boolean
-  }
-  createHref?: string
-  createLabel?: string
-}
-
-const resourceConfigs: Record<Resource, ResourceConfig> = {
-  jobs: {
-    title: 'Jobs',
-    columns: ['ID', 'Image', 'Title', 'Seller', 'Price', 'Rating', 'Status'],
-    load: async () => (await jobsApi.all()).content ?? [],
-    remove: jobsApi.delete,
-    renderCells: renderJobCells,
-    createHref: '/jobs/new',
-    createLabel: 'Create New Job',
-  },
-  users: {
-    title: 'Users',
-    columns: ['ID', 'User', 'Email', 'Role', 'Skills'],
-    load: async () => (await usersApi.all()).content ?? [],
-    remove: usersApi.delete,
-    renderCells: renderUserCells,
-  },
-  'job-types': {
-    title: 'Job types',
-    columns: ['ID', 'Name'],
-    load: async () => (await jobTypesApi.all()).content ?? [],
-    remove: jobTypesApi.delete,
-    renderCells: renderJobTypeCells,
-    create: {
-      label: 'Create Job Type',
-      submit: ({ name }) => jobTypesApi.create({ tenLoaiCongViec: name }),
-    },
-  },
-  'job-detail-types': {
-    title: 'Job detail types',
-    columns: ['ID', 'Name', 'Parent type'],
-    load: async () => (await jobDetailTypesApi.all()).content ?? [],
-    remove: jobDetailTypesApi.delete,
-    renderCells: renderJobDetailTypeCells,
-    create: {
-      label: 'Create Detail Type',
-      submit: ({ name, parentTypeId }) => jobDetailTypesApi.create({ tenChiTiet: name, maLoaiCongViec: parentTypeId }),
-      needsParentType: true,
-    },
-  },
-  'hired-jobs': {
-    title: 'Hired jobs',
-    columns: ['ID', 'Job', 'User', 'Completed'],
-    load: async () => (await hiredJobsApi.all()).content ?? [],
-    remove: hiredJobsApi.delete,
-    renderCells: renderHiredJobCells,
-  },
-  comments: {
-    title: 'Comments',
-    columns: ['ID', 'Job ID', 'User', 'Rating', 'Comment'],
-    load: async () => (await commentsApi.all()).content ?? [],
-    remove: commentsApi.delete,
-    renderCells: renderCommentCells,
-  },
-}
+import { getErrorMessage } from '@/shared/lib/utils'
+import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, Input, Skeleton } from '@/shared/ui'
+import { getResourceConfig, type Resource, type ResourceConfig, type ResourceRow } from './admin-resource-model'
 
 export function AdminResourcePage({ resource, embedded = false }: { resource: Resource; embedded?: boolean }) {
   const config = getResourceConfig(resource)
   const [keyword, setKeyword] = useState('')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [pendingDelete, setPendingDelete] = useState<ResourceRow | null>(null)
   const queryClient = useQueryClient()
   const query = useQuery({
     queryKey: ['admin', resource],
@@ -105,6 +31,7 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
     mutationFn: (id: number) => config.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', resource] })
+      setPendingDelete(null)
       toast.success(`${config.title} updated`)
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete record')),
@@ -170,18 +97,23 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
                       {config.renderCells(row)}
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="icon">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          {resource === 'jobs' ? (
-                            <Button variant="ghost" size="icon">
-                              <Upload className="h-4 w-4" />
-                            </Button>
+                          {config.viewHref ? (
+                            <ButtonLink
+                              href={config.viewHref(row)}
+                              variant="ghost"
+                              size="icon"
+                              aria-label={`View ${config.title.toLowerCase()} record ${row.id}`}
+                              title="View record"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </ButtonLink>
                           ) : null}
-                          <Button variant="danger" size="icon" onClick={() => deleteMutation.mutate(row.id)}>
+                          <Button
+                            variant="danger"
+                            size="icon"
+                            aria-label={`Delete ${config.title.toLowerCase()} record ${row.id}`}
+                            onClick={() => setPendingDelete(row)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -191,18 +123,17 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
                 )}
               </tbody>
             </table>
-            {!query.isPending && !filtered.length ? <p className="p-8 text-center text-sm text-muted">No records found.</p> : null}
+            {query.isError ? (
+              <div className="p-8 text-center">
+                <p className="text-sm text-muted">Records could not be loaded.</p>
+                <Button className="mt-3" variant="secondary" onClick={() => query.refetch()}>Retry</Button>
+              </div>
+            ) : !query.isPending && !filtered.length ? (
+              <p className="p-8 text-center text-sm text-muted">No records found.</p>
+            ) : null}
           </div>
-          <div className="flex items-center justify-between border-t border-border p-4 text-sm text-muted">
-            <span>{query.isPending ? 'Loading records' : `${filtered.length} records`}</span>
-            <div className="flex gap-2">
-              <Button variant="secondary" size="sm">
-                Previous
-              </Button>
-              <Button variant="secondary" size="sm">
-                Next
-              </Button>
-            </div>
+          <div className="border-t border-border p-4 text-sm text-muted">
+            <span>{query.isPending ? 'Loading records' : query.isError ? 'Records unavailable' : `${filtered.length} records`}</span>
           </div>
         </CardContent>
       </Card>
@@ -214,14 +145,19 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
           onClose={() => setIsCreateOpen(false)}
         />
       ) : null}
+      <ConfirmationDialog
+        open={Boolean(pendingDelete)}
+        title={`Delete ${config.title.toLowerCase()} record?`}
+        description={`Record #${pendingDelete?.id ?? ''} will be permanently removed. This action cannot be undone.`}
+        confirmLabel="Delete record"
+        pending={deleteMutation.isPending}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete) deleteMutation.mutate(pendingDelete.id)
+        }}
+      />
     </div>
   )
-}
-
-function getResourceConfig(resource: Resource) {
-  const config = resourceConfigs[resource]
-  if (!config) throw new Error(`Unsupported admin resource: ${resource}`)
-  return config
 }
 
 function CreateButton({ config, onCreate }: { config: ResourceConfig; onCreate: () => void }) {
@@ -350,114 +286,4 @@ function CreateResourceDialog({
       </form>
     </div>
   )
-}
-
-function renderJobCells(row: Row) {
-  const job = row as Job
-  return (
-    <>
-      <td className="px-4 py-3 font-mono text-xs">#{job.id}</td>
-      <td className="px-4 py-3">
-        <Thumb src={job.hinhAnh ?? undefined} label={job.tenCongViec} />
-      </td>
-      <td className="max-w-xs px-4 py-3 font-semibold">{job.tenCongViec}</td>
-      <td className="px-4 py-3">{job.nguoiDung?.name ?? job.nguoiTao ?? 'Unknown'}</td>
-      <td className="px-4 py-3 font-semibold">{currency(job.giaTien)}</td>
-      <td className="px-4 py-3 text-rating">{(job.saoCongViec ?? 0).toFixed(1)}</td>
-      <td className="px-4 py-3">
-        <Badge tone="primary">Active</Badge>
-      </td>
-    </>
-  )
-}
-
-function renderUserCells(row: Row) {
-  const user = row as User
-  return (
-    <>
-      <td className="px-4 py-3 font-mono text-xs">#{user.id}</td>
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          <Avatar name={user.name} /> <strong>{user.name}</strong>
-        </div>
-      </td>
-      <td className="px-4 py-3">{user.email}</td>
-      <td className="px-4 py-3">
-        <Badge tone={user.role === 'admin' ? 'accent' : 'neutral'}>{user.role ?? 'user'}</Badge>
-      </td>
-      <td className="px-4 py-3 text-muted">{user.skill ?? '-'}</td>
-    </>
-  )
-}
-
-function renderJobTypeCells(row: Row) {
-  const type = row as JobType
-  return (
-    <>
-      <td className="px-4 py-3 font-mono text-xs">#{type.id}</td>
-      <td className="px-4 py-3 font-semibold">{type.tenLoaiCongViec}</td>
-    </>
-  )
-}
-
-function renderJobDetailTypeCells(row: Row) {
-  const detail = row as JobDetailType
-  return (
-    <>
-      <td className="px-4 py-3 font-mono text-xs">#{detail.id}</td>
-      <td className="px-4 py-3 font-semibold">{detail.tenChiTiet}</td>
-      <td className="px-4 py-3">{detail.maLoaiCongViec ?? '-'}</td>
-    </>
-  )
-}
-
-function renderHiredJobCells(row: Row) {
-  const hire = row as HiredJob
-  return (
-    <>
-      <td className="px-4 py-3 font-mono text-xs">#{hire.id}</td>
-      <td className="px-4 py-3">{hire.maCongViec}</td>
-      <td className="px-4 py-3">{hire.maNguoiThue ?? '-'}</td>
-      <td className="px-4 py-3">
-        <Badge tone={hire.hoanThanh ? 'primary' : 'neutral'}>{hire.hoanThanh ? 'Done' : 'Open'}</Badge>
-      </td>
-    </>
-  )
-}
-
-function renderCommentCells(row: Row) {
-  const comment = row as Comment
-  const commenterId = comment.maNguoiBinhLuan ?? comment.nguoiDung?.id
-  return (
-    <>
-      <td className="px-4 py-3 font-mono text-xs">#{comment.id}</td>
-      <td className="px-4 py-3">{comment.maCongViec}</td>
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-2">
-          {comment.nguoiDung?.name ? <Avatar name={comment.nguoiDung.name} /> : null}
-          <div>
-            <p className="font-semibold">{comment.nguoiDung?.name ?? 'Unknown user'}</p>
-            <p className="font-mono text-xs text-muted">{commenterId ? `#${commenterId}` : '-'}</p>
-          </div>
-        </div>
-      </td>
-      <td className="px-4 py-3 text-rating">{comment.saoBinhLuan}</td>
-      <td className="max-w-sm px-4 py-3">{comment.noiDung}</td>
-    </>
-  )
-}
-
-function Thumb({ src, label }: { src?: string; label: string }) {
-  const imageUrl = resolveAssetUrl(src)
-  const bypassOptimizer = shouldBypassImageOptimizer(src)
-
-  return (
-    <div className="relative h-10 w-14 overflow-hidden rounded border border-border bg-surface-muted">
-      {imageUrl ? <Image src={imageUrl} alt={label} fill sizes="56px" unoptimized={bypassOptimizer} className="object-cover" /> : null}
-    </div>
-  )
-}
-
-function Avatar({ name }: { name: string }) {
-  return <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{initials(name)}</span>
 }

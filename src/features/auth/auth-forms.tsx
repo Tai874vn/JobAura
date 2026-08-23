@@ -2,10 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { authApi } from "@/shared/api/endpoints";
@@ -25,8 +24,9 @@ import {
   type SignIn,
   type SignUp,
 } from "@/shared/schemas";
-import { Button, Card, CardContent, Input, Spinner } from "@/shared/ui";
-import { useSession } from "./use-session";
+import { Button, Input } from "@/shared/ui";
+import { AuthCard, AuthPageGate, FieldError } from "./auth-form-layout";
+import { GoogleSignupRoleModal } from "./google-signup-role-modal";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -140,99 +140,6 @@ function LoginFormFields({
         </Link>
       </p>
     </AuthCard>
-  );
-}
-
-function GoogleSignupRoleModal({
-  open,
-  selectedRole,
-  onSelect,
-  onClose,
-  onContinue,
-}: {
-  open: boolean;
-  selectedRole: SignupRole | null;
-  onSelect: (role: SignupRole) => void;
-  onClose: () => void;
-  onContinue: () => void;
-}) {
-  useEffect(() => {
-    if (!open) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose, open]);
-
-  if (!open) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="google-role-title"
-        aria-describedby="google-role-description"
-        className="relative w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl"
-      >
-        <Button
-          className="absolute right-2 top-2"
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          title="Close account type selection"
-        >
-          <X className="h-5 w-5" />
-        </Button>
-        <div className="pr-9">
-          <h2 id="google-role-title" className="font-display text-xl font-bold">
-            Choose your account type
-          </h2>
-          <p
-            id="google-role-description"
-            className="mt-2 text-sm leading-6 text-muted"
-          >
-            This Google account is not registered yet. Choose how you want to
-            use JobAura before creating it.
-          </p>
-        </div>
-        <div className="mt-5 grid gap-2 sm:grid-cols-2">
-          {signupRoleOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              className={`rounded-lg border p-3 text-left transition ${
-                selectedRole === option.value
-                  ? "border-primary bg-primary/5 text-foreground"
-                  : "border-border bg-white text-muted hover:border-primary hover:text-foreground"
-              }`}
-              aria-pressed={selectedRole === option.value}
-              onClick={() => onSelect(option.value)}
-            >
-              <span className="block text-sm font-bold">{option.label}</span>
-              <span className="mt-1 block text-xs leading-5">
-                {option.description}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Not now
-          </Button>
-          <Button type="button" onClick={onContinue} disabled={!selectedRole}>
-            Continue with Google
-          </Button>
-        </div>
-      </section>
-    </div>
   );
 }
 
@@ -382,88 +289,5 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
         </Link>
       </p>
     </AuthCard>
-  );
-}
-
-function AuthPageGate({
-  children,
-  nextPath,
-}: {
-  children: React.ReactNode;
-  nextPath?: string | null;
-}) {
-  const router = useRouter();
-  const { user, isLoading } = useSession();
-
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.replace(getSignedInRedirect(user, nextPath));
-    }
-  }, [isLoading, nextPath, router, user]);
-
-  if (isLoading || user) {
-    return (
-      <main
-        className="flex min-h-screen items-center justify-center bg-background"
-        aria-labelledby="auth-status-title"
-      >
-        <h1 id="auth-status-title" className="sr-only">
-          Checking authentication
-        </h1>
-        <Spinner className="h-7 w-7" />
-        <span className="sr-only" role="status">
-          Checking authentication
-        </span>
-      </main>
-    );
-  }
-
-  return <>{children}</>;
-}
-
-function AuthCard({
-  title,
-  subtitle,
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
-        <CardContent className="p-6">
-          <Link
-            href="/"
-            className="mb-8 inline-block font-display text-2xl font-bold text-primary"
-          >
-            JobAura
-          </Link>
-          <h1 className="font-display text-3xl font-bold">{title}</h1>
-          <p className="mb-6 mt-2 text-sm text-muted">{subtitle}</p>
-          {children}
-        </CardContent>
-      </Card>
-    </main>
-  );
-}
-
-function FieldError({
-  children,
-  message,
-}: {
-  children: React.ReactNode;
-  message?: string;
-}) {
-  return (
-    <label className="block">
-      {children}
-      {message ? (
-        <span className="mt-1 block text-xs font-medium text-danger">
-          {message}
-        </span>
-      ) : null}
-    </label>
   );
 }

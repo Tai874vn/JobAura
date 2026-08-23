@@ -10,7 +10,7 @@ import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { FeedPost } from '@/shared/schemas'
-import { Button, Card, Skeleton } from '@/shared/ui'
+import { Button, Card, CardContent, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { JobCard } from '@/features/jobs/job-card'
 import { mergeSavedPages } from './saved-data'
@@ -44,6 +44,8 @@ export function SavedPage() {
   })
   const posts = mergeSavedPages(postsQuery.data?.pages)
   const jobs = mergeSavedPages(jobsQuery.data?.pages)
+  const postsLoadFailed = postsQuery.isError && !postsQuery.data
+  const jobsLoadFailed = jobsQuery.isError && !jobsQuery.data
 
   return (
     <div className="container-page py-8">
@@ -63,14 +65,16 @@ export function SavedPage() {
           {postsQuery.isPending ? <SavedSkeleton /> : posts.map((post) => (
             <SavedPostCard key={post.id} post={post} removing={removePost.isPending && removePost.variables === post.id} onRemove={() => removePost.mutate(post.id)} />
           ))}
-          {!postsQuery.isPending && !posts.length ? <EmptySaved type="posts" /> : null}
+          {postsLoadFailed ? <SavedLoadError type="posts" onRetry={() => postsQuery.refetch()} /> : null}
+          {!postsQuery.isPending && !postsLoadFailed && !posts.length ? <EmptySaved type="posts" /> : null}
           {postsQuery.hasNextPage ? <Button className="mx-auto flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} disabled={postsQuery.isFetchingNextPage}>Load more posts</Button> : null}
         </div>
       ) : (
         <div className="mt-6">
           {jobsQuery.isPending ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"><SavedSkeleton /><SavedSkeleton /></div> : null}
           {jobs.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{jobs.map((job) => <JobCard key={job.id} job={job} initialSaved />)}</div> : null}
-          {!jobsQuery.isPending && !jobs.length ? <EmptySaved type="jobs" /> : null}
+          {jobsLoadFailed ? <SavedLoadError type="jobs" onRetry={() => jobsQuery.refetch()} /> : null}
+          {!jobsQuery.isPending && !jobsLoadFailed && !jobs.length ? <EmptySaved type="jobs" /> : null}
           {jobsQuery.hasNextPage ? <Button className="mx-auto mt-6 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} disabled={jobsQuery.isFetchingNextPage}>Load more jobs</Button> : null}
         </div>
       )}
@@ -103,6 +107,17 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
 
 function EmptySaved({ type }: { type: SavedTab }) {
   return <Card className="p-10 text-center"><Bookmark className="mx-auto h-6 w-6 text-primary" /><h2 className="mt-3 font-display text-lg font-bold">No saved {type}</h2><p className="mt-1 text-sm text-muted">Save something useful and it will appear here.</p><Link href={type === 'posts' ? '/' : '/jobs'} className="mt-4 inline-flex text-sm font-bold text-primary">Browse {type}</Link></Card>
+}
+
+function SavedLoadError({ type, onRetry }: { type: SavedTab; onRetry: () => void }) {
+  return (
+    <Card>
+      <CardContent className="p-8 text-center text-sm text-muted">
+        Saved {type} could not be loaded.
+        <Button className="mx-auto mt-3" variant="secondary" onClick={onRetry}>Retry</Button>
+      </CardContent>
+    </Card>
+  )
 }
 
 function SavedSkeleton() {

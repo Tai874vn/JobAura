@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { AxiosError } from 'axios'
 import { env } from '@/shared/config/env'
+import { resolveHttpUrl } from './urls'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -37,20 +38,7 @@ export function initials(name: string | undefined) {
 export function resolveAssetUrl(value: string | null | undefined) {
   const source = value?.trim()
   if (!source) return undefined
-
-  try {
-    if (source.startsWith('http://') || source.startsWith('https://')) {
-      return new URL(source).toString()
-    }
-
-    if (source.startsWith('data:') || source.startsWith('blob:')) {
-      return undefined
-    }
-
-    return new URL(source.replaceAll('\\', '/'), env.apiBaseUrl.endsWith('/') ? env.apiBaseUrl : `${env.apiBaseUrl}/`).toString()
-  } catch {
-    return undefined
-  }
+  return resolveHttpUrl(source, env.apiBaseUrl)
 }
 
 export function shouldBypassImageOptimizer(value: string | null | undefined) {

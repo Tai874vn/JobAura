@@ -24,6 +24,7 @@ describe('notification display model', () => {
   it('accepts only internal action URLs', () => {
     expect(safeInternalActionUrl('/jobs/1?tab=details')).toBe('/jobs/1?tab=details')
     expect(safeInternalActionUrl('//evil.example/path')).toBeNull()
+    expect(safeInternalActionUrl('/\\evil.example/path')).toBeNull()
     expect(safeInternalActionUrl('https://evil.example/path')).toBeNull()
   })
 

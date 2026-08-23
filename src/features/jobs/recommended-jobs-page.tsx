@@ -52,7 +52,7 @@ export function RecommendedJobsPage() {
 
   const cachedContent = cachedQuery.data?.content?.cache?.hit ? cachedQuery.data.content : null
   const content = lastContent ?? cachedContent
-  const quota = content?.quota ?? quotaQuery.data?.content
+  const quota = lastContent?.quota ?? quotaQuery.data?.content ?? cachedContent?.quota
   const jobs = useMemo(() => sortByFinalScore(content?.data ?? []), [content?.data])
   const canRun = (quota?.remaining ?? 0) > 0
   const showSkillGapTooltip = (event: ReactMouseEvent<HTMLElement>, recommendation: SkillGapRecommendation) => {

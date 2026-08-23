@@ -10,7 +10,7 @@ import { postsApi, savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { FeedPage, FeedPost } from '@/shared/schemas'
-import { Button, Card, Skeleton } from '@/shared/ui'
+import { Button, Card, ConfirmationDialog, Skeleton } from '@/shared/ui'
 import {
   addCommentToPost,
   appendCommentToPages,
@@ -36,6 +36,7 @@ export function FeedPage() {
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
+  const [pendingDeletePost, setPendingDeletePost] = useState<FeedPost | null>(null)
   const closeDiscussion = useCallback(() => setSelectedPostId(null), [])
 
   const feedQuery = useInfiniteQuery({
@@ -133,6 +134,7 @@ export function FeedPage() {
     onSuccess: (_response, postId) => {
       queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) => removePost(current, postId))
       queryClient.invalidateQueries({ queryKey: queryKeys.feedStats })
+      setPendingDeletePost(null)
       toast.success('Post deleted')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not delete this post')),
@@ -194,7 +196,7 @@ export function FeedPage() {
               saving={saveMutation.isPending && saveMutation.variables?.id === post.id}
               onLike={(item) => likeMutation.mutate({ id: item.id, liked: !item.viewerHasLiked })}
               onOpenComments={(item) => setSelectedPostId(item.id)}
-              onDelete={(postId) => deleteMutation.mutate(postId)}
+              onDelete={() => setPendingDeletePost(post)}
               onSave={(item) => saveMutation.mutate({ id: item.id, saved: !item.viewerHasSaved })}
             />
           ))}
@@ -223,6 +225,17 @@ export function FeedPage() {
           }}
         />
       ) : null}
+      <ConfirmationDialog
+        open={Boolean(pendingDeletePost)}
+        title="Delete this post?"
+        description="This post and its discussion will be permanently removed. This action cannot be undone."
+        confirmLabel="Delete post"
+        pending={deleteMutation.isPending}
+        onCancel={() => setPendingDeletePost(null)}
+        onConfirm={() => {
+          if (pendingDeletePost) deleteMutation.mutate(pendingDeletePost.id)
+        }}
+      />
     </div>
   )
 }

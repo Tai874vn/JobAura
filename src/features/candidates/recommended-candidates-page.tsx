@@ -127,7 +127,9 @@ export function RecommendedCandidatesPage() {
     ? cachedQuery.data.content
     : null;
   const content = lastContentMatchesSelection ? lastContent : cachedContent;
-  const quota = content?.quota ?? quotaQuery.data?.content;
+  const quota = (lastContentMatchesSelection ? lastContent?.quota : undefined)
+    ?? quotaQuery.data?.content
+    ?? cachedContent?.quota;
   const candidates = useMemo(
     () => sortByFinalScore(content?.data ?? []),
     [content?.data],

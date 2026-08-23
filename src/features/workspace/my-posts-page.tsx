@@ -2,16 +2,18 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, ButtonLink, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, ListRowSkeleton } from '@/shared/ui'
 
 export function MyPostsPage() {
   const { user } = useSession()
   const queryClient = useQueryClient()
+  const [pendingDelete, setPendingDelete] = useState<{ id: number; title: string } | null>(null)
   const params = { page: 1, pageSize: 50 }
   const query = useQuery({
     queryKey: queryKeys.jobsByCreator(user?.id ?? 0, params),
@@ -22,6 +24,7 @@ export function MyPostsPage() {
     mutationFn: jobsApi.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs', 'creator', user?.id] })
+      setPendingDelete(null)
       toast.success('Service deleted')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete service')),
@@ -47,13 +50,27 @@ export function MyPostsPage() {
               </div>
               <div className="flex gap-2">
                 <ButtonLink href={`/jobs/${job.id}`} variant="secondary">View</ButtonLink>
-                <Button variant="danger" onClick={() => deleteMutation.mutate(job.id)}><Trash2 className="h-4 w-4" /> Delete</Button>
+                <Button variant="danger" onClick={() => setPendingDelete({ id: job.id, title: job.tenCongViec })}><Trash2 className="h-4 w-4" /> Delete</Button>
               </div>
             </CardContent>
           </Card>
         ))}
-        {!query.isPending && !jobs.length ? <Card><CardContent className="p-8 text-sm text-muted">You have not posted services yet.</CardContent></Card> : null}
+        {query.isError ? (
+          <Card><CardContent className="p-8 text-center text-sm text-muted">Services could not be loaded.<Button className="mx-auto mt-3" variant="secondary" onClick={() => query.refetch()}>Retry</Button></CardContent></Card>
+        ) : null}
+        {!query.isPending && !query.isError && !jobs.length ? <Card><CardContent className="p-8 text-sm text-muted">You have not posted services yet.</CardContent></Card> : null}
       </div>
+      <ConfirmationDialog
+        open={Boolean(pendingDelete)}
+        title="Delete this service?"
+        description={`“${pendingDelete?.title ?? ''}” will be permanently removed. This action cannot be undone.`}
+        confirmLabel="Delete service"
+        pending={deleteMutation.isPending}
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete) deleteMutation.mutate(pendingDelete.id)
+        }}
+      />
     </div>
   )
 }

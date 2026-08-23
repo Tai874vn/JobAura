@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { authApi } from '@/shared/api/endpoints'
-import { setCachedSession } from '@/shared/api/session-cache'
+import { resetClientSession } from '@/shared/api/session-cache'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Spinner } from '@/shared/ui'
 import { useQueryClient } from '@tanstack/react-query'
@@ -19,14 +19,12 @@ export function LogoutPage() {
 
     async function logout() {
       resetChat()
-      queryClient.clear()
-      setCachedSession(null, queryClient)
+      resetClientSession(queryClient)
 
       try {
         await authApi.logout()
         resetChat()
-        queryClient.clear()
-        setCachedSession(null, queryClient)
+        resetClientSession(queryClient)
         window.location.replace('/auth/login')
       } catch {
         setFailed(true)

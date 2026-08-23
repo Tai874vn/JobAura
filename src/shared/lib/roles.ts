@@ -1,3 +1,5 @@
+import { safeInternalPath } from './session-routing'
+
 export const accountRoles = ['user', 'employer', 'admin'] as const
 export const signupRoles = ['user', 'employer'] as const
 
@@ -39,7 +41,8 @@ export function canAccessRole(role: string | null | undefined, allowedRoles?: re
 }
 
 export function getSignedInRedirect(user?: { role?: string | null } | null, nextPath?: string | null) {
-  if (nextPath?.startsWith('/') && !nextPath.startsWith('//')) return nextPath
+  const safeNextPath = safeInternalPath(nextPath)
+  if (safeNextPath) return safeNextPath
   if (user?.role === 'admin') return '/admin'
   if (user?.role === 'employer') return '/candidates'
   return '/'

@@ -303,7 +303,7 @@ export function HiringPostSelectionPanel({
                     disabled={predictSeniority.isPending}
                     onClick={() => predictSeniority.mutate(post.id)}
                   >
-                    {predictSeniority.isPending ? (
+                    {predictSeniority.isPending && predictSeniority.variables === post.id ? (
                       <Spinner className="h-4 w-4" />
                     ) : (
                       <Sparkles className="h-4 w-4" />

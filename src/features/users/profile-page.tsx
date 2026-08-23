@@ -6,15 +6,10 @@ import {
   ArrowUpRight,
   Award,
   BriefcaseBusiness,
-  Building2,
   Calendar,
   CheckCircle2,
-  Clock3,
-  Download,
   Edit3,
   ExternalLink,
-  FileJson,
-  FileText,
   Globe2,
   ImageUp,
   Mail,
@@ -26,30 +21,36 @@ import {
   Upload,
 } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
-import type { Job, UpdateProfile, UserProfile, UserResume } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent, CardHeader } from '@/shared/ui'
-import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import type { Job, UpdateProfile, UserProfile } from '@/shared/schemas'
+import { Badge, Card, CardContent, CardHeader } from '@/shared/ui'
+import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { safeExternalUrl } from '@/shared/lib/urls'
 import { useSession } from '@/features/auth/use-session'
 import {
   hasResumeDraftInput,
   resumeDraftFromData,
   resumeDraftToImportPayload,
-  resumeSkills,
   type ResumeDraft,
 } from '@/features/users/resume'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { cleanObject, toDateInput } from './profile-form-utils'
 import { useProfileUpload } from './use-profile-upload'
-import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer, ResumeSnippet } from './profile/profile-editor'
+import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer } from './profile/profile-editor'
+import {
+  ContactRow,
+  EmptyState,
+  InlineInfo,
+  ProfilePostCard,
+  ResumeShowcase,
+  SectionTitle,
+} from './profile/profile-content'
 import {
   formatDate,
-  formatFullDate,
   getProfileCertifications,
   getProfileSkills,
   humanize,
@@ -76,6 +77,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const avatarUrl = resolveAssetUrl(profile.avatar)
   const bypassAvatarOptimizer = shouldBypassImageOptimizer(profile.avatar)
   const headline = profile.headline ?? 'Independent professional on JobAura'
+  const websiteUrl = safeExternalUrl(profile.website)
   const bio =
     profile.bio ??
     'This JobAura member is building out their profile. Browse their skills, credentials, and portfolio to understand how they can help.'
@@ -252,8 +254,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                     {!isOwner ? <ConnectionActions className="mt-3" userId={profile.id} userName={profile.name} /> : null}
                     <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
                       {profile.location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={profile.location} /> : null}
-                      {profile.website ? (
-                        <a className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline" href={profile.website}>
+                      {websiteUrl ? (
+                        <a className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline" href={websiteUrl} target="_blank" rel="noreferrer noopener">
                           <Globe2 className="h-4 w-4" />
                           Website
                           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -318,13 +320,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                   {portfolio.map((item, index) => {
                     const imageUrl = resolveAssetUrl(item.image)
                     const bypassImageOptimizer = shouldBypassImageOptimizer(item.image)
-
-                    return (
-                      <a
-                        key={item.id ?? `${item.title}-${index}`}
-                        href={item.url ?? '#'}
-                        className="group overflow-hidden rounded-lg border border-border bg-white transition hover:border-primary"
-                      >
+                    const projectUrl = safeExternalUrl(item.url)
+                    const cardContent = (
+                      <>
                         <div className="relative aspect-video bg-surface-muted">
                           {imageUrl ? (
                             <Image src={imageUrl} alt="" fill unoptimized={bypassImageOptimizer} className="object-cover" sizes="(min-width: 768px) 50vw, 100vw" />
@@ -337,11 +335,30 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-3">
                             <h3 className="font-display text-lg font-bold leading-snug">{item.title}</h3>
-                            {item.url ? <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-muted group-hover:text-primary" /> : null}
+                            {projectUrl ? <ExternalLink className="mt-1 h-4 w-4 shrink-0 text-muted group-hover:text-primary" /> : null}
                           </div>
                           {item.description ? <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">{item.description}</p> : null}
                         </div>
+                      </>
+                    )
+
+                    return projectUrl ? (
+                      <a
+                        key={item.id ?? `${item.title}-${index}`}
+                        href={projectUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="group overflow-hidden rounded-lg border border-border bg-white transition hover:border-primary"
+                      >
+                        {cardContent}
                       </a>
+                    ) : (
+                      <div
+                        key={item.id ?? `${item.title}-${index}`}
+                        className="group overflow-hidden rounded-lg border border-border bg-white"
+                      >
+                        {cardContent}
+                      </div>
                     )
                   })}
                 </div>
@@ -384,7 +401,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               />
               {certifications.length ? (
                 <div className="mt-4 grid gap-3">
-                  {certifications.map((cert, index) => (
+                  {certifications.map((cert, index) => {
+                    const credentialUrl = safeExternalUrl(cert.credentialUrl)
+                    return (
                     <div key={cert.id ?? `${cert.name}-${index}`} className="rounded-lg border border-border bg-surface p-3">
                       <div className="flex gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
@@ -395,8 +414,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                           {cert.issuer ? <p className="mt-0.5 text-sm text-muted">{cert.issuer}</p> : null}
                           <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted">
                             {cert.issuedAt ? <InlineInfo icon={<Calendar className="h-3.5 w-3.5" />} value={formatDate(cert.issuedAt)} /> : null}
-                            {cert.credentialUrl ? (
-                              <a href={cert.credentialUrl} className="font-semibold text-primary hover:underline">
+                            {credentialUrl ? (
+                              <a href={credentialUrl} target="_blank" rel="noreferrer noopener" className="font-semibold text-primary hover:underline">
                                 Credential
                               </a>
                             ) : null}
@@ -404,7 +423,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                         </div>
                       </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
               ) : (
                 <EmptyState icon={<Award className="h-5 w-5" />} text="No certifications added yet." />
@@ -438,193 +458,5 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
         />
       ) : null}
     </main>
-  )
-}
-
-function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile | UserProfile }) {
-  const imageUrl = resolveAssetUrl(post.hinhAnh)
-  const bypassOptimizer = shouldBypassImageOptimizer(post.hinhAnh)
-
-  return (
-    <article className="overflow-hidden rounded-lg border border-border bg-white">
-      <div className="flex items-center justify-between gap-3 border-b border-border p-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
-            {initials(user.name)}
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-bold">{user.name}</span>
-            <span className="block text-xs text-muted">{post.createdAt ? formatDate(post.createdAt) : 'Marketplace service'}</span>
-          </span>
-        </div>
-        <Badge tone="rating">
-          <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
-          {(post.saoCongViec ?? 0).toFixed(1)}
-        </Badge>
-      </div>
-      <div className="grid gap-0 md:grid-cols-[220px_1fr]">
-        <Link href={`/jobs/${post.id}`} className="relative block aspect-16/10 bg-surface-muted md:aspect-auto">
-          {imageUrl ? (
-            <Image src={imageUrl} alt={post.tenCongViec} fill unoptimized={bypassOptimizer} className="object-cover" sizes="(min-width: 768px) 220px, 100vw" />
-          ) : (
-            <span className="flex h-full items-center justify-center text-primary">
-              <BriefcaseBusiness className="h-8 w-8" />
-            </span>
-          )}
-        </Link>
-        <div className="grid gap-4 p-4">
-          <div>
-            <Link href={`/jobs/${post.id}`} className="font-display text-xl font-bold leading-snug hover:text-primary">
-              {post.tenCongViec}
-            </Link>
-            <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
-              {post.moTaNgan || post.moTa || 'This service post is available on JobAura.'}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-sm text-muted">
-              From <strong className="text-foreground">{currency(post.giaTien)}</strong>
-            </span>
-            <div className="flex gap-2">
-              <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
-                View details
-              </ButtonLink>
-              <Button size="sm">Contact</Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </article>
-  )
-}
-
-function ResumeShowcase({
-  resume,
-  draft,
-  isOwner,
-  isLoading,
-  onEdit,
-}: {
-  resume: UserResume | null
-  draft: ResumeDraft
-  isOwner: boolean
-  isLoading: boolean
-  onEdit: () => void
-}) {
-  const skills = resumeSkills(draft.Skills)
-  const fileUrl = resolveAssetUrl(resume?.sourceFileUrl)
-
-  return (
-    <Card>
-      <CardContent className="p-5 md:p-6">
-        <SectionTitle
-          title="CV / Resume"
-          meta={resume?.updatedAt ? `Updated ${formatFullDate(resume.updatedAt)}` : undefined}
-          action={isOwner ? <InlineEditButton label={resume ? 'Edit' : 'Add'} onClick={onEdit} /> : null}
-        />
-
-        {isLoading ? (
-          <p className="mt-4 text-sm text-muted">Loading resume...</p>
-        ) : hasResumeDraftInput(draft) ? (
-          <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_240px]">
-            <div className="grid gap-4">
-              <div className="rounded-lg border border-border bg-surface p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-2xl font-bold">{draft.Name || 'Resume profile'}</h3>
-                    <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-                      {draft.Email ? <InlineInfo icon={<Mail className="h-4 w-4" />} value={draft.Email} /> : null}
-                      {draft.Phone ? <InlineInfo icon={<Phone className="h-4 w-4" />} value={draft.Phone} /> : null}
-                      {draft.Location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={draft.Location} /> : null}
-                      {draft.Role ? <InlineInfo icon={<BriefcaseBusiness className="h-4 w-4" />} value={draft.Role} /> : null}
-                      {draft.Industry ? <InlineInfo icon={<Building2 className="h-4 w-4" />} value={draft.Industry} /> : null}
-                      {draft.YearsExperience ? <InlineInfo icon={<Clock3 className="h-4 w-4" />} value={`${draft.YearsExperience} years`} /> : null}
-                    </div>
-                  </div>
-                  {fileUrl ? (
-                    <a
-                      href={fileUrl}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-white px-3 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition hover:border-primary hover:text-primary"
-                    >
-                      <Download className="h-4 w-4" />
-                      File
-                    </a>
-                  ) : null}
-                </div>
-                {draft.Summary ? <p className="mt-4 text-sm leading-6 text-muted">{draft.Summary}</p> : null}
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <ResumeSnippet title="Experience" value={draft.Experience} />
-                <ResumeSnippet title="Education" value={draft.Education} />
-              </div>
-            </div>
-
-            <aside className="rounded-lg border border-border bg-surface-muted p-4">
-              <div className="flex items-center gap-2">
-                <FileJson className="h-4 w-4 text-primary" />
-                <p className="text-sm font-bold">Resume data</p>
-              </div>
-              <p className="mt-2 text-xs leading-5 text-muted">
-                {resume?.sourceFileName ? resume.sourceFileName : resume ? 'Structured resume saved' : 'No source file attached'}
-              </p>
-              {skills.length ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {skills.slice(0, 10).map((skill) => (
-                    <span key={skill} className="rounded bg-accent/40 px-2 py-1 text-xs font-semibold text-foreground">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </aside>
-          </div>
-        ) : (
-          <EmptyState icon={<FileText className="h-5 w-5" />} text={isOwner ? 'Add your CV details directly from this profile page.' : 'No CV details are public yet.'} />
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function SectionTitle({ title, meta, action }: { title: string; meta?: string; action?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <h2 className="font-display text-2xl font-bold">{title}</h2>
-      <div className="flex items-center gap-2">
-        {meta ? <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{meta}</span> : null}
-        {action}
-      </div>
-    </div>
-  )
-}
-
-function InlineInfo({ icon, value }: { icon: React.ReactNode; value: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      {icon}
-      {value}
-    </span>
-  )
-}
-
-function ContactRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | null }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg bg-surface-muted p-3">
-      <span className="text-primary">{icon}</span>
-      <span className="min-w-0">
-        <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-        <span className="block truncate font-semibold">{value || '-'}</span>
-      </span>
-    </div>
-  )
-}
-
-function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <div className="mt-4 flex items-center gap-3 rounded-lg border border-dashed border-border bg-surface-muted p-4 text-sm text-muted">
-      <span className="text-primary">{icon}</span>
-      {text}
-    </div>
   )
 }

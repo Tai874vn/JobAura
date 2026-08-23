@@ -26,6 +26,8 @@ describe('account roles', () => {
     expect(getSignedInRedirect({ role: 'user' })).toBe('/')
     expect(getSignedInRedirect({ role: 'employer' }, '/settings')).toBe('/settings')
     expect(getSignedInRedirect({ role: 'employer' }, '//evil.example')).toBe('/candidates')
+    expect(getSignedInRedirect({ role: 'employer' }, '/\\evil.example')).toBe('/candidates')
+    expect(getSignedInRedirect({ role: 'employer' }, 'https://evil.example')).toBe('/candidates')
   })
 
   it('limits candidate directory access to employers and admins', () => {

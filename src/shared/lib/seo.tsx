@@ -1,3 +1,5 @@
+import { resolveHttpUrl } from './urls'
+
 const defaultSiteUrl = 'http://localhost:3001'
 const defaultDescription = 'Find trusted freelance services and manage work in one marketplace.'
 
@@ -19,15 +21,10 @@ export function absoluteSiteUrl(path = '/') {
 
 export function absoluteAssetUrl(value: string | null | undefined) {
   const source = value?.trim()
-  if (!source || source.startsWith('data:') || source.startsWith('blob:')) return undefined
+  if (!source) return undefined
 
-  try {
-    if (source.startsWith('http://') || source.startsWith('https://')) return new URL(source).toString()
-    const assetBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.BACKEND_API_BASE_URL ?? siteOrigin()
-    return new URL(source.replaceAll('\\', '/'), assetBase.endsWith('/') ? assetBase : `${assetBase}/`).toString()
-  } catch {
-    return undefined
-  }
+  const assetBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? process.env.BACKEND_API_BASE_URL ?? siteOrigin()
+  return resolveHttpUrl(source, assetBase)
 }
 
 export function seoDescription(value: string | null | undefined, fallback = defaultDescription, maxLength = 155) {

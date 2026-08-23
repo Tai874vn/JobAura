@@ -11,10 +11,10 @@ export function AdminDashboard() {
   const stats = useQuery({ queryKey: queryKeys.adminStats, queryFn: adminApi.stats })
 
   const metrics = [
-    { label: 'Total Users', value: stats.data?.content?.users ?? 0, loading: stats.isPending, icon: Users },
-    { label: 'Active Jobs', value: stats.data?.content?.jobs ?? 0, loading: stats.isPending, icon: BriefcaseBusiness },
-    { label: 'Total Hires', value: stats.data?.content?.hires ?? 0, loading: stats.isPending, icon: ShoppingBag },
-    { label: 'Comments', value: stats.data?.content?.comments ?? 0, loading: stats.isPending, icon: MessageSquare },
+    { label: 'Total Users', value: stats.isError ? '—' : stats.data?.content?.users ?? 0, loading: stats.isPending, icon: Users },
+    { label: 'Active Jobs', value: stats.isError ? '—' : stats.data?.content?.jobs ?? 0, loading: stats.isPending, icon: BriefcaseBusiness },
+    { label: 'Total Hires', value: stats.isError ? '—' : stats.data?.content?.hires ?? 0, loading: stats.isPending, icon: ShoppingBag },
+    { label: 'Comments', value: stats.isError ? '—' : stats.data?.content?.comments ?? 0, loading: stats.isPending, icon: MessageSquare },
   ]
 
   return (
@@ -34,6 +34,11 @@ export function AdminDashboard() {
           </Card>
         ))}
       </div>
+      {stats.isError ? (
+        <div className="mb-6 rounded-lg border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
+          Dashboard totals are unavailable. The resource tables can still be managed below.
+        </div>
+      ) : null}
       <AdminResourcePage resource="jobs" embedded />
     </div>
   )

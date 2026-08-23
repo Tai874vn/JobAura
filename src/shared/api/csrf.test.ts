@@ -10,6 +10,10 @@ describe('csrfTokenFromCookie', () => {
     expect(csrfTokenFromCookie('theme=dark')).toBeUndefined()
   })
 
+  it('ignores malformed percent encoding instead of throwing', () => {
+    expect(csrfTokenFromCookie('csrf_token=%E0%A4%A')).toBeUndefined()
+  })
+
   it('detects whether a CSRF cookie is present', () => {
     expect(hasCsrfTokenCookie('theme=dark; csrf_token=abc123')).toBe(true)
     expect(hasCsrfTokenCookie('theme=dark')).toBe(false)

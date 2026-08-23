@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { describe, expect, it } from 'vitest'
 import { queryKeys } from './query-keys'
-import { setCachedSession } from './session-cache'
+import { resetClientSession, setCachedSession } from './session-cache'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'
 
 describe('session cache', () => {
@@ -13,6 +13,18 @@ describe('session cache', () => {
     expect(client.getQueryData<ApiResponse<UserProfile>>(queryKeys.me)?.content).toEqual(user)
 
     setCachedSession(null, client)
+    expect(client.getQueryData<ApiResponse<UserProfile>>(queryKeys.me)?.content).toBeUndefined()
+  })
+
+  it('removes private query data when the client session ends', () => {
+    const client = new QueryClient()
+    client.setQueryData(queryKeys.savedPosts, { content: { data: [{ id: 99 }] } })
+    client.setQueryData(queryKeys.notifications, { content: { data: [{ id: 42 }] } })
+
+    resetClientSession(client)
+
+    expect(client.getQueryData(queryKeys.savedPosts)).toBeUndefined()
+    expect(client.getQueryData(queryKeys.notifications)).toBeUndefined()
     expect(client.getQueryData<ApiResponse<UserProfile>>(queryKeys.me)?.content).toBeUndefined()
   })
 })

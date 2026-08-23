@@ -32,7 +32,8 @@ import { Button } from "@/shared/ui";
 export function SiteHeader() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isLoading: isSessionLoading } = useSession();
   const avatarUrl = resolveAssetUrl(user?.avatar);
   const isRecruiter = user?.role === "employer";
@@ -55,7 +56,8 @@ export function SiteHeader() {
   }
 
   function goToLogout() {
-    setMenuOpen(false);
+    setAccountMenuOpen(false);
+    setMobileMenuOpen(false);
     router.push("/logout");
   }
 
@@ -166,11 +168,14 @@ export function SiteHeader() {
             <div className="h-10 w-16 rounded-lg bg-surface-muted" />
           </div>
         ) : user ? (
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="relative hidden items-center gap-2 md:flex">
             <button
+              type="button"
               className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white"
-              onClick={() => setMenuOpen((value) => !value)}
-              aria-label="Open account menu"
+              onClick={() => setAccountMenuOpen((value) => !value)}
+              aria-label={accountMenuOpen ? "Close account menu" : "Open account menu"}
+              aria-controls="account-navigation"
+              aria-expanded={accountMenuOpen}
             >
               {avatarUrl ? (
                 <Image
@@ -185,12 +190,13 @@ export function SiteHeader() {
                 initials(user.name)
               )}
             </button>
-            {menuOpen ? (
-              <div className="absolute right-24 top-14 w-56 rounded-lg border border-border bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+            {accountMenuOpen ? (
+              <div id="account-navigation" className="absolute right-0 top-11 w-56 rounded-lg border border-border bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
                 <MenuLink
                   href={`/profile/${user.id}`}
                   icon={<User className="h-4 w-4" />}
                   label="Profile"
+                  onClick={() => setAccountMenuOpen(false)}
                 />
                 {canUseEmployeeTools ? (
                   <>
@@ -198,11 +204,13 @@ export function SiteHeader() {
                       href="/my-posts"
                       icon={<BriefcaseBusiness className="h-4 w-4" />}
                       label="My posts"
+                      onClick={() => setAccountMenuOpen(false)}
                     />
                     <MenuLink
                       href="/my-jobs"
                       icon={<LayoutDashboard className="h-4 w-4" />}
                       label="My jobs"
+                      onClick={() => setAccountMenuOpen(false)}
                     />
                   </>
                 ) : null}
@@ -212,11 +220,13 @@ export function SiteHeader() {
                       href="/candidates"
                       icon={<Search className="h-4 w-4" />}
                       label="Find candidates"
+                      onClick={() => setAccountMenuOpen(false)}
                     />
                     <MenuLink
                       href="/recommendations/candidates"
                       icon={<Sparkles className="h-4 w-4" />}
                       label="AI matching"
+                      onClick={() => setAccountMenuOpen(false)}
                     />
                   </>
                 ) : null}
@@ -224,16 +234,19 @@ export function SiteHeader() {
                   href="/hiring-posts"
                   icon={<BriefcaseBusiness className="h-4 w-4" />}
                   label="Hiring posts"
+                  onClick={() => setAccountMenuOpen(false)}
                 />
                 <MenuLink
                   href="/connections"
                   icon={<LayoutDashboard className="h-4 w-4" />}
                   label="Connections"
+                  onClick={() => setAccountMenuOpen(false)}
                 />
                 <MenuLink
                   href="/settings"
                   icon={<Settings className="h-4 w-4" />}
                   label="Settings"
+                  onClick={() => setAccountMenuOpen(false)}
                 />
                 <button
                   className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-semibold text-danger hover:bg-danger/5"
@@ -260,22 +273,22 @@ export function SiteHeader() {
           className={user ? "md:hidden" : "ml-auto md:hidden"}
           variant="ghost"
           size="icon"
-          onClick={() => setMenuOpen((value) => !value)}
+          onClick={() => setMobileMenuOpen((value) => !value)}
           aria-label={
-            menuOpen ? "Close navigation menu" : "Open navigation menu"
+            mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
           }
           aria-controls="mobile-navigation"
-          aria-expanded={menuOpen}
+          aria-expanded={mobileMenuOpen}
         >
           <Menu className="h-5 w-5" />
         </Button>
       </div>
-      {menuOpen ? (
+      {mobileMenuOpen ? (
         <div
           id="mobile-navigation"
           className="border-t border-border bg-white p-4 md:hidden"
         >
-          <div className="grid gap-2 text-sm font-semibold">
+          <div className="grid gap-2 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
             {user && canUseEmployeeTools ? <Link href="/">Home feed</Link> : null}
             {canUseEmployeeTools ? <Link href="/jobs">Explore</Link> : null}
             {canUseEmployeeTools ? (
@@ -318,15 +331,18 @@ function MenuLink({
   href,
   icon,
   label,
+  onClick,
 }: {
   href: string;
   icon: React.ReactNode;
   label: string;
+  onClick?: () => void;
 }) {
   return (
     <Link
       className="flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold hover:bg-surface-muted"
       href={href}
+      onClick={onClick}
     >
       {icon}
       {label}

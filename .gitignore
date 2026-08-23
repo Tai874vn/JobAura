@@ -35,3 +35,7 @@ docs/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Reviewed project reports
+!docs/
+!docs/code-review-2026-08-24.md

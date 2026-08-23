@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle2, MessageSquare, Pencil, Sparkles, Star, Trash2, Upload } from 'lucide-react'
+import { CheckCircle2, MessageSquare, Sparkles, Star, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -14,7 +14,7 @@ import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Comment, Job } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Badge, Button, ButtonLink, Card, CardContent, Textarea } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog, Textarea } from '@/shared/ui'
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
 
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
@@ -27,6 +27,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
   const [review, setReview] = useState('')
   const [rating, setRating] = useState(5)
+  const [deleteOpen, setDeleteOpen] = useState(false)
   const isOwner = user?.id === job.nguoiTao
   const canViewCandidateMatches = Boolean(user?.role === 'admin' || (isOwner && canAccessCandidateDirectory(user?.role)))
   const sellerId = getSellerId(job)
@@ -55,6 +56,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const deleteMutation = useMutation({
     mutationFn: () => jobsApi.delete(job.id),
     onSuccess: () => {
+      setDeleteOpen(false)
       toast.success('Service deleted')
       router.push('/my-posts')
     },
@@ -205,9 +207,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           </Card>
           {isOwner ? (
             <div className="mt-4 grid gap-2">
-              <Button variant="secondary"><Pencil className="h-4 w-4" /> Edit service</Button>
-              <Button variant="secondary"><Upload className="h-4 w-4" /> Upload image</Button>
-              <Button variant="danger" onClick={() => deleteMutation.mutate()}><Trash2 className="h-4 w-4" /> Delete</Button>
+              <Button variant="danger" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /> Delete service</Button>
             </div>
           ) : null}
           {canViewCandidateMatches ? (
@@ -232,6 +232,15 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           ) : null}
         </aside>
       </div>
+      <ConfirmationDialog
+        open={deleteOpen}
+        title="Delete this service?"
+        description={`“${job.tenCongViec}” will be permanently removed. This action cannot be undone.`}
+        confirmLabel="Delete service"
+        pending={deleteMutation.isPending}
+        onCancel={() => setDeleteOpen(false)}
+        onConfirm={() => deleteMutation.mutate()}
+      />
     </div>
   )
 }

@@ -47,7 +47,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </aside>
       <section>
         <header className="flex h-16 items-center justify-between border-b border-border bg-white px-6">
-          <input className="h-10 w-full max-w-md rounded-lg border border-border px-3 text-sm outline-none focus:border-primary" placeholder="Search admin..." />
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Administration</p>
+            <p className="text-sm text-muted">Manage marketplace records from the active section.</p>
+          </div>
           <div className="ml-4 flex items-center gap-3">
             <span className="hidden text-right text-sm md:block">
               <strong className="block">{user?.name ?? 'Admin'}</strong>

@@ -1,4 +1,5 @@
 import type { AppNotification } from '@/shared/schemas'
+import { safeInternalPath } from '@/shared/lib/session-routing'
 
 export function roomIdFromNotification(notification: AppNotification) {
   const roomId = notification.metadata?.roomId
@@ -11,16 +12,7 @@ export function roomIdFromNotification(notification: AppNotification) {
 }
 
 export function safeInternalActionUrl(value: string | null | undefined) {
-  const path = value?.trim()
-  if (!path || !path.startsWith('/') || path.startsWith('//')) return null
-
-  try {
-    const url = new URL(path, 'https://jobaura.local')
-    if (url.origin !== 'https://jobaura.local') return null
-    return `${url.pathname}${url.search}${url.hash}`
-  } catch {
-    return null
-  }
+  return safeInternalPath(value)
 }
 
 export function notificationHeadline(notification: AppNotification) {

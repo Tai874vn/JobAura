@@ -6,6 +6,7 @@ import { getSellerHref, getSellerName } from '@/features/jobs/seller-profile'
 import { normalizeJobResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, Comment, Job } from '@/shared/schemas'
 
 const getJob = cache(async (id: string) => {
@@ -19,7 +20,8 @@ const getJob = cache(async (id: string) => {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
-  const job = await getJob(id)
+  const jobId = positiveIntegerRouteParam(id)
+  const job = jobId ? await getJob(String(jobId)) : null
   if (!job) {
     return {
       title: 'Service not found',
@@ -97,7 +99,9 @@ function serviceJsonLd(job: Job & { binhLuans?: Comment[] }) {
 
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const job = await getJob(id)
+  const jobId = positiveIntegerRouteParam(id)
+  if (!jobId) notFound()
+  const job = await getJob(String(jobId))
   if (!job) notFound()
   return (
     <>

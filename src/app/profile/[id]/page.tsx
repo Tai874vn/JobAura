@@ -6,6 +6,7 @@ import { getUserPosts } from '@/features/users/profile-posts'
 import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, Job, PaginatedContent, UserProfile } from '@/shared/schemas'
 import { Card, CardContent } from '@/shared/ui'
 
@@ -23,7 +24,9 @@ const getProfileData = cache(async (id: string) => {
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
-  const { response } = await getProfileData(id)
+  const profileId = positiveIntegerRouteParam(id)
+  if (!profileId) return { title: 'Profile not found', robots: { index: false, follow: false } }
+  const { response } = await getProfileData(String(profileId))
   const user = response.ok ? response.data.content : null
 
   if (!user) {
@@ -109,9 +112,11 @@ function personJsonLd(user: UserProfile, posts: Job[]) {
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const { response, jobsResponse } = await getProfileData(id)
+  const profileId = positiveIntegerRouteParam(id)
+  if (!profileId) notFound()
+  const { response, jobsResponse } = await getProfileData(String(profileId))
 
-  if (!response.ok) return <ProfileLoadError id={id} message={response.error} />
+  if (!response.ok) return <ProfileLoadError id={profileId} />
   if (!response.data.content) notFound()
 
   const jobs = jobsResponse.ok ? normalizePaginatedJobsResponse(jobsResponse.data).content?.data ?? [] : []
@@ -125,7 +130,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   )
 }
 
-function ProfileLoadError({ id, message }: { id: string; message: string | string[] }) {
+function ProfileLoadError({ id }: { id: number }) {
   return (
     <div className="container-page py-10">
       <Card>
@@ -135,9 +140,9 @@ function ProfileLoadError({ id, message }: { id: string; message: string | strin
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             The profile page is available, but the backend profile endpoint returned an error instead of profile data.
           </p>
-          <pre className="mt-4 overflow-auto rounded-lg bg-surface-muted p-4 text-xs text-muted">
-            {Array.isArray(message) ? message.join('\n') : message}
-          </pre>
+          <p className="mt-4 rounded-lg bg-surface-muted p-4 text-sm text-muted">
+            Please try again later. If the problem continues, contact JobAura support with profile ID #{id}.
+          </p>
         </CardContent>
       </Card>
     </div>
