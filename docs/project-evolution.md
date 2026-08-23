@@ -47,7 +47,7 @@
 | 2026-08-11 | `ff2d296` | Applied system-wide integration fixes to auth, API data, chat, feed, connections, notifications, resumes, and roles. | Resolved accumulated edge cases and expanded regression tests. |
 | 2026-08-11 | `0e01656` | Merged the completed recommendation and integration branch. | Established the stable baseline before architecture cleanup. |
 | 2026-08-23 | `7b6c56e` | Centralized session state with React Query; hardened and tested the API proxy; split endpoints, schemas, normalizers, notifications, profile editing, uploads, and settings into focused modules; simplified shared layouts and self-hosted runtime configuration. | Reduced duplicated state and oversized modules, improved proxy/header safety and cookie forwarding, and made the application easier to test and maintain. |
-| 2026-08-24 | Pending — fill after commit | Reviewed the complete frontend with Repomix; tightened session, URL, environment, role, upload, destructive-action, and container boundaries; split remaining oversized feature/API modules; added failure recovery and regression tests. | Improves security, reliability, performance boundaries, user feedback, test coverage, and long-term module ownership. |
+| 2026-08-24 | `6c86b37` | Reviewed the complete frontend with Repomix; tightened session, URL, environment, role, upload, destructive-action, and container boundaries; split remaining oversized feature/API modules; added failure recovery and regression tests. | Improves security, reliability, performance boundaries, user feedback, test coverage, and long-term module ownership. |
 
 ## How changes are checked and managed
 
@@ -59,7 +59,7 @@ Each change is kept in Git so its purpose and affected code can be reviewed. Fix
 - A Next.js production build to verify routes, server/client boundaries, and deployability.
 - `git diff --check` to prevent malformed patches and whitespace errors.
 
-For the pending maintenance commit, all checks pass: **27 test files and 94 tests**, **57.95% statement coverage**, and a successful production build of all **31 routes**. The Repomix review packed **217 files** with no suspicious files. The commit hash will be filled after the commit is created; the owner remains **Tai874vn only**, with no co-author attribution.
+For maintenance commit `6c86b37`, all checks pass: **27 test files and 94 tests**, **57.95% statement coverage**, and a successful production build of all **31 routes**. The Repomix review packed **217 files** with no suspicious files. The owner is **Tai874vn only**, with no co-author attribution.
 
 ## Performance and security evolution
 

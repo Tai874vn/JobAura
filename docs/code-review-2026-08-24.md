@@ -262,11 +262,11 @@ Verification:
 - Focused ESLint and the full TypeScript check passed for the affected modules.
 - A final search found no placeholder links, empty click handlers, debug statements, or unfinished TODO/FIXME markers in application source.
 
-## Pending commit record
+## Commit record
 
 - Owner and author: **Tai874vn only** (no co-author attribution).
-- Commit: **Pending — replace with the generated commit hash after committing.**
-- Suggested title: `refactor: harden frontend architecture and user flows`
+- Commit: `6c86b37`
+- Title: `refactor: harden frontend architecture and user flows`
 - Scope: frontend security, API reliability, role/navigation consistency, failure feedback, module ownership, regression coverage, and production runtime hardening.
 - Evidence: this review log and the final validation results below.
 
