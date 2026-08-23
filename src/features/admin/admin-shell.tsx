@@ -3,8 +3,8 @@
 import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Settings, Tags, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from '@/features/auth/use-session'
 import { cn, initials } from '@/shared/lib/utils'
-import { useAuthStore } from '@/shared/stores/auth-store'
 
 const nav = [
   { href: '/admin', label: 'Dashboard', icon: Home },
@@ -19,7 +19,7 @@ const nav = [
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const user = useAuthStore((state) => state.user)
+  const { user } = useSession()
 
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[260px_1fr]">

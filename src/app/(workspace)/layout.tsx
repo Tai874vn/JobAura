@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/require-auth'
-import { Footer } from '@/features/layout/footer'
-import { SiteHeader } from '@/features/layout/site-header'
+import { PublicShell } from '@/features/layout/public-shell'
 
 export const metadata: Metadata = {
   robots: {
@@ -13,11 +12,7 @@ export const metadata: Metadata = {
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireAuth>
-      <div className="flex min-h-screen flex-col">
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </div>
+      <PublicShell>{children}</PublicShell>
     </RequireAuth>
   )
 }

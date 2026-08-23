@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
-import { useAuthStore } from '@/shared/stores/auth-store'
+import { useSession } from '@/features/auth/use-session'
 
 const ChatShell = dynamic(() => import('./chat-shell').then((mod) => mod.ChatShell), {
   ssr: false,
@@ -10,10 +10,9 @@ const ChatShell = dynamic(() => import('./chat-shell').then((mod) => mod.ChatShe
 })
 
 export function LazyChatShell() {
-  const user = useAuthStore((state) => state.user)
-  const hasHydrated = useAuthStore((state) => state.hasHydrated)
+  const { user, isLoading } = useSession()
   const [canLoadChat, setCanLoadChat] = useState(false)
-  const shouldLoadChat = hasHydrated && Boolean(user)
+  const shouldLoadChat = !isLoading && Boolean(user)
 
   useEffect(() => {
     if (!shouldLoadChat) return

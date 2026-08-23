@@ -5,6 +5,7 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi, recommendationsApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
 import { getErrorMessage } from "@/shared/lib/utils";
@@ -12,7 +13,6 @@ import type {
   RecommendationContent,
   RecommendedCandidate,
 } from "@/shared/schemas";
-import { useAuthStore } from "@/shared/stores/auth-store";
 import { Card, CardContent, Spinner } from "@/shared/ui";
 import { CandidateResultsPanel, EmptyResultsCard } from "./recommended-candidates/candidate-results-panel";
 import { hiringPostPageParams } from "./recommended-candidates/constants";
@@ -30,7 +30,7 @@ type CandidateRunVariables = {
 
 export function RecommendedCandidatesPage() {
   const queryClient = useQueryClient();
-  const user = useAuthStore((state) => state.user);
+  const { user } = useSession();
   const [manualSelectedHiringPostId, setManualSelectedHiringPostId] = useState<
     number | null
   >(null);

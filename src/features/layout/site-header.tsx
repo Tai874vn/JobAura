@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import {
   BriefcaseBusiness,
@@ -16,10 +15,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useSession } from "@/features/auth/use-session";
 import { NotificationBell } from "@/features/notifications/notification-bell";
-import { authApi } from "@/shared/api/endpoints";
-import { queryKeys } from "@/shared/api/query-keys";
 import {
   canAccessCandidateDirectory,
   canAccessEmployeeTools,
@@ -29,14 +27,13 @@ import {
   resolveAssetUrl,
   shouldBypassImageOptimizer,
 } from "@/shared/lib/utils";
-import { useAuthStore } from "@/shared/stores/auth-store";
 import { Button } from "@/shared/ui";
 
 export function SiteHeader() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, hasHydrated, clearSession, setUser } = useAuthStore();
+  const { user, isLoading: isSessionLoading } = useSession();
   const avatarUrl = resolveAssetUrl(user?.avatar);
   const isRecruiter = user?.role === "employer";
   const canUseRecruiterTools = canAccessCandidateDirectory(user?.role);
@@ -48,35 +45,6 @@ export function SiteHeader() {
         ? "/candidates"
         : "/"
     : "/welcome";
-  const shouldVerifyUser = hasHydrated && Boolean(user);
-
-  const meQuery = useQuery({
-    queryKey: queryKeys.me,
-    queryFn: authApi.me,
-    enabled: shouldVerifyUser,
-    retry: false,
-    staleTime: 60_000,
-  });
-
-  useEffect(() => {
-    if (!shouldVerifyUser) return;
-
-    if (meQuery.isSuccess) {
-      const verifiedUser = meQuery.data.content ?? null;
-      if (verifiedUser) setUser(verifiedUser);
-      else clearSession();
-    }
-
-    if (meQuery.isError) clearSession();
-  }, [
-    clearSession,
-    meQuery.data,
-    meQuery.isError,
-    meQuery.isSuccess,
-    setUser,
-    shouldVerifyUser,
-  ]);
-
   function submitSearch(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const keyword = query.trim();
@@ -192,7 +160,7 @@ export function SiteHeader() {
             <NotificationBell />
           </div>
         ) : null}
-        {!hasHydrated || (shouldVerifyUser && meQuery.isPending) ? (
+        {isSessionLoading ? (
           <div className="hidden items-center gap-2 md:flex">
             <div className="h-10 w-20 rounded-lg bg-surface-muted" />
             <div className="h-10 w-16 rounded-lg bg-surface-muted" />
@@ -326,7 +294,7 @@ export function SiteHeader() {
             ) : null}
             {user ? <Link href="/connections">Connections</Link> : null}
             {user?.role === "admin" ? <Link href="/admin">Admin</Link> : null}
-            {!hasHydrated ? null : user ? (
+            {isSessionLoading ? null : user ? (
               <>
                 <Link href={`/profile/${user.id}`}>Profile</Link>
                 <button

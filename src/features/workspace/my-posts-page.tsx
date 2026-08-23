@@ -3,14 +3,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, ButtonLink, Card, CardContent, ListRowSkeleton } from '@/shared/ui'
 
 export function MyPostsPage() {
-  const user = useAuthStore((state) => state.user)
+  const { user } = useSession()
   const queryClient = useQueryClient()
   const params = { page: 1, pageSize: 50 }
   const query = useQuery({

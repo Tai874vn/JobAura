@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,6 +10,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { authApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
+import { setCachedSession } from "@/shared/api/session-cache";
 import { env } from "@/shared/config/env";
 import { GoogleIcon } from "@/shared/icons";
 import {
@@ -24,8 +25,8 @@ import {
   type SignIn,
   type SignUp,
 } from "@/shared/schemas";
-import { useAuthStore } from "@/shared/stores/auth-store";
 import { Button, Card, CardContent, Input, Spinner } from "@/shared/ui";
+import { useSession } from "./use-session";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -48,7 +49,6 @@ function LoginFormFields({
 }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const setUser = useAuthStore((state) => state.setUser);
   const [roleModalDismissed, setRoleModalDismissed] = useState(false);
   const [googleSignupRole, setGoogleSignupRole] = useState<SignupRole | null>(
     null,
@@ -64,7 +64,7 @@ function LoginFormFields({
     mutationFn: authApi.signIn,
     onSuccess: (res) => {
       const user = res.content?.user;
-      if (user) setUser(user);
+      if (user) setCachedSession(user, queryClient);
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
       router.push(getSignedInRedirect(user, nextPath));
     },
@@ -250,7 +250,6 @@ export function RegisterForm() {
 function RegisterFormFields({ notice }: { notice?: string | null }) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const setUser = useAuthStore((state) => state.setUser);
   const form = useForm<SignUp>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { name: "", email: "", password: "" },
@@ -264,7 +263,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
     mutationFn: authApi.signUp,
     onSuccess: (res) => {
       const user = res.content?.user;
-      if (user) setUser(user);
+      if (user) setCachedSession(user, queryClient);
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
       router.push(getSignedInRedirect(user));
     },
@@ -394,42 +393,15 @@ function AuthPageGate({
   nextPath?: string | null;
 }) {
   const router = useRouter();
-  const { user, hasHydrated, setUser, clearSession } = useAuthStore();
-
-  const meQuery = useQuery({
-    queryKey: queryKeys.me,
-    queryFn: authApi.me,
-    enabled: hasHydrated && Boolean(user),
-    retry: false,
-  });
+  const { user, isLoading } = useSession();
 
   useEffect(() => {
-    if (!hasHydrated) return;
-    if (meQuery.isSuccess) {
-      const verifiedUser = meQuery.data.content ?? null;
-      if (verifiedUser) {
-        setUser(verifiedUser);
-        router.replace(getSignedInRedirect(verifiedUser, nextPath));
-      } else {
-        clearSession();
-      }
+    if (!isLoading && user) {
+      router.replace(getSignedInRedirect(user, nextPath));
     }
-    if (meQuery.isError) clearSession();
-  }, [
-    clearSession,
-    hasHydrated,
-    meQuery.data,
-    meQuery.isError,
-    meQuery.isSuccess,
-    nextPath,
-    router,
-    setUser,
-  ]);
+  }, [isLoading, nextPath, router, user]);
 
-  if (
-    !hasHydrated ||
-    (Boolean(user) && (meQuery.isPending || Boolean(meQuery.data?.content)))
-  ) {
+  if (isLoading || user) {
     return (
       <main
         className="flex min-h-screen items-center justify-center bg-background"

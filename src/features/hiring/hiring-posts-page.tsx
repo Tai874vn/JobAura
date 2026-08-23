@@ -16,13 +16,13 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/features/auth/use-session";
 import { FeedAvatar } from "@/features/feed/feed-avatar";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { CreateHiringPost, HiringPost } from "@/shared/schemas";
 import { createHiringPostSchema } from "@/shared/schemas";
-import { useAuthStore } from "@/shared/stores/auth-store";
 import { Badge, Button, ButtonLink, Card, CardContent, Input, Spinner, Textarea } from "@/shared/ui";
 
 const pageSize = 10;
@@ -47,7 +47,7 @@ function pageWindow(currentPage: number, totalPages: number) {
 export function HiringPostsPage() {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const user = useAuthStore((state) => state.user);
+  const { user } = useSession();
   const [page, setPage] = useState(1);
   const initialKeyword = searchParams.get("keyword") ?? "";
   const [draftKeyword, setDraftKeyword] = useState(initialKeyword);

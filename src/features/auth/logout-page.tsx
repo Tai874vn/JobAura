@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { authApi } from '@/shared/api/endpoints'
-import { useAuthStore } from '@/shared/stores/auth-store'
+import { setCachedSession } from '@/shared/api/session-cache'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Spinner } from '@/shared/ui'
 import { useQueryClient } from '@tanstack/react-query'
@@ -11,7 +11,6 @@ export function LogoutPage() {
   const hasRunRef = useRef(false)
   const [failed, setFailed] = useState(false)
   const queryClient = useQueryClient()
-  const clearSession = useAuthStore((state) => state.clearSession)
   const resetChat = useChatStore((state) => state.reset)
 
   useEffect(() => {
@@ -19,15 +18,15 @@ export function LogoutPage() {
     hasRunRef.current = true
 
     async function logout() {
-      clearSession()
       resetChat()
       queryClient.clear()
+      setCachedSession(null, queryClient)
 
       try {
         await authApi.logout()
-        clearSession()
         resetChat()
         queryClient.clear()
+        setCachedSession(null, queryClient)
         window.location.replace('/auth/login')
       } catch {
         setFailed(true)
@@ -35,7 +34,7 @@ export function LogoutPage() {
     }
 
     void logout()
-  }, [clearSession, queryClient, resetChat])
+  }, [queryClient, resetChat])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">

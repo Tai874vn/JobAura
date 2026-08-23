@@ -5,11 +5,11 @@ import { RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { postsApi, savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { FeedPage, FeedPost } from '@/shared/schemas'
-import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, Card, Skeleton } from '@/shared/ui'
 import {
   addCommentToPost,
@@ -31,7 +31,8 @@ import { PostDiscussionModal } from './post-discussion-modal'
 type FeedCache = InfiniteData<FeedPage, string | null>
 
 export function FeedPage() {
-  const user = useAuthStore((state) => state.user)!
+  const { user: sessionUser } = useSession()
+  const user = sessionUser!
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null)

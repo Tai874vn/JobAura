@@ -7,12 +7,12 @@ import { CheckCircle2, MessageSquare, Pencil, Sparkles, Star, Trash2, Upload } f
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { chatApi, commentsApi, hiredJobsApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Comment, Job } from '@/shared/schemas'
-import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Badge, Button, ButtonLink, Card, CardContent, Textarea } from '@/shared/ui'
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
@@ -22,7 +22,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const bypassOptimizer = shouldBypassImageOptimizer(job.hinhAnh)
   const router = useRouter()
   const queryClient = useQueryClient()
-  const user = useAuthStore((state) => state.user)
+  const { user } = useSession()
   const openChat = useChatStore((state) => state.openChat)
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
   const [review, setReview] = useState('')

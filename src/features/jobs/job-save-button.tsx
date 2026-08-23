@@ -5,21 +5,20 @@ import { Bookmark } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
-import { useAuthStore } from '@/shared/stores/auth-store'
 
 export function JobSaveButton({ jobId, initialSaved = false }: { jobId: number; initialSaved?: boolean }) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const user = useAuthStore((state) => state.user)
-  const hasHydrated = useAuthStore((state) => state.hasHydrated)
+  const { user, isLoading: isSessionLoading } = useSession()
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null)
   const savedQuery = useQuery({
     queryKey: queryKeys.savedJobsPreview,
     queryFn: () => savedItemsApi.jobs(undefined, 20),
-    enabled: hasHydrated && Boolean(user) && !initialSaved,
+    enabled: !isSessionLoading && Boolean(user) && !initialSaved,
     staleTime: 60_000,
   })
   const savedFromQuery = savedQuery.data?.content?.data.some((job) => job.id === jobId) ?? false

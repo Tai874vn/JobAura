@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { useAuthStore } from '@/shared/stores/auth-store'
+import { useSession } from '@/features/auth/use-session'
 import { Skeleton } from '@/shared/ui'
 
 const CandidateDirectoryPage = dynamic(
@@ -14,7 +14,8 @@ const FeedPage = dynamic(
 )
 
 export function RoleHomePage() {
-  const role = useAuthStore((state) => state.user?.role)
+  const { user } = useSession()
+  const role = user?.role
 
   if (role === 'employer') return <CandidateDirectoryPage />
 

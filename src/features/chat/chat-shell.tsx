@@ -4,18 +4,18 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
 import { MessageCircle, Send, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
+import { useSession } from '@/features/auth/use-session'
 import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { env } from '@/shared/config/env'
 import { cn, initials } from '@/shared/lib/utils'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
-import { useAuthStore } from '@/shared/stores/auth-store'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Skeleton } from '@/shared/ui'
 import { shouldLoadRoomMessages } from './chat-data'
 
 export function ChatShell() {
-  const user = useAuthStore((state) => state.user)
+  const { user } = useSession()
   const userId = user?.id
   const isOpen = useChatStore((state) => state.isOpen)
   const isSocketActive = useChatStore((state) => state.isSocketActive)

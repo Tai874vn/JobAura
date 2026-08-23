@@ -2,13 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useSearchParams } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   Bell,
-  CheckCircle2,
   CreditCard,
   FileJson,
-  FileText,
   ImageUp,
   KeyRound,
   LayoutDashboard,
@@ -16,7 +14,6 @@ import {
   Plus,
   Save,
   ShieldCheck,
-  Sparkles,
   Trash2,
   Upload,
   UserRound,
@@ -25,25 +22,25 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { authApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { setCachedSession } from '@/shared/api/session-cache'
 import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile, UserResume } from '@/shared/schemas'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import { useAuthStore } from '@/shared/stores/auth-store'
 import { Button, Card, CardContent, Input, Spinner, Textarea } from '@/shared/ui'
 import { calculateProfileCompletion } from '@/features/users/profile-posts'
+import { cleanObject, removeListItem, toDateInput, updateList } from '@/features/users/profile-form-utils'
+import { useProfileUpload } from '@/features/users/use-profile-upload'
 import {
   canExtractResumeFile,
   extractResumeFile,
   hasResumeDraftInput,
-  resumeFileAccept,
   resumeDraftFromData,
   resumeDraftToImportPayload,
-  resumeSchemaVersion,
-  resumeSkills,
   validateResumeFile,
   type ResumeDraft,
   type ResumeFieldKey,
 } from '@/features/users/resume'
+import { ResumeSettingsSection } from './resume-settings-section'
 
 type SkillDraft = Omit<ProfileSkill, 'id'>
 type CertificationDraft = Omit<ProfileCertification, 'id'>
@@ -81,14 +78,16 @@ const settingSectionIds = new Set<SettingSection>(settingSections.map((section) 
 
 export function SettingsPage() {
   const queryClient = useQueryClient()
+  const pathname = usePathname()
+  const router = useRouter()
   const searchParams = useSearchParams()
-  const setUser = useAuthStore((state) => state.setUser)
   const profileQuery = useQuery({ queryKey: queryKeys.me, queryFn: authApi.me })
   const profile = profileQuery.data?.content
   const resumeQuery = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume, enabled: Boolean(profile) })
   const resume = resumeQuery.data?.content ?? null
 
-  const [activeSection, setActiveSection] = useState<SettingSection>('overview')
+  const requestedSection = searchParams.get('section')
+  const activeSection = isSettingSection(requestedSection) ? requestedSection : 'overview'
   const [basic, setBasic] = useState<UpdateProfile>({})
   const [skills, setSkills] = useState<SkillDraft[]>([])
   const [certifications, setCertifications] = useState<CertificationDraft[]>([])
@@ -97,12 +96,11 @@ export function SettingsPage() {
   const [resumeDraft, setResumeDraft] = useState<Partial<ResumeDraft>>({})
   const [attachedResumeFile, setAttachedResumeFile] = useState<File | null>(null)
 
-  useEffect(() => {
-    const section = searchParams.get('section')
-    if (isSettingSection(section)) {
-      setActiveSection(section)
-    }
-  }, [searchParams])
+  function selectSection(section: SettingSection) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('section', section)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }
 
   useEffect(() => {
     if (!profile) return
@@ -137,7 +135,7 @@ export function SettingsPage() {
   function refreshProfile(next?: UserProfile) {
     if (next) {
       queryClient.setQueryData(queryKeys.me, { ...profileQuery.data, content: next })
-      setUser(next)
+      setCachedSession(next, queryClient)
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
   }
@@ -200,8 +198,8 @@ export function SettingsPage() {
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete portfolio item')),
   })
 
-  const uploadAvatar = useUploadMutation(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
-  const uploadCover = useUploadMutation(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
+  const uploadAvatar = useProfileUpload(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
+  const uploadCover = useProfileUpload(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
   const saveResume = useMutation({
     mutationFn: async () => {
       const payload = resumeDraftToImportPayload(currentResumeDraft)
@@ -316,7 +314,7 @@ export function SettingsPage() {
                   className={`flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition ${
                     activeSection === section.id ? 'bg-primary text-white' : 'hover:bg-surface-muted'
                   }`}
-                  onClick={() => setActiveSection(section.id)}
+                  onClick={() => selectSection(section.id)}
                 >
                   <span className={activeSection === section.id ? 'mt-0.5 text-white' : 'mt-0.5 text-primary'}>{section.icon}</span>
                   <span className="min-w-0">
@@ -333,7 +331,7 @@ export function SettingsPage() {
 
         <main className="min-w-0">
           {activeSection === 'overview' ? (
-            <SettingsOverview profile={profile} completion={completion} resume={resume} onSelect={setActiveSection} />
+            <SettingsOverview profile={profile} completion={completion} resume={resume} onSelect={selectSection} />
           ) : null}
 
           {activeSection === 'profile' ? (
@@ -443,7 +441,7 @@ export function SettingsPage() {
           ) : null}
 
           {activeSection === 'resume' ? (
-            <ResumeImportSection
+            <ResumeSettingsSection
               resume={resume}
               draft={currentResumeDraft}
               attachedFile={attachedResumeFile}
@@ -537,261 +535,6 @@ function SettingsOverview({
   )
 }
 
-function ResumeImportSection({
-  resume,
-  draft,
-  attachedFile,
-  isLoading,
-  isImporting,
-  isPredicting,
-  onFieldChange,
-  onClearAttachedFile,
-  onImport,
-  onPredictSeniority,
-  onResumeFile,
-}: {
-  resume: UserResume | null
-  draft: ResumeDraft
-  attachedFile: File | null
-  isLoading: boolean
-  isImporting: boolean
-  isPredicting: boolean
-  onFieldChange: (field: ResumeFieldKey, value: string) => void
-  onClearAttachedFile: () => void
-  onImport: () => void
-  onPredictSeniority: () => void
-  onResumeFile: (file: File) => void
-}) {
-  const canImport = hasResumeDraftInput(draft)
-
-  return (
-    <div className="grid gap-6">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Resume intelligence</p>
-        <h2 className="mt-1 font-display text-3xl font-bold">Resume details</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-          Maintain structured CV data for AI matching and future public profile display.
-        </p>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <Card>
-          <CardContent className="grid gap-4 p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h3 className="font-display text-2xl font-bold">Career fields</h3>
-                <p className="mt-1 text-sm text-muted">Fill the resume fields directly, or upload a CV file to extract the fields.</p>
-              </div>
-              <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
-                {resumeSchemaVersion}
-              </span>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Name" value={draft.Name} onChange={(value) => onFieldChange('Name', value)} />
-              <Field label="Email" value={draft.Email} onChange={(value) => onFieldChange('Email', value)} />
-              <Field label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
-              <Field label="Location" value={draft.Location} onChange={(value) => onFieldChange('Location', value)} />
-              <Field label="Role" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
-              <Field label="Industry" value={draft.Industry} onChange={(value) => onFieldChange('Industry', value)} />
-              <Field label="Years experience" value={draft.YearsExperience} onChange={(value) => onFieldChange('YearsExperience', value)} />
-            </div>
-
-            <label className="grid gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Summary</span>
-              <Textarea value={draft.Summary} onChange={(event) => onFieldChange('Summary', event.target.value)} />
-            </label>
-            <Field label="Skills" value={draft.Skills} onChange={(value) => onFieldChange('Skills', value)} />
-            <label className="grid gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Experience</span>
-              <Textarea className="min-h-36" value={draft.Experience} onChange={(event) => onFieldChange('Experience', event.target.value)} />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Education</span>
-              <Textarea value={draft.Education} onChange={(event) => onFieldChange('Education', event.target.value)} />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Full extracted text</span>
-              <Textarea className="min-h-40" value={draft.Text} onChange={(event) => onFieldChange('Text', event.target.value)} />
-            </label>
-
-            <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-bold">Extract CV or resume</p>
-                  <p className="mt-1 text-xs leading-5 text-muted">Supports PDF, DOC, and DOCX up to 10MB. PDF and DOCX are extracted for review before saving.</p>
-                  <p className="mt-1 text-xs leading-5 text-muted">For best results, attach DOCX, PDF, or another readable document instead of an image, which cannot be read here.</p>
-                </div>
-                <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
-                  <FileText className="h-4 w-4" />
-                  Attach file
-                  <input
-                    className="sr-only"
-                    type="file"
-                    accept={resumeFileAccept}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0]
-                      if (file) onResumeFile(file)
-                      event.target.value = ''
-                    }}
-                  />
-                </label>
-              </div>
-              {attachedFile ? (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-white px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{attachedFile.name}</p>
-                    <p className="text-xs text-muted">{formatFileSize(attachedFile.size)} ready to upload</p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={onClearAttachedFile}>
-                    Remove
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs leading-5 text-muted">
-                If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
-              </p>
-              <Button disabled={!canImport || isImporting} onClick={onImport}>
-                <FileJson className="h-4 w-4" />
-                {isImporting ? 'Saving...' : attachedFile ? 'Upload and save' : 'Save resume'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <ResumePreviewCard
-          resume={resume}
-          data={draft}
-          isLoading={isLoading}
-          isPredicting={isPredicting}
-          onPredictSeniority={onPredictSeniority}
-        />
-      </div>
-    </div>
-  )
-}
-
-function ResumePreviewCard({
-  resume,
-  data,
-  isLoading,
-  isPredicting,
-  onPredictSeniority,
-}: {
-  resume: UserResume | null
-  data: ResumeDraft
-  isLoading: boolean
-  isPredicting: boolean
-  onPredictSeniority: () => void
-}) {
-  const skills = resumeSkills(data?.Skills)
-  const confidence =
-    resume?.predictedSeniorityConfidence != null
-      ? Math.round(resume.predictedSeniorityConfidence * 100)
-      : null
-
-  return (
-    <Card>
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h3 className="font-display text-2xl font-bold">Preview</h3>
-            <p className="mt-1 text-sm text-muted">{resume?.updatedAt ? `Last imported ${formatSettingsDate(resume.updatedAt)}` : 'Resume data preview'}</p>
-          </div>
-          {resume ? <CheckCircle2 className="h-5 w-5 text-primary" /> : null}
-        </div>
-
-        <div className="mt-4 rounded-lg border border-border bg-surface-muted p-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">AI seniority</p>
-              <h4 className="mt-1 font-display text-xl font-bold">
-                {resume?.predictedSeniority ?? 'Not evaluated yet'}
-              </h4>
-              <p className="mt-1 text-xs leading-5 text-muted">
-                {resume?.predictedSeniorityAt
-                  ? `Evaluated ${formatSettingsDate(resume.predictedSeniorityAt)}${confidence != null ? ` with ${confidence}% confidence` : ''}.`
-                  : 'Save your resume, then run AI evaluation when you need it.'}
-              </p>
-            </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              disabled={!resume || isPredicting}
-              onClick={onPredictSeniority}
-            >
-              <Sparkles className="h-4 w-4" />
-              {isPredicting ? 'Evaluating...' : resume?.predictedSeniority ? 'Run again' : 'Predict'}
-            </Button>
-          </div>
-        </div>
-
-        {isLoading ? (
-          <div className="mt-5 text-sm text-muted">Loading resume...</div>
-        ) : hasResumeDraftInput(data) ? (
-          <div className="mt-5 grid gap-4">
-            <div>
-              <h4 className="mt-1 font-display text-2xl font-bold">{data.Name ?? 'Unnamed resume'}</h4>
-            </div>
-            <div className="grid gap-2 text-sm text-muted">
-              <ResumeMeta label="Email" value={data.Email} />
-              <ResumeMeta label="Phone" value={data.Phone} />
-              <ResumeMeta label="Location" value={data.Location} />
-              <ResumeMeta label="Role" value={data.Role} />
-              <ResumeMeta label="Industry" value={data.Industry} />
-              <ResumeMeta label="Years experience" value={data.YearsExperience} />
-            </div>
-            {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
-            {skills.length ? (
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Skills</p>
-                <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => (
-                    <span key={skill} className="rounded bg-accent/30 px-2 py-1 text-xs font-semibold text-foreground">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            <ResumeTextBlock title="Experience" value={data.Experience} />
-            <ResumeTextBlock title="Education" value={data.Education} />
-          </div>
-        ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-border bg-surface-muted p-4 text-sm leading-6 text-muted">
-            Fill the resume fields or extract a CV file to preview the data before saving.
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function ResumeMeta({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null
-  return (
-    <div className="flex justify-between gap-4">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-      <span className="min-w-0 truncate text-right font-medium text-foreground">{value}</span>
-    </div>
-  )
-}
-
-function ResumeTextBlock({ title, value }: { title: string; value?: string | null }) {
-  if (!value) return null
-  return (
-    <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
-      <p className="line-clamp-4 text-sm leading-6 text-muted">{value}</p>
-    </div>
-  )
-}
-
 function SettingsPlaceholder({ section }: { section: SettingSection }) {
   const current = settingSections.find((item) => item.id === section)
 
@@ -808,21 +551,6 @@ function SettingsPlaceholder({ section }: { section: SettingSection }) {
       </CardContent>
     </Card>
   )
-}
-
-function useUploadMutation(
-  mutationFn: (file: File) => Promise<{ content?: UserProfile }>,
-  successMessage: string,
-  refreshProfile: (next?: UserProfile) => void
-) {
-  return useMutation({
-    mutationFn,
-    onSuccess: (response) => {
-      refreshProfile(response.content)
-      toast.success(successMessage)
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Upload failed')),
-  })
 }
 
 function EditorSection({
@@ -928,32 +656,4 @@ function IconButton({ label, onClick }: { label: string; onClick: () => void }) 
       <Trash2 className="h-4 w-4" />
     </Button>
   )
-}
-
-function updateList<T>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number, patch: Partial<T>) {
-  setter((items) => items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)))
-}
-
-function removeListItem<T>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number) {
-  setter((items) => items.filter((_, itemIndex) => itemIndex !== index))
-}
-
-function cleanObject<T extends Record<string, unknown>>(value: T): T {
-  return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== '' && entry !== undefined && entry !== null)) as T
-}
-
-function toDateInput(value?: string | null) {
-  return value ? value.slice(0, 10) : ''
-}
-
-function formatSettingsDate(value: string) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
-}
-
-function formatFileSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }

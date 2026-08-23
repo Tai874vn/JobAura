@@ -20,14 +20,10 @@ import {
   Mail,
   MapPin,
   Phone,
-  Plus,
-  Save,
   ShieldCheck,
   Sparkles,
   Star,
-  Trash2,
   Upload,
-  X,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -35,86 +31,41 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import type { Job, UpdateProfile, User, UserProfile, UserResume } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent, CardHeader, Input, Textarea } from '@/shared/ui'
-import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
+import { setCachedSession } from '@/shared/api/session-cache'
+import type { Job, UpdateProfile, UserProfile, UserResume } from '@/shared/schemas'
+import { Badge, Button, ButtonLink, Card, CardContent, CardHeader } from '@/shared/ui'
 import { currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import { useAuthStore } from '@/shared/stores/auth-store'
+import { useSession } from '@/features/auth/use-session'
 import {
   hasResumeDraftInput,
   resumeDraftFromData,
   resumeDraftToImportPayload,
-  resumeFileAccept,
   resumeSkills,
   type ResumeDraft,
-  type ResumeFieldKey,
 } from '@/features/users/resume'
 import { ConnectionActions } from '@/features/connections/connect-button'
-
-type ProfileSkill = {
-  id?: number
-  name: string
-  level?: string | null
-  sortOrder?: number | null
-}
-
-type Certification = {
-  id?: number
-  name: string
-  issuer?: string | null
-  issuedAt?: string | null
-  expiresAt?: string | null
-  credentialUrl?: string | null
-  credentialId?: string | null
-  sortOrder?: number | null
-}
-
-type PortfolioItem = {
-  id?: number
-  title: string
-  description?: string | null
-  image?: string | null
-  url?: string | null
-  sortOrder?: number | null
-}
-
-type SkillDraft = Omit<ProfileSkill, 'id'>
-type CertificationDraft = Omit<Certification, 'id'>
-type ProfileEditPanel = 'profile' | 'skills' | 'certifications' | 'resume' | null
-
-type MarketplaceProfile = User & {
-  headline?: string | null
-  bio?: string | null
-  location?: string | null
-  website?: string | null
-  cover?: string | null
-  coverImage?: string | null
-  skills?: ProfileSkill[] | null
-  profileSkills?: ProfileSkill[] | null
-  certifications?: Certification[] | null
-  profileCertifications?: Certification[] | null
-  portfolio?: PortfolioItem[] | null
-  portfolioItems?: PortfolioItem[] | null
-}
-
-const emptySkill: SkillDraft = { name: '', level: '', sortOrder: 0 }
-const emptyCertification: CertificationDraft = {
-  name: '',
-  issuer: '',
-  issuedAt: '',
-  expiresAt: '',
-  credentialUrl: '',
-  credentialId: '',
-  sortOrder: 0,
-}
+import { cleanObject, toDateInput } from './profile-form-utils'
+import { useProfileUpload } from './use-profile-upload'
+import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer, ResumeSnippet } from './profile/profile-editor'
+import {
+  formatDate,
+  formatFullDate,
+  getProfileCertifications,
+  getProfileSkills,
+  humanize,
+  sortByOrder,
+  type CertificationDraft,
+  type MarketplaceProfile,
+  type PortfolioItem,
+  type ProfileEditPanel,
+  type SkillDraft,
+} from './profile/model'
 
 export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; posts?: Job[] }) {
   const queryClient = useQueryClient()
   const router = useRouter()
-  const authUser = useAuthStore((state) => state.user)
-  const hasHydrated = useAuthStore((state) => state.hasHydrated)
-  const setUser = useAuthStore((state) => state.setUser)
-  const isOwner = Boolean(hasHydrated && authUser?.id === user.id)
+  const { user: authUser, isLoading: isSessionLoading } = useSession()
+  const isOwner = Boolean(!isSessionLoading && authUser?.id === user.id)
   const profile: MarketplaceProfile | UserProfile = (isOwner ? authUser : null) ?? user
   const skills = useMemo(() => getProfileSkills(profile), [profile])
   const certifications = useMemo(() => getProfileCertifications(profile), [profile])
@@ -176,7 +127,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   function refreshProfile(next?: UserProfile) {
     if (next) {
       queryClient.setQueryData(queryKeys.me, { content: next })
-      setUser(next)
+      setCachedSession(next, queryClient)
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
     router.refresh()
@@ -216,8 +167,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to save certifications')),
   })
 
-  const uploadAvatar = useUploadMutation(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
-  const uploadCover = useUploadMutation(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
+  const uploadAvatar = useProfileUpload(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
+  const uploadCover = useProfileUpload(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
   const saveResume = useMutation({
     mutationFn: async () => {
       if (!hasResumeDraftInput(currentResumeDraft)) throw new Error('Fill at least one resume field before saving.')
@@ -636,308 +587,6 @@ function ResumeShowcase({
   )
 }
 
-function ProfileEditDrawer({
-  activePanel,
-  profile,
-  skills,
-  certifications,
-  resume,
-  resumeDraft,
-  attachedResumeFile,
-  isSaving,
-  onClose,
-  onProfileChange,
-  onSkillsChange,
-  onCertificationsChange,
-  onResumeFieldChange,
-  onResumeFileChange,
-  onResumeFileClear,
-  onSaveProfile,
-  onSaveSkills,
-  onSaveCertifications,
-  onSaveResume,
-}: {
-  activePanel: ProfileEditPanel
-  profile: UpdateProfile
-  skills: SkillDraft[]
-  certifications: CertificationDraft[]
-  resume: UserResume | null
-  resumeDraft: ResumeDraft
-  attachedResumeFile: File | null
-  isSaving: boolean
-  onClose: () => void
-  onProfileChange: (patch: UpdateProfile) => void
-  onSkillsChange: React.Dispatch<React.SetStateAction<SkillDraft[]>>
-  onCertificationsChange: React.Dispatch<React.SetStateAction<CertificationDraft[]>>
-  onResumeFieldChange: (field: ResumeFieldKey, value: string) => void
-  onResumeFileChange: (file: File) => void
-  onResumeFileClear: () => void
-  onSaveProfile: () => void
-  onSaveSkills: () => void
-  onSaveCertifications: () => void
-  onSaveResume: () => void
-}) {
-  if (!activePanel) return null
-
-  const titles: Record<Exclude<ProfileEditPanel, null>, string> = {
-    profile: 'Edit profile',
-    skills: 'Edit skills',
-    certifications: 'Edit certifications',
-    resume: 'Edit CV / resume',
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/24 p-3 sm:p-4" role="dialog" aria-modal="true">
-      <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
-        <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Profile editor</p>
-            <h2 className="font-display text-2xl font-bold">{titles[activePanel]}</h2>
-          </div>
-          <Button variant="ghost" size="icon" aria-label="Close editor" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto p-5">
-          {activePanel === 'profile' ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <EditField label="Name" value={profile.name} onChange={(value) => onProfileChange({ name: value })} />
-              <EditField label="Phone" value={profile.phone} onChange={(value) => onProfileChange({ phone: value })} />
-              <EditField label="Birthday" type="date" value={profile.birthDay} onChange={(value) => onProfileChange({ birthDay: value })} />
-              <EditField label="Gender" value={profile.gender} onChange={(value) => onProfileChange({ gender: value })} />
-              <EditField className="md:col-span-2" label="Headline" value={profile.headline} onChange={(value) => onProfileChange({ headline: value })} />
-              <EditField label="Location" value={profile.location} onChange={(value) => onProfileChange({ location: value })} />
-              <EditField label="Website" value={profile.website} onChange={(value) => onProfileChange({ website: value })} />
-              <label className="grid gap-1 md:col-span-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Bio</span>
-                <Textarea value={profile.bio ?? ''} onChange={(event) => onProfileChange({ bio: event.target.value })} />
-              </label>
-            </div>
-          ) : null}
-
-          {activePanel === 'skills' ? (
-            <EditListShell onAdd={() => onSkillsChange((items) => [...items, { ...emptySkill, sortOrder: items.length }])}>
-              {skills.map((skill, index) => (
-                <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
-                  <Input value={skill.name} placeholder="React" onChange={(event) => updateList(onSkillsChange, index, { name: event.target.value })} />
-                  <Input value={skill.level ?? ''} placeholder="advanced" onChange={(event) => updateList(onSkillsChange, index, { level: event.target.value })} />
-                  <IconButton label="Remove skill" onClick={() => removeListItem(onSkillsChange, index)} />
-                </div>
-              ))}
-            </EditListShell>
-          ) : null}
-
-          {activePanel === 'certifications' ? (
-            <EditListShell onAdd={() => onCertificationsChange((items) => [...items, { ...emptyCertification, sortOrder: items.length }])}>
-              {certifications.map((cert, index) => (
-                <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-2">
-                  <Input value={cert.name} placeholder="Certification name" onChange={(event) => updateList(onCertificationsChange, index, { name: event.target.value })} />
-                  <Input value={cert.issuer ?? ''} placeholder="Issuer" onChange={(event) => updateList(onCertificationsChange, index, { issuer: event.target.value })} />
-                  <Input type="date" value={cert.issuedAt ?? ''} onChange={(event) => updateList(onCertificationsChange, index, { issuedAt: event.target.value })} />
-                  <Input type="date" value={cert.expiresAt ?? ''} onChange={(event) => updateList(onCertificationsChange, index, { expiresAt: event.target.value })} />
-                  <Input value={cert.credentialUrl ?? ''} placeholder="Credential URL" onChange={(event) => updateList(onCertificationsChange, index, { credentialUrl: event.target.value })} />
-                  <div className="flex gap-2">
-                    <Input value={cert.credentialId ?? ''} placeholder="Credential ID" onChange={(event) => updateList(onCertificationsChange, index, { credentialId: event.target.value })} />
-                    <IconButton label="Remove certification" onClick={() => removeListItem(onCertificationsChange, index)} />
-                  </div>
-                </div>
-              ))}
-            </EditListShell>
-          ) : null}
-
-          {activePanel === 'resume' ? (
-            <div className="grid gap-4">
-              <div className="rounded-lg border border-border bg-surface-muted p-4">
-                <p className="text-sm font-bold">{resume?.updatedAt ? `Last saved ${formatFullDate(resume.updatedAt)}` : 'Add structured CV data'}</p>
-                <p className="mt-1 text-xs leading-5 text-muted">These fields appear on your profile and support matching workflows.</p>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <EditField label="Name" value={resumeDraft.Name} onChange={(value) => onResumeFieldChange('Name', value)} />
-                <EditField label="Email" value={resumeDraft.Email} onChange={(value) => onResumeFieldChange('Email', value)} />
-                <EditField label="Phone" value={resumeDraft.Phone} onChange={(value) => onResumeFieldChange('Phone', value)} />
-                <EditField label="Location" value={resumeDraft.Location} onChange={(value) => onResumeFieldChange('Location', value)} />
-                <EditField label="Role" value={resumeDraft.Role} onChange={(value) => onResumeFieldChange('Role', value)} />
-                <EditField label="Industry" value={resumeDraft.Industry} onChange={(value) => onResumeFieldChange('Industry', value)} />
-                <EditField label="Years experience" value={resumeDraft.YearsExperience} onChange={(value) => onResumeFieldChange('YearsExperience', value)} />
-              </div>
-              <EditText label="Summary" value={resumeDraft.Summary} onChange={(value) => onResumeFieldChange('Summary', value)} />
-              <EditField label="Skills" value={resumeDraft.Skills} onChange={(value) => onResumeFieldChange('Skills', value)} />
-              <EditText label="Experience" value={resumeDraft.Experience} onChange={(value) => onResumeFieldChange('Experience', value)} />
-              <EditText label="Education" value={resumeDraft.Education} onChange={(value) => onResumeFieldChange('Education', value)} />
-              <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
-                <FileText className="h-4 w-4" />
-                Attach resume file
-                <input
-                  className="sr-only"
-                  type="file"
-                  accept={resumeFileAccept}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0]
-                    if (file) onResumeFileChange(file)
-                    event.target.value = ''
-                  }}
-                />
-              </label>
-              {attachedResumeFile ? (
-                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{attachedResumeFile.name}</p>
-                    <p className="text-xs text-muted">{formatFileSize(attachedResumeFile.size)} ready to upload</p>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={onResumeFileClear}>
-                    Remove
-                  </Button>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border px-5 py-4">
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            disabled={isSaving || (activePanel === 'resume' && !hasResumeDraftInput(resumeDraft))}
-            onClick={
-              activePanel === 'profile'
-                ? onSaveProfile
-                : activePanel === 'skills'
-                  ? onSaveSkills
-                  : activePanel === 'certifications'
-                    ? onSaveCertifications
-                    : onSaveResume
-            }
-          >
-            <Save className="h-4 w-4" />
-            {isSaving ? 'Saving...' : 'Save changes'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function InlineEditButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-3 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition hover:border-primary hover:text-primary"
-      onClick={onClick}
-    >
-      <Edit3 className="h-3.5 w-3.5" />
-      {label}
-    </button>
-  )
-}
-
-function OwnerUploadButton({
-  label,
-  icon,
-  className,
-  disabled,
-  onChange,
-}: {
-  label: string
-  icon: React.ReactNode
-  className?: string
-  disabled?: boolean
-  onChange: (file: File) => void
-}) {
-  return (
-    <label className={`inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-foreground hover:border-primary hover:text-primary ${className ?? ''}`}>
-      {icon}
-      {label}
-      <input
-        className="sr-only"
-        type="file"
-        accept={imageUploadAccept}
-        disabled={disabled}
-        onChange={(event) => {
-          const file = event.target.files?.[0]
-          if (file) {
-            const validation = validateImageFile(file, { label })
-            if (validation.valid) onChange(file)
-            else toast.error(validation.message)
-          }
-          event.target.value = ''
-        }}
-      />
-    </label>
-  )
-}
-
-function ResumeSnippet({ title, value }: { title: string; value?: string | null }) {
-  if (!value) {
-    return (
-      <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4 text-sm text-muted">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
-        Not added yet.
-      </div>
-    )
-  }
-
-  return (
-    <div className="rounded-lg border border-border bg-white p-4">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
-      <p className="line-clamp-5 text-sm leading-6 text-muted">{value}</p>
-    </div>
-  )
-}
-
-function EditField({
-  label,
-  value,
-  onChange,
-  type = 'text',
-  className,
-}: {
-  label: string
-  value?: string | null
-  onChange: (value: string) => void
-  type?: string
-  className?: string
-}) {
-  return (
-    <label className={`grid gap-1 ${className ?? ''}`}>
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-      <Input type={type} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  )
-}
-
-function EditText({ label, value, onChange }: { label: string; value?: string | null; onChange: (value: string) => void }) {
-  return (
-    <label className="grid gap-1">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-      <Textarea value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
-    </label>
-  )
-}
-
-function EditListShell({ children, onAdd }: { children: React.ReactNode; onAdd: () => void }) {
-  return (
-    <div className="grid gap-4">
-      <div className="flex justify-end">
-        <Button variant="secondary" size="sm" onClick={onAdd}>
-          <Plus className="h-4 w-4" />
-          Add
-        </Button>
-      </div>
-      <div className="grid gap-3">{children}</div>
-    </div>
-  )
-}
-
-function IconButton({ label, onClick }: { label: string; onClick: () => void }) {
-  return (
-    <Button variant="ghost" size="icon" aria-label={label} onClick={onClick}>
-      <Trash2 className="h-4 w-4" />
-    </Button>
-  )
-}
-
 function SectionTitle({ title, meta, action }: { title: string; meta?: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -978,86 +627,4 @@ function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
       {text}
     </div>
   )
-}
-
-function useUploadMutation(
-  mutationFn: (file: File) => Promise<{ content?: UserProfile }>,
-  successMessage: string,
-  refreshProfile: (next?: UserProfile) => void
-) {
-  return useMutation({
-    mutationFn,
-    onSuccess: (response) => {
-      refreshProfile(response.content)
-      toast.success(successMessage)
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Upload failed')),
-  })
-}
-
-function updateList<T>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number, patch: Partial<T>) {
-  setter((items) => items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)))
-}
-
-function removeListItem<T>(setter: React.Dispatch<React.SetStateAction<T[]>>, index: number) {
-  setter((items) => items.filter((_, itemIndex) => itemIndex !== index))
-}
-
-function cleanObject<T extends Record<string, unknown>>(value: T): T {
-  return Object.fromEntries(Object.entries(value).filter(([, entry]) => entry !== '' && entry !== undefined && entry !== null)) as T
-}
-
-function toDateInput(value?: string | null) {
-  return value ? value.slice(0, 10) : ''
-}
-
-function getProfileSkills(profile: MarketplaceProfile | UserProfile): ProfileSkill[] {
-  return sortByOrder(profile.profileSkills ?? profile.skills ?? legacySkills(profile.skill))
-}
-
-function getProfileCertifications(profile: MarketplaceProfile | UserProfile): Certification[] {
-  return sortByOrder(profile.profileCertifications ?? profile.certifications ?? legacyCertifications(profile.certification))
-}
-function legacySkills(value?: string | null): ProfileSkill[] {
-  if (!value) return []
-  return value
-    .split(',')
-    .map((name) => name.trim())
-    .filter(Boolean)
-    .map((name, sortOrder) => ({ name, sortOrder }))
-}
-
-function legacyCertifications(value?: string | null): Certification[] {
-  if (!value) return []
-  return value
-    .split(',')
-    .map((name) => name.trim())
-    .filter(Boolean)
-    .map((name, sortOrder) => ({ name, sortOrder }))
-}
-
-function sortByOrder<T extends { sortOrder?: number | null }>(items: T[]) {
-  return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-}
-
-function formatDate(value: string) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' }).format(date)
-}
-
-function formatFullDate(value: string) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
-}
-
-function formatFileSize(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function humanize(value: string) {
-  return value.replace(/[_-]/g, ' ')
 }

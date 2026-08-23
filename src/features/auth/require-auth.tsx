@@ -2,12 +2,9 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { authApi } from '@/shared/api/endpoints'
-import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessRole, type AccountRole } from '@/shared/lib/roles'
 import { Spinner } from '@/shared/ui'
-import { useAuthStore } from '@/shared/stores/auth-store'
+import { useSession } from './use-session'
 
 export function RequireAuth({
   children,
@@ -23,35 +20,14 @@ export function RequireAuth({
   const pathname = usePathname()
   const router = useRouter()
   const hasRedirectedRef = useRef(false)
-  const { user, hasHydrated, setStatus, setUser, clearSession } = useAuthStore()
-
-  const meQuery = useQuery({
-    queryKey: queryKeys.me,
-    queryFn: authApi.me,
-    enabled: hasHydrated,
-    retry: false,
-  })
-
-  const verifiedUser = meQuery.data?.content ?? null
-  const isChecking = !hasHydrated || meQuery.isPending
-  const isStoreSynced = Boolean(verifiedUser && user?.id === verifiedUser.id)
+  const { user, isLoading } = useSession()
   const requiredRoles = admin ? (['admin'] as const) : allowedRoles
-  const hasRequiredRole = canAccessRole(verifiedUser?.role, requiredRoles)
+  const hasRequiredRole = canAccessRole(user?.role, requiredRoles)
 
   useEffect(() => {
-    if (!hasHydrated) return
-    setStatus('loading')
-  }, [hasHydrated, setStatus])
+    if (isLoading || hasRedirectedRef.current) return
 
-  useEffect(() => {
-    if (meQuery.isSuccess) setUser(verifiedUser)
-    if (meQuery.isError) clearSession()
-  }, [clearSession, meQuery.isError, meQuery.isSuccess, setUser, verifiedUser])
-
-  useEffect(() => {
-    if (isChecking || hasRedirectedRef.current) return
-
-    if (!verifiedUser) {
+    if (!user) {
       hasRedirectedRef.current = true
       router.replace(anonymousRedirect ?? `/auth/login?next=${encodeURIComponent(pathname)}`)
       return
@@ -61,9 +37,9 @@ export function RequireAuth({
       hasRedirectedRef.current = true
       router.replace('/')
     }
-  }, [anonymousRedirect, hasRequiredRole, isChecking, pathname, router, verifiedUser])
+  }, [anonymousRedirect, hasRequiredRole, isLoading, pathname, router, user])
 
-  if (isChecking || !verifiedUser || !isStoreSynced || !hasRequiredRole) {
+  if (isLoading || !user || !hasRequiredRole) {
     return (
       <main className="flex min-h-screen items-center justify-center" aria-labelledby="auth-status-title">
         <h1 id="auth-status-title" className="sr-only">Checking access</h1>
