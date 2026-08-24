@@ -15,6 +15,11 @@ import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Skeleton } from '@/shared/ui'
 import { shouldLoadRoomMessages } from './chat-data'
 
+type SendMessageAcknowledgement = {
+  status: 'success' | 'error' | 'rate_limited'
+  message?: ChatMessage | string
+}
+
 export function ChatShell() {
   const { user } = useSession()
   const userId = user?.id
@@ -32,6 +37,7 @@ export function ChatShell() {
   const setOnlineUserIds = useChatStore((state) => state.setOnlineUserIds)
   const socketRef = useRef<Socket | null>(null)
   const [draft, setDraft] = useState('')
+  const [isSending, setIsSending] = useState(false)
   const [readReceipts, setReadReceipts] = useState<Record<number, number[]>>({})
 
   const roomsQuery = useQuery({
@@ -119,14 +125,29 @@ export function ChatShell() {
 
   function sendMessage(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!draft.trim() || !activeRoomId) return
+    const content = draft.trim()
+    if (!content || !activeRoomId || isSending) return
     const socket = socketRef.current
     if (!socket?.connected) {
       toast.error('Chat is reconnecting. Your message was not sent.')
       return
     }
-    socket.emit('send-message', { roomId: activeRoomId, content: draft.trim() })
-    setDraft('')
+    setIsSending(true)
+    socket.timeout(10_000).emit(
+      'send-message',
+      { roomId: activeRoomId, content },
+      (error: Error | null, acknowledgement?: SendMessageAcknowledgement) => {
+        setIsSending(false)
+        if (error || acknowledgement?.status !== 'success') {
+          const message = typeof acknowledgement?.message === 'string'
+            ? acknowledgement.message
+            : 'Your message was not sent. Please try again.'
+          toast.error(message)
+          return
+        }
+        setDraft((current) => current.trim() === content ? '' : current)
+      }
+    )
   }
 
   const title = useMemo(
@@ -241,9 +262,9 @@ export function ChatShell() {
                   setDraft(event.target.value)
                   if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
                 }}
-                disabled={!activeRoomId}
+                disabled={!activeRoomId || isSending}
               />
-              <Button size="icon" disabled={!activeRoomId || !draft.trim()}>
+              <Button size="icon" disabled={!activeRoomId || !draft.trim() || isSending}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>

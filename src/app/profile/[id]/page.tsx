@@ -89,7 +89,6 @@ function personJsonLd(user: UserProfile, posts: Job[]) {
     image: absoluteAssetUrl(user.avatar),
     jobTitle: user.headline,
     description: seoDescription(user.bio || user.headline, `${user.name}'s public JobAura profile.`, 500),
-    email: user.email,
     address: user.location
       ? {
           '@type': 'PostalAddress',

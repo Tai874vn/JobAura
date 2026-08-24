@@ -61,6 +61,7 @@ export const userProfileSchema = userSchema.extend({
     .nullable(),
   portfolio: z.array(profilePortfolioItemSchema).optional().nullable(),
   portfolioItems: z.array(profilePortfolioItemSchema).optional().nullable(),
+  candidateDiscoverable: z.boolean().optional(),
 });
 
 export const resumeDataSchema = z
@@ -106,6 +107,7 @@ export const userResumeSchema = importResumeSchema.extend({
 });
 
 export const updateProfileSchema = z.object({
+  candidateDiscoverable: z.boolean().optional(),
   name: z
     .string()
     .trim()
@@ -165,7 +167,7 @@ export const signUpSchema = z.object({
   email: z.string().trim().pipe(z.email("Enter a valid email").toLowerCase()),
   password: z
     .string()
-    .min(6, "Password must be at least 6 characters")
+    .min(10, "Password must be at least 10 characters")
     .max(128, "Password must be 128 characters or fewer"),
   phone: z
     .string()

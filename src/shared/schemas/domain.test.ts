@@ -79,4 +79,15 @@ describe('domain schemas', () => {
       })
     ).toThrow()
   })
+
+  it('rejects new account passwords shorter than ten characters', () => {
+    expect(() =>
+      signUpSchema.parse({
+        name: 'New member',
+        email: 'member@example.com',
+        password: 'short123',
+        role: 'user',
+      })
+    ).toThrow()
+  })
 })

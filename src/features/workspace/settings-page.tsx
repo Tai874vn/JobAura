@@ -84,6 +84,7 @@ export function SettingsPage() {
         bio: profile.bio ?? '',
         location: profile.location ?? '',
         website: profile.website ?? '',
+        candidateDiscoverable: profile.candidateDiscoverable ?? false,
       })
       setSkills(getProfileSkills(profile).map(({ name, level, sortOrder }, index) => ({ name, level: level ?? '', sortOrder: sortOrder ?? index })))
       setCertifications(
@@ -332,6 +333,27 @@ export function SettingsPage() {
                         <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Bio</span>
                         <Textarea value={basic.bio ?? ''} onChange={(event) => setBasic((state) => ({ ...state, bio: event.target.value }))} />
                       </label>
+                      {profile.role === 'user' ? (
+                        <label className="flex items-start gap-3 rounded-lg border border-border bg-surface-muted p-4 md:col-span-2">
+                          <input
+                            type="checkbox"
+                            className="mt-1 h-4 w-4 accent-primary"
+                            checked={basic.candidateDiscoverable ?? false}
+                            onChange={(event) =>
+                              setBasic((state) => ({
+                                ...state,
+                                candidateDiscoverable: event.target.checked,
+                              }))
+                            }
+                          />
+                          <span>
+                            <span className="block text-sm font-semibold">Visible to recruiters</span>
+                            <span className="mt-1 block text-xs leading-5 text-muted">
+                              Allow recruiters to find this completed profile in candidate search and AI matching.
+                            </span>
+                          </span>
+                        </label>
+                      ) : null}
                     </CardContent>
                   </Card>
 
