@@ -262,11 +262,28 @@ Verification:
 - Focused ESLint and the full TypeScript check passed for the affected modules.
 - A final search found no placeholder links, empty click handlers, debug statements, or unfinished TODO/FIXME markers in application source.
 
-## Commit record
+### 19. Privacy, consent, dependency, and chat-delivery follow-up
+
+Findings and fixes:
+
+- Public profile structured data exposed the member email address. Email was removed from public JSON-LD metadata.
+- Employee profiles had no explicit control for recruiter discovery. A candidate-visibility preference is now part of the validated profile model and editable settings.
+- New-account passwords accepted six characters. The frontend schema now requires at least ten characters, with regression coverage; the backend must enforce the same or stronger policy.
+- Chat cleared a draft immediately after emitting a message even when delivery failed. Sends now wait for a Socket.IO acknowledgement, keep the draft after failures/timeouts, and prevent duplicate submissions while pending.
+- PDF.js and vulnerable transitive dependency paths were updated or pinned through package overrides.
+
+Verification:
+
+- The dependency tree resolved successfully.
+- ESLint and TypeScript passed.
+- Vitest passed 27 files and 95 tests.
+- The production build generated all 31 routes successfully.
+
+## Commit records
 
 - Owner and author: **Tai874vn only** (no co-author attribution).
-- Commit: `6c86b37`
-- Title: `refactor: harden frontend architecture and user flows`
+- Architecture review: `6c86b37` — `refactor: harden frontend architecture and user flows`
+- Security/reliability follow-up: `98ecc19` — `feat: add candidate visibility and reliable chat sending`
 - Scope: frontend security, API reliability, role/navigation consistency, failure feedback, module ownership, regression coverage, and production runtime hardening.
 - Evidence: this review log and the final validation results below.
 
@@ -274,10 +291,10 @@ Verification:
 
 - ESLint: passed with no warnings.
 - TypeScript: passed.
-- Vitest: 27 files and 94 tests passed.
+- Vitest: 27 files and 95 tests passed.
 - Shared-code coverage: 57.95% statements, 48.37% branches, 46.18% functions, and 58.13% lines.
 - Next.js production build: passed; all 31 static/dynamic application routes were generated successfully.
-- Repomix: the final post-fix snapshot packed 217 files and 164,357 tokens; no suspicious files were reported.
+- Repomix: the final post-fix snapshot packed 217 files and 165,108 tokens; no suspicious files were reported.
 - Secret-pattern review: no embedded credentials or private keys were found.
 
 ## Remaining non-blocking work
