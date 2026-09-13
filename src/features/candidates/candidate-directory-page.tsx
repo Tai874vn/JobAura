@@ -11,6 +11,7 @@ import {
   FolderOpen,
   MapPin,
   Search,
+  SearchX,
   SlidersHorizontal,
   Sparkles,
   Star,
@@ -28,7 +29,7 @@ import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn } from '@/shared/lib/utils'
 import type { CandidateProfile } from '@/shared/schemas'
-import { Button, ButtonLink, Card, CardContent, CardSkeleton, Input, Spinner } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, Input, PageHeader, Spinner } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -106,32 +107,27 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
 
   return (
     <div className="container-page py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-primary">
-            <Users className="h-4 w-4" />
-            Employer workspace
-          </div>
-          <h1 className="font-display text-4xl font-bold">Find candidates</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            Search public worker profiles, review fit signals, and start hiring conversations.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <ButtonLink href="/recommendations/candidates">
-            <Sparkles className="h-4 w-4" />
-            AI matching
-          </ButtonLink>
-          <ButtonLink href="/connections" variant="secondary">
-            <Users className="h-4 w-4" />
-            Connections
-          </ButtonLink>
-          <ButtonLink href="/settings">
-            <SlidersHorizontal className="h-4 w-4" />
-            Hiring profile
-          </ButtonLink>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow={<><Users className="h-4 w-4" /> Employer workspace</>}
+        title="Find candidates"
+        description="Search public worker profiles, review fit signals, and start hiring conversations."
+        actions={
+          <>
+            <ButtonLink href="/recommendations/candidates">
+              <Sparkles className="h-4 w-4" />
+              AI matching
+            </ButtonLink>
+            <ButtonLink href="/connections" variant="secondary">
+              <Users className="h-4 w-4" />
+              Connections
+            </ButtonLink>
+            <ButtonLink href="/settings" variant="secondary">
+              <SlidersHorizontal className="h-4 w-4" />
+              Hiring profile
+            </ButtonLink>
+          </>
+        }
+      />
 
       <Card className="mt-6">
         <CardContent className="grid gap-4 p-4">
@@ -187,26 +183,18 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
               {candidates.map((candidate) => <CandidateCard key={candidate.id} candidate={candidate} />)}
             </div>
           ) : query.isError ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-                <Search className="h-8 w-8 text-primary" />
-                <h2 className="mt-3 font-display text-2xl font-bold">Unable to load candidates</h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-                  Refresh the page or try again after the backend is available.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={<SearchX />}
+              title="Unable to load candidates"
+              description="Refresh the page or try again after the backend is available."
+            />
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-                <Search className="h-8 w-8 text-primary" />
-                <h2 className="mt-3 font-display text-2xl font-bold">No matching candidates</h2>
-                <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-                  Adjust the filters or clear them to return to the full candidate directory.
-                </p>
-                <Button className="mt-4" variant="secondary" onClick={clearFilters}>Clear filters</Button>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={<SearchX />}
+              title="No matching candidates"
+              description="Adjust the filters or clear them to return to the full candidate directory."
+              action={<Button variant="secondary" onClick={clearFilters}>Clear filters</Button>}
+            />
           )}
           <div className="mt-5 flex items-center justify-between gap-3">
             <Button type="button" variant="secondary" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => Math.max(1, current - 1))}>
@@ -273,7 +261,7 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
 
         <div className="mt-4 flex flex-wrap gap-2">
           {skills.slice(0, 4).map((skill) => (
-            <span key={skill} className="rounded bg-accent/30 px-2 py-1 text-xs font-bold text-foreground">{skill}</span>
+            <Badge key={skill} tone="accent">{skill}</Badge>
           ))}
         </div>
 

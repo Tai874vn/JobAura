@@ -269,7 +269,7 @@ export function HiringPostSelectionPanel({
                   "rounded-lg border p-4 text-left transition hover:border-primary",
                   selectedHiringPostId === post.id
                     ? "border-primary bg-primary/5"
-                    : "border-border bg-white",
+                    : "border-border bg-surface",
                 )}
               >
                 <button
@@ -393,7 +393,7 @@ function OptionSelect({
     <label className="grid gap-1">
       <span className="text-xs font-bold uppercase text-muted">{label}</span>
       <select
-        className="h-10 rounded-lg border border-border bg-white px-3 text-sm font-semibold"
+        className="h-10 rounded-lg border border-border bg-surface px-3 text-sm font-semibold"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
       >

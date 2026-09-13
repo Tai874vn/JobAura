@@ -88,7 +88,7 @@ export function HiringPostCard({
             <label className="grid gap-2">
               <span className="text-xs font-bold uppercase text-muted">Short message</span>
               <Textarea
-                className="min-h-28 bg-white"
+                className="min-h-28 bg-surface"
                 value={coverLetter}
                 onChange={(event) => onCoverLetterChange(event.target.value)}
                 placeholder="Write a short note about why you are a good fit."

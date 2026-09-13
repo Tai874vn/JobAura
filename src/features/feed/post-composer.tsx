@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { ImagePlus, Send, X } from 'lucide-react'
+import Link from 'next/link'
+import { BriefcaseBusiness, ImagePlus, Send, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { UserProfile } from '@/shared/schemas'
@@ -85,13 +86,25 @@ export function PostComposer({
           <button
             type="button"
             onClick={openModal}
-            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-left text-sm text-muted hover:border-primary hover:bg-white"
+            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-left text-sm font-semibold text-muted hover:border-primary hover:bg-surface hover:text-foreground"
           >
             Start a post
           </button>
-          <Button type="button" variant="ghost" size="icon" onClick={openModal} title="Add a photo">
-            <ImagePlus className="h-5 w-5 text-primary" />
-          </Button>
+        </div>
+        <div className="mt-2 flex gap-1 border-t border-border pt-2">
+          <button
+            type="button"
+            onClick={openModal}
+            className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted transition hover:bg-surface-muted hover:text-primary"
+          >
+            <ImagePlus className="h-4 w-4 text-primary" /> Photo
+          </button>
+          <Link
+            href="/jobs/new"
+            className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted transition hover:bg-surface-muted hover:text-primary"
+          >
+            <BriefcaseBusiness className="h-4 w-4 text-primary" /> Post a service
+          </Link>
         </div>
       </Card>
 
@@ -101,7 +114,7 @@ export function PostComposer({
         onCancel={(event) => {
           if (submitting) event.preventDefault()
         }}
-        className="m-auto w-[min(640px,calc(100%-32px))] rounded-lg border border-border bg-white p-0 text-foreground shadow-2xl backdrop:bg-black/45"
+        className="m-auto w-[min(640px,calc(100%-32px))] rounded-lg border border-border bg-surface p-0 text-foreground shadow-2xl backdrop:bg-black/45"
       >
         <form onSubmit={submit}>
           <header className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -139,7 +152,7 @@ export function PostComposer({
                   type="button"
                   variant="secondary"
                   size="icon"
-                  className="absolute right-2 top-2 bg-white/95"
+                  className="absolute right-2 top-2 bg-surface/95"
                   onClick={() => setImageSelection(undefined)}
                   title="Remove image"
                 >

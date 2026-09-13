@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { BriefcaseBusiness, MessageSquare, ShoppingBag, Users } from 'lucide-react'
 import { adminApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { Card, CardContent, Skeleton } from '@/shared/ui'
+import { Card, CardContent, PageHeader, Skeleton } from '@/shared/ui'
 import { AdminResourcePage } from './admin-resource-page'
 
 export function AdminDashboard() {
@@ -19,10 +19,11 @@ export function AdminDashboard() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="font-display text-4xl font-bold">Admin workbench</h1>
-        <p className="text-sm text-muted">Monitor marketplace activity and manage JobAura records.</p>
-      </div>
+      <PageHeader
+        className="mb-6"
+        title="Admin workbench"
+        description="Monitor marketplace activity and manage JobAura records."
+      />
       <div className="mb-6 grid gap-4 md:grid-cols-4">
         {metrics.map(({ label, value, loading, icon: Icon }) => (
           <Card key={label}>

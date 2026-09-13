@@ -12,7 +12,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { createJobSchema, type CreateJob } from '@/shared/schemas'
-import { Button, Card, CardContent, Input, Textarea } from '@/shared/ui'
+import { Button, Card, CardContent, Input, PageHeader, Select, Textarea } from '@/shared/ui'
 
 type CreateJobInput = z.input<typeof createJobSchema>
 
@@ -65,8 +65,7 @@ export function JobForm() {
 
   return (
     <div className="container-page py-8">
-      <h1 className="font-display text-4xl font-bold">Post a service</h1>
-      <p className="mt-1 text-sm text-muted">Create a clear, searchable offer for buyers.</p>
+      <PageHeader title="Post a service" description="Create a clear, searchable offer for buyers." />
       <Card className="mt-6 max-w-3xl">
         <CardContent>
           <form className="grid gap-4" onSubmit={form.handleSubmit((values) => mutation.mutate(createJobSchema.parse(values)))}>
@@ -82,10 +81,10 @@ export function JobForm() {
                 error={form.formState.errors.maChiTietLoai?.message}
                 hint={detailsUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">Categories could not be loaded.<Button type="button" size="sm" variant="secondary" onClick={() => detailsQuery.refetch()}>Retry</Button></span> : undefined}
               >
-                <select className="h-10 w-full rounded-lg border border-border bg-white px-3 text-sm" disabled={detailsQuery.isPending || detailsUnavailable} {...form.register('maChiTietLoai')}>
+                <Select disabled={detailsQuery.isPending || detailsUnavailable} {...form.register('maChiTietLoai')}>
                   <option value={0}>{detailsQuery.isPending ? 'Loading details...' : detailsUnavailable ? 'Categories unavailable' : 'Choose detail'}</option>
                   {details.map((detail) => <option key={detail.id} value={detail.id}>{detail.tenChiTiet}</option>)}
-                </select>
+                </Select>
               </Field>
             </div>
             <Field label="Short description">

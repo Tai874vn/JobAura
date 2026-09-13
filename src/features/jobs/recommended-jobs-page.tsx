@@ -9,7 +9,7 @@ import { recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { RecommendationContent, RecommendedJob } from '@/shared/schemas'
-import { Button, Card, CardContent, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/ui'
 import { JobCard } from './job-card'
 import { MatchBadge } from './recommendation-ui'
 
@@ -68,22 +68,15 @@ export function RecommendedJobsPage() {
 
   return (
     <div className="container-page py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Link href="/jobs" className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary">
-            <ArrowLeft className="h-4 w-4" />
-            Back to explore
-          </Link>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-primary">
-            <Sparkles className="h-4 w-4" />
-            AI recommendations
-          </div>
-          <h1 className="font-display text-4xl font-bold">Recommended jobs</h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            Review your AI usage first. Matching starts only after you proceed.
-          </p>
-        </div>
-      </div>
+      <Link href="/jobs" className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary">
+        <ArrowLeft className="h-4 w-4" />
+        Back to explore
+      </Link>
+      <PageHeader
+        eyebrow={<><Sparkles className="h-4 w-4" /> AI recommendations</>}
+        title="Recommended jobs"
+        description="Review your AI usage first. Matching starts only after you proceed."
+      />
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="grid gap-5">
@@ -129,21 +122,16 @@ export function RecommendedJobsPage() {
                   ))}
                 </div>
               ) : (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-                    <Sparkles className="h-8 w-8 text-primary" />
-                    <h2 className="mt-3 font-display text-2xl font-bold">No recommendations yet</h2>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-                      Add resume details and profile skills, then run matching again.
-                    </p>
-                    <Link
-                      href="/settings"
-                      className="mt-4 inline-flex h-10 items-center justify-center rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary focus-visible:ring-2 focus-visible:ring-primary-bright"
-                    >
+                <EmptyState
+                  icon={<Sparkles />}
+                  title="No recommendations yet"
+                  description="Add resume details and profile skills, then run matching again."
+                  action={
+                    <ButtonLink href="/settings" variant="secondary">
                       Update profile
-                    </Link>
-                  </CardContent>
-                </Card>
+                    </ButtonLink>
+                  }
+                />
               ) : null}
             </>
           )}
@@ -178,7 +166,7 @@ function SkillGapTooltip({
 
   return (
     <div
-      className="pointer-events-none fixed z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-white/95 p-3 opacity-100 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+      className="pointer-events-none fixed z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 opacity-100 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-sm"
       style={{ left: x, top: y }}
     >
       <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
@@ -201,7 +189,7 @@ function SkillGapTooltip({
 }
 
 function SkillList({ label, empty, skills, tone }: { label: string; empty: string; skills: string[]; tone: 'matched' | 'missing' }) {
-  const chipClass = tone === 'matched' ? 'bg-primary/10 text-primary' : 'bg-[#fff3bf] text-[#6f4600]'
+  const chipClass = tone === 'matched' ? 'bg-primary/10 text-primary' : 'bg-rating/15 text-[#5c4300]'
 
   return (
     <div>
@@ -262,7 +250,7 @@ function StartRecommendationCard({
         <div className="rounded-lg border border-border bg-surface-muted p-4">
           <p className="text-xs font-bold uppercase text-primary">Available today</p>
           {isLoadingQuota ? (
-            <div className="mt-4 h-10 w-28 animate-pulse rounded bg-white" />
+            <div className="mt-4 h-10 w-28 animate-pulse rounded bg-surface" />
           ) : (
             <p className="mt-2 font-display text-4xl font-bold">{remaining}<span className="text-lg text-muted">/{limit}</span></p>
           )}

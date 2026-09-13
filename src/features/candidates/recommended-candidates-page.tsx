@@ -13,7 +13,7 @@ import type {
   RecommendationContent,
   RecommendedCandidate,
 } from "@/shared/schemas";
-import { Card, CardContent, Spinner } from "@/shared/ui";
+import { Card, CardContent, PageHeader, Spinner } from "@/shared/ui";
 import { CandidateResultsPanel, EmptyResultsCard } from "./recommended-candidates/candidate-results-panel";
 import { hiringPostPageParams } from "./recommended-candidates/constants";
 import { HiringPostSelectionPanel } from "./recommended-candidates/hiring-post-selection-panel";
@@ -152,28 +152,23 @@ export function RecommendedCandidatesPage() {
 
   return (
     <div className="container-page py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <Link
-            href="/candidates"
-            className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to candidate directory
-          </Link>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-primary">
+      <Link
+        href="/candidates"
+        className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to candidate directory
+      </Link>
+      <PageHeader
+        eyebrow={
+          <>
             <Sparkles className="h-4 w-4" />
             Recruiter AI
-          </div>
-          <h1 className="font-display text-4xl font-bold">
-            Recommended candidates
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            Select a recruiter hiring post, review your daily AI usage, then
-            run matching when you are ready.
-          </p>
-        </div>
-      </div>
+          </>
+        }
+        title="Recommended candidates"
+        description="Select a recruiter hiring post, review your daily AI usage, then run matching when you are ready."
+      />
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="grid gap-5">

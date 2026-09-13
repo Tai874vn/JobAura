@@ -4,7 +4,7 @@ import { ConnectionActions } from "@/features/connections/connect-button";
 import { FeedAvatar } from "@/features/feed/feed-avatar";
 import { cn } from "@/shared/lib/utils";
 import type { HiringPost, RecommendedCandidate } from "@/shared/schemas";
-import { Button, ButtonLink, Card, CardContent } from "@/shared/ui";
+import { Button, ButtonLink, Card, CardContent, EmptyState } from "@/shared/ui";
 
 type CandidateResultsPanelProps = {
   candidates: RecommendedCandidate[];
@@ -109,7 +109,7 @@ function CandidateMatchCard({
   return (
     <div
       className={cn(
-        "group/recommendation rounded-lg border bg-white p-4",
+        "group/recommendation rounded-lg border bg-surface p-4",
         isMatch ? "border-primary/35" : "border-border",
       )}
     >
@@ -247,7 +247,7 @@ function SkillEvidenceList({
   const toneClass =
     tone === "matched"
       ? "bg-primary/10 text-primary"
-      : "bg-[#fff3bf] text-[#6f4600]";
+      : "bg-rating/15 text-[#5c4300]";
 
   return (
     <div className="rounded-lg border border-border p-3">
@@ -278,26 +278,15 @@ export function EmptyResultsCard({
   disabled: boolean;
 }) {
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-        <Users className="h-8 w-8 text-primary" />
-        <h2 className="mt-3 font-display text-2xl font-bold">
-          No candidate matches yet
-        </h2>
-        <p className="mt-2 max-w-md text-sm leading-6 text-muted">
-          Try a larger candidate pool, improve the hiring post, or run
-          matching again after more candidate profiles are added.
-        </p>
-        <Button
-          className="mt-4"
-          type="button"
-          variant="secondary"
-          onClick={onRun}
-          disabled={disabled}
-        >
+    <EmptyState
+      icon={<Users />}
+      title="No candidate matches yet"
+      description="Try a larger candidate pool, improve the hiring post, or run matching again after more candidate profiles are added."
+      action={
+        <Button type="button" variant="secondary" onClick={onRun} disabled={disabled}>
           Run again
         </Button>
-      </CardContent>
-    </Card>
+      }
+    />
   );
 }

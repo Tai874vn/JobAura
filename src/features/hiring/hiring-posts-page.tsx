@@ -16,7 +16,7 @@ import { queryKeys } from "@/shared/api/query-keys";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { CreateHiringPost } from "@/shared/schemas";
 import { createHiringPostSchema } from "@/shared/schemas";
-import { Button, ButtonLink, Card, CardContent, Input } from "@/shared/ui";
+import { Button, ButtonLink, Card, CardContent, EmptyState, Input, PageHeader } from "@/shared/ui";
 import {
   CreateHiringPostModal,
   emptyHiringPostDraft,
@@ -145,23 +145,21 @@ export function HiringPostsPage() {
 
   return (
     <div className="container-page py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-primary">
+      <PageHeader
+        eyebrow={
+          <>
             <BriefcaseBusiness className="h-4 w-4" />
             Hiring posts
-          </div>
-          <h1 className="font-display text-4xl font-bold">
-            {canCreateHiringPost ? "Manage recruiter roles" : "Apply to recruiter roles"}
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">
-            {canCreateHiringPost
-              ? "Create hiring posts, review your open roles, and send them to AI candidate matching."
-              : "These are recruiter hiring posts. Explore Services stays for employee service listings; this page is for roles you can apply to."}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {canCreateHiringPost ? (
+          </>
+        }
+        title={canCreateHiringPost ? "Manage recruiter roles" : "Apply to recruiter roles"}
+        description={
+          canCreateHiringPost
+            ? "Create hiring posts, review your open roles, and send them to AI candidate matching."
+            : "These are recruiter hiring posts. Explore Services stays for employee service listings; this page is for roles you can apply to."
+        }
+        actions={
+          canCreateHiringPost ? (
             <>
               <Button type="button" onClick={() => setCreateOpen(true)}>
                 <Plus className="h-4 w-4" />
@@ -174,9 +172,9 @@ export function HiringPostsPage() {
             </>
           ) : (
             <ButtonLink href="/recommendations/jobs" variant="secondary">AI job recommendations</ButtonLink>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {canCreateHiringPost ? (
         <RecruiterHiringPostPanel
@@ -195,13 +193,14 @@ export function HiringPostsPage() {
             onSubmit={submitSearch}
             className="flex flex-col gap-3 md:flex-row md:items-center"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-white px-3">
-              <Search className="h-4 w-4 text-muted" />
+            <div className="relative min-w-0 flex-1">
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" />
               <Input
-                className="border-0 px-0 shadow-none focus-visible:ring-0"
+                className="pl-9"
                 value={draftKeyword}
                 onChange={(event) => setDraftKeyword(event.target.value)}
                 placeholder="Search role, skills, company, or location"
+                aria-label="Search hiring posts"
               />
             </div>
             <Button type="submit">Search</Button>
@@ -234,18 +233,11 @@ export function HiringPostsPage() {
             />
           ))
         ) : (
-          <Card>
-            <CardContent className="flex min-h-48 flex-col items-center justify-center p-8 text-center">
-              <BriefcaseBusiness className="h-8 w-8 text-primary" />
-              <h2 className="mt-3 font-display text-xl font-bold">
-                No hiring posts found
-              </h2>
-              <p className="mt-1 text-sm text-muted">
-                Try a different keyword or check again when recruiters post new
-                roles.
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<BriefcaseBusiness />}
+            title="No hiring posts found"
+            description="Try a different keyword or check again when recruiters post new roles."
+          />
         )}
       </div>
 

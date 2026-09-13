@@ -9,9 +9,9 @@ const labelText: Record<RecommendationLabel, string> = {
 };
 
 const labelClass: Record<RecommendationLabel, string> = {
-  high_match: "border border-primary/20 bg-white text-primary",
-  medium_match: "border border-[#b7791f]/35 bg-white text-[#6f4600]",
-  low_match: "border border-border bg-white text-foreground",
+  high_match: "border border-primary/20 bg-surface text-primary",
+  medium_match: "border border-rating/40 bg-surface text-[#5c4300]",
+  low_match: "border border-border bg-surface text-foreground",
 };
 
 export function formatMatchScore(score: number) {

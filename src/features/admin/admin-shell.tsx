@@ -4,7 +4,8 @@ import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Settings, 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from '@/features/auth/use-session'
-import { cn, initials } from '@/shared/lib/utils'
+import { cn } from '@/shared/lib/utils'
+import { Avatar } from '@/shared/ui'
 
 const nav = [
   { href: '/admin', label: 'Dashboard', icon: Home },
@@ -23,7 +24,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background lg:grid lg:grid-cols-[260px_1fr]">
-      <aside className="border-r border-border bg-white">
+      <aside className="border-r border-border bg-surface">
         <div className="flex h-16 items-center border-b border-border px-5">
           <Link href="/" className="font-display text-2xl font-bold text-primary">
             JobAura
@@ -46,7 +47,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </nav>
       </aside>
       <section>
-        <header className="flex h-16 items-center justify-between border-b border-border bg-white px-6">
+        <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Administration</p>
             <p className="text-sm text-muted">Manage marketplace records from the active section.</p>
@@ -56,9 +57,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               <strong className="block">{user?.name ?? 'Admin'}</strong>
               <span className="text-xs text-muted">Administrator</span>
             </span>
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-              {initials(user?.name)}
-            </span>
+            <Avatar name={user?.name ?? 'Admin'} className="h-9 w-9" />
           </div>
         </header>
         <main className="p-6">{children}</main>

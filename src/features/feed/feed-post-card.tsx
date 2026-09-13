@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bookmark, Heart, MessageCircle, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Bookmark, Heart, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import type { FeedPost, PostComment } from '@/shared/schemas'
 import { cn, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
@@ -54,7 +54,7 @@ export function FeedPostCard({
                 <MoreHorizontal className="h-5 w-5" />
               </Button>
               {menuOpen ? (
-                <div className="absolute right-0 top-10 z-10 w-40 rounded-lg border border-border bg-white p-1 shadow-lg">
+                <div className="absolute right-0 top-10 z-10 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
                   <button
                     type="button"
                     className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-danger hover:bg-danger/5"
@@ -86,7 +86,14 @@ export function FeedPostCard({
         ) : null}
 
         <div className="flex items-center justify-between px-4 py-2 text-xs text-muted">
-          <span>{post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</span>
+          <span className="flex items-center gap-1.5">
+            {post.likeCount > 0 ? (
+              <span className="flex h-[18px] w-[18px] items-center justify-center rounded-full bg-primary text-white ring-2 ring-surface">
+                <ThumbsUp className="h-2.5 w-2.5 fill-current" />
+              </span>
+            ) : null}
+            {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}
+          </span>
           <button type="button" className="hover:text-primary hover:underline" onClick={() => onOpenComments(post)}>
             {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
           </button>

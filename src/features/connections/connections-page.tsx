@@ -10,7 +10,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { Connection, ConnectionProfile, ConnectionSuggestion } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Button, Card, ConfirmationDialog, Skeleton } from '@/shared/ui'
+import { Button, Card, ConfirmationDialog, EmptyState, Input, PageHeader, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { pageWindow } from './connections-data'
 
@@ -83,15 +83,25 @@ export function ConnectionsPage() {
 
   return (
     <div className="container-page py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div><h1 className="font-display text-3xl font-bold">Connections</h1><p className="mt-1 text-sm text-muted">Build and manage your professional network.</p></div>
-        {tab !== 'requests' ? (
-          <label className="flex h-10 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-white px-3">
-            <Search className="h-4 w-4 text-muted" />
-            <input value={keyword} maxLength={80} onChange={(event) => setKeyword(event.target.value)} placeholder="Search people, skills, or location" className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
-          </label>
-        ) : null}
-      </div>
+      <PageHeader
+        title="Connections"
+        description="Build and manage your professional network."
+        actions={
+          tab !== 'requests' ? (
+            <label className="relative w-full max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted" />
+              <Input
+                className="pl-9"
+                value={keyword}
+                maxLength={80}
+                onChange={(event) => setKeyword(event.target.value)}
+                placeholder="Search people, skills, or location"
+                aria-label="Search connections"
+              />
+            </label>
+          ) : undefined
+        }
+      />
 
       <div className="mt-6 flex overflow-x-auto border-b border-border">
         <Tab active={tab === 'connections'} label="Connections" onClick={() => setTab('connections')} />
@@ -161,7 +171,7 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
 function PeopleGrid({ loading, empty, children }: { loading: boolean; empty: string; children: React.ReactNode }) {
   const count = Array.isArray(children) ? children.length : children ? 1 : 0
   if (loading) return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{[1, 2, 3].map((id) => <Skeleton key={id} className="h-48" />)}</div>
-  if (!count) return <Card className="p-10 text-center"><Users className="mx-auto h-6 w-6 text-primary" /><p className="mt-3 text-sm text-muted">{empty}</p></Card>
+  if (!count) return <EmptyState icon={<Users />} title="Nobody here yet" description={empty} />
   return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
 }
 

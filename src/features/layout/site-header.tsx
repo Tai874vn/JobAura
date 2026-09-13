@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   BriefcaseBusiness,
   Home,
@@ -22,12 +21,7 @@ import {
   canAccessCandidateDirectory,
   canAccessEmployeeTools,
 } from "@/shared/lib/roles";
-import {
-  initials,
-  resolveAssetUrl,
-  shouldBypassImageOptimizer,
-} from "@/shared/lib/utils";
-import { Button } from "@/shared/ui";
+import { Avatar, Button } from "@/shared/ui";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -35,7 +29,6 @@ export function SiteHeader() {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isLoading: isSessionLoading } = useSession();
-  const avatarUrl = resolveAssetUrl(user?.avatar);
   const isRecruiter = user?.role === "employer";
   const canUseRecruiterTools = canAccessCandidateDirectory(user?.role);
   const canUseEmployeeTools = canAccessEmployeeTools(user?.role);
@@ -62,7 +55,7 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface backdrop-blur">
       <div className="container-page flex h-16 items-center gap-4">
         <Link
           href={homeHref}
@@ -72,7 +65,7 @@ export function SiteHeader() {
         </Link>
         <form
           onSubmit={submitSearch}
-          className="hidden flex-1 items-center rounded-lg border border-border bg-white px-3 md:flex"
+          className="hidden flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
         >
           <Search className="h-4 w-4 text-muted" />
           <input
@@ -177,21 +170,10 @@ export function SiteHeader() {
               aria-controls="account-navigation"
               aria-expanded={accountMenuOpen}
             >
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt={user.name}
-                  fill
-                  unoptimized={shouldBypassImageOptimizer(user.avatar)}
-                  className="object-cover"
-                  sizes="36px"
-                />
-              ) : (
-                initials(user.name)
-              )}
+              <Avatar name={user.name} src={user.avatar} className="h-9 w-9" />
             </button>
             {accountMenuOpen ? (
-              <div id="account-navigation" className="absolute right-0 top-11 w-56 rounded-lg border border-border bg-white p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+              <div id="account-navigation" className="absolute right-0 top-11 w-56 rounded-lg border border-border bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
                 <MenuLink
                   href={`/profile/${user.id}`}
                   icon={<User className="h-4 w-4" />}
@@ -286,7 +268,7 @@ export function SiteHeader() {
       {mobileMenuOpen ? (
         <div
           id="mobile-navigation"
-          className="border-t border-border bg-white p-4 md:hidden"
+          className="border-t border-border bg-surface p-4 md:hidden"
         >
           <div className="grid gap-2 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
             {user && canUseEmployeeTools ? <Link href="/">Home feed</Link> : null}

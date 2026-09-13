@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { jobTypesApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, Input, Skeleton } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, EmptyState, Input, PageHeader, Select, Skeleton } from '@/shared/ui'
 import { getResourceConfig, type Resource, type ResourceConfig, type ResourceRow } from './admin-resource-model'
 
 export function AdminResourcePage({ resource, embedded = false }: { resource: Resource; embedded?: boolean }) {
@@ -40,13 +40,12 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
   return (
     <div>
       {!embedded ? (
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-4xl font-bold">Manage {config.title}</h1>
-            <p className="text-sm text-muted">Search, inspect, and maintain marketplace records.</p>
-          </div>
-          <CreateButton config={config} onCreate={() => setIsCreateOpen(true)} />
-        </div>
+        <PageHeader
+          className="mb-6"
+          title={`Manage ${config.title}`}
+          description="Search, inspect, and maintain marketplace records."
+          actions={<CreateButton config={config} onCreate={() => setIsCreateOpen(true)} />}
+        />
       ) : null}
       <Card>
         <CardContent className="p-0">
@@ -129,7 +128,11 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
                 <Button className="mt-3" variant="secondary" onClick={() => query.refetch()}>Retry</Button>
               </div>
             ) : !query.isPending && !filtered.length ? (
-              <p className="p-8 text-center text-sm text-muted">No records found.</p>
+              <EmptyState
+                icon={<Search />}
+                title="No records found"
+                description={keyword ? `No ${config.title.toLowerCase()} match "${keyword}".` : 'Records will appear here once created.'}
+              />
             ) : null}
           </div>
           <div className="border-t border-border p-4 text-sm text-muted">
@@ -246,7 +249,7 @@ function CreateResourceDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <form className="w-full max-w-md rounded-lg border border-border bg-white p-5 shadow-[0_18px_50px_rgba(0,0,0,0.18)]" onSubmit={submit}>
+      <form className="w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-2xl" onSubmit={submit}>
         <div className="mb-5">
           <h2 className="font-display text-2xl font-bold">{config.create.label}</h2>
           <p className="text-sm text-muted">Add a new marketplace classification.</p>
@@ -258,8 +261,8 @@ function CreateResourceDialog({
         {config.create.needsParentType ? (
           <label className="mt-4 block text-sm font-semibold">
             Parent job type
-            <select
-              className="mt-2 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary-bright/20"
+            <Select
+              className="mt-2"
               value={resolvedParentTypeId ?? ''}
               onChange={(event) => setParentTypeId(Number(event.target.value))}
               disabled={parentTypesQuery.isLoading}
@@ -272,7 +275,7 @@ function CreateResourceDialog({
                   {type.tenLoaiCongViec}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         ) : null}
         <div className="mt-6 flex justify-end gap-2">

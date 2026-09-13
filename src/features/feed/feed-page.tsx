@@ -1,7 +1,7 @@
 'use client'
 
 import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
-import { RefreshCw } from 'lucide-react'
+import { MessagesSquare, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -10,7 +10,7 @@ import { postsApi, savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { FeedPage, FeedPost } from '@/shared/schemas'
-import { Button, Card, ConfirmationDialog, Skeleton } from '@/shared/ui'
+import { Button, Card, ConfirmationDialog, EmptyState, Skeleton } from '@/shared/ui'
 import {
   addCommentToPost,
   appendCommentToPages,
@@ -23,6 +23,7 @@ import {
   updateCommentInPost,
   type CommentCache,
 } from './feed-data'
+import { FeedGreeting } from './feed-greeting'
 import { FeedPostCard } from './feed-post-card'
 import { LeftFeedRail, RightFeedRail } from './feed-rails'
 import { PostComposer } from './post-composer'
@@ -165,6 +166,7 @@ export function FeedPage() {
             <MobileTab href="/connections" label="Connections" />
             <MobileTab href="/my-posts" label="My posts" />
           </div>
+          <FeedGreeting user={user} />
           <PostComposer
             user={user}
             submitting={createMutation.isPending}
@@ -181,10 +183,12 @@ export function FeedPage() {
             </Card>
           ) : null}
           {!feedQuery.isPending && !feedQuery.isError && !posts.length ? (
-            <Card className="p-10 text-center">
-              <h1 className="font-display text-xl font-bold">Start the conversation</h1>
-              <p className="mt-2 text-sm text-muted">Share your work, an update, or something useful to the JobAura community.</p>
-            </Card>
+            <EmptyState
+              titleAs="h1"
+              icon={<MessagesSquare />}
+              title="Start the conversation"
+              description="Share your work, an update, or something useful to the JobAura community."
+            />
           ) : null}
           {posts.map((post, index) => (
             <FeedPostCard
@@ -241,7 +245,7 @@ export function FeedPage() {
 }
 
 function MobileTab({ href, label }: { href: string; label: string }) {
-  return <Link href={href} className="shrink-0 rounded-full border border-border bg-white px-4 py-2 text-xs font-bold">{label}</Link>
+  return <Link href={href} className="shrink-0 rounded-full border border-border bg-surface px-4 py-2 text-xs font-bold">{label}</Link>
 }
 
 function FeedSkeleton() {

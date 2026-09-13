@@ -2,14 +2,14 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { SlidersHorizontal, Sparkles } from 'lucide-react'
+import { SearchX, SlidersHorizontal, Sparkles } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMemo } from 'react'
 import { jobTypesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { JobSearchParams } from '@/shared/schemas'
 import { JobCard } from './job-card'
-import { Button, Card, CardContent, CardSkeleton, Input } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, Input, PageHeader, Select } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -72,76 +72,59 @@ export function JobListView() {
 
   return (
     <div className="container-page py-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl font-bold">Explore services</h1>
-          <p className="mt-1 text-sm text-muted">{keyword ? `Results for "${keyword}"` : 'Search and compare marketplace services.'}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/recommendations/jobs"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-bright focus-visible:ring-2 focus-visible:ring-primary-bright"
-          >
-            <Sparkles className="h-4 w-4" />
-            AI recommendations
-          </Link>
-          <a href="#service-filters" className="flex h-10 items-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold">
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}
-          </a>
-        </div>
-      </div>
+      <PageHeader
+        className="mb-6"
+        title="Explore services"
+        description={keyword ? `Results for "${keyword}"` : 'Search and compare marketplace services.'}
+        actions={
+          <>
+            <ButtonLink href="/recommendations/jobs">
+              <Sparkles className="h-4 w-4" />
+              AI recommendations
+            </ButtonLink>
+            <ButtonLink href="#service-filters" variant="secondary">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}
+            </ButtonLink>
+          </>
+        }
+      />
       <Card id="service-filters" className="mb-6">
         <CardContent className="p-4">
           <form className="grid gap-3 lg:grid-cols-[1fr_180px_180px_120px_120px_140px_160px_auto]" onSubmit={applyFilters}>
             <Input name="keyword" defaultValue={keyword ?? ''} placeholder="Search services or sellers" aria-label="Search services or sellers" />
-            <select
-              name="category"
-              aria-label="Category"
-              className="h-10 rounded-lg border border-border bg-white px-3 text-sm"
-              defaultValue={categoryId ?? ''}
-            >
+            <Select name="category" aria-label="Category" defaultValue={categoryId ?? ''}>
               <option value="">All categories</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>{category.tenLoaiCongViec}</option>
               ))}
-            </select>
-            <select
-              name="subcategory"
-              aria-label="Subcategory"
-              className="h-10 rounded-lg border border-border bg-white px-3 text-sm"
-              defaultValue={subcategoryId ?? ''}
-            >
+            </Select>
+            <Select name="subcategory" aria-label="Subcategory" defaultValue={subcategoryId ?? ''}>
               <option value="">All specialties</option>
               {subcategories.map((subcategory) => (
                 <option key={subcategory.id} value={subcategory.id}>{subcategory.tenChiTiet}</option>
               ))}
-            </select>
+            </Select>
             <Input name="minPrice" type="number" min={0} defaultValue={minPrice ?? ''} placeholder="Min $" aria-label="Minimum price" />
             <Input name="maxPrice" type="number" min={0} defaultValue={maxPrice ?? ''} placeholder="Max $" aria-label="Maximum price" />
-            <select
-              name="minRating"
-              aria-label="Minimum rating"
-              className="h-10 rounded-lg border border-border bg-white px-3 text-sm"
-              defaultValue={minRating ?? ''}
-            >
+            <Select name="minRating" aria-label="Minimum rating" defaultValue={minRating ?? ''}>
               <option value="">Any rating</option>
               <option value="3">3+ stars</option>
               <option value="4">4+ stars</option>
               <option value="5">5 stars</option>
-            </select>
-            <select name="sort" aria-label="Sort services" className="h-10 rounded-lg border border-border bg-white px-3 text-sm" defaultValue={sort ?? ''}>
+            </Select>
+            <Select name="sort" aria-label="Sort services" defaultValue={sort ?? ''}>
               <option value="">Default</option>
               <option value="newest">Newest</option>
               <option value="rating_desc">Top rated</option>
               <option value="price_asc">Price low</option>
               <option value="price_desc">Price high</option>
-            </select>
+            </Select>
             <div className="flex gap-2">
               <Button type="submit">Apply</Button>
-              <Link href="/jobs" className="inline-flex h-10 items-center rounded-lg border border-border bg-white px-3 text-sm font-semibold hover:border-primary hover:text-primary">
+              <ButtonLink href="/jobs" variant="secondary">
                 Reset
-              </Link>
+              </ButtonLink>
             </div>
           </form>
         </CardContent>
@@ -152,11 +135,12 @@ export function JobListView() {
             {Array.from({ length: pageSize }).map((_, index) => <CardSkeleton key={index} />)}
           </div>
         ) : query.isError ? (
-          <Card>
-            <CardContent className="p-10 text-center text-sm text-muted">
-              Unable to load services right now. Please check the backend connection and try again.
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={<SearchX />}
+            title="Unable to load services"
+            description="Check the backend connection and try again."
+            action={<Button variant="secondary" onClick={() => query.refetch()}>Retry</Button>}
+          />
         ) : jobs.length ? (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -165,9 +149,12 @@ export function JobListView() {
             <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref} />
           </>
         ) : (
-          <Card>
-            <CardContent className="p-10 text-center text-sm text-muted">No services found. Try another search or filter.</CardContent>
-          </Card>
+          <EmptyState
+            icon={<SearchX />}
+            title="No services found"
+            description="Try another keyword or clear some filters to see more results."
+            action={<ButtonLink href="/jobs" variant="secondary">Clear filters</ButtonLink>}
+          />
         )}
       </section>
     </div>
@@ -245,7 +232,7 @@ function PageLink({
 }) {
   const className = [
     'inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition',
-    active ? 'border-primary bg-primary text-white' : 'border-border bg-white text-foreground hover:border-primary hover:text-primary',
+    active ? 'border-primary bg-primary text-white' : 'border-border bg-surface text-foreground hover:border-primary hover:text-primary',
     disabled ? 'pointer-events-none opacity-50' : '',
   ].join(' ')
 
