@@ -1,7 +1,20 @@
 import type { Metadata } from 'next'
+import { Hanken_Grotesk, Inter } from 'next/font/google'
 import './globals.css'
 import { LazyChatShell } from '@/features/chat/lazy-chat-shell'
 import { AppProviders } from '@/shared/providers/app-providers'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
+
+const hankenGrotesk = Hanken_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-hanken',
+})
 
 const defaultDescription = 'Find trusted freelance services and manage work in one marketplace.'
 
@@ -45,7 +58,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${inter.variable} ${hankenGrotesk.variable}`}>
       <body className="font-sans antialiased">
         <AppProviders>
           {children}

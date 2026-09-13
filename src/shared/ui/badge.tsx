@@ -3,7 +3,7 @@ import { cn } from '@/shared/lib/utils'
 
 const tones = {
   neutral: 'bg-surface-muted text-foreground',
-  primary: 'bg-primary-fixed bg-primary/10 text-primary',
+  primary: 'bg-primary/10 text-primary',
   accent: 'bg-accent/30 text-foreground',
   rating: 'bg-rating/15 text-[#5c4300]',
   danger: 'bg-danger/10 text-danger',

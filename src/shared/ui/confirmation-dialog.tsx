@@ -51,7 +51,7 @@ export function ConfirmationDialog({
         aria-modal="true"
         aria-labelledby="confirmation-title"
         aria-describedby="confirmation-description"
-        className="relative w-full max-w-md rounded-lg bg-white p-5 shadow-2xl"
+        className="relative w-full max-w-md rounded-lg bg-surface p-5 shadow-2xl"
       >
         <Button
           className="absolute right-2 top-2"
@@ -78,7 +78,7 @@ export function ConfirmationDialog({
             Cancel
           </Button>
           <Button type="button" variant="danger" onClick={onConfirm} disabled={pending}>
-            {pending ? 'Removing...' : confirmLabel}
+            {pending ? `${confirmLabel}...` : confirmLabel}
           </Button>
         </div>
       </section>
