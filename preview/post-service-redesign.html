@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobAura — Post service redesign preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --background: #eff1f5; --foreground: #1b1c1c; --surface: #ffffff; --surface-muted: #f6f3f2;
+    --border: #dcd9d9; --muted: #5f6b62; --primary: #006d43; --primary-bright: #00a86b;
+    --accent: #d2d92d; --rating: #fbbc00; --danger: #ba1a1a; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  svg { width: 16px; height: 16px; }
+  .display { font-family: "Hanken Grotesk", Inter, sans-serif; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 40; height: 64px;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+  }
+  .header-inner { max-width: 1160px; margin-inline: auto; height: 100%; display: flex; align-items: center; gap: 16px; padding-inline: 20px; }
+  .brand { font-family: "Hanken Grotesk", sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--primary); }
+  .header-search { flex: 1; max-width: 440px; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); background: var(--surface); }
+  .header-search input { border: 0; outline: 0; flex: 1; font: inherit; background: transparent; }
+  .main-nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+  .main-nav a { padding: 0 11px; height: 64px; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .main-nav a:hover { color: var(--foreground); }
+  .avatar { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 12px; }
+
+  .page { max-width: 1160px; margin-inline: auto; padding: 40px 20px 64px; }
+  h1.page-title { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.01em; }
+  p.page-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+  .layout { display: grid; grid-template-columns: minmax(0,1fr) 360px; gap: 24px; align-items: start; margin-top: 24px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .section { padding: 20px; }
+  .section + .section { border-top: 1px solid var(--border); }
+  .section-title {
+    display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 14px;
+  }
+  .section-title svg { width: 13px; height: 13px; color: var(--primary); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 160px 160px; gap: 14px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .field .control {
+    display: flex; align-items: center; height: 42px; padding: 0 12px;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+    transition: border-color .15s;
+  }
+  .field .control:focus-within { border-color: var(--primary); }
+  .field input, .field select { border: 0; outline: 0; width: 100%; font: inherit; background: transparent; }
+  .field textarea {
+    width: 100%; min-height: 130px; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius); background: var(--surface); font: inherit; resize: vertical; outline: 0;
+  }
+  .field textarea:focus { border-color: var(--primary); }
+  .hint { margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .count { float: right; font-size: 11px; color: var(--muted); font-weight: 500; }
+
+  .dropzone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 150px; border: 1.5px dashed var(--border); border-radius: var(--radius);
+    background: var(--surface); color: var(--muted); cursor: pointer; transition: border-color .15s, background .15s;
+    position: relative; overflow: hidden;
+  }
+  .dropzone:hover { border-color: var(--primary); background: rgba(0,109,67,0.03); }
+  .dropzone svg { width: 22px; height: 22px; color: var(--primary); }
+  .dropzone b { font-size: 13px; color: var(--foreground); }
+  .dropzone span { font-size: 12px; }
+  .dropzone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .dz-badge {
+    position: absolute; right: 10px; top: 10px; display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px; border-radius: 999px; background: rgba(27,28,28,0.75); color: #fff;
+    font-size: 11px; font-weight: 600; backdrop-filter: blur(4px);
+  }
+  .dz-badge:hover { background: var(--danger); }
+
+  .form-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 42px; padding: 0 20px;
+    border-radius: var(--radius); font-size: 14px; font-weight: 600; transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-bright); }
+  .btn-secondary { border: 1px solid var(--border); background: var(--surface); }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* preview column */
+  .preview-col { position: sticky; top: 84px; display: grid; gap: 10px; }
+  .preview-label {
+    display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  }
+  .preview-label svg { width: 12px; height: 12px; color: var(--primary); }
+  .job-card { overflow: hidden; transition: box-shadow .15s; }
+  .job-card:hover { box-shadow: 0 12px 28px rgba(27,28,28,0.09); }
+  .job-media { position: relative; aspect-ratio: 4/3; background: var(--surface-muted); display: grid; place-items: center; }
+  .job-media .mono { font-family: "Hanken Grotesk", sans-serif; font-size: 40px; font-weight: 800; color: rgba(0,109,67,0.3); }
+  .job-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .save {
+    position: absolute; right: 10px; top: 10px; width: 36px; height: 36px; display: grid; place-items: center;
+    background: rgba(255,255,255,0.94); border: 1px solid var(--border); border-radius: var(--radius); color: var(--foreground); z-index: 1;
+  }
+  .job-body { padding: 13px 14px 14px; }
+  .seller { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .seller .avatar { width: 30px; height: 30px; font-size: 10.5px; }
+  .seller span { font-size: 12.5px; font-weight: 600; }
+  .job-title { font-size: 13.5px; font-weight: 600; line-height: 1.4; min-height: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .job-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 11px; }
+  .stars { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background: rgba(251,188,0,0.15); color: #5c4300; font-size: 12px; font-weight: 700; }
+  .stars svg { width: 12px; height: 12px; fill: var(--rating); color: var(--rating); }
+  .price { font-size: 13px; color: var(--muted); }
+  .price b { color: var(--foreground); }
+  .preview-note { font-size: 12px; color: var(--muted); text-align: center; }
+
+  .preview-flag {
+    position: fixed; bottom: 16px; left: 16px; z-index: 60; display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--foreground); color: #fff; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .preview-flag .dotp { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .preview-col { position: static; } }
+  @media (max-width: 640px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#">JobAura</a>
+    <div class="header-search">
+      <i data-lucide="search"></i>
+      <input placeholder="Search services, skills, or experts" />
+    </div>
+    <nav class="main-nav">
+      <a href="#">Home</a>
+      <a href="#">Explore</a>
+      <a href="#">Post Service</a>
+      <a href="#">Hiring Posts</a>
+      <a href="#">Connections</a>
+    </nav>
+    <span class="avatar">PT</span>
+  </div>
+</header>
+
+<main class="page">
+  <h1 class="page-title display">Post a service</h1>
+  <p class="page-sub">Create a clear, searchable offer for buyers. The preview updates as you type.</p>
+
+  <div class="layout">
+
+    <!-- ===== form ===== -->
+    <form class="card" id="service-form">
+      <section class="section">
+        <h2 class="section-title"><i data-lucide="info"></i> Basics</h2>
+        <div class="grid-2" style="grid-template-columns: 1fr;">
+          <div class="field">
+            <label for="f-title">Title <span class="count"><span id="title-count">0</span>/120</span></label>
+            <div class="control">
+              <input id="f-title" maxlength="120" placeholder="I will build a modern Next.js landing page" />
+            </div>
+            <p class="hint">Start with &ldquo;I will…&rdquo; — buyers search for verbs like <em>build, design, edit</em>.</p>
+          </div>
+        </div>
+        <div class="grid-3" style="margin-top: 14px;">
+          <div class="field">
+            <label for="f-cat">Category detail</label>
+            <div class="control">
+              <select id="f-cat">
+                <option>Choose detail</option>
+                <option>Logo design</option>
+                <option>Brand style guides</option>
+                <option>Web development</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="f-price">Price ($)</label>
+            <div class="control">
+              <input id="f-price" type="number" min="0" value="25" />
+            </div>
+          </div>
+          <div class="field" style="justify-content: flex-end; display: flex; align-items: flex-end;">
+            <p class="hint" style="margin: 0;">Starting price shown on your card.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title"><i data-lucide="align-left"></i> Descriptions</h2>
+        <div class="field">
+          <label for="f-short">Short description <span class="count"><span id="short-count">0</span>/200</span></label>
+          <div class="control">
+            <input id="f-short" maxlength="200" placeholder="A crisp summary for cards and search results" />
+          </div>
+        </div>
+        <div class="field" style="margin-top: 14px;">
+          <label for="f-long">Description <span class="count"><span id="long-count">0</span>/1000</span></label>
+          <textarea id="f-long" maxlength="1000" placeholder="Explain process, deliverables, and what buyers get."></textarea>
+          <p class="hint">Cover your process, what&rsquo;s included, delivery time, and revision policy.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2 class="section-title"><i data-lucide="image"></i> Cover image</h2>
+        <label class="dropzone" for="f-image" id="dropzone">
+          <img id="dz-img" hidden />
+          <span id="dz-empty" style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+            <i data-lucide="upload-cloud"></i>
+            <b>Click to upload a cover image</b>
+            <span>JPG or PNG, up to 5 MB · 4:3 ratio works best</span>
+          </span>
+          <span class="dz-badge" id="dz-badge" hidden><i data-lucide="trash-2" style="width:12px;height:12px;"></i> Remove</span>
+        </label>
+        <input type="file" id="f-image" accept="image/*" hidden />
+      </section>
+
+      <section class="section form-foot">
+        <button class="btn btn-secondary" type="button">Cancel</button>
+        <button class="btn btn-primary" type="submit"><i data-lucide="send"></i> Publish service</button>
+      </section>
+    </form>
+
+    <!-- ===== live preview ===== -->
+    <aside class="preview-col" aria-label="Live preview">
+      <p class="preview-label"><i data-lucide="eye"></i> Live preview — how buyers see it</p>
+      <article class="card job-card">
+        <div class="job-media" id="pv-media">
+          <span class="mono">JA</span>
+          <img id="pv-img" hidden />
+          <span class="save" aria-hidden="true"><i data-lucide="bookmark"></i></span>
+        </div>
+        <div class="job-body">
+          <div class="seller">
+            <span class="avatar">PT</span>
+            <span>Preview Tester</span>
+          </div>
+          <p class="job-title" id="pv-title">I will build a modern Next.js landing page</p>
+          <div class="job-foot">
+            <span class="stars"><i data-lucide="star"></i> New</span>
+            <span class="price">From <b id="pv-price">$25</b></span>
+          </div>
+        </div>
+      </article>
+      <p class="preview-note">Your service appears in Explore and search once published.</p>
+    </aside>
+
+  </div>
+</main>
+
+<div class="preview-flag"><span class="dotp"></span> Post service preview</div>
+
+<script>
+  lucide.createIcons();
+
+  const title = document.getElementById('f-title');
+  const pvTitle = document.getElementById('pv-title');
+  const titleCount = document.getElementById('title-count');
+  const defaultTitle = pvTitle.textContent;
+
+  function syncTitle() {
+    titleCount.textContent = title.value.length;
+    pvTitle.textContent = title.value.trim() || defaultTitle;
+  }
+  title.addEventListener('input', syncTitle);
+
+  const price = document.getElementById('f-price');
+  const pvPrice = document.getElementById('pv-price');
+  price.addEventListener('input', () => {
+    const value = Number(price.value);
+    pvPrice.textContent = '$' + (Number.isFinite(value) && value >= 0 ? value.toLocaleString('en-US') : '0');
+  });
+
+  document.getElementById('f-short').addEventListener('input', (e) => {
+    document.getElementById('short-count').textContent = e.target.value.length;
+  });
+  document.getElementById('f-long').addEventListener('input', (e) => {
+    document.getElementById('long-count').textContent = e.target.value.length;
+  });
+
+  const input = document.getElementById('f-image');
+  const pvImg = document.getElementById('pv-img');
+  const dzImg = document.getElementById('dz-img');
+  const dzBadge = document.getElementById('dz-badge');
+  const dzEmpty = document.getElementById('dz-empty');
+
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    pvImg.src = url; pvImg.hidden = false;
+    dzImg.src = url; dzImg.hidden = false;
+    dzBadge.hidden = false;
+    dzEmpty.style.display = 'none';
+  });
+
+  dzBadge.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    input.value = '';
+    pvImg.hidden = true; pvImg.src = '';
+    dzImg.hidden = true; dzImg.src = '';
+    dzBadge.hidden = true;
+    dzEmpty.style.display = 'flex';
+  });
+
+  document.getElementById('service-form').addEventListener('submit', (e) => e.preventDefault());
+</script>
+</body>
+</html>

@@ -4,7 +4,6 @@ import { FaqSection } from './home/faq'
 import { FeaturedServices } from './home/featured-services'
 import { HowItWorks } from './home/how-it-works'
 import { LandingHero } from './home/hero'
-import { Testimonials } from './home/testimonials'
 import { TrendingSkills } from './home/trending-skills'
 import { WhyJobAura } from './home/why-us'
 
@@ -17,7 +16,6 @@ export function HomePage() {
       <FeaturedServices />
       <HowItWorks />
       <WhyJobAura />
-      <Testimonials />
       <FaqSection />
       <CtaBand />
     </div>

@@ -8,7 +8,7 @@ const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascrip
 
 createServer(async (req, res) => {
   try {
-    const url = req.url === '/' ? '/jobs-redesign.html' : req.url.split('?')[0]
+    const url = req.url === '/' ? '/post-service-redesign.html' : req.url.split('?')[0]
     const file = normalize(join(root, url))
     if (!file.startsWith(normalize(root))) throw new Error('forbidden')
     const data = await readFile(file)

@@ -29,8 +29,8 @@ export async function FeaturedServices() {
         }
       />
       <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {jobs.map((job, index) => (
-          <JobCard key={job.id} job={job} priority={index < 4} />
+        {jobs.map((job) => (
+          <JobCard key={job.id} job={job} />
         ))}
       </div>
     </Section>

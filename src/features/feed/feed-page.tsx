@@ -24,8 +24,9 @@ import {
   type CommentCache,
 } from './feed-data'
 import { FeedGreeting } from './feed-greeting'
+import { LeftFeedRail } from './feed-left-rail'
 import { FeedPostCard } from './feed-post-card'
-import { LeftFeedRail, RightFeedRail } from './feed-rails'
+import { RightFeedRail } from './feed-rails'
 import { PostComposer } from './post-composer'
 import { PostDiscussionModal } from './post-discussion-modal'
 
