@@ -18,6 +18,12 @@ export const authApi = {
     ).data,
   me: async () =>
     (await apiClient.get<ApiResponse<UserProfile>>('/api/auth/me')).data,
+  realtimeTicket: async () =>
+    (
+      await apiClient.get<
+        ApiResponse<{ token: string; expiresInSeconds: number }>
+      >('/api/auth/realtime-ticket')
+    ).data,
   refresh: async () =>
     (await apiClient.post<ApiResponse<void>>('/api/auth/refresh')).data,
   logout: async () =>

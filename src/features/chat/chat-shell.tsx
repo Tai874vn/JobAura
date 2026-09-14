@@ -6,11 +6,11 @@ import { MessageCircle, Send, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
-import { chatApi } from '@/shared/api/endpoints'
+import { authApi, chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { resolveClientOrigin } from '@/shared/config/client-origin'
 import { env } from '@/shared/config/env'
 import { cn, initials } from '@/shared/lib/utils'
+import { fetchRealtimeAuth } from '@/shared/realtime/realtime-auth'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Skeleton } from '@/shared/ui'
@@ -53,15 +53,15 @@ export function ChatShell() {
 
   useEffect(() => {
     if (!userId || !isSocketActive) return
-    const socketOrigin = resolveClientOrigin(
-      env.apiBaseUrl,
-      env.useSameOriginApi,
-      window.location.origin
-    )
-    const nextSocket = io(`${socketOrigin}/chat`, {
+    const nextSocket = io(`${env.apiBaseUrl}/chat`, {
       withCredentials: true,
       autoConnect: true,
       transports: ['websocket', 'polling'],
+      auth: (callback) => {
+        void fetchRealtimeAuth(authApi.realtimeTicket)
+          .then(callback)
+          .catch(() => callback({}))
+      },
     })
 
     nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
