@@ -28,7 +28,9 @@ export function AdminDashboard() {
         {metrics.map(({ label, value, loading, icon: Icon }) => (
           <Card key={label}>
             <CardContent>
-              <Icon className="mb-5 h-5 w-5 text-primary" />
+              <span className="mb-5 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-4.5 w-4.5" />
+              </span>
               {loading ? <Skeleton className="mb-2 h-9 w-16" /> : <p className="font-display text-3xl font-bold">{value}</p>}
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
             </CardContent>

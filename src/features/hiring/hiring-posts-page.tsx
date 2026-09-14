@@ -236,7 +236,21 @@ export function HiringPostsPage() {
           <EmptyState
             icon={<BriefcaseBusiness />}
             title="No hiring posts found"
-            description="Try a different keyword or check again when recruiters post new roles."
+            description={
+              canCreateHiringPost
+                ? "Publish your first role so workers can apply, or try a different keyword."
+                : "Try a different keyword or check again when recruiters post new roles."
+            }
+            action={
+              canCreateHiringPost ? (
+                <Button type="button" onClick={() => setCreateOpen(true)}>
+                  <Plus className="h-4 w-4" />
+                  New hiring post
+                </Button>
+              ) : (
+                <ButtonLink href="/jobs" variant="secondary">Explore services instead</ButtonLink>
+              )
+            }
           />
         )}
       </div>

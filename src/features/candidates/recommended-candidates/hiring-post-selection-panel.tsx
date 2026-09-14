@@ -10,7 +10,7 @@ import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { CreateHiringPost, HiringPost } from "@/shared/schemas";
 import { createHiringPostSchema } from "@/shared/schemas";
-import { Badge, Button, Card, CardContent, Input, Spinner, Textarea } from "@/shared/ui";
+import { Badge, Button, Card, CardContent, Input, Select, Spinner, Textarea } from "@/shared/ui";
 import {
   emptyHiringPostDraft,
   hiringPostPageParams,
@@ -392,8 +392,8 @@ function OptionSelect({
   return (
     <label className="grid gap-1">
       <span className="text-xs font-bold uppercase text-muted">{label}</span>
-      <select
-        className="h-10 rounded-lg border border-border bg-surface px-3 text-sm font-semibold"
+      <Select
+        className="text-sm font-semibold"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
       >
@@ -402,7 +402,7 @@ function OptionSelect({
             {option} {suffix}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }

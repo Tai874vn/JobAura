@@ -67,7 +67,7 @@ export function RecommendedJobsPage() {
   }
 
   return (
-    <div className="container-page py-8">
+    <div className="container-page pt-10 pb-16">
       <Link href="/jobs" className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary">
         <ArrowLeft className="h-4 w-4" />
         Back to explore

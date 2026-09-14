@@ -59,13 +59,13 @@ export function SiteHeader() {
       <div className="container-page flex h-16 items-center gap-4">
         <Link
           href={homeHref}
-          className="font-display text-2xl font-bold tracking-tight text-primary"
+          className="shrink-0 font-display text-2xl font-bold tracking-tight text-primary"
         >
           JobAura
         </Link>
         <form
           onSubmit={submitSearch}
-          className="hidden flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
+          className="hidden min-w-0 flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
         >
           <Search className="h-4 w-4 text-muted" />
           <input
@@ -155,13 +155,8 @@ export function SiteHeader() {
             <NotificationBell />
           </div>
         ) : null}
-        {isSessionLoading ? (
-          <div className="hidden items-center gap-2 md:flex">
-            <div className="h-10 w-20 rounded-lg bg-surface-muted" />
-            <div className="h-10 w-16 rounded-lg bg-surface-muted" />
-          </div>
-        ) : user ? (
-          <div className="relative hidden items-center gap-2 md:flex">
+        {user ? (
+          <div className="relative hidden shrink-0 items-center gap-2 md:flex">
             <button
               type="button"
               className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white"
@@ -241,18 +236,41 @@ export function SiteHeader() {
             ) : null}
           </div>
         ) : (
-          <div className="hidden items-center gap-2 md:flex">
+          <div
+            className="hidden shrink-0 items-center gap-2 md:flex"
+            aria-busy={isSessionLoading}
+          >
             <Button
               variant="secondary"
+              disabled={isSessionLoading}
               onClick={() => router.push("/auth/login")}
             >
               Sign in
             </Button>
-            <Button onClick={() => router.push("/auth/register")}>Join</Button>
+            <Button
+              disabled={isSessionLoading}
+              onClick={() => router.push("/auth/register")}
+            >
+              Join
+            </Button>
           </div>
         )}
+
+        {!user ? (
+          <Button
+            className="ml-auto shrink-0 md:hidden"
+            variant="secondary"
+            size="sm"
+            disabled={isSessionLoading}
+            aria-busy={isSessionLoading}
+            onClick={() => router.push("/auth/login")}
+          >
+            Sign in
+          </Button>
+        ) : null}
+
         <Button
-          className={user ? "md:hidden" : "ml-auto md:hidden"}
+          className="shrink-0 md:hidden"
           variant="ghost"
           size="icon"
           onClick={() => setMobileMenuOpen((value) => !value)}

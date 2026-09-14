@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobAura — Find candidates redesign preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --background: #eff1f5; --foreground: #1b1c1c; --surface: #ffffff; --surface-muted: #f6f3f2;
+    --border: #dcd9d9; --muted: #5f6b62; --primary: #006d43; --primary-bright: #00a86b;
+    --accent: #d2d92d; --rating: #fbbc00; --danger: #ba1a1a; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  svg { width: 16px; height: 16px; }
+  .display { font-family: "Hanken Grotesk", Inter, sans-serif; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 40; height: 64px;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+  }
+  .header-inner { max-width: 1160px; margin-inline: auto; height: 100%; display: flex; align-items: center; gap: 16px; padding-inline: 20px; }
+  .brand { font-family: "Hanken Grotesk", sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--primary); }
+  .header-search { flex: 1; max-width: 440px; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); background: var(--surface); }
+  .header-search input { border: 0; outline: 0; flex: 1; font: inherit; background: transparent; }
+  .main-nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+  .main-nav a { padding: 0 11px; height: 64px; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: var(--muted); position: relative; }
+  .main-nav a:hover { color: var(--foreground); }
+  .main-nav a.active { color: var(--primary); }
+  .main-nav a.active::after { content: ""; position: absolute; left: 11px; right: 11px; bottom: 0; height: 2px; background: var(--primary); border-radius: 2px 2px 0 0; }
+  .avatar { position: relative; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; overflow: hidden; }
+  .avatar.sm { width: 32px; height: 32px; font-size: 11px; }
+  .avatar.md { width: 40px; height: 40px; font-size: 12px; }
+  .avatar.lg { width: 48px; height: 48px; font-size: 14px; }
+  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  .page { max-width: 1160px; margin-inline: auto; padding: 40px 20px 64px; }
+  .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--primary); }
+  h1.page-title { margin: 6px 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.01em; }
+  p.page-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; max-width: 560px; }
+
+  .searchbar { display: flex; max-width: 680px; margin-top: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); overflow: hidden; box-shadow: 0 4px 16px rgba(27,28,28,0.05); transition: border-color .15s; }
+  .searchbar:focus-within { border-color: var(--primary); }
+  .searchbar .input-side { flex: 1; display: flex; align-items: center; gap: 10px; padding: 0 16px; color: var(--muted); min-width: 0; }
+  .searchbar input { flex: 1; border: 0; outline: 0; font: inherit; background: transparent; color: var(--foreground); min-width: 0; height: 52px; }
+  .searchbar .go { display: flex; align-items: center; gap: 8px; padding: 0 22px; background: var(--primary); color: #fff; font-weight: 600; font-size: 14px; }
+  .searchbar .go:hover { background: var(--primary-bright); }
+
+  /* skill chips */
+  .chips { display: flex; gap: 8px; overflow-x: auto; margin-top: 18px; padding-bottom: 2px; scrollbar-width: none; }
+  .chip {
+    display: inline-flex; align-items: center; height: 38px; padding: 0 16px; white-space: nowrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    font-size: 13px; font-weight: 600; color: var(--muted); transition: border-color .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--primary); color: var(--primary); }
+  .chip.active { background: var(--foreground); border-color: var(--foreground); color: #fff; }
+
+  /* toolbar */
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
+  .count { font-size: 13.5px; color: var(--muted); }
+  .count b { color: var(--foreground); font-weight: 700; }
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 6px 0 11px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    color: var(--foreground); font-size: 12px; font-weight: 600;
+  }
+  .filter-chip svg { width: 12px; height: 12px; color: var(--muted); }
+  .filter-chip:hover { border-color: var(--danger); color: var(--danger); }
+  .filter-chip:hover svg { color: var(--danger); }
+  .toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+    font-size: 13px; font-weight: 600;
+  }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-filters.open { border-color: var(--primary); color: var(--primary); }
+  .btn-filters .chev { transition: transform .15s; }
+  .btn-filters.open .chev { transform: rotate(180deg); }
+
+  .panel { display: none; margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 18px; }
+  .panel.open { display: block; }
+  .panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 560px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 6px; }
+  .field .control { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--muted); }
+  .field .control:focus-within { border-color: var(--primary); }
+  .field input { border: 0; outline: 0; width: 100%; font: inherit; background: transparent; color: var(--foreground); }
+  .panel-foot { display: flex; justify-content: flex-end; gap: 6px; margin-top: 16px; }
+  .btn-text { height: 38px; padding: 0 12px; border-radius: var(--radius); font-size: 13px; font-weight: 600; color: var(--muted); }
+  .btn-text:hover { color: var(--danger); }
+  .btn-apply { height: 38px; padding: 0 18px; border-radius: var(--radius); background: var(--primary); color: #fff; font-weight: 600; font-size: 13px; }
+  .btn-apply:hover { background: var(--primary-bright); }
+
+  /* candidate grid */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); transition: box-shadow .15s, border-color .15s; }
+  .card:hover { box-shadow: 0 12px 28px rgba(27,28,28,0.09); }
+  .cand { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .cand-head { display: flex; align-items: flex-start; gap: 12px; }
+  .cand-id { flex: 1; min-width: 0; }
+  .cand-name { font-family: "Hanken Grotesk", sans-serif; font-size: 17px; font-weight: 700; }
+  .cand-name:hover { color: var(--primary); }
+  .cand-headline { font-size: 12.5px; font-weight: 600; color: var(--muted); margin-top: 1px; }
+  .match-badge {
+    display: inline-flex; align-items: gap: 5px; padding: 4px 10px; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; white-space: nowrap;
+  }
+  .match-badge.high { background: rgba(0,109,67,0.1); color: var(--primary); }
+  .match-badge.mid { background: rgba(251,188,0,0.15); color: #5c4300; }
+  .match-badge.none { background: var(--surface-muted); color: var(--muted); }
+  .cand-meta { display: flex; flex-wrap: wrap; gap-x-4: ; gap: 4px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .cand-meta span { display: inline-flex; align-items: center; gap: 5px; }
+  .cand-meta svg { width: 13px; height: 13px; }
+  .cand-meta .star svg { fill: var(--rating); color: var(--rating); }
+  .skills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .skill { padding: 3px 9px; border-radius: 999px; background: rgba(210,217,45,0.3); font-size: 11.5px; font-weight: 700; }
+  .stats { display: grid; grid-template-columns: 3fr; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .stat { text-align: left; }
+  .stat b { display: flex; align-items: center; gap: 5px; font-size: 14px; }
+  .stat b svg { width: 13px; height: 13px; color: var(--primary); }
+  .stat span { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .quality { font-size: 11.5px; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .qbar { flex: 1; max-width: 120px; height: 5px; border-radius: 999px; background: var(--surface-muted); overflow: hidden; }
+  .qbar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), var(--primary-bright)); }
+  .cand-foot { display: flex; gap: 8px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 38px; padding: 0 16px;
+    border-radius: var(--radius); font-size: 13px; font-weight: 600; transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn-outline { flex: 1; border: 1px solid var(--border); background: var(--surface); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-primary { flex: 1; background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-bright); }
+
+  .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 32px; }
+  .page-btn { min-width: 40px; height: 40px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font-weight: 600; font-size: 13px; }
+  .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .page-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .page-btn[disabled] { opacity: 0.45; pointer-events: none; }
+
+  .preview-flag {
+    position: fixed; bottom: 16px; left: 16px; z-index: 60; display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--foreground); color: #fff; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .preview-flag .dotp { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .panel-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#">JobAura</a>
+    <div class="header-search">
+      <i data-lucide="search"></i>
+      <input placeholder="Search candidates, roles, or skills" />
+    </div>
+    <nav class="main-nav">
+      <a class="active" href="#">Find Candidates</a>
+      <a href="#">AI Matching</a>
+      <a href="#">Hiring Posts</a>
+      <a href="#">Connections</a>
+    </nav>
+    <span class="avatar md">PE</span>
+  </div>
+</header>
+
+<main class="page">
+  <p class="eyebrow">Employer workspace</p>
+  <h1 class="page-title display">Find candidates</h1>
+  <p class="page-sub">Search discoverable worker profiles, review fit signals, and start hiring conversations.</p>
+
+  <form class="searchbar">
+    <div class="input-side">
+      <i data-lucide="search"></i>
+      <input placeholder="Search by name, role, or project type…" aria-label="Search candidates" />
+    </div>
+    <button class="go" type="submit"><i data-lucide="search"></i> Search</button>
+  </form>
+
+  <!-- popular skills -->
+  <nav class="chips" aria-label="Popular skills">
+    <a class="chip active" href="#">All skills</a>
+    <a class="chip" href="#">React</a>
+    <a class="chip" href="#">Next.js</a>
+    <a class="chip" href="#">Node.js</a>
+    <a class="chip" href="#">Figma</a>
+    <a class="chip" href="#">Video editing</a>
+    <a class="chip" href="#">SEO</a>
+    <a class="chip" href="#">Copywriting</a>
+  </nav>
+
+  <!-- toolbar -->
+  <div class="toolbar">
+    <span class="count"><b>42</b> discoverable candidates</span>
+    <div class="filter-chips">
+      <button class="filter-chip" title="Remove filter">Ho Chi Minh <i data-lucide="x"></i></button>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn-secondary btn-filters" id="toggle-filters" aria-expanded="false" aria-controls="filter-panel">
+        <i data-lucide="sliders-horizontal"></i> Filters <span class="chev"><i data-lucide="chevron-down"></i></span>
+      </button>
+      <a class="btn-secondary" href="#"><i data-lucide="sparkles"></i> AI matching</a>
+    </div>
+  </div>
+
+  <!-- collapsible panel -->
+  <div class="panel" id="filter-panel">
+    <div class="panel-grid">
+      <div class="field">
+        <label for="f-skill">Skill</label>
+        <div class="control">
+          <i data-lucide="sparkle"></i>
+          <input id="f-skill" placeholder="e.g. React, Figma, SEO" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-loc">Location</label>
+        <div class="control">
+          <i data-lucide="map-pin"></i>
+          <input id="f-loc" placeholder="e.g. Ho Chi Minh, Remote" />
+        </div>
+      </div>
+    </div>
+    <div class="panel-foot">
+      <button class="btn-text" type="button">Clear all</button>
+      <button class="btn-apply" type="button">Apply filters</button>
+    </div>
+  </div>
+
+  <!-- candidate grid -->
+  <section class="grid">
+    <article class="card cand">
+      <div class="cand-head">
+        <span class="avatar lg"><img src="https://i.pravatar.cc/96?img=32" alt="Linh Tran" /></span>
+        <div class="cand-id">
+          <a class="cand-name" href="#">Linh Tran</a>
+          <p class="cand-headline">Senior Frontend Developer · React &amp; Next.js</p>
+        </div>
+        <span class="match-badge high"><i data-lucide="sparkles"></i> 92% match</span>
+      </div>
+      <div class="cand-meta">
+        <span><i data-lucide="map-pin"></i> Ho Chi Minh</span>
+        <span class="star"><i data-lucide="star"></i> 4.9 · 12 reviews</span>
+        <span><i data-lucide="clock-3"></i> Open to work</span>
+      </div>
+      <div class="skills">
+        <span class="skill">React</span><span class="skill">Next.js</span><span class="skill">TypeScript</span><span class="skill">Tailwind</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b><i data-lucide="check-circle-2"></i> 34</b><span>Completed</span></div>
+        <div class="stat"><b><i data-lucide="award"></i> 3</b><span>Certifications</span></div>
+        <div class="stat"><b><i data-lucide="folder-open"></i> 8</b><span>Portfolio</span></div>
+      </div>
+      <div class="quality">Profile quality <span class="qbar"><span style="width: 88%;"></span></span> 88%</div>
+      <div class="cand-foot">
+        <a class="btn btn-outline" href="#"><i data-lucide="arrow-up-right"></i> View profile</a>
+        <button class="btn btn-primary"><i data-lucide="user-plus"></i> Connect</button>
+      </div>
+    </article>
+
+    <article class="card cand">
+      <div class="cand-head">
+        <span class="avatar lg"><img src="https://i.pravatar.cc/96?img=12" alt="Daniel Wilson" /></span>
+        <div class="cand-id">
+          <a class="cand-name" href="#">Daniel Wilson</a>
+          <p class="cand-headline">Performance Marketer · Healthcare &amp; E-commerce</p>
+        </div>
+        <span class="match-badge mid"><i data-lucide="sparkles"></i> 78% match</span>
+      </div>
+      <div class="cand-meta">
+        <span><i data-lucide="map-pin"></i> Remote</span>
+        <span class="star"><i data-lucide="star"></i> 5.0 · 9 reviews</span>
+        <span><i data-lucide="clock-3"></i> Open to work</span>
+      </div>
+      <div class="skills">
+        <span class="skill">SEO</span><span class="skill">Google Ads</span><span class="skill">Analytics</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b><i data-lucide="check-circle-2"></i> 21</b><span>Completed</span></div>
+        <div class="stat"><b><i data-lucide="award"></i> 2</b><span>Certifications</span></div>
+        <div class="stat"><b><i data-lucide="folder-open"></i> 5</b><span>Portfolio</span></div>
+      </div>
+      <div class="quality">Profile quality <span class="qbar"><span style="width: 74%;"></span></span> 74%</div>
+      <div class="cand-foot">
+        <a class="btn btn-outline" href="#"><i data-lucide="arrow-up-right"></i> View profile</a>
+        <button class="btn btn-primary"><i data-lucide="user-plus"></i> Connect</button>
+      </div>
+    </article>
+
+    <article class="card cand">
+      <div class="cand-head">
+        <span class="avatar lg"><img src="https://i.pravatar.cc/96?img=47" alt="Harper Roberts" /></span>
+        <div class="cand-id">
+          <a class="cand-name" href="#">Harper Roberts</a>
+          <p class="cand-headline">Brand Designer · Identity systems</p>
+        </div>
+        <span class="match-badge high"><i data-lucide="sparkles"></i> 89% match</span>
+      </div>
+      <div class="cand-meta">
+        <span><i data-lucide="map-pin"></i> Singapore</span>
+        <span class="star"><i data-lucide="star"></i> 4.8 · 27 reviews</span>
+        <span><i data-lucide="clock-3"></i> Open to work</span>
+      </div>
+      <div class="skills">
+        <span class="skill">Figma</span><span class="skill">Illustrator</span><span class="skill">Brand</span><span class="skill">Motion</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b><i data-lucide="check-circle-2"></i> 58</b><span>Completed</span></div>
+        <div class="stat"><b><i data-lucide="award"></i> 4</b><span>Certifications</span></div>
+        <div class="stat"><b><i data-lucide="folder-open"></i> 14</b><span>Portfolio</span></div>
+      </div>
+      <div class="quality">Profile quality <span class="qbar"><span style="width: 96%;"></span></span> 96%</div>
+      <div class="cand-foot">
+        <a class="btn btn-outline" href="#"><i data-lucide="arrow-up-right"></i> View profile</a>
+        <button class="btn btn-primary"><i data-lucide="user-plus"></i> Connect</button>
+      </div>
+    </article>
+
+    <article class="card cand">
+      <div class="cand-head">
+        <span class="avatar lg"><img src="https://i.pravatar.cc/96?img=68" alt="Benjamin White" /></span>
+        <div class="cand-id">
+          <a class="cand-name" href="#">Benjamin White</a>
+          <p class="cand-headline">Fullstack Developer · NestJS &amp; PostgreSQL</p>
+        </div>
+        <span class="match-badge none">No match yet</span>
+      </div>
+      <div class="cand-meta">
+        <span><i data-lucide="map-pin"></i> Da Nang</span>
+        <span class="star"><i data-lucide="star"></i> 4.6 · 6 reviews</span>
+        <span><i data-lucide="clock-3"></i> Open to work</span>
+      </div>
+      <div class="skills">
+        <span class="skill">NestJS</span><span class="skill">PostgreSQL</span><span class="skill">AWS</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><b><i data-lucide="check-circle-2"></i> 12</b><span>Completed</span></div>
+        <div class="stat"><b><i data-lucide="award"></i> 1</b><span>Certifications</span></div>
+        <div class="stat"><b><i data-lucide="folder-open"></i> 4</b><span>Portfolio</span></div>
+      </div>
+      <div class="quality">Profile quality <span class="qbar"><span style="width: 61%;"></span></span> 61%</div>
+      <div class="cand-foot">
+        <a class="btn btn-outline" href="#"><i data-lucide="arrow-up-right"></i> View profile</a>
+        <button class="btn btn-primary"><i data-lucide="user-plus"></i> Connect</button>
+      </div>
+    </article>
+  </section>
+
+  <nav class="pagination" aria-label="Candidates pagination">
+    <a class="page-btn" disabled>Previous</a>
+    <a class="page-btn active" href="#">1</a>
+    <a class="page-btn" href="#">2</a>
+    <a class="page-btn" href="#">Next</a>
+  </nav>
+</main>
+
+<div class="preview-flag"><span class="dotp"></span> Candidates redesign preview</div>
+
+<script>
+  lucide.createIcons();
+  const toggle = document.getElementById('toggle-filters');
+  const panel = document.getElementById('filter-panel');
+  toggle.addEventListener('click', () => {
+    const open = panel.classList.toggle('open');
+    toggle.classList.toggle('open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+  document.querySelectorAll('.filter-chip').forEach((chip) => chip.addEventListener('click', () => chip.remove()));
+  document.querySelectorAll('.chips .chip').forEach((chip) => chip.addEventListener('click', (event) => {
+    event.preventDefault();
+    document.querySelectorAll('.chips .chip').forEach((c) => c.classList.remove('active'));
+    chip.classList.add('active');
+  }));
+</script>
+</body>
+</html>

@@ -254,15 +254,14 @@ function CreateResourceDialog({
           <h2 className="font-display text-2xl font-bold">{config.create.label}</h2>
           <p className="text-sm text-muted">Add a new marketplace classification.</p>
         </div>
-        <label className="block text-sm font-semibold">
-          Name
-          <Input className="mt-2" value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoFocus />
+        <label className="block">
+          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Name</span>
+          <Input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoFocus />
         </label>
         {config.create.needsParentType ? (
-          <label className="mt-4 block text-sm font-semibold">
-            Parent job type
+          <label className="mt-4 block">
+            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Parent job type</span>
             <Select
-              className="mt-2"
               value={resolvedParentTypeId ?? ''}
               onChange={(event) => setParentTypeId(Number(event.target.value))}
               disabled={parentTypesQuery.isLoading}
