@@ -18,6 +18,7 @@ import { useSession } from "@/features/auth/use-session";
 import { chatApi, notificationsApi } from "@/shared/api/endpoints";
 import { normalizeNotification } from "@/shared/api/normalizers";
 import { queryKeys } from "@/shared/api/query-keys";
+import { resolveClientOrigin } from "@/shared/config/client-origin";
 import { env } from "@/shared/config/env";
 import type { ApiResponse, AppNotification } from "@/shared/schemas";
 import { useChatStore } from "@/shared/stores/chat-store";
@@ -92,7 +93,12 @@ export function NotificationBell() {
       const { io } = await import("socket.io-client");
       if (cancelled) return;
 
-      socket = io(`${env.apiBaseUrl}/notifications`, {
+      const socketOrigin = resolveClientOrigin(
+        env.apiBaseUrl,
+        env.useSameOriginApi,
+        window.location.origin,
+      );
+      socket = io(`${socketOrigin}/notifications`, {
         withCredentials: true,
         autoConnect: true,
         transports: ["websocket", "polling"],

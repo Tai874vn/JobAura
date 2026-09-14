@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { resolveClientOrigin } from '@/shared/config/client-origin'
 import { env } from '@/shared/config/env'
 import { cn, initials } from '@/shared/lib/utils'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
@@ -52,13 +53,21 @@ export function ChatShell() {
 
   useEffect(() => {
     if (!userId || !isSocketActive) return
-    const nextSocket = io(`${env.apiBaseUrl}/chat`, {
+    const socketOrigin = resolveClientOrigin(
+      env.apiBaseUrl,
+      env.useSameOriginApi,
+      window.location.origin
+    )
+    const nextSocket = io(`${socketOrigin}/chat`, {
       withCredentials: true,
       autoConnect: true,
       transports: ['websocket', 'polling'],
     })
 
     nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
+    nextSocket.on('connect_error', (error) => {
+      console.error('Chat connection failed:', error.message)
+    })
     nextSocket.on('new-message', (message: ChatMessage) => addMessage(message, userId))
     nextSocket.on('messages-read', ({ roomId, userId: readerId }: { roomId: number; userId: number }) => {
       setReadReceipts((current) => {

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { authApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
 import { setCachedSession } from "@/shared/api/session-cache";
+import { resolveClientOrigin } from "@/shared/config/client-origin";
 import { env } from "@/shared/config/env";
 import { GoogleIcon } from "@/shared/icons";
 import {
@@ -59,6 +60,11 @@ function LoginFormFields({
   });
   const roleModalOpen =
     notice === "google-role-required" && !roleModalDismissed;
+  const apiBaseUrl = resolveClientOrigin(
+    env.apiBaseUrl,
+    env.useSameOriginApi,
+    typeof window === "undefined" ? undefined : window.location.origin,
+  );
 
   const mutation = useMutation({
     mutationFn: authApi.signIn,
@@ -73,7 +79,7 @@ function LoginFormFields({
   });
 
   function continueWithGoogle() {
-    window.location.assign(`${env.apiBaseUrl}/api/auth/google`);
+    window.location.assign(`${apiBaseUrl}/api/auth/google`);
   }
 
   function continueGoogleSignupWithRole() {
@@ -83,7 +89,7 @@ function LoginFormFields({
     }
 
     window.location.assign(
-      `${env.apiBaseUrl}/api/auth/google?role=${encodeURIComponent(googleSignupRole)}`,
+      `${apiBaseUrl}/api/auth/google?role=${encodeURIComponent(googleSignupRole)}`,
     );
   }
 
@@ -165,6 +171,11 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
   const roleRegistration = form.register("role", {
     onChange: () => form.clearErrors("role"),
   });
+  const apiBaseUrl = resolveClientOrigin(
+    env.apiBaseUrl,
+    env.useSameOriginApi,
+    typeof window === "undefined" ? undefined : window.location.origin,
+  );
 
   const mutation = useMutation({
     mutationFn: authApi.signUp,
@@ -200,7 +211,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
     const role = requireRole();
     if (!role) return;
     window.location.assign(
-      `${env.apiBaseUrl}/api/auth/google?role=${encodeURIComponent(role)}`,
+      `${apiBaseUrl}/api/auth/google?role=${encodeURIComponent(role)}`,
     );
   }
 

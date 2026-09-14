@@ -1,6 +1,7 @@
 'use client'
 
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import { resolveClientOrigin } from '@/shared/config/client-origin'
 import { env } from '@/shared/config/env'
 import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import { useChatStore } from '@/shared/stores/chat-store'
@@ -24,14 +25,20 @@ function flushQueue(error?: unknown) {
   failedQueue = []
 }
 
+const clientApiBaseUrl = resolveClientOrigin(
+  env.apiBaseUrl,
+  env.useSameOriginApi,
+  typeof window === 'undefined' ? undefined : window.location.origin
+)
+
 export const apiClient = axios.create({
-  baseURL: env.apiBaseUrl,
+  baseURL: clientApiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 })
 
 export const uploadClient = axios.create({
-  baseURL: env.apiBaseUrl,
+  baseURL: clientApiBaseUrl,
   withCredentials: true,
 })
 
@@ -57,7 +64,7 @@ function handleSessionExpired() {
 
 async function refreshSession() {
   const csrfToken = csrfTokenForMethod('post')
-  await axios.post(`${env.apiBaseUrl}/api/auth/refresh`, {}, {
+  await axios.post(`${clientApiBaseUrl}/api/auth/refresh`, {}, {
     withCredentials: true,
     headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
   })

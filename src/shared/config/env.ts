@@ -31,6 +31,7 @@ export function requireHttpBaseUrl(name: string, value: string | undefined) {
 
 export const env = {
   apiBaseUrl: requireHttpBaseUrl('NEXT_PUBLIC_API_BASE_URL', process.env.NEXT_PUBLIC_API_BASE_URL),
+  useSameOriginApi: process.env.NEXT_PUBLIC_USE_SAME_ORIGIN_API === 'true',
   googleClientId: requireValue('NEXT_PUBLIC_GOOGLE_CLIENT_ID', process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID),
 } as const
 
