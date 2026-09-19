@@ -3,15 +3,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ImageUp, Save, Trash2, Upload } from 'lucide-react'
-import Image from 'next/image'
+import { Eye, ImageUp, Info, Save, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
 import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
-import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import { Button, Card, CardContent, ConfirmationDialog, Input, Spinner, Textarea } from '@/shared/ui'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
+import { Avatar, Button, Card, CardContent, ConfirmationDialog, Input, Spinner, Textarea } from '@/shared/ui'
 import { calculateProfileCompletion } from '@/features/users/profile-posts'
 import { cleanObject, removeListItem, toDateInput, updateList } from '@/features/users/profile-form-utils'
 import { useProfileUpload } from '@/features/users/use-profile-upload'
@@ -262,55 +261,57 @@ export function SettingsPage() {
     return <div className="container-page py-8 text-sm text-muted">Unable to load your editable profile.</div>
   }
 
-  const avatarUrl = resolveAssetUrl(profile.avatar)
-  const bypassAvatarOptimizer = shouldBypassImageOptimizer(profile.avatar)
   const completion = calculateProfileCompletion(profile)
 
   return (
-    <div className="container-page py-8">
-      <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Settings</p>
-        <h1 className="font-display text-4xl font-bold">Choose what to configure</h1>
-        <p className="max-w-2xl text-sm text-muted">Manage your profile, account access, notifications, and workspace preferences from one place.</p>
-      </div>
+    <div className="container-page pt-10 pb-16">
+      <div className="mx-auto max-w-[880px]">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-primary">Settings</p>
+        <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight">Manage your workspace</h1>
+        <p className="mt-1 text-sm text-muted">Profile, resume, and account preferences — all in one place.</p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[280px_1fr]">
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <Card>
-            <CardContent className="grid gap-1 p-2">
-              {settingSections.map((section) => (
-                <button
-                  key={section.id}
-                  type="button"
-                  className={`flex w-full items-start gap-3 rounded-lg px-3 py-3 text-left transition ${
-                    activeSection === section.id ? 'bg-primary text-white' : 'hover:bg-surface-muted'
-                  }`}
-                  onClick={() => selectSection(section.id)}
-                >
-                  <span className={activeSection === section.id ? 'mt-0.5 text-white' : 'mt-0.5 text-primary'}>{section.icon}</span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-bold">{section.title}</span>
-                    <span className={`mt-0.5 block text-xs leading-5 ${activeSection === section.id ? 'text-white/80' : 'text-muted'}`}>
-                      {section.description}
-                    </span>
-                  </span>
-                </button>
-              ))}
-            </CardContent>
-          </Card>
-        </aside>
+        <nav
+          className="sticky top-16 z-30 mt-6 flex gap-1 overflow-x-auto border-b border-border bg-background/90 backdrop-blur [scrollbar-width:none]"
+          role="tablist"
+          aria-label="Settings sections"
+        >
+          {settingSections.map((section) => {
+            const active = activeSection === section.id
+            return (
+              <button
+                key={section.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => selectSection(section.id)}
+                className={cn(
+                  'relative flex h-11 shrink-0 items-center gap-1.5 px-3.5 text-[13.5px] font-semibold transition',
+                  active ? 'text-primary' : 'text-muted hover:text-foreground',
+                  '[&_svg]:h-3.5 [&_svg]:w-3.5'
+                )}
+              >
+                <span className={active ? 'text-primary' : 'text-muted'}>{section.icon}</span>
+                {section.title}
+                {section.id === 'resume' && !resume ? (
+                  <span className="h-1.5 w-1.5 rounded-full bg-rating" aria-label="Resume not imported yet" />
+                ) : null}
+                {active ? <span className="absolute inset-x-2.5 -bottom-px h-0.5 rounded-t bg-primary" aria-hidden="true" /> : null}
+              </button>
+            )
+          })}
+        </nav>
 
-        <main className="min-w-0">
+        <main className="mt-6 min-w-0">
           {activeSection === 'overview' ? (
             <SettingsOverview profile={profile} completion={completion} resume={resume} onSelect={selectSection} />
           ) : null}
 
           {activeSection === 'profile' ? (
-            <div className="grid gap-6">
-              <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="grid gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="font-display text-3xl font-bold">Profile settings</h2>
-                  <p className="mt-1 text-sm text-muted">Update your public marketplace profile, skills, certifications, and portfolio.</p>
+                  <h2 className="font-display text-2xl font-bold">Profile settings</h2>
+                  <p className="mt-0.5 text-sm text-muted">Your public marketplace identity, skills, and portfolio.</p>
                 </div>
                 <Button disabled={isSaving} onClick={() => saveBasic.mutate()}>
                   <Save className="h-4 w-4" />
@@ -318,117 +319,120 @@ export function SettingsPage() {
                 </Button>
               </div>
 
-              <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-                <div className="grid gap-6">
-                  <Card>
-                    <CardContent className="grid gap-4 p-5 md:grid-cols-2">
-                      <Field label="Name" value={basic.name} onChange={(value) => setBasic((state) => ({ ...state, name: value }))} />
-                      <Field label="Phone" value={basic.phone} onChange={(value) => setBasic((state) => ({ ...state, phone: value }))} />
-                      <Field label="Birthday" type="date" value={basic.birthDay} onChange={(value) => setBasic((state) => ({ ...state, birthDay: value }))} />
-                      <Field label="Gender" value={basic.gender} onChange={(value) => setBasic((state) => ({ ...state, gender: value }))} />
-                      <Field className="md:col-span-2" label="Headline" value={basic.headline} onChange={(value) => setBasic((state) => ({ ...state, headline: value }))} />
-                      <Field label="Location" value={basic.location} onChange={(value) => setBasic((state) => ({ ...state, location: value }))} />
-                      <Field label="Website" value={basic.website} onChange={(value) => setBasic((state) => ({ ...state, website: value }))} />
-                      <label className="grid gap-1 md:col-span-2">
-                        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Bio</span>
-                        <Textarea value={basic.bio ?? ''} onChange={(event) => setBasic((state) => ({ ...state, bio: event.target.value }))} />
-                      </label>
-                      {profile.role === 'user' ? (
-                        <label className="flex items-start gap-3 rounded-lg border border-border bg-surface-muted p-4 md:col-span-2">
-                          <input
-                            type="checkbox"
-                            className="mt-1 h-4 w-4 accent-primary"
-                            checked={basic.candidateDiscoverable ?? false}
-                            onChange={(event) =>
-                              setBasic((state) => ({
-                                ...state,
-                                candidateDiscoverable: event.target.checked,
-                              }))
-                            }
-                          />
-                          <span>
-                            <span className="block text-sm font-semibold">Visible to recruiters</span>
-                            <span className="mt-1 block text-xs leading-5 text-muted">
-                              Allow recruiters to find this completed profile in candidate search and AI matching.
-                            </span>
-                          </span>
-                        </label>
-                      ) : null}
-                    </CardContent>
-                  </Card>
+              <Card>
+                <CardContent className="p-5">
+                  <SectionTitle icon={<ImageUp className="h-3.5 w-3.5" />}>Profile media</SectionTitle>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <Avatar name={profile.name} src={profile.avatar} size="lg" className="h-16 w-16 text-lg" />
+                    <div className="min-w-48 flex-1">
+                      <b className="block text-base font-bold">{profile.name}</b>
+                      <span className="mt-0.5 block truncate text-xs text-muted">{profile.email}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <UploadField label="Upload avatar" icon={<Upload className="h-4 w-4" />} onChange={(file) => uploadAvatar.mutate(file)} />
+                      <UploadField label="Upload cover" icon={<ImageUp className="h-4 w-4" />} onChange={(file) => uploadCover.mutate(file)} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-                  <EditorSection title="Skills" onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
-                    {skills.map((skill, index) => (
-                      <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
-                        <Input value={skill.name} placeholder="React" onChange={(event) => updateList(setSkills, index, { name: event.target.value })} />
-                        <Input value={skill.level ?? ''} placeholder="advanced" onChange={(event) => updateList(setSkills, index, { level: event.target.value })} />
-                        <IconButton label="Remove skill" onClick={() => removeListItem(setSkills, index)} />
-                      </div>
-                    ))}
-                  </EditorSection>
+              <Card>
+                <CardContent className="p-5">
+                  <SectionTitle icon={<Info className="h-3.5 w-3.5" />}>Basics</SectionTitle>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Name" value={basic.name} onChange={(value) => setBasic((state) => ({ ...state, name: value }))} />
+                    <Field label="Phone" value={basic.phone} onChange={(value) => setBasic((state) => ({ ...state, phone: value }))} />
+                    <Field label="Birthday" type="date" value={basic.birthDay} onChange={(value) => setBasic((state) => ({ ...state, birthDay: value }))} />
+                    <Field label="Gender" value={basic.gender} onChange={(value) => setBasic((state) => ({ ...state, gender: value }))} />
+                    <Field className="md:col-span-2" label="Headline" value={basic.headline} onChange={(value) => setBasic((state) => ({ ...state, headline: value }))} />
+                    <Field label="Location" value={basic.location} onChange={(value) => setBasic((state) => ({ ...state, location: value }))} />
+                    <Field label="Website" value={basic.website} onChange={(value) => setBasic((state) => ({ ...state, website: value }))} />
+                    <label className="grid gap-1 md:col-span-2">
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Bio</span>
+                      <Textarea value={basic.bio ?? ''} onChange={(event) => setBasic((state) => ({ ...state, bio: event.target.value }))} />
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
 
-                  <EditorSection title="Certifications" onAdd={() => setCertifications((items) => [...items, { ...emptyCertification, sortOrder: items.length }])} onSave={() => saveCertifications.mutate()}>
-                    {certifications.map((cert, index) => (
-                      <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-2">
-                        <Input value={cert.name} placeholder="Certification name" onChange={(event) => updateList(setCertifications, index, { name: event.target.value })} />
-                        <Input value={cert.issuer ?? ''} placeholder="Issuer" onChange={(event) => updateList(setCertifications, index, { issuer: event.target.value })} />
-                        <Input type="date" value={cert.issuedAt ?? ''} onChange={(event) => updateList(setCertifications, index, { issuedAt: event.target.value })} />
-                        <Input type="date" value={cert.expiresAt ?? ''} onChange={(event) => updateList(setCertifications, index, { expiresAt: event.target.value })} />
-                        <Input value={cert.credentialUrl ?? ''} placeholder="Credential URL" onChange={(event) => updateList(setCertifications, index, { credentialUrl: event.target.value })} />
-                        <div className="flex gap-2">
-                          <Input value={cert.credentialId ?? ''} placeholder="Credential ID" onChange={(event) => updateList(setCertifications, index, { credentialId: event.target.value })} />
-                          <IconButton label="Remove certification" onClick={() => removeListItem(setCertifications, index)} />
-                        </div>
-                      </div>
-                    ))}
-                  </EditorSection>
-                </div>
+              <EditorSection title="Skills" onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
+                {skills.map((skill, index) => (
+                  <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
+                    <Input value={skill.name} placeholder="React" onChange={(event) => updateList(setSkills, index, { name: event.target.value })} />
+                    <Input value={skill.level ?? ''} placeholder="advanced" onChange={(event) => updateList(setSkills, index, { level: event.target.value })} />
+                    <IconButton label="Remove skill" onClick={() => removeListItem(setSkills, index)} />
+                  </div>
+                ))}
+              </EditorSection>
 
-                <aside className="grid content-start gap-6">
-                  <Card>
-                    <CardContent className="p-5">
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg bg-primary font-display text-xl font-bold text-white">
-                          {avatarUrl ? (
-                            <Image src={avatarUrl} alt="" fill unoptimized={bypassAvatarOptimizer} className="object-cover" sizes="56px" />
-                          ) : (
-                            initials(profile.name)
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-display text-xl font-bold">{profile.name}</h3>
-                          <p className="text-sm text-muted">{profile.email}</p>
-                        </div>
-                      </div>
-                      <div className="mt-5 grid gap-3">
-                        <UploadField label="Upload avatar" icon={<Upload className="h-4 w-4" />} onChange={(file) => uploadAvatar.mutate(file)} />
-                        <UploadField label="Upload cover" icon={<ImageUp className="h-4 w-4" />} onChange={(file) => uploadCover.mutate(file)} />
-                      </div>
-                    </CardContent>
-                  </Card>
+              <EditorSection title="Certifications" onAdd={() => setCertifications((items) => [...items, { ...emptyCertification, sortOrder: items.length }])} onSave={() => saveCertifications.mutate()}>
+                {certifications.map((cert, index) => (
+                  <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-2">
+                    <Input value={cert.name} placeholder="Certification name" onChange={(event) => updateList(setCertifications, index, { name: event.target.value })} />
+                    <Input value={cert.issuer ?? ''} placeholder="Issuer" onChange={(event) => updateList(setCertifications, index, { issuer: event.target.value })} />
+                    <Input type="date" value={cert.issuedAt ?? ''} onChange={(event) => updateList(setCertifications, index, { issuedAt: event.target.value })} />
+                    <Input type="date" value={cert.expiresAt ?? ''} onChange={(event) => updateList(setCertifications, index, { expiresAt: event.target.value })} />
+                    <Input value={cert.credentialUrl ?? ''} placeholder="Credential URL" onChange={(event) => updateList(setCertifications, index, { credentialUrl: event.target.value })} />
+                    <div className="flex gap-2">
+                      <Input value={cert.credentialId ?? ''} placeholder="Credential ID" onChange={(event) => updateList(setCertifications, index, { credentialId: event.target.value })} />
+                      <IconButton label="Remove certification" onClick={() => removeListItem(setCertifications, index)} />
+                    </div>
+                  </div>
+                ))}
+              </EditorSection>
 
-                  <EditorSection title="New portfolio item" onSave={() => createPortfolio.mutate()} saveLabel="Create">
-                    <PortfolioFields item={newPortfolio} onChange={(patch) => setNewPortfolio((item) => ({ ...item, ...patch }))} />
-                  </EditorSection>
+              <EditorSection title="New portfolio item" onSave={() => createPortfolio.mutate()} saveLabel="Create">
+                <PortfolioFields item={newPortfolio} onChange={(patch) => setNewPortfolio((item) => ({ ...item, ...patch }))} />
+              </EditorSection>
 
-                  <EditorSection title="Portfolio" hideActions>
-                    {portfolio.map((item, index) => (
-                      <div key={item.id ?? index} className="grid gap-3 rounded-lg border border-border p-3">
-                        <PortfolioFields item={item} onChange={(patch) => updateList(setPortfolio, index, patch)} />
-                        <div className="flex justify-end gap-2">
-                          <Button variant="secondary" size="sm" disabled={!item.id} onClick={() => updatePortfolio.mutate(item)}>
-                            Save
-                          </Button>
-                          <Button variant="danger" size="sm" disabled={!item.id} onClick={() => setPendingPortfolioDelete(item)}>
-                            <Trash2 className="h-4 w-4" />
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </EditorSection>
-                </aside>
-              </div>
+              <EditorSection title="Portfolio" hideActions>
+                {portfolio.map((item, index) => (
+                  <div key={item.id ?? index} className="grid gap-3 rounded-lg border border-border p-3">
+                    <PortfolioFields item={item} onChange={(patch) => updateList(setPortfolio, index, patch)} />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="secondary" size="sm" disabled={!item.id} onClick={() => updatePortfolio.mutate(item)}>
+                        Save
+                      </Button>
+                      <Button variant="danger" size="sm" disabled={!item.id} onClick={() => setPendingPortfolioDelete(item)}>
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </EditorSection>
+
+              {profile.role === 'user' ? (
+                <Card>
+                  <CardContent className="p-5">
+                    <SectionTitle icon={<Eye className="h-3.5 w-3.5" />}>Visibility</SectionTitle>
+                    <label className="flex items-start gap-3 rounded-lg border border-border bg-surface-muted p-4">
+                      <input
+                        type="checkbox"
+                        className="mt-1 h-4 w-4 accent-primary"
+                        checked={basic.candidateDiscoverable ?? false}
+                        onChange={(event) =>
+                          setBasic((state) => ({
+                            ...state,
+                            candidateDiscoverable: event.target.checked,
+                          }))
+                        }
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold">Visible to recruiters</span>
+                        <span className="mt-1 block text-xs leading-5 text-muted">
+                          Allow recruiters to find this completed profile in candidate search and AI matching.
+                        </span>
+                      </span>
+                    </label>
+                    <div className="mt-3 flex justify-end">
+                      <Button size="sm" disabled={isSaving} onClick={() => saveBasic.mutate()}>
+                        <Save className="h-4 w-4" />
+                        Save visibility
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : null}
             </div>
           ) : null}
 
@@ -463,6 +467,15 @@ export function SettingsPage() {
         }}
       />
     </div>
+  )
+}
+
+function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <h2 className="mb-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wide text-muted">
+      <span className="text-primary">{icon}</span>
+      {children}
+    </h2>
   )
 }
 

@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobAura — Settings redesign v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --background: #eff1f5; --foreground: #1b1c1c; --surface: #ffffff; --surface-muted: #f6f3f2;
+    --border: #dcd9d9; --muted: #5f6b62; --primary: #006d43; --primary-bright: #00a86b;
+    --accent: #d2d92d; --rating: #fbbc00; --danger: #ba1a1a; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  svg { width: 16px; height: 16px; }
+  .display { font-family: "Hanken Grotesk", Inter, sans-serif; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 40; height: 64px;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+  }
+  .header-inner { max-width: 1160px; margin-inline: auto; height: 100%; display: flex; align-items: center; gap: 16px; padding-inline: 20px; }
+  .brand { font-family: "Hanken Grotesk", sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--primary); }
+  .header-search { flex: 1; max-width: 440px; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); background: var(--surface); }
+  .header-search input { border: 0; outline: 0; flex: 1; font: inherit; background: transparent; }
+  .main-nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+  .main-nav a { padding: 0 11px; height: 64px; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .main-nav a:hover { color: var(--foreground); }
+  .avatar { position: relative; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; overflow: hidden; }
+  .avatar.md { width: 40px; height: 40px; font-size: 12px; }
+
+  .page { max-width: 880px; margin-inline: auto; padding: 40px 20px 80px; }
+  .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--primary); }
+  h1.page-title { margin: 6px 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.01em; }
+  p.page-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+  /* sticky underline tab navigation */
+  .tab-bar {
+    position: sticky; top: 64px; z-index: 30; margin-top: 24px;
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+    border-bottom: 1px solid var(--border);
+    background: rgba(239,241,245,0.92); backdrop-filter: blur(8px);
+  }
+  .tab-chip {
+    position: relative; display: inline-flex; align-items: center; gap: 7px;
+    height: 42px; padding: 0 14px; white-space: nowrap;
+    font-size: 13.5px; font-weight: 600; color: var(--muted);
+    transition: color .15s;
+  }
+  .tab-chip svg { width: 15px; height: 15px; color: var(--muted); transition: color .15s; }
+  .tab-chip:hover { color: var(--foreground); }
+  .tab-chip.active { color: var(--primary); font-weight: 700; }
+  .tab-chip.active svg { color: var(--primary); }
+  .tab-chip.active::after {
+    content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px;
+    background: var(--primary); border-radius: 2px 2px 0 0;
+  }
+  .tab-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rating); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  .view { display: grid; gap: 16px; margin-top: 24px; }
+  .view[hidden] { display: none; }
+
+  /* section cards with mini-labels (Post Service language) */
+  .section { padding: 20px; }
+  .section-title {
+    display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 14px;
+  }
+  .section-title svg { width: 13px; height: 13px; color: var(--primary); }
+  .section-title .spacer { flex: 1; }
+  .link-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--primary); }
+  .link-btn:hover { text-decoration: underline; }
+
+  .field label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 6px; }
+  .field .control { display: flex; align-items: center; height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); transition: border-color .15s; }
+  .field .control:focus-within { border-color: var(--primary); }
+  .field input, .field select { border: 0; outline: 0; width: 100%; font: inherit; background: transparent; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .wide { grid-column: 1 / -1; }
+  textarea.raw { width: 100%; min-height: 84px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); font: inherit; resize: vertical; outline: 0; }
+  textarea.raw:focus { border-color: var(--primary); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px;
+    border-radius: var(--radius); font-size: 13.5px; font-weight: 600; transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-bright); }
+  .btn-secondary { border: 1px solid var(--border); background: var(--surface); }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-sm { height: 36px; padding: 0 14px; font-size: 13px; }
+
+  /* overview */
+  .readiness { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; align-items: center; }
+  .readiness .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .readiness .big { margin: 4px 0 0; font-size: 40px; font-weight: 800; line-height: 1.05; }
+  .readiness .big span { font-size: 15px; font-weight: 600; color: var(--muted); }
+  .readiness p.sub { margin: 10px 0 0; font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 420px; }
+  .bar { height: 8px; border-radius: 999px; background: var(--surface-muted); margin-top: 16px; max-width: 420px; overflow: hidden; }
+  .bar span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary), var(--primary-bright)); }
+  .who { text-align: center; border-left: 1px solid var(--border); padding-left: 24px; }
+  .who .avatar { width: 56px; height: 56px; font-size: 16px; margin: 0 auto; }
+  .who b { display: block; margin-top: 10px; font-size: 15px; }
+  .who span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .who .btn { margin-top: 12px; }
+
+  .todo-row {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; text-align: left; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .todo-row:hover { border-color: var(--primary); box-shadow: 0 8px 24px rgba(27,28,28,0.06); }
+  .todo-row .icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; background: rgba(251,188,0,0.15); color: #5c4300; flex-shrink: 0; }
+  .todo-row .icon svg { width: 16px; height: 16px; }
+  .todo-row b { display: block; font-size: 13.5px; }
+  .todo-row span { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+  .todo-row .arrow { margin-left: auto; color: var(--muted); flex-shrink: 0; }
+  .done-note { display: flex; align-items: center; gap: 8px; padding: 12px 16px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .done-note svg { color: var(--primary); }
+
+  .soon-line { margin-top: 2px; text-align: center; font-size: 12px; color: var(--muted); }
+  .soon-line b { font-weight: 700; }
+
+  /* profile media card */
+  .media-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+  .media-row .avatar { width: 64px; height: 64px; font-size: 18px; }
+  .media-id { flex: 1; min-width: 200px; }
+  .media-id b { display: block; font-size: 16px; font-weight: 800; }
+  .media-id span { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .media-actions { display: flex; gap: 8px; }
+  .upload-btn {
+    display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px;
+    border: 1px dashed var(--border); border-radius: var(--radius); font-size: 12.5px; font-weight: 600; color: var(--muted);
+    transition: border-color .15s, color .15s;
+  }
+  .upload-btn svg { color: var(--primary); }
+  .upload-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* list editors */
+  .editor-row { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+  .editor-row + .editor-row { margin-top: 10px; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 160px 40px; gap: 10px; }
+  .cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mini-btn { display: grid; place-items: center; height: 42px; width: 42px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--muted); }
+  .mini-btn:hover { border-color: var(--danger); color: var(--danger); }
+  .add-btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 1px dashed var(--border); border-radius: var(--radius); font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .add-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* resume */
+  .dropzone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    min-height: 130px; border: 1.5px dashed var(--border); border-radius: var(--radius);
+    background: var(--surface); color: var(--muted); cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover { border-color: var(--primary); background: rgba(0,109,67,0.03); }
+  .dropzone svg { width: 22px; height: 22px; color: var(--primary); }
+  .dropzone b { font-size: 13px; color: var(--foreground); }
+  .dropzone span { font-size: 12px; }
+
+  .placeholder { padding: 28px; text-align: center; }
+  .placeholder .icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto; border-radius: 999px; background: rgba(0,109,67,0.1); color: var(--primary); }
+  .placeholder .icon svg { width: 22px; height: 22px; }
+  .placeholder h2 { margin: 14px 0 0; font-size: 20px; font-weight: 800; }
+  .placeholder p { margin: 8px auto 0; font-size: 13.5px; color: var(--muted); line-height: 1.6; max-width: 420px; }
+
+  .preview-flag {
+    position: fixed; bottom: 16px; left: 16px; z-index: 60; display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--foreground); color: #fff; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .preview-flag .dotp { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  @media (max-width: 720px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .readiness { grid-template-columns: 1fr; }
+    .who { border-left: 0; border-top: 1px solid var(--border); padding: 16px 0 0; }
+    .cols-3 { grid-template-columns: 1fr 1fr; }
+    .cols-3 .mini-btn { grid-column: 2; justify-self: end; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#">JobAura</a>
+    <div class="header-search">
+      <i data-lucide="search"></i>
+      <input placeholder="Search services, skills, or experts" />
+    </div>
+    <nav class="main-nav">
+      <a href="#">Home</a>
+      <a href="#">Explore</a>
+      <a href="#">Post Service</a>
+      <a href="#">Hiring Posts</a>
+      <a href="#">Connections</a>
+    </nav>
+    <span class="avatar md">PW</span>
+  </div>
+</header>
+
+<main class="page">
+  <p class="eyebrow">Settings</p>
+  <h1 class="page-title display">Manage your workspace</h1>
+  <p class="page-sub">Profile, resume, and account preferences — all in one place.</p>
+
+  <!-- sticky chip tabs: the ONLY navigation -->
+  <nav class="tab-bar" role="tablist" aria-label="Settings sections">
+    <button class="tab-chip active" role="tab" aria-selected="true" data-view="overview"><i data-lucide="layout-dashboard"></i> Overview</button>
+    <button class="tab-chip" role="tab" aria-selected="false" data-view="profile"><i data-lucide="user-round"></i> Profile</button>
+    <button class="tab-chip" role="tab" aria-selected="false" data-view="resume"><i data-lucide="file-json"></i> Resume <span class="dot" title="Not imported yet"></span></button>
+    <button class="tab-chip" role="tab" aria-selected="false" data-view="account"><i data-lucide="shield-check"></i> Account</button>
+    <button class="tab-chip" role="tab" aria-selected="false" data-view="security"><i data-lucide="key-round"></i> Security</button>
+    <button class="tab-chip" role="tab" aria-selected="false" data-view="notifications"><i data-lucide="bell"></i> Notifications</button>
+    <button class="tab-chip" role="tab" aria-selected="false" data-view="billing"><i data-lucide="credit-card"></i> Billing</button>
+  </nav>
+
+  <!-- ===== OVERVIEW: status dashboard ===== -->
+  <div class="view" id="view-overview">
+    <section class="card section">
+      <div class="readiness">
+        <div>
+          <p class="label">Profile readiness</p>
+          <h2 class="big display">13% <span>complete</span></h2>
+          <p class="sub">A complete profile gives buyers enough context to trust your services — and powers better AI matches.</p>
+          <div class="bar"><span style="width: 13%;"></span></div>
+        </div>
+        <div class="who">
+          <span class="avatar">PW</span>
+          <b>Preview Worker</b>
+          <span>preview.worker@jobaura.site</span>
+          <button class="btn btn-secondary btn-sm" data-goto="profile">Edit profile</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section section-title" style="padding-bottom: 0;"><i data-lucide="alert-circle"></i> Needs your attention</div>
+      <div style="padding: 0 0 12px; display: grid; gap: 10px;">
+        <button class="todo-row" data-goto="resume" style="border: 1px solid var(--border); border-radius: var(--radius);">
+          <span class="icon"><i data-lucide="file-json"></i></span>
+          <span><b>Resume not imported</b><span>Add your CV so AI matching can rank jobs for you.</span></span>
+          <i data-lucide="arrow-right" class="arrow"></i>
+        </button>
+        <button class="todo-row" data-goto="profile" style="border: 1px solid var(--border); border-radius: var(--radius);">
+          <span class="icon"><i data-lucide="eye-off"></i></span>
+          <span><b>Hidden from recruiters</b><span>Turn on recruiter visibility so employers can find you.</span></span>
+          <i data-lucide="arrow-right" class="arrow"></i>
+        </button>
+      </div>
+    </section>
+
+    <p class="soon-line"><b>Account</b> · <b>Security</b> · <b>Notifications</b> · <b>Billing</b> are coming next — watch this space.</p>
+  </div>
+
+  <!-- ===== PROFILE ===== -->
+  <div class="view" id="view-profile" hidden>
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="image"></i> Profile media <span class="spacer"></span><button class="link-btn" type="button"><i data-lucide="save" style="width:11px;height:11px;"></i> Save profile</button></h2>
+      <div class="media-row">
+        <span class="avatar">PW</span>
+        <div class="media-id">
+          <b>Preview Worker</b>
+          <span>preview.worker@jobaura.site</span>
+        </div>
+        <div class="media-actions">
+          <button class="upload-btn"><i data-lucide="upload"></i> Upload avatar</button>
+          <button class="upload-btn"><i data-lucide="image-up"></i> Upload cover</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="info"></i> Basics</h2>
+      <div class="form-grid">
+        <div class="field"><label>Name</label><div class="control"><input value="Preview Worker" /></div></div>
+        <div class="field"><label>Phone</label><div class="control"><input placeholder="+84…" /></div></div>
+        <div class="field"><label>Birthday</label><div class="control"><input type="date" /></div></div>
+        <div class="field"><label>Location</label><div class="control"><input placeholder="Ho Chi Minh" /></div></div>
+        <div class="field wide"><label>Headline</label><div class="control"><input placeholder="e.g. Fullstack developer · Open to work" /></div></div>
+        <div class="field wide"><label>Bio</label><textarea class="raw" placeholder="Tell buyers about your work…"></textarea></div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="sparkle"></i> Skills <span class="spacer"></span><button class="add-btn"><i data-lucide="plus"></i> Add skill</button></h2>
+      <div class="editor-row">
+        <div class="cols-3">
+          <div class="field" style="margin:0;"><div class="control"><input value="React" /></div></div>
+          <div class="field" style="margin:0;"><div class="control"><input value="advanced" /></div></div>
+          <button class="mini-btn" aria-label="Remove skill"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <div class="editor-row">
+        <div class="cols-3">
+          <div class="field" style="margin:0;"><div class="control"><input value="Next.js" /></div></div>
+          <div class="field" style="margin:0;"><div class="control"><input value="advanced" /></div></div>
+          <button class="mini-btn" aria-label="Remove skill"><i data-lucide="trash-2"></i></button>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:12px;"><button class="btn btn-primary btn-sm"><i data-lucide="save"></i> Save skills</button></div>
+    </section>
+
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="award"></i> Certifications <span class="spacer"></span><button class="add-btn"><i data-lucide="plus"></i> Add certification</button></h2>
+      <div class="editor-row">
+        <div class="cols-2">
+          <div class="field" style="margin:0;"><label>Name</label><div class="control"><input placeholder="AWS Solutions Architect" /></div></div>
+          <div class="field" style="margin:0;"><label>Issuer</label><div class="control"><input placeholder="Amazon" /></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="folder-open"></i> Portfolio <span class="spacer"></span><button class="add-btn"><i data-lucide="plus"></i> Add item</button></h2>
+      <div class="editor-row">
+        <div class="cols-2">
+          <div class="field" style="margin:0;"><label>Title</label><div class="control"><input placeholder="Project name" /></div></div>
+          <div class="field" style="margin:0;"><label>URL</label><div class="control"><input placeholder="https://…" /></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="eye"></i> Visibility</h2>
+      <label class="todo-row" style="border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+        <input type="checkbox" checked style="width: 16px; height: 16px; accent-color: var(--primary);" />
+        <span>
+          <b>Visible to recruiters</b>
+          <span>Allow recruiters to find this completed profile in candidate search and AI matching.</span>
+        </span>
+      </label>
+    </section>
+  </div>
+
+  <!-- ===== RESUME ===== -->
+  <div class="view" id="view-resume" hidden>
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="upload-cloud"></i> Import your resume</h2>
+      <label class="dropzone">
+        <i data-lucide="upload-cloud"></i>
+        <b>Click to attach your CV</b>
+        <span>PDF or DOCX, up to 5 MB — we extract the fields automatically</span>
+      </label>
+    </section>
+    <section class="card section">
+      <h2 class="section-title"><i data-lucide="file-json"></i> Resume details</h2>
+      <div class="form-grid">
+        <div class="field"><label>Full name</label><div class="control"><input placeholder="From your CV" /></div></div>
+        <div class="field"><label>Headline</label><div class="control"><input placeholder="e.g. Senior Frontend Developer" /></div></div>
+        <div class="field wide"><label>Skills</label><div class="control"><input placeholder="Comma-separated skills" /></div></div>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+        <button class="btn btn-secondary btn-sm"><i data-lucide="sparkles"></i> Predict seniority</button>
+        <button class="btn btn-primary btn-sm"><i data-lucide="save"></i> Import resume</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== PLACEHOLDERS (shared) ===== -->
+  <div class="view" id="view-account" hidden>
+    <section class="card placeholder">
+      <span class="icon"><i data-lucide="shield-check"></i></span>
+      <h2>Account is coming next</h2>
+      <p>Email, role, and basic account data will live here. The settings hub is ready — this panel activates as soon as the backend APIs ship.</p>
+    </section>
+  </div>
+  <div class="view" id="view-security" hidden>
+    <section class="card placeholder">
+      <span class="icon"><i data-lucide="key-round"></i></span>
+      <h2>Security is coming next</h2>
+      <p>Password and session controls will live here.</p>
+    </section>
+  </div>
+  <div class="view" id="view-notifications" hidden>
+    <section class="card placeholder">
+      <span class="icon"><i data-lucide="bell"></i></span>
+      <h2>Notifications are coming next</h2>
+      <p>Marketplace alerts and email preferences will live here.</p>
+    </section>
+  </div>
+  <div class="view" id="view-billing" hidden>
+    <section class="card placeholder">
+      <span class="icon"><i data-lucide="credit-card"></i></span>
+      <h2>Billing is coming next</h2>
+      <p>Payments and invoices will live here.</p>
+    </section>
+  </div>
+</main>
+
+<div class="preview-flag"><span class="dotp"></span> Settings v2</div>
+
+<script>
+  lucide.createIcons();
+  const chips = document.querySelectorAll('.tab-chip');
+  const views = [...document.querySelectorAll('.view')];
+  function show(view) {
+    chips.forEach((chip) => {
+      const on = chip.dataset.view === view;
+      chip.classList.toggle('active', on);
+      chip.setAttribute('aria-selected', String(on));
+    });
+    views.forEach((el) => { el.hidden = el.id !== `view-${view}`; });
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  chips.forEach((chip) => chip.addEventListener('click', () => show(chip.dataset.view)));
+  document.querySelectorAll('[data-goto]').forEach((el) => el.addEventListener('click', () => show(el.dataset.goto)));
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@ const root = fileURLToPath(new URL('.', import.meta.url))
 const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.svg': 'image/svg+xml' }
 
 // Default page: the most recent preview awaiting/under review.
-const defaultPage = 'job-detail-redesign.html'
+const defaultPage = 'profile-redesign.html'
 
 createServer(async (req, res) => {
   try {

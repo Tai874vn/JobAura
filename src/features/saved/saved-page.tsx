@@ -3,14 +3,14 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bookmark, BriefcaseBusiness, FileText } from 'lucide-react'
+import { Bookmark, BriefcaseBusiness, ChevronDown, FileText, SearchX } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { FeedPost } from '@/shared/schemas'
-import { Button, Card, CardContent, Skeleton } from '@/shared/ui'
+import { Button, ButtonLink, Card, EmptyState, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { JobCard } from '@/features/jobs/job-card'
 import { mergeSavedPages } from './saved-data'
@@ -48,37 +48,115 @@ export function SavedPage() {
   const jobsLoadFailed = jobsQuery.isError && !jobsQuery.data
 
   return (
-    <div className="container-page py-8">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
-        <div>
-          <h1 className="font-display text-3xl font-bold">Saved</h1>
-          <p className="mt-1 text-sm text-muted">Posts and opportunities you want to return to.</p>
-        </div>
-        <div className="flex rounded-lg border border-border bg-white p-1">
-          <TabButton active={tab === 'posts'} onClick={() => setTab('posts')} icon={<FileText className="h-4 w-4" />} label="Posts" />
-          <TabButton active={tab === 'jobs'} onClick={() => setTab('jobs')} icon={<BriefcaseBusiness className="h-4 w-4" />} label="Jobs" />
-        </div>
+    <div className="container-page pt-10 pb-16">
+      <h1 className="font-display text-3xl font-bold tracking-tight">Saved</h1>
+      <p className="mt-1 text-sm text-muted">Posts and opportunities you want to return to.</p>
+
+      <div className="mt-5 flex gap-2" role="tablist" aria-label="Saved items">
+        <TabChip
+          active={tab === 'posts'}
+          onClick={() => setTab('posts')}
+          icon={<FileText className="h-3.5 w-3.5" />}
+          label="Posts"
+          count={tab === 'posts' ? posts.length : undefined}
+        />
+        <TabChip
+          active={tab === 'jobs'}
+          onClick={() => setTab('jobs')}
+          icon={<BriefcaseBusiness className="h-3.5 w-3.5" />}
+          label="Jobs"
+          count={tab === 'jobs' ? jobs.length : undefined}
+        />
       </div>
 
       {tab === 'posts' ? (
-        <div className="mx-auto mt-6 max-w-3xl space-y-4">
+        <section className="mx-auto mt-5 max-w-3xl" aria-busy={postsQuery.isPending} aria-live="polite">
           {postsQuery.isPending ? <SavedSkeleton /> : posts.map((post) => (
             <SavedPostCard key={post.id} post={post} removing={removePost.isPending && removePost.variables === post.id} onRemove={() => removePost.mutate(post.id)} />
           ))}
-          {postsLoadFailed ? <SavedLoadError type="posts" onRetry={() => postsQuery.refetch()} /> : null}
-          {!postsQuery.isPending && !postsLoadFailed && !posts.length ? <EmptySaved type="posts" /> : null}
-          {postsQuery.hasNextPage ? <Button className="mx-auto flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} disabled={postsQuery.isFetchingNextPage}>Load more posts</Button> : null}
-        </div>
+          {postsLoadFailed ? (
+            <EmptyState
+              className="mt-5"
+              icon={<SearchX />}
+              title="Saved posts could not be loaded"
+              description="Check the backend connection and try again."
+              action={<Button variant="secondary" onClick={() => postsQuery.refetch()}>Retry</Button>}
+            />
+          ) : null}
+          {!postsQuery.isPending && !postsLoadFailed && !posts.length ? (
+            <EmptyState
+              className="mt-5"
+              icon={<Bookmark />}
+              title="No saved posts yet"
+              description="Save posts from your home feed and they will appear here."
+              action={<ButtonLink href="/">Browse the feed</ButtonLink>}
+            />
+          ) : null}
+          {posts.length ? (
+            <p className="mt-4 text-center text-xs font-semibold text-muted">Saved from your home feed — tap the bookmark on any post to remove it.</p>
+          ) : null}
+          {postsQuery.hasNextPage ? (
+            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} disabled={postsQuery.isFetchingNextPage}>
+              <ChevronDown className="h-4 w-4" />
+              Load more posts
+            </Button>
+          ) : null}
+        </section>
       ) : (
-        <div className="mt-6">
-          {jobsQuery.isPending ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"><SavedSkeleton /><SavedSkeleton /></div> : null}
-          {jobs.length ? <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{jobs.map((job) => <JobCard key={job.id} job={job} initialSaved />)}</div> : null}
-          {jobsLoadFailed ? <SavedLoadError type="jobs" onRetry={() => jobsQuery.refetch()} /> : null}
-          {!jobsQuery.isPending && !jobsLoadFailed && !jobs.length ? <EmptySaved type="jobs" /> : null}
-          {jobsQuery.hasNextPage ? <Button className="mx-auto mt-6 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} disabled={jobsQuery.isFetchingNextPage}>Load more jobs</Button> : null}
-        </div>
+        <section className="mt-5" aria-busy={jobsQuery.isPending} aria-live="polite">
+          {jobsQuery.isPending ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"><SavedSkeleton /><SavedSkeleton /><SavedSkeleton /><SavedSkeleton /></div>
+          ) : null}
+          {jobs.length ? (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{jobs.map((job) => <JobCard key={job.id} job={job} initialSaved />)}</div>
+          ) : null}
+          {jobsLoadFailed ? (
+            <EmptyState
+              icon={<SearchX />}
+              title="Saved jobs could not be loaded"
+              description="Check the backend connection and try again."
+              action={<Button variant="secondary" onClick={() => jobsQuery.refetch()}>Retry</Button>}
+            />
+          ) : null}
+          {!jobsQuery.isPending && !jobsLoadFailed && !jobs.length ? (
+            <EmptyState
+              icon={<Bookmark />}
+              title="No saved jobs yet"
+              description="Tap the bookmark on any service in Explore and it will be waiting for you here."
+              action={<ButtonLink href="/jobs">Explore services</ButtonLink>}
+            />
+          ) : null}
+          {jobs.length ? (
+            <p className="mt-4 text-center text-xs font-semibold text-muted">Saved from Explore — the bookmark on each card removes it.</p>
+          ) : null}
+          {jobsQuery.hasNextPage ? (
+            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} disabled={jobsQuery.isFetchingNextPage}>
+              <ChevronDown className="h-4 w-4" />
+              Load more jobs
+            </Button>
+          ) : null}
+        </section>
       )}
     </div>
+  )
+}
+
+function TabChip({ active, onClick, icon, label, count }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string; count?: number }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        'inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13px] font-semibold transition',
+        active ? 'border-foreground bg-foreground text-white' : 'border-border bg-surface text-muted hover:border-primary hover:text-primary'
+      )}
+    >
+      <span className={active ? 'text-accent' : 'text-primary'}>{icon}</span>
+      {label}
+      {count !== undefined ? <span className={cn('text-[11px] font-bold', active ? 'text-accent' : 'text-muted')}>{count}</span> : null}
+    </button>
   )
 }
 
@@ -92,30 +170,20 @@ function SavedPostCard({ post, removing, onRemove }: { post: FeedPost; removing:
           <Link href={`/profile/${post.author.id}`} className="text-sm font-bold hover:text-primary">{post.author.name}</Link>
           <p className="truncate text-xs text-muted">{post.author.headline || 'JobAura member'}</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={onRemove} disabled={removing} title="Remove saved post"><Bookmark className="h-5 w-5 fill-primary text-primary" /></Button>
+        <button
+          type="button"
+          onClick={onRemove}
+          disabled={removing}
+          title="Remove saved post"
+          aria-label="Remove saved post"
+          className="grid h-9 w-9 place-items-center rounded-lg text-primary transition hover:bg-danger/5 hover:text-danger disabled:opacity-50"
+        >
+          <Bookmark className={cn('h-5 w-5', !removing && 'fill-primary')} />
+        </button>
       </div>
       {post.content ? <p className="whitespace-pre-wrap px-4 pb-4 text-sm leading-6">{post.content}</p> : null}
       {image ? <Image src={image} alt={`Post by ${post.author.name}`} width={960} height={640} unoptimized={shouldBypassImageOptimizer(post.imageUrl)} className="max-h-[520px] w-full border-t border-border object-contain" /> : null}
-      <div className="flex gap-4 border-t border-border px-4 py-3 text-xs text-muted"><span>{post.likeCount} likes</span><span>{post.commentCount} comments</span></div>
-    </Card>
-  )
-}
-
-function TabButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
-  return <button type="button" onClick={onClick} className={`flex h-9 items-center gap-2 rounded px-4 text-sm font-semibold ${active ? 'bg-primary text-white' : 'text-muted hover:text-foreground'}`}>{icon}{label}</button>
-}
-
-function EmptySaved({ type }: { type: SavedTab }) {
-  return <Card className="p-10 text-center"><Bookmark className="mx-auto h-6 w-6 text-primary" /><h2 className="mt-3 font-display text-lg font-bold">No saved {type}</h2><p className="mt-1 text-sm text-muted">Save something useful and it will appear here.</p><Link href={type === 'posts' ? '/' : '/jobs'} className="mt-4 inline-flex text-sm font-bold text-primary">Browse {type}</Link></Card>
-}
-
-function SavedLoadError({ type, onRetry }: { type: SavedTab; onRetry: () => void }) {
-  return (
-    <Card>
-      <CardContent className="p-8 text-center text-sm text-muted">
-        Saved {type} could not be loaded.
-        <Button className="mx-auto mt-3" variant="secondary" onClick={onRetry}>Retry</Button>
-      </CardContent>
+      <div className="flex gap-4 border-t border-border px-4 py-3 text-xs text-muted"><span>{post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}</span><span>{post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}</span></div>
     </Card>
   )
 }

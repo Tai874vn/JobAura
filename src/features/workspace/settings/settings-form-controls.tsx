@@ -24,14 +24,16 @@ export function EditorSection({
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="font-display text-2xl font-bold">{title}</h2>
-          {!hideActions ? (
-            <div className="flex gap-2">
-              {onAdd ? <Button variant="secondary" size="sm" onClick={onAdd}><Plus className="h-4 w-4" />Add</Button> : null}
-              {onSave ? <Button size="sm" onClick={onSave}>{saveLabel}</Button> : null}
-            </div>
-          ) : null}
+        <div className="mb-4 flex items-center gap-2">
+          <h2 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h2>
+          <div className="ml-auto flex gap-2">
+            {onAdd ? (
+              <Button variant="secondary" size="sm" onClick={onAdd}>
+                <Plus className="h-4 w-4" />Add
+              </Button>
+            ) : null}
+            {onSave ? <Button size="sm" onClick={onSave}>{saveLabel}</Button> : null}
+          </div>
         </div>
         <div className="grid gap-3">{children}</div>
       </CardContent>
@@ -67,7 +69,7 @@ export function PortfolioFields({ item, onChange }: { item: PortfolioDraft; onCh
 
 export function UploadField({ label, icon, onChange }: { label: string; icon: React.ReactNode; onChange: (file: File) => void }) {
   return (
-    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
+    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-4 text-sm font-semibold text-muted hover:border-primary hover:text-primary">
       {icon}
       {label}
       <input
