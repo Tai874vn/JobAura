@@ -137,6 +137,8 @@ describe('feed data helpers', () => {
       headline: 'Backend developer',
       bio: 'Builds reliable services.',
       location: 'Phnom Penh',
+      website: 'https://example.com',
+      coverImage: '/cover.png',
       profileSkills: [{ name: 'NestJS' }],
       profileCertifications: [{ name: 'AWS' }],
       portfolioItems: [{ title: 'JobAura' }],
@@ -146,6 +148,16 @@ describe('feed data helpers', () => {
       id: 7,
       name: 'New user',
       email: 'new@example.com',
-    })).toBe(13)
+    })).toBe(10)
+
+    expect(getProfileCompleteness({
+      id: 8,
+      name: 'Five fields',
+      email: 'five@example.com',
+      headline: 'Developer',
+      bio: 'Builds reliable products.',
+      location: 'Bangkok',
+      profileSkills: [{ name: 'TypeScript' }],
+    })).toBe(50)
   })
 })

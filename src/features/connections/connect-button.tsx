@@ -4,11 +4,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Clock3, MessageCircle, UserMinus, UserPlus, X } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { chatApi, connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Button, ConfirmationDialog } from '@/shared/ui'
+import { Button, ButtonLink, ConfirmationDialog } from '@/shared/ui'
 import { connectionControlsFor, type ConnectionCommand } from './connections-data'
 
 export function ConnectionActions({
@@ -22,10 +23,12 @@ export function ConnectionActions({
 }) {
   const [confirmingUnfriend, setConfirmingUnfriend] = useState(false)
   const queryClient = useQueryClient()
+  const { user, isLoading: isSessionLoading } = useSession()
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
   const statusQuery = useQuery({
     queryKey: queryKeys.connectionStatus(userId),
     queryFn: () => connectionsApi.status(userId),
+    enabled: Boolean(user),
   })
   const status = statusQuery.data?.content
   const controls = status ? connectionControlsFor(status.state) : null
@@ -74,6 +77,19 @@ export function ConnectionActions({
     relationshipMutation.mutate(command.action)
   }
 
+  if (isSessionLoading) return null
+  if (!user) {
+    return (
+      <ButtonLink
+        className={cn('w-full', className)}
+        href={`/auth/login?next=${encodeURIComponent(`/profile/${userId}`)}`}
+        size="sm"
+        variant="secondary"
+      >
+        <UserPlus className="h-4 w-4" /> Sign in to connect
+      </ButtonLink>
+    )
+  }
   if (statusQuery.isPending || statusQuery.isError || !controls) return null
 
   return (

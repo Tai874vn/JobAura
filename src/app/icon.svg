@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Abstract split-orbit logo">
-  <rect width="64" height="64" rx="16" fill="#101828" />
+  <rect width="64" height="64" rx="16" fill="#006d43" />
   <path
     d="M19 32c0-7.18 5.82-13 13-13 2.95 0 5.68.98 7.86 2.64"
     fill="none"
-    stroke="#7dd3fc"
+    stroke="#d2d92d"
     stroke-width="6"
     stroke-linecap="round"
   />
   <path
     d="M45 32c0 7.18-5.82 13-13 13-2.95 0-5.68-.98-7.86-2.64"
     fill="none"
-    stroke="#facc15"
+    stroke="#ffffff"
     stroke-width="6"
     stroke-linecap="round"
   />
   <circle cx="32" cy="32" r="7" fill="#ffffff" />
-  <circle cx="32" cy="32" r="3" fill="#101828" />
+  <circle cx="32" cy="32" r="3" fill="#006d43" />
 </svg>

@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { Eye } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -51,6 +52,7 @@ function LoginFormFields({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [roleModalDismissed, setRoleModalDismissed] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [googleSignupRole, setGoogleSignupRole] = useState<SignupRole | null>(
     null,
   );
@@ -102,15 +104,26 @@ function LoginFormFields({
         className="space-y-4"
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
       >
-        <FieldError message={form.formState.errors.email?.message}>
-          <Input placeholder="Email" type="email" {...form.register("email")} />
+        <FieldError label="Email" message={form.formState.errors.email?.message}>
+          <Input placeholder="you@example.com" type="email" {...form.register("email")} />
         </FieldError>
-        <FieldError message={form.formState.errors.password?.message}>
-          <Input
-            placeholder="Password"
-            type="password"
-            {...form.register("password")}
-          />
+        <FieldError label="Password" message={form.formState.errors.password?.message}>
+          <div className="flex items-center rounded-lg border border-border bg-surface transition focus-within:border-primary">
+            <Input
+              className="border-0 bg-transparent shadow-none focus:border-0 focus:ring-0"
+              placeholder="Your password"
+              type={showPassword ? "text" : "password"}
+              {...form.register("password")}
+            />
+            <button
+              className="mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted transition hover:text-foreground"
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((value) => !value)}
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          </div>
         </FieldError>
         <Button className="w-full" type="submit" disabled={mutation.isPending}>
           {mutation.isPending ? "Signing in..." : "Sign in"}
@@ -124,7 +137,7 @@ function LoginFormFields({
         <span className="h-px flex-1 bg-border" />
       </div>
       <Button
-        className="w-full bg-white"
+        className="w-full"
         type="button"
         variant="secondary"
         onClick={continueWithGoogle}
@@ -163,6 +176,7 @@ export function RegisterForm() {
 function RegisterFormFields({ notice }: { notice?: string | null }) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<SignUp>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { name: "", email: "", password: "" },
@@ -227,18 +241,29 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
         </p>
       ) : null}
       <form className="space-y-4" onSubmit={form.handleSubmit(createAccount)}>
-        <FieldError message={form.formState.errors.name?.message}>
-          <Input placeholder="Full name" {...form.register("name")} />
+        <FieldError label="Full name" message={form.formState.errors.name?.message}>
+          <Input placeholder="Your name" {...form.register("name")} />
         </FieldError>
-        <FieldError message={form.formState.errors.email?.message}>
-          <Input placeholder="Email" type="email" {...form.register("email")} />
+        <FieldError label="Email" message={form.formState.errors.email?.message}>
+          <Input placeholder="you@example.com" type="email" {...form.register("email")} />
         </FieldError>
-        <FieldError message={form.formState.errors.password?.message}>
-          <Input
-            placeholder="Password"
-            type="password"
-            {...form.register("password")}
-          />
+        <FieldError label="Password" message={form.formState.errors.password?.message}>
+          <div className="flex items-center rounded-lg border border-border bg-surface transition focus-within:border-primary">
+            <Input
+              className="border-0 bg-transparent shadow-none focus:border-0 focus:ring-0"
+              placeholder="At least 10 characters"
+              type={showPassword ? "text" : "password"}
+              {...form.register("password")}
+            />
+            <button
+              className="mr-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-muted transition hover:text-foreground"
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((value) => !value)}
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+          </div>
         </FieldError>
         <div className="grid gap-2">
           <p className="text-xs font-semibold uppercase text-muted">
@@ -248,10 +273,10 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
             {signupRoleOptions.map((option) => (
               <label
                 key={option.value}
-                className={`cursor-pointer rounded-lg border p-3 transition ${
+                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
                   selectedRole === option.value
                     ? "border-primary bg-primary/5 text-foreground"
-                    : "border-border bg-white text-muted hover:border-primary hover:text-foreground"
+                    : "border-border bg-surface text-muted hover:border-primary hover:text-foreground"
                 }`}
               >
                 <input
@@ -260,9 +285,21 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
                   value={option.value}
                   {...roleRegistration}
                 />
-                <span className="block text-sm font-bold">{option.label}</span>
-                <span className="mt-1 block text-xs leading-5">
-                  {option.description}
+                <span
+                  className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 ${
+                    selectedRole === option.value ? "border-primary" : "border-border"
+                  }`}
+                  aria-hidden="true"
+                >
+                  {selectedRole === option.value ? (
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                  ) : null}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-bold">{option.label}</span>
+                  <span className="mt-1 block text-xs leading-5">
+                    {option.description}
+                  </span>
                 </span>
               </label>
             ))}
@@ -274,7 +311,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
           ) : null}
         </div>
         <Button
-          className="w-full bg-white"
+          className="w-full"
           type="button"
           variant="secondary"
           onClick={continueWithGoogle}

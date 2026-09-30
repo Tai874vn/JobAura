@@ -5,19 +5,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowUpRight,
   Award,
+  BadgeCheck,
   BriefcaseBusiness,
   Calendar,
-  CheckCircle2,
   Edit3,
   ExternalLink,
   Globe2,
   ImageUp,
+  Lock,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
   Sparkles,
-  Star,
   Upload,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -27,7 +27,7 @@ import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
 import type { Job, UpdateProfile, UserProfile } from '@/shared/schemas'
-import { Badge, Card, CardContent, CardHeader } from '@/shared/ui'
+import { Button, Card, CardContent, CardHeader } from '@/shared/ui'
 import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { safeExternalUrl } from '@/shared/lib/urls'
 import { useSession } from '@/features/auth/use-session'
@@ -38,6 +38,7 @@ import {
   type ResumeDraft,
 } from '@/features/users/resume'
 import { ConnectionActions } from '@/features/connections/connect-button'
+import { calculateProfileCompletion } from './profile-posts'
 import { cleanObject, toDateInput } from './profile-form-utils'
 import { useProfileUpload } from './use-profile-upload'
 import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer } from './profile/profile-editor'
@@ -81,6 +82,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const bio =
     profile.bio ??
     'This JobAura member is building out their profile. Browse their skills, credentials, and portfolio to understand how they can help.'
+  const completion = calculateProfileCompletion(profile)
   const [editableProfile, setEditableProfile] = useState<UpdateProfile>({})
   const [editableSkills, setEditableSkills] = useState<SkillDraft[]>([])
   const [editableCertifications, setEditableCertifications] = useState<CertificationDraft[]>([])
@@ -158,9 +160,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
 
   const saveCertifications = useMutation({
     mutationFn: () =>
-      usersApi.replaceCertifications(
-        editableCertifications.map((cert, index) => cleanObject({ ...cert, sortOrder: index })).filter((cert) => cert.name)
-      ),
+      usersApi.replaceCertifications(editableCertifications.map((cert, index) => cleanObject({ ...cert, sortOrder: index })).filter((cert) => cert.name)),
     onSuccess: (response) => {
       refreshProfile(response.content)
       setActivePanel(null)
@@ -190,97 +190,101 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   })
 
   return (
-    <main className="bg-background pb-12">
-      <section className="border-b border-border bg-surface">
-        <div className="container-page">
-          <div className="group/cover relative h-48 overflow-hidden rounded-b-lg border-x border-b border-border bg-[#e4e2e1] md:h-64">
-            {coverImageUrl ? (
-              <Image src={coverImageUrl} alt="" fill priority unoptimized={bypassCoverOptimizer} className="object-cover" sizes="100vw" />
-            ) : (
-              <div className="h-full w-full bg-[linear-gradient(135deg,#f6f3f2_0%,#e4e2e1_45%,#bccabe_100%)]">
-                <div className="h-full w-full bg-[radial-gradient(circle_at_20%_20%,rgba(0,109,67,0.16),transparent_28%),linear-gradient(90deg,rgba(255,255,255,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.34)_1px,transparent_1px)] bg-size-[auto,40px_40px,40px_40px]" />
+    <main className="pb-16">
+      <div className="container-page pt-8">
+        <figure className="group/cover relative m-0 aspect-[21/7] overflow-hidden rounded-lg border border-border bg-surface-muted md:aspect-[21/6]">
+          {coverImageUrl ? (
+            <Image src={coverImageUrl} alt="" fill priority unoptimized={bypassCoverOptimizer} className="object-cover" sizes="100vw" />
+          ) : (
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,#f6f3f2_0%,#e4e2e1_45%,#bccabe_100%)]">
+              <div className="h-full w-full bg-[radial-gradient(circle_at_20%_20%,rgba(0,109,67,0.16),transparent_28%),linear-gradient(90deg,rgba(255,255,255,0.34)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.34)_1px,transparent_1px)] bg-size-[auto,40px_40px,40px_40px]" />
+            </div>
+          )}
+          {isOwner ? (
+            <OwnerUploadButton
+              className="absolute right-4 top-4 opacity-0 shadow-sm transition group-hover/cover:opacity-100 focus-within:opacity-100"
+              label="Edit cover"
+              icon={<ImageUp className="h-4 w-4" />}
+              disabled={uploadCover.isPending}
+              onChange={(file) => uploadCover.mutate(file)}
+            />
+          ) : null}
+        </figure>
+
+        <Card className="relative z-10 -mt-14">
+          <CardContent className="flex flex-wrap items-start gap-5 p-5 md:p-6">
+            <div className="group/avatar relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-surface bg-primary font-display text-4xl font-bold text-white shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
+              {avatarUrl ? (
+                <Image src={avatarUrl} alt={profile.name} fill unoptimized={bypassAvatarOptimizer} className="object-cover" sizes="112px" />
+              ) : (
+                initials(profile.name)
+              )}
+              {isOwner ? (
+                <OwnerUploadButton
+                  className="absolute inset-0 h-full rounded-full border-0 bg-black/55 text-white opacity-0 transition hover:bg-black/65 group-hover/avatar:opacity-100 focus-within:opacity-100"
+                  label="Edit avatar"
+                  icon={<Upload className="h-4 w-4" />}
+                  disabled={uploadAvatar.isPending}
+                  onChange={(file) => uploadAvatar.mutate(file)}
+                />
+              ) : null}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">{profile.name}</h1>
+                {completion === 100 ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+                    <BadgeCheck className="h-3.5 w-3.5" />
+                    Complete profile
+                  </span>
+                ) : null}
               </div>
-            )}
-            {isOwner ? (
-              <OwnerUploadButton
-                className="absolute right-4 top-4 opacity-0 shadow-sm transition group-hover/cover:opacity-100 focus-within:opacity-100"
-                label="Edit cover"
-                icon={<ImageUp className="h-4 w-4" />}
-                disabled={uploadCover.isPending}
-                onChange={(file) => uploadCover.mutate(file)}
-              />
-            ) : null}
-          </div>
-
-          <div className="relative -mt-14 grid gap-5 pb-6 lg:grid-cols-[1fr_336px]">
-            <Card className="overflow-hidden">
-              <CardContent className="p-5 md:p-6">
-                <div className="flex flex-col gap-5 md:flex-row md:items-end">
-                  <div className="group/avatar relative flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border-4 border-white bg-primary font-display text-4xl font-bold text-white shadow-[0_8px_28px_rgba(0,0,0,0.12)]">
-                    {avatarUrl ? (
-                      <Image src={avatarUrl} alt={profile.name} fill unoptimized={bypassAvatarOptimizer} className="object-cover" sizes="112px" />
-                    ) : (
-                      initials(profile.name)
-                    )}
-                    {isOwner ? (
-                      <OwnerUploadButton
-                        className="absolute inset-0 h-full rounded-none border-0 bg-black/55 text-white opacity-0 transition hover:bg-black/65 group-hover/avatar:opacity-100 focus-within:opacity-100"
-                        label="Edit avatar"
-                        icon={<Upload className="h-4 w-4" />}
-                        disabled={uploadAvatar.isPending}
-                        onChange={(file) => uploadAvatar.mutate(file)}
-                      />
-                    ) : null}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h1 className="font-display text-3xl font-bold leading-tight md:text-4xl">{profile.name}</h1>
-                      <Badge tone="primary" className="gap-1">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        Verified profile
-                      </Badge>
-                    </div>
-                    <p className="mt-2 max-w-3xl text-lg font-semibold text-foreground">{headline}</p>
-                    {isOwner ? (
-                      <button
-                        type="button"
-                        className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition hover:border-primary hover:text-primary"
-                        onClick={() => setActivePanel('profile')}
-                      >
-                        <Edit3 className="h-3.5 w-3.5" />
-                        Edit profile
-                      </button>
-                    ) : null}
-                    {!isOwner ? <ConnectionActions className="mt-3" userId={profile.id} userName={profile.name} /> : null}
-                    <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-                      {profile.location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={profile.location} /> : null}
-                      {websiteUrl ? (
-                        <a className="inline-flex items-center gap-1.5 font-semibold text-primary hover:underline" href={websiteUrl} target="_blank" rel="noreferrer noopener">
-                          <Globe2 className="h-4 w-4" />
-                          Website
-                          <ArrowUpRight className="h-3.5 w-3.5" />
-                        </a>
-                      ) : null}
-                      <InlineInfo icon={<Sparkles className="h-4 w-4" />} value={`${skills.length} skills listed`} />
-                    </div>
-                  </div>
+              <p className="mt-1 text-base font-semibold text-foreground md:text-lg">{headline}</p>
+              <div className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5 text-[13px] font-semibold text-muted">
+                {profile.location ? <InlineInfo icon={<MapPin className="h-3.5 w-3.5" />} value={profile.location} /> : null}
+                {websiteUrl ? (
+                  <a className="inline-flex items-center gap-1 text-primary hover:underline" href={websiteUrl} target="_blank" rel="noreferrer noopener">
+                    <Globe2 className="h-3.5 w-3.5" />
+                    {profile.website?.replace(/^https?:\/\//, '')}
+                    <ArrowUpRight className="h-3 w-3" />
+                  </a>
+                ) : null}
+                {profile.createdAt ? <InlineInfo icon={<Calendar className="h-3.5 w-3.5" />} value={`Member since ${formatDate(profile.createdAt)}`} /> : null}
+              </div>
+              {skills.length ? (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {skills.slice(0, 4).map((skill, index) => (
+                    <span key={skill.id ?? `${skill.name}-${index}`} className="rounded-full bg-accent/30 px-2.5 py-1 text-xs font-bold">
+                      {skill.name}
+                      {skill.level ? <span className="ml-1.5 text-[10.5px] font-medium text-muted">{humanize(skill.level)}</span> : null}
+                    </span>
+                  ))}
+                  {skills.length > 4 ? (
+                    <span className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-bold text-muted">+{skills.length - 4} more</span>
+                  ) : null}
                 </div>
-              </CardContent>
-            </Card>
+              ) : null}
+            </div>
+            <div className="grid w-full shrink-0 gap-2.5 sm:w-auto sm:min-w-52">
+              {isOwner ? (
+                <Button className="w-full" onClick={() => setActivePanel('profile')}>
+                  <Edit3 className="h-4 w-4" />
+                  Edit profile
+                </Button>
+              ) : (
+                <ConnectionActions className="w-full [&>div]:w-full" userId={profile.id} userName={profile.name} />
+              )}
+              <a href="#services" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface text-sm font-semibold transition hover:border-primary hover:text-primary">
+                <ArrowUpRight className="h-4 w-4" />
+                View services below
+              </a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <Card className="self-end">
-              <CardContent className="grid gap-3 p-4 text-sm">
-                <ContactRow icon={<Mail className="h-4 w-4" />} label="Email" value={profile.email} />
-                <ContactRow icon={<Phone className="h-4 w-4" />} label="Phone" value={profile.phone} />
-                <ContactRow icon={<ShieldCheck className="h-4 w-4" />} label="Role" value={profile.role ?? 'member'} />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <div className="container-page mt-6 grid gap-6 lg:grid-cols-[1fr_336px]">
-        <div className="grid gap-6">
+      <div className="container-page mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_336px]">
+        <div className="grid gap-5">
           <Card>
             <CardContent className="p-5 md:p-6">
               <SectionTitle title="About" action={isOwner ? <InlineEditButton label="Edit" onClick={() => setActivePanel('profile')} /> : null} />
@@ -298,9 +302,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
             />
           ) : null}
 
-          <Card>
+          <Card id="services">
             <CardHeader className="flex flex-wrap items-center justify-between gap-3">
-              <SectionTitle title="Posts" meta={`${posts.length} services`} />
+              <SectionTitle title="Services" meta={`${posts.length} listed`} />
               <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Public marketplace activity</span>
             </CardHeader>
             <CardContent className="grid gap-4 p-5 md:p-6">
@@ -348,14 +352,14 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                         href={projectUrl}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="group overflow-hidden rounded-lg border border-border bg-white transition hover:border-primary"
+                        className="group overflow-hidden rounded-lg border border-border bg-surface transition hover:border-primary"
                       >
                         {cardContent}
                       </a>
                     ) : (
                       <div
                         key={item.id ?? `${item.title}-${index}`}
-                        className="group overflow-hidden rounded-lg border border-border bg-white"
+                        className="group overflow-hidden rounded-lg border border-border bg-surface"
                       >
                         {cardContent}
                       </div>
@@ -369,29 +373,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
           </Card>
         </div>
 
-        <aside className="grid content-start gap-6">
-          <Card>
-            <CardContent className="p-5">
-              <SectionTitle
-                title="Skills"
-                meta={`${skills.length}`}
-                action={isOwner ? <InlineEditButton label="Edit" onClick={() => setActivePanel('skills')} /> : null}
-              />
-              {skills.length ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {skills.map((skill, index) => (
-                    <span key={skill.id ?? `${skill.name}-${index}`} className="rounded bg-accent/30 px-3 py-2 text-sm font-semibold text-foreground">
-                      {skill.name}
-                      {skill.level ? <span className="ml-2 text-xs font-medium text-muted">{humanize(skill.level)}</span> : null}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState icon={<Star className="h-5 w-5" />} text="No skills added yet." />
-              )}
-            </CardContent>
-          </Card>
-
+        <aside className="grid content-start gap-5">
           <Card>
             <CardContent className="p-5">
               <SectionTitle
@@ -431,6 +413,37 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               )}
             </CardContent>
           </Card>
+
+          {isOwner ? (
+            <Card>
+              <CardContent className="p-5">
+                <SectionTitle title="Contact" />
+                <div className="mt-4 grid gap-2.5">
+                  <ContactRow icon={<Mail className="h-4 w-4" />} label="Email" value={profile.email} />
+                  <ContactRow icon={<Phone className="h-4 w-4" />} label="Phone" value={profile.phone} />
+                  <ContactRow icon={<ShieldCheck className="h-4 w-4" />} label="Role" value={profile.role ?? 'member'} />
+                </div>
+                <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-5 text-muted">
+                  <Lock className="mt-0.5 h-3 w-3 shrink-0" />
+                  Only you can see this. Visitors connect with you to exchange contact details.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-5">
+                <SectionTitle title="Contact" />
+                <p className="mt-3 flex items-start gap-1.5 text-[12.5px] leading-5 text-muted">
+                  <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  Contact details are shared privately once you connect with {profile.name.split(' ')[0]}.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-muted">
+                  <InlineInfo icon={<MapPin className="h-3.5 w-3.5" />} value={profile.location || 'Location private'} />
+                  <InlineInfo icon={<Sparkles className="h-3.5 w-3.5" />} value={`${skills.length} skills`} />
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </aside>
       </div>
 

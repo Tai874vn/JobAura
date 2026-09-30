@@ -16,6 +16,14 @@ export function setCachedSession(
 }
 
 export function resetClientSession(client: QueryClient = getQueryClient()) {
-  client.clear()
+  client.getMutationCache().clear()
+  client.removeQueries({
+    predicate: (query) => !isSessionQueryKey(query.queryKey),
+  })
   setCachedSession(null, client)
+}
+
+function isSessionQueryKey(queryKey: readonly unknown[]) {
+  return queryKey.length === queryKeys.me.length
+    && queryKey.every((value, index) => value === queryKeys.me[index])
 }

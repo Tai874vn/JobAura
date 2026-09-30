@@ -2,18 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
-import { MessageCircle, Send, X } from 'lucide-react'
+import { CheckCheck, MessageCircle, Send, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { authApi, chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { env } from '@/shared/config/env'
-import { cn, initials } from '@/shared/lib/utils'
+import { cn } from '@/shared/lib/utils'
 import { fetchRealtimeAuth } from '@/shared/realtime/realtime-auth'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Button, Skeleton } from '@/shared/ui'
+import { Avatar, Button, Skeleton } from '@/shared/ui'
 import { shouldLoadRoomMessages } from './chat-data'
 
 type SendMessageAcknowledgement = {
@@ -36,10 +36,12 @@ export function ChatShell() {
   const setMessages = useChatStore((state) => state.setMessages)
   const addMessage = useChatStore((state) => state.addMessage)
   const setOnlineUserIds = useChatStore((state) => state.setOnlineUserIds)
+  const onlineUserIds = useChatStore((state) => state.onlineUserIds)
   const socketRef = useRef<Socket | null>(null)
   const [draft, setDraft] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [readReceipts, setReadReceipts] = useState<Record<number, number[]>>({})
+  const [typingByRoom, setTypingByRoom] = useState<Record<number, number[]>>({})
 
   const roomsQuery = useQuery({
     queryKey: queryKeys.chatRooms,
@@ -74,6 +76,25 @@ export function ChatShell() {
         const readers = current[roomId] ?? []
         if (readers.includes(readerId)) return current
         return { ...current, [roomId]: [...readers, readerId] }
+      })
+    })
+    nextSocket.on('typing', (payload: { roomId?: number; userId?: number; isTyping?: boolean }) => {
+      const roomId = payload?.roomId
+      const typingUserId = payload?.userId
+      if (!roomId || !typingUserId || typingUserId === userId) return
+      setTypingByRoom((current) => {
+        const typers = new Set(current[roomId] ?? [])
+        if (payload.isTyping === false) {
+          typers.delete(typingUserId)
+          if (!typers.size) {
+            const rest = { ...current }
+            delete rest[roomId]
+            return rest
+          }
+        } else {
+          typers.add(typingUserId)
+        }
+        return { ...current, [roomId]: [...typers] }
       })
     })
     nextSocket.on('online-users', (ids: number[]) => setOnlineUserIds(ids))
@@ -173,6 +194,9 @@ export function ChatShell() {
   const latestOwnMessageSeen = Boolean(latestOwnMessage && otherMembers.length > 0 && otherMembers.every((member) =>
     activeRoomReaders.includes(member.id) || wasReadAfter(member.lastReadAt, latestOwnMessage.createdAt)
   ))
+  const peer = otherMembers[0]
+  const peerOnline = peer ? onlineUserIds.includes(peer.id) : false
+  const activeTypingUserIds = activeRoomId ? typingByRoom[activeRoomId] ?? [] : []
 
   if (!user) return null
 
@@ -180,7 +204,7 @@ export function ChatShell() {
     <>
       {!isOpen ? (
         <Button
-          className="fixed bottom-5 right-5 z-40 h-12 rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
+          className="fixed bottom-5 right-5 z-40 h-12 rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
           onClick={openChat}
         >
           <MessageCircle className="h-4 w-4" />
@@ -188,15 +212,15 @@ export function ChatShell() {
         </Button>
       ) : null}
       {isOpen ? (
-        <section className="fixed bottom-5 right-5 z-50 grid h-[560px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[260px_1fr] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.18)]">
-          <aside className="border-r border-border bg-surface-muted">
-            <div className="flex h-14 items-center border-b border-border px-4">
-              <h2 className="font-display text-lg font-bold">Inbox</h2>
+        <section className="fixed bottom-5 right-5 z-50 grid h-[580px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[280px_minmax(0,1fr)] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_24px_60px_rgba(27,28,28,0.22)]">
+          <aside className="flex min-w-0 flex-col border-r border-border bg-surface">
+            <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
+              <h2 className="font-display text-[15px] font-extrabold">Messages</h2>
             </div>
-            <div className="max-h-[506px] overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto p-2">
               {roomsQuery.isPending ? Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="mb-2 flex items-center gap-3 rounded-lg p-3">
-                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <Skeleton className="h-10 w-10 rounded-full" />
                   <span className="min-w-0 flex-1 space-y-2">
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-3 w-1/2" />
@@ -210,22 +234,33 @@ export function ChatShell() {
                   </Button>
                 </div>
               ) : rooms.length ? rooms.map((room) => {
-                const name = room.name ?? room.members.find((member) => member.id !== userId)?.name ?? 'Conversation'
+                const member = room.members.find((candidate) => candidate.id !== userId)
+                const name = room.name ?? member?.name ?? 'Conversation'
+                const online = member ? onlineUserIds.includes(member.id) : false
                 return (
                   <button
                     key={room.id}
                     className={cn(
-                      'mb-2 flex w-full items-center gap-3 rounded-lg p-3 text-left text-sm hover:bg-white',
-                      activeRoomId === room.id && 'bg-white shadow-sm'
+                      'mb-1 flex w-full items-center gap-2.5 rounded-lg p-2.5 text-left text-sm transition hover:bg-surface-muted',
+                      activeRoomId === room.id && 'bg-primary/5'
                     )}
                     onClick={() => void openRoom(room)}
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
-                      {initials(name)}
+                    <span className="relative shrink-0">
+                      <Avatar name={name} src={member?.avatar} size="sm" />
+                      {online ? (
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-primary-bright" aria-label="Online" />
+                      ) : null}
                     </span>
-                    <span className="min-w-0">
-                      <span className="block truncate font-semibold">{name}</span>
-                      <span className="block truncate text-xs text-muted">{room.lastMessage?.content ?? 'No replies yet'}</span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="truncate text-[13.5px] font-bold">{name}</span>
+                        {room.lastMessage?.createdAt ? <span className="shrink-0 text-[10.5px] font-semibold text-muted">{formatRoomTime(room.lastMessage.createdAt)}</span> : null}
+                      </span>
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="truncate text-xs text-muted">{room.lastMessage?.content ?? 'No replies yet'}</span>
+                        {room.unreadCount ? <span className="grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-full bg-primary px-1 text-[10.5px] font-bold text-white">{room.unreadCount}</span> : null}
+                      </span>
                     </span>
                   </button>
                 )
@@ -235,45 +270,86 @@ export function ChatShell() {
             </div>
           </aside>
           <main className="flex min-w-0 flex-col">
-            <div className="flex h-14 items-center justify-between gap-3 border-b border-border px-4">
-              <h3 className="min-w-0 truncate font-semibold">{title}</h3>
+            <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
+              {activeRoomId ? (
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <Avatar name={title} src={peer?.avatar} size="sm" className="h-8 w-8" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold">{title}</span>
+                    {peerOnline ? (
+                      <span className="flex items-center gap-1 text-[11px] font-semibold text-muted">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary-bright" aria-hidden="true" /> Online
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+              ) : (
+                <h3 className="min-w-0 truncate text-sm font-bold">{title}</h3>
+              )}
               <Button variant="ghost" size="icon" onClick={closeChat} aria-label="Close chat">
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex-1 space-y-3 overflow-y-auto bg-background p-4">
+            <div className="flex-1 space-y-2.5 overflow-y-auto bg-background p-4">
               {activeRoomId ? (
-                activeMessages.map((message) => (
-                  <div key={message.id} className={cn('flex', message.sender.id === user.id ? 'justify-end' : 'justify-start')}>
-                    <div className="max-w-[72%]">
-                      <div className={cn('rounded-lg px-3 py-2 text-sm', message.sender.id === user.id ? 'bg-primary text-white' : 'bg-white border border-border')}>
-                        {message.content}
-                      </div>
-                      {message.sender.id === user.id && message.id === latestOwnMessageId ? (
-                        <div className="mt-1 text-right text-[11px] font-semibold text-muted">
-                          {latestOwnMessageSeen ? 'Seen' : 'Sent'}
+                <>
+                  {activeMessages.map((message) => {
+                    const own = message.sender.id === user.id
+                    return (
+                      <div key={message.id} className={cn('flex max-w-[76%] flex-col', own ? 'self-end items-end' : 'self-start')}>
+                        <div className={cn(
+                          'rounded-2xl px-3.5 py-2 text-sm leading-6',
+                          own ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-border bg-surface'
+                        )}>
+                          {message.content}
                         </div>
-                      ) : null}
+                        {message.createdAt ? <time className="mt-1 text-[10.5px] text-muted">{formatMessageTime(message.createdAt)}</time> : null}
+                        {own && message.id === latestOwnMessageId ? (
+                          <span className={cn('mt-0.5 flex items-center gap-1 text-[10.5px] font-bold', latestOwnMessageSeen ? 'text-primary' : 'text-muted')}>
+                            <CheckCheck className="h-3 w-3" />
+                            {latestOwnMessageSeen ? 'Seen' : 'Sent'}
+                          </span>
+                        ) : null}
+                      </div>
+                    )
+                  })}
+                  {activeTypingUserIds.length ? (
+                    <div className="flex items-center gap-2 self-start rounded-full border border-border bg-surface px-3.5 py-2" aria-live="polite">
+                      <span className="flex gap-1">
+                        {[0, 1, 2].map((dot) => (
+                          <span key={dot} className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:-0.3s,0.15s,0s]" style={{ animationDelay: `${dot * 0.15}s` }} />
+                        ))}
+                      </span>
+                      <span className="text-xs font-semibold text-muted">{title || 'Someone'} is typing…</span>
                     </div>
-                  </div>
-                ))
+                  ) : null}
+                </>
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-muted">Choose a conversation to start chatting.</div>
+                <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted">
+                  <MessageCircle className="h-6 w-6 text-primary/40" />
+                  Choose a conversation to start chatting.
+                </div>
               )}
             </div>
-            <form className="flex gap-2 border-t border-border p-3" onSubmit={sendMessage}>
-              <input
-                className="h-10 flex-1 rounded-lg border border-border px-3 text-sm outline-none focus:border-primary"
-                placeholder="Write a reply"
-                value={draft}
-                maxLength={5000}
-                onChange={(event) => {
-                  setDraft(event.target.value)
-                  if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
-                }}
-                disabled={!activeRoomId || isSending}
-              />
-              <Button size="icon" disabled={!activeRoomId || !draft.trim() || isSending}>
+            <form className="flex gap-2 border-t border-border p-2.5" onSubmit={sendMessage}>
+              <div className="flex min-w-0 flex-1 items-center rounded-full border border-border bg-surface px-4 transition focus-within:border-primary">
+                <input
+                  className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
+                  placeholder="Write a reply"
+                  value={draft}
+                  maxLength={5000}
+                  onChange={(event) => {
+                    setDraft(event.target.value)
+                    if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
+                  }}
+                  disabled={!activeRoomId || isSending}
+                />
+              </div>
+              <Button
+                className="h-10 w-10 shrink-0 rounded-full p-0"
+                disabled={!activeRoomId || !draft.trim() || isSending}
+                aria-label="Send message"
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </form>
@@ -282,6 +358,24 @@ export function ChatShell() {
       ) : null}
     </>
   )
+}
+
+function formatMessageTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return undefined
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+function formatRoomTime(value: string) {
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return undefined
+  const now = new Date()
+  const sameDay = date.toDateString() === now.toDateString()
+  if (sameDay) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const days = Math.round((now.getTime() - date.getTime()) / 86_400_000)
+  if (days < 7) return `${days}d`
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${months[date.getMonth()]} ${date.getDate()}`
 }
 
 function wasReadAfter(readAt: string | null | undefined, messageCreatedAt: string) {

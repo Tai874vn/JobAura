@@ -32,17 +32,26 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
-        <CardContent className="p-6">
-          <Link href="/" className="mb-8 inline-block font-display text-2xl font-bold text-primary">JobAura</Link>
-          <h1 className="font-display text-3xl font-bold">{title}</h1>
-          <p className="mb-6 mt-2 text-sm text-muted">{subtitle}</p>
-          {children}
+        <CardContent className="p-7 pt-8">
+          <div className="mb-6 flex flex-col items-center gap-1.5">
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary font-display text-lg font-bold text-white">JA</span>
+            <Link href="/" className="font-display text-[22px] font-bold tracking-tight text-primary">JobAura</Link>
+          </div>
+          <h1 className="text-center font-display text-2xl font-bold tracking-tight">{title}</h1>
+          <p className="mt-1.5 text-center text-[13.5px] text-muted">{subtitle}</p>
+          <div className="mt-6">{children}</div>
         </CardContent>
       </Card>
     </main>
   )
 }
 
-export function FieldError({ children, message }: { children: React.ReactNode; message?: string }) {
-  return <label className="block">{children}{message ? <span className="mt-1 block text-xs font-medium text-danger">{message}</span> : null}</label>
+export function FieldError({ children, message, label }: { children: React.ReactNode; message?: string; label?: string }) {
+  return (
+    <label className="block">
+      {label ? <span className="mb-1.5 block text-[12.5px] font-semibold">{label}</span> : null}
+      {children}
+      {message ? <span className="mt-1 block text-xs font-medium text-danger">{message}</span> : null}
+    </label>
+  )
 }

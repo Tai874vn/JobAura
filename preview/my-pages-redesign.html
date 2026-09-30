@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobAura — My posts / My jobs redesign preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --background: #eff1f5; --foreground: #1b1c1c; --surface: #ffffff; --surface-muted: #f6f3f2;
+    --border: #dcd9d9; --muted: #5f6b62; --primary: #006d43; --primary-bright: #00a86b;
+    --accent: #d2d92d; --rating: #fbbc00; --danger: #ba1a1a; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  svg { width: 16px; height: 16px; }
+  .display { font-family: "Hanken Grotesk", Inter, sans-serif; }
+
+  .site-header {
+    position: sticky; top: 0; z-index: 40; height: 64px;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
+  }
+  .header-inner { max-width: 1160px; margin-inline: auto; height: 100%; display: flex; align-items: center; gap: 16px; padding-inline: 20px; }
+  .brand { font-family: "Hanken Grotesk", sans-serif; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--primary); }
+  .header-search { flex: 1; max-width: 440px; display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius); color: var(--muted); background: var(--surface); }
+  .header-search input { border: 0; outline: 0; flex: 1; font: inherit; background: transparent; }
+  .main-nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+  .main-nav a { padding: 0 11px; height: 64px; display: flex; align-items: center; font-size: 13.5px; font-weight: 600; color: var(--muted); }
+  .main-nav a:hover { color: var(--foreground); }
+  .avatar { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 12px; }
+
+  .page { max-width: 880px; margin-inline: auto; padding: 40px 20px 64px; }
+  .eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--primary); }
+  h1.page-title { margin: 6px 0 0; font-size: 28px; font-weight: 800; letter-spacing: -0.01em; }
+  p.page-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .head-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 16px;
+    border-radius: var(--radius); font-size: 13.5px; font-weight: 600; transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-bright); }
+  .btn-secondary { border: 1px solid var(--border); background: var(--surface); }
+  .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-danger { border: 1px solid rgba(186,26,26,0.25); background: var(--surface); color: var(--danger); }
+  .btn-danger:hover { background: rgba(186,26,26,0.05); }
+  .btn-sm { height: 36px; padding: 0 13px; font-size: 13px; }
+
+  /* page switcher (preview-only control) */
+  .page-switch { display: flex; gap: 8px; margin-top: 18px; }
+  .page-switch button {
+    display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    font-size: 13px; font-weight: 600; color: var(--muted);
+  }
+  .page-switch button.active { background: var(--foreground); border-color: var(--foreground); color: #fff; }
+  .page-switch button svg { width: 14px; height: 14px; color: var(--primary); }
+  .page-switch button.active svg { color: var(--accent); }
+
+  /* summary strip */
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .stat b { display: block; font-family: "Hanken Grotesk", sans-serif; font-size: 22px; font-weight: 800; }
+  .stat span { font-size: 12px; font-weight: 600; color: var(--muted); }
+
+  /* list rows */
+  .rows { margin-top: 20px; display: grid; gap: 12px; }
+  .row-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; transition: border-color .15s, box-shadow .15s; }
+  .row-card:hover { border-color: var(--primary); box-shadow: 0 8px 24px rgba(27,28,28,0.06); }
+  .row-thumb { position: relative; width: 84px; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; background: var(--surface-muted); flex-shrink: 0; }
+  .row-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .row-id { flex: 1; min-width: 220px; }
+  .row-title { font-size: 15px; font-weight: 700; }
+  .row-title:hover { color: var(--primary); }
+  .row-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+  .row-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .row-meta svg { width: 12px; height: 12px; }
+  .row-meta .star svg { fill: var(--rating); color: var(--rating); }
+  .row-actions { display: flex; gap: 8px; }
+  .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+  .status.progress { background: rgba(251,188,0,0.15); color: #5c4300; }
+  .status.done { background: rgba(0,109,67,0.1); color: var(--primary); }
+  .status.done svg { width: 11px; height: 11px; }
+
+  .preview-flag {
+    position: fixed; bottom: 16px; left: 16px; z-index: 60; display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--foreground); color: #fff; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .preview-flag .dotp { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  @media (max-width: 640px) { .summary { grid-template-columns: 1fr; } .row-card { align-items: flex-start; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#">JobAura</a>
+    <div class="header-search">
+      <i data-lucide="search"></i>
+      <input placeholder="Search services, skills, or experts" />
+    </div>
+    <nav class="main-nav">
+      <a href="#">Home</a>
+      <a href="#">Explore</a>
+      <a href="#">Post Service</a>
+      <a href="#">Hiring Posts</a>
+      <a href="#">Connections</a>
+    </nav>
+    <span class="avatar">PW</span>
+  </div>
+</header>
+
+<main class="page">
+  <!-- preview-only switcher -->
+  <div class="page-switch">
+    <button class="active" data-page="posts"><i data-lucide="file-text"></i> Page: My posts (/my-posts)</button>
+    <button data-page="jobs"><i data-lucide="briefcase"></i> Page: My jobs (/my-jobs)</button>
+  </div>
+
+  <!-- ===== MY POSTS ===== -->
+  <div id="page-posts">
+    <p class="eyebrow" style="margin-top: 20px;">Seller workspace</p>
+    <div class="head-row">
+      <div>
+        <h1 class="page-title display">My posts</h1>
+        <p class="page-sub">Manage the services you sell on JobAura.</p>
+      </div>
+      <button class="btn btn-primary"><i data-lucide="plus"></i> New service</button>
+    </div>
+
+    <div class="rows">
+      <article class="row-card">
+        <span class="row-thumb"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=300&q=80" alt="" /></span>
+        <div class="row-id">
+          <a class="row-title" href="#">I will create a responsive SaaS dashboard UI</a>
+          <div class="row-meta">
+            <span class="star"><i data-lucide="star"></i> 5.0 · 1 review</span>
+            <span><i data-lucide="tag"></i> From $420</span>
+            <span><i data-lucide="layers"></i> UI/UX Design</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <a class="btn btn-secondary btn-sm" href="#">View</a>
+          <button class="btn btn-danger btn-sm"><i data-lucide="trash-2"></i> Delete</button>
+        </div>
+      </article>
+
+      <article class="row-card">
+        <span class="row-thumb"><img src="https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?auto=format&fit=crop&w=300&q=80" alt="" /></span>
+        <div class="row-id">
+          <a class="row-title" href="#">I will convert Figma designs to pixel-perfect code</a>
+          <div class="row-meta">
+            <span class="star"><i data-lucide="star"></i> New · no reviews yet</span>
+            <span><i data-lucide="tag"></i> From $280</span>
+            <span><i data-lucide="layers"></i> UI/UX Design</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <a class="btn btn-secondary btn-sm" href="#">View</a>
+          <button class="btn btn-danger btn-sm"><i data-lucide="trash-2"></i> Delete</button>
+        </div>
+      </article>
+    </div>
+    <p class="empty-hint" style="margin-top: 14px; text-align: left; font-size: 12.5px; color: var(--muted);">Empty state: “No services yet — publish your first one and it appears in Explore instantly.”</p>
+  </div>
+
+  <!-- ===== MY JOBS ===== -->
+  <div id="page-jobs" hidden>
+    <p class="eyebrow" style="margin-top: 20px;">Buyer workspace</p>
+    <div class="head-row">
+      <div>
+        <h1 class="page-title display">My hired jobs</h1>
+        <p class="page-sub">Track services you have hired.</p>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="stat"><b>2</b><span>In progress</span></div>
+      <div class="stat"><b>1</b><span>Completed</span></div>
+      <div class="stat"><b>$1,120</b><span>Total hired value</span></div>
+    </div>
+
+    <div class="rows">
+      <article class="row-card">
+        <div class="row-id">
+          <span class="status progress"><i data-lucide="clock-3"></i> In progress</span>
+          <a class="row-title" href="#" style="display: block; margin-top: 6px;">I will create a responsive SaaS dashboard UI</a>
+          <div class="row-meta">
+            <span><i data-lucide="tag"></i> $420</span>
+            <span><i data-lucide="hash"></i> Job #2</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <a class="btn btn-secondary btn-sm" href="#">View</a>
+          <button class="btn btn-secondary btn-sm"><i data-lucide="check-circle-2"></i> Complete</button>
+          <button class="btn btn-danger btn-sm"><i data-lucide="trash-2"></i> Remove</button>
+        </div>
+      </article>
+
+      <article class="row-card">
+        <div class="row-id">
+          <span class="status progress"><i data-lucide="clock-3"></i> In progress</span>
+          <a class="row-title" href="#" style="display: block; margin-top: 6px;">I will deliver performance marketer work for Healthcare teams</a>
+          <div class="row-meta">
+            <span><i data-lucide="tag"></i> $770</span>
+            <span><i data-lucide="hash"></i> Job #5</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <a class="btn btn-secondary btn-sm" href="#">View</a>
+          <button class="btn btn-secondary btn-sm"><i data-lucide="check-circle-2"></i> Complete</button>
+          <button class="btn btn-danger btn-sm"><i data-lucide="trash-2"></i> Remove</button>
+        </div>
+      </article>
+
+      <article class="row-card">
+        <div class="row-id">
+          <span class="status done"><i data-lucide="check-circle-2"></i> Completed</span>
+          <a class="row-title" href="#" style="display: block; margin-top: 6px;">I will deliver financial analyst work for E-commerce teams</a>
+          <div class="row-meta">
+            <span><i data-lucide="tag"></i> $1,325</span>
+            <span><i data-lucide="hash"></i> Job #9</span>
+          </div>
+        </div>
+        <div class="row-actions">
+          <a class="btn btn-secondary btn-sm" href="#">View</a>
+          <button class="btn btn-danger btn-sm"><i data-lucide="trash-2"></i> Remove</button>
+        </div>
+      </article>
+    </div>
+    <p class="empty-hint" style="margin-top: 14px; text-align: left; font-size: 12.5px; color: var(--muted);">Empty state: “No hired jobs yet — everything you hire from Explore shows up here.”</p>
+  </div>
+</main>
+
+<div class="preview-flag"><span class="dotp"></span> My posts / My jobs preview</div>
+
+<script>
+  lucide.createIcons();
+  const buttons = document.querySelectorAll('.page-switch button');
+  buttons.forEach((btn) => btn.addEventListener('click', () => {
+    buttons.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('page-posts').hidden = btn.dataset.page !== 'posts';
+    document.getElementById('page-jobs').hidden = btn.dataset.page !== 'jobs';
+  }));
+</script>
+</body>
+</html>

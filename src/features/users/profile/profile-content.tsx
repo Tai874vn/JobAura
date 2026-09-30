@@ -15,16 +15,17 @@ import Link from 'next/link'
 import { hasResumeDraftInput, resumeSkills, type ResumeDraft } from '@/features/users/resume'
 import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Job, UserProfile, UserResume } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent } from '@/shared/ui'
+import { Badge, ButtonLink, Card, CardContent } from '@/shared/ui'
 import { InlineEditButton, ResumeSnippet } from './profile-editor'
 import { formatDate, formatFullDate, type MarketplaceProfile } from './model'
 
 export function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile | UserProfile }) {
   const imageUrl = resolveAssetUrl(post.hinhAnh)
   const bypassOptimizer = shouldBypassImageOptimizer(post.hinhAnh)
+  const hasRating = (post.saoCongViec ?? 0) > 0
 
   return (
-    <article className="overflow-hidden rounded-lg border border-border bg-white">
+    <article className="overflow-hidden rounded-lg border border-border bg-surface">
       <div className="flex items-center justify-between gap-3 border-b border-border p-4">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
@@ -35,10 +36,14 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
             <span className="block text-xs text-muted">{post.createdAt ? formatDate(post.createdAt) : 'Marketplace service'}</span>
           </span>
         </div>
-        <Badge tone="rating">
-          <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
-          {(post.saoCongViec ?? 0).toFixed(1)}
-        </Badge>
+        {hasRating ? (
+          <Badge tone="rating">
+            <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
+            {(post.saoCongViec ?? 0).toFixed(1)}
+          </Badge>
+        ) : (
+          <Badge>New · no reviews yet</Badge>
+        )}
       </div>
       <div className="grid gap-0 md:grid-cols-[220px_1fr]">
         <Link href={`/jobs/${post.id}`} className="relative block aspect-16/10 bg-surface-muted md:aspect-auto">
@@ -63,12 +68,9 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
             <span className="text-sm text-muted">
               From <strong className="text-foreground">{currency(post.giaTien)}</strong>
             </span>
-            <div className="flex gap-2">
-              <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
-                View details
-              </ButtonLink>
-              <Button size="sm">Contact</Button>
-            </div>
+            <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
+              View details
+            </ButtonLink>
           </div>
         </div>
       </div>

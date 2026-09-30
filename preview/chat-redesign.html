@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JobAura — Chat shell redesign preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  :root {
+    --background: #eff1f5; --foreground: #1b1c1c; --surface: #ffffff; --surface-muted: #f6f3f2;
+    --border: #dcd9d9; --muted: #5f6b62; --primary: #006d43; --primary-bright: #00a86b;
+    --accent: #d2d92d; --rating: #fbbc00; --danger: #ba1a1a; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--background); color: var(--foreground);
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+  svg { width: 16px; height: 16px; }
+
+  /* backdrop hint (page behind) */
+  .backdrop { position: fixed; inset: 0; background: var(--background); }
+  .backdrop::after { content: ""; position: absolute; inset: 0; background: rgba(27,28,28,0.35); }
+
+  /* FAB */
+  .fab {
+    position: fixed; right: 20px; bottom: 20px; z-index: 41;
+    display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px;
+    background: var(--primary); color: #fff; border-radius: 999px;
+    font-weight: 600; box-shadow: 0 12px 32px rgba(27,28,28,0.18); transition: background .15s;
+  }
+  .fab:hover { background: var(--primary-bright); }
+
+  /* chat panel */
+  .chat-panel {
+    position: fixed; right: 20px; bottom: 20px; z-index: 50;
+    width: min(720px, calc(100vw - 40px)); height: min(580px, calc(100vh - 40px));
+    display: grid; grid-template-columns: 280px minmax(0,1fr);
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(27,28,28,0.22); overflow: hidden;
+  }
+  .room-col { border-right: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; min-width: 0; }
+  .panel-head {
+    height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px; border-bottom: 1px solid var(--border);
+  }
+  .panel-head b { font-size: 15px; font-weight: 800; }
+  .panel-head .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; color: var(--muted); }
+  .panel-head .icon-btn:hover { background: var(--surface-muted); color: var(--foreground); }
+
+  .rooms { flex: 1; overflow-y: auto; padding: 8px; }
+  .room {
+    display: flex; gap: 10px; width: 100%; align-items: center; text-align: left;
+    padding: 10px; border-radius: var(--radius); transition: background .15s;
+  }
+  .room:hover { background: var(--surface-muted); }
+  .room.active { background: rgba(0,109,67,0.07); }
+  .avatar { position: relative; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; overflow: hidden; flex-shrink: 0; }
+  .avatar.sm { width: 38px; height: 38px; font-size: 12px; }
+  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .avatar .online {
+    position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--primary-bright); border: 2px solid var(--surface);
+  }
+  .room-id { flex: 1; min-width: 0; }
+  .room-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .room-name { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .room-time { font-size: 10.5px; color: var(--muted); flex-shrink: 0; }
+  .room-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 1px; }
+  .room-last { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .unread {
+    display: grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; flex-shrink: 0;
+    background: var(--primary); color: #fff; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+  }
+
+  /* conversation */
+  .convo { display: flex; flex-direction: column; min-width: 0; }
+  .convo-head .who b { font-size: 14px; }
+  .who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .who .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary-bright); }
+  .who span.status { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+  .messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: var(--background); }
+  .msg { max-width: 76%; display: flex; flex-direction: column; }
+  .msg.own { align-self: flex-end; align-items: flex-end; }
+  .msg .bubble {
+    padding: 9px 13px; font-size: 13.5px; line-height: 1.5;
+    border-radius: 14px; border-bottom-left-radius: 4px;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .msg.own .bubble { background: var(--primary); color: #fff; border: 0; border-bottom-right-radius: 4px; border-bottom-left-radius: 14px; }
+  .msg time { display: block; margin-top: 3px; font-size: 10.5px; color: var(--muted); }
+  .msg.own time { text-align: right; }
+  .receipt { display: flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: var(--primary); }
+  .receipt svg { width: 12px; height: 12px; }
+
+  .composer { border-top: 1px solid var(--border); padding: 10px; display: flex; gap: 8px; }
+  .composer .input {
+    flex: 1; display: flex; align-items: center; height: 42px; padding: 0 14px;
+    border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+  }
+  .composer .input:focus-within { border-color: var(--primary); }
+  .composer input { flex: 1; border: 0; outline: 0; font: inherit; background: transparent; min-width: 0; }
+  .composer .send {
+    display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%;
+    background: var(--primary); color: #fff; flex-shrink: 0;
+  }
+  .composer .send:hover { background: var(--primary-bright); }
+
+  .preview-flag {
+    position: fixed; bottom: 16px; left: 16px; z-index: 60; display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; background: var(--foreground); color: #fff; border-radius: 999px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .preview-flag .dotp { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="backdrop"></div>
+
+<button class="fab"><i data-lucide="message-circle"></i> Chat</button>
+
+<section class="chat-panel" aria-label="Messages">
+  <div class="room-col">
+    <div class="panel-head">
+      <b class="display">Messages</b>
+      <button class="icon-btn" aria-label="Close chat"><i data-lucide="x"></i></button>
+    </div>
+    <div class="rooms">
+      <button class="room active">
+        <span class="avatar sm"><img src="https://i.pravatar.cc/76?img=32" alt="" /><span class="online" title="Online"></span></span>
+        <span class="room-id">
+          <span class="room-top"><span class="room-name">Linh Tran</span><span class="room-time">2m</span></span>
+          <span class="room-bottom"><span class="room-last">Perfect — I'll send the first draft tomorrow.</span></span>
+        </span>
+      </button>
+      <button class="room">
+        <span class="avatar sm">AC<span class="online" title="Online"></span></span>
+        <span class="room-id">
+          <span class="room-top"><span class="room-name">Alex Carter</span><span class="room-time">1h</span></span>
+          <span class="room-bottom"><span class="room-last">Sounds good, talk soon!</span><span class="unread">2</span></span>
+        </span>
+      </button>
+      <button class="room">
+        <span class="avatar sm"><img src="https://i.pravatar.cc/76?img=12" alt="" /></span>
+        <span class="room-id">
+          <span class="room-top"><span class="room-name">Daniel Wilson</span><span class="room-time">3d</span></span>
+          <span class="room-bottom"><span class="room-last">Thanks for the quick reply!</span></span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="convo">
+    <div class="panel-head convo-head">
+      <span class="who">
+        <span class="avatar sm" style="width:32px;height:32px;"><img src="https://i.pravatar.cc/64?img=32" alt="" /><span class="dot" title="Online"></span></span>
+        <span style="min-width:0;">
+          <b class="display">Linh Tran</b>
+          <span class="status"> · Online</span>
+        </span>
+      </span>
+      <button class="icon-btn" aria-label="Close chat"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="messages">
+      <div class="msg">
+        <div class="bubble">Hi! Is the dashboard project still open?</div>
+        <time>10:02</time>
+      </div>
+      <div class="msg own">
+        <div class="bubble">Yes it is — I can start next week. What's the scope?</div>
+        <time>10:05</time>
+      </div>
+      <div class="msg">
+        <div class="bubble">Around 6 screens, charts, and a settings area. Fixed price if possible.</div>
+        <time>10:07</time>
+      </div>
+      <div class="msg own">
+        <div class="bubble">Works for me. I'll put together a short proposal and share it in the morning.</div>
+        <time>10:09</time>
+        <span class="receipt"><i data-lucide="check-check"></i> Seen</span>
+      </div>
+      <div class="msg">
+        <div class="bubble">Perfect — I'll send the first draft tomorrow.</div>
+        <time>10:11</time>
+      </div>
+    </div>
+
+    <form class="composer">
+      <div class="input"><input placeholder="Write a reply" aria-label="Write a reply" /></div>
+      <button class="send" type="button" aria-label="Send message"><i data-lucide="send"></i></button>
+    </form>
+  </div>
+</section>
+
+<div class="preview-flag"><span class="dotp"></span> Chat shell preview</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>

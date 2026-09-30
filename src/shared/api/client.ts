@@ -16,6 +16,7 @@ type QueueItem = {
 
 let isRefreshing = false
 let failedQueue: QueueItem[] = []
+const API_TIMEOUT_MS = 15_000
 
 function flushQueue(error?: unknown) {
   failedQueue.forEach((item) => {
@@ -34,11 +35,13 @@ const clientApiBaseUrl = resolveClientOrigin(
 export const apiClient = axios.create({
   baseURL: clientApiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
+  timeout: API_TIMEOUT_MS,
   withCredentials: true,
 })
 
 export const uploadClient = axios.create({
   baseURL: clientApiBaseUrl,
+  timeout: API_TIMEOUT_MS,
   withCredentials: true,
 })
 
@@ -67,6 +70,7 @@ async function refreshSession() {
   await axios.post(`${clientApiBaseUrl}/api/auth/refresh`, {}, {
     withCredentials: true,
     headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
+    timeout: API_TIMEOUT_MS,
   })
 }
 

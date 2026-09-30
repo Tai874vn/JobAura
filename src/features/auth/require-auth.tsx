@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
-import { canAccessRole, type AccountRole } from '@/shared/lib/roles'
+import { canAccessRole, getSignedInRedirect, type AccountRole } from '@/shared/lib/roles'
 import { Spinner } from '@/shared/ui'
 import { useSession } from './use-session'
 
@@ -35,7 +35,7 @@ export function RequireAuth({
 
     if (!hasRequiredRole) {
       hasRedirectedRef.current = true
-      router.replace('/')
+      router.replace(getSignedInRedirect(user))
     }
   }, [anonymousRedirect, hasRequiredRole, isLoading, pathname, router, user])
 

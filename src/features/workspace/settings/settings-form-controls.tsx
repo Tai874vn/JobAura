@@ -26,14 +26,16 @@ export function EditorSection({
       <CardContent className="p-5">
         <div className="mb-4 flex items-center gap-2">
           <h2 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h2>
-          <div className="ml-auto flex gap-2">
-            {onAdd ? (
-              <Button variant="secondary" size="sm" onClick={onAdd}>
-                <Plus className="h-4 w-4" />Add
-              </Button>
-            ) : null}
-            {onSave ? <Button size="sm" onClick={onSave}>{saveLabel}</Button> : null}
-          </div>
+          {!hideActions ? (
+            <div className="ml-auto flex gap-2">
+              {onAdd ? (
+                <Button variant="secondary" size="sm" onClick={onAdd}>
+                  <Plus className="h-4 w-4" />Add
+                </Button>
+              ) : null}
+              {onSave ? <Button size="sm" onClick={onSave}>{saveLabel}</Button> : null}
+            </div>
+          ) : null}
         </div>
         <div className="grid gap-3">{children}</div>
       </CardContent>

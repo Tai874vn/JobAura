@@ -27,7 +27,7 @@ export function GoogleSignupRoleModal({ open, selectedRole, onSelect, onClose, o
     <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose()
     }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="google-role-title" aria-describedby="google-role-description" className="relative w-full max-w-lg rounded-lg bg-white p-5 shadow-2xl">
+      <section role="dialog" aria-modal="true" aria-labelledby="google-role-title" aria-describedby="google-role-description" className="relative w-full max-w-lg rounded-lg bg-surface p-5 shadow-2xl">
         <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} title="Close account type selection">
           <X className="h-5 w-5" />
         </Button>
@@ -40,7 +40,7 @@ export function GoogleSignupRoleModal({ open, selectedRole, onSelect, onClose, o
             <button
               key={option.value}
               type="button"
-              className={`rounded-lg border p-3 text-left transition ${selectedRole === option.value ? 'border-primary bg-primary/5 text-foreground' : 'border-border bg-white text-muted hover:border-primary hover:text-foreground'}`}
+              className={`rounded-lg border p-3 text-left transition ${selectedRole === option.value ? 'border-primary bg-primary/5 text-foreground' : 'border-border bg-surface text-muted hover:border-primary hover:text-foreground'}`}
               aria-pressed={selectedRole === option.value}
               onClick={() => onSelect(option.value)}
             >
