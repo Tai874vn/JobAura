@@ -199,9 +199,9 @@ export function JobForm() {
 
             <section className="flex flex-wrap items-center justify-end gap-2.5 border-t border-border p-5">
               <ButtonLink href="/my-posts" variant="secondary">Cancel</ButtonLink>
-              <Button type="submit" disabled={mutation.isPending}>
+              <Button type="submit" loading={mutation.isPending}>
                 <Send className="h-4 w-4" />
-                {mutation.isPending ? 'Publishing...' : 'Publish service'}
+                Publish service
               </Button>
             </section>
           </form>

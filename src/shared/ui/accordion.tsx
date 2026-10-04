@@ -39,7 +39,7 @@ export function Accordion({ items, className }: { items: AccordionItem[]; classN
               role="region"
               aria-labelledby={triggerId}
               hidden={!open}
-              className="px-5 pb-4 text-sm leading-6 text-muted"
+              className="motion-popover px-5 pb-4 text-sm leading-6 text-muted"
             >
               {item.answer}
             </div>

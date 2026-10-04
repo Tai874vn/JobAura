@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
 :root {
+  --motion-fast: 140ms;
+  --motion-standard: 200ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --background: #eff1f5;
   --foreground: #1b1c1c;
   --surface: #ffffff;
@@ -59,4 +62,72 @@ select {
 .container-page {
   width: min(1280px, calc(100% - 32px));
   margin-inline: auto;
+}
+
+/* Short, local transitions keep the action and its result connected. */
+@layer utilities {
+  .interaction {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--motion-ease);
+  }
+
+  .interaction:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(0.98);
+  }
+
+  .motion-overlay {
+    animation: overlay-in var(--motion-fast) ease-out;
+  }
+
+  .motion-panel,
+  dialog.motion-panel[open] {
+    animation: panel-in var(--motion-standard) var(--motion-ease);
+  }
+
+  dialog.motion-panel::backdrop {
+    animation: overlay-in var(--motion-fast) ease-out;
+  }
+
+  .motion-popover {
+    animation: popover-in var(--motion-fast) var(--motion-ease);
+  }
+
+  .motion-drawer {
+    animation: drawer-in 220ms var(--motion-ease);
+  }
+}
+
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes panel-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes popover-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after,
+  dialog::backdrop {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

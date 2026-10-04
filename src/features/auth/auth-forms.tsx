@@ -125,8 +125,8 @@ function LoginFormFields({
             </button>
           </div>
         </FieldError>
-        <Button className="w-full" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Signing in..." : "Sign in"}
+        <Button className="w-full" type="submit" loading={mutation.isPending}>
+          Sign in
         </Button>
       </form>
       <div className="my-5 flex items-center gap-3">
@@ -326,8 +326,8 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
           </span>
           <span className="h-px flex-1 bg-border" />
         </div>
-        <Button className="w-full" type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? "Creating account..." : "Create account"}
+        <Button className="w-full" type="submit" loading={mutation.isPending}>
+          Create account
         </Button>
       </form>
       <p className="mt-5 text-center text-sm text-muted">

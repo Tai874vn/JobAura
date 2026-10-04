@@ -168,7 +168,7 @@ export function SiteHeader() {
               <Avatar name={user.name} src={user.avatar} className="h-9 w-9" />
             </button>
             {accountMenuOpen ? (
-              <div id="account-navigation" className="absolute right-0 top-11 w-56 rounded-lg border border-border bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+              <div id="account-navigation" className="motion-popover absolute right-0 top-11 w-56 rounded-lg border border-border bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
                 <MenuLink
                   href={`/profile/${user.id}`}
                   icon={<User className="h-4 w-4" />}

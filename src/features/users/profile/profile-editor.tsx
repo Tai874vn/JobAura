@@ -61,8 +61,8 @@ export function ProfileEditDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/24 p-3 sm:p-4" role="dialog" aria-modal="true">
-      <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
+    <div className="motion-overlay fixed inset-0 z-50 flex justify-end bg-black/24 p-3 sm:p-4" role="dialog" aria-modal="true">
+      <div className="motion-drawer flex h-full w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-border bg-white shadow-[0_24px_80px_rgba(0,0,0,0.22)]">
         <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Profile editor</p>
@@ -173,6 +173,7 @@ export function ProfileEditDrawer({
             Cancel
           </Button>
           <Button
+            loading={isSaving}
             disabled={isSaving || (activePanel === 'resume' && !hasResumeDraftInput(resumeDraft))}
             onClick={
               activePanel === 'profile'

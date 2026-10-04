@@ -79,6 +79,7 @@ export function MyJobsPage() {
               <Button
                 variant="secondary"
                 size="sm"
+                loading={completeMutation.isPending && completeMutation.variables === item.id}
                 disabled={item.hoanThanh || (completeMutation.isPending && completeMutation.variables === item.id)}
                 onClick={() => completeMutation.mutate(item.id)}
               >

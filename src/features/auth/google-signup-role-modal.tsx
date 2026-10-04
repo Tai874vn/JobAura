@@ -24,10 +24,10 @@ export function GoogleSignupRoleModal({ open, selectedRole, onSelect, onClose, o
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4" onMouseDown={(event) => {
+    <div className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose()
     }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="google-role-title" aria-describedby="google-role-description" className="relative w-full max-w-lg rounded-lg bg-surface p-5 shadow-2xl">
+      <section role="dialog" aria-modal="true" aria-labelledby="google-role-title" aria-describedby="google-role-description" className="motion-panel relative w-full max-w-lg rounded-lg bg-surface p-5 shadow-2xl">
         <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} title="Close account type selection">
           <X className="h-5 w-5" />
         </Button>

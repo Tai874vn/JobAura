@@ -191,7 +191,7 @@ export function NotificationBell() {
       </Button>
 
       {open ? (
-        <div id="notification-panel" className="absolute right-0 top-11 z-50 w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
+        <div id="notification-panel" className="motion-popover absolute right-0 top-11 z-50 w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <h2 className="font-display text-lg font-bold">Notifications</h2>

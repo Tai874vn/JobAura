@@ -40,7 +40,7 @@ export function ConfirmationDialog({
 
   return (
     <div
-      className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4"
+      className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !pending) onCancel()
       }}
@@ -51,7 +51,7 @@ export function ConfirmationDialog({
         aria-modal="true"
         aria-labelledby="confirmation-title"
         aria-describedby="confirmation-description"
-        className="relative w-full max-w-md rounded-lg bg-surface p-5 shadow-2xl"
+        className="motion-panel relative w-full max-w-md rounded-lg bg-surface p-5 shadow-2xl"
       >
         <Button
           className="absolute right-2 top-2"
@@ -77,8 +77,8 @@ export function ConfirmationDialog({
           <Button data-cancel type="button" variant="secondary" onClick={onCancel} disabled={pending}>
             Cancel
           </Button>
-          <Button type="button" variant="danger" onClick={onConfirm} disabled={pending}>
-            {pending ? `${confirmLabel}...` : confirmLabel}
+          <Button type="button" variant="danger" onClick={onConfirm} loading={pending}>
+            {confirmLabel}
           </Button>
         </div>
       </section>

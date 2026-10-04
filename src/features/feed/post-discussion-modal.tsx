@@ -118,7 +118,7 @@ export function PostDiscussionModal({
 
   return (
     <div
-      className="fixed inset-0 z-70 flex items-center justify-center bg-black/55 p-0 sm:p-5"
+      className="motion-overlay fixed inset-0 z-70 flex items-center justify-center bg-black/55 p-0 sm:p-5"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !submitting) onClose()
       }}
@@ -127,7 +127,7 @@ export function PostDiscussionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-discussion-title"
-        className="flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
+        className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
       >
         <header className="relative flex h-14 shrink-0 items-center justify-center border-b border-border px-14">
           <h2 id="post-discussion-title" className="truncate font-display text-lg font-bold">
@@ -286,7 +286,7 @@ export function PostDiscussionModal({
             placeholder="Write a comment..."
             className="h-10 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-sm outline-none focus:border-primary"
           />
-          <Button type="submit" size="icon" variant="ghost" disabled={submitting || !comment.trim()} title="Send comment">
+          <Button type="submit" size="icon" variant="ghost" loading={submitting} disabled={!comment.trim()} aria-label="Send comment" title="Send comment">
             <Send className="h-4 w-4" />
           </Button>
         </form>

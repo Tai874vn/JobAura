@@ -114,7 +114,7 @@ export function PostComposer({
         onCancel={(event) => {
           if (submitting) event.preventDefault()
         }}
-        className="m-auto w-[min(640px,calc(100%-32px))] rounded-lg border border-border bg-surface p-0 text-foreground shadow-2xl backdrop:bg-black/45"
+        className="motion-panel m-auto w-[min(640px,calc(100%-32px))] rounded-lg border border-border bg-surface p-0 text-foreground shadow-2xl backdrop:bg-black/45"
       >
         <form onSubmit={submit}>
           <header className="flex items-center justify-between border-b border-border px-5 py-4">
@@ -179,8 +179,8 @@ export function PostComposer({
             </Button>
             <div className="flex items-center gap-3">
               <span className="hidden text-xs text-muted sm:inline">{content.length}/3000</span>
-              <Button type="submit" disabled={submitting || (!content.trim() && !image)}>
-                <Send className="h-4 w-4" /> {submitting ? 'Posting' : 'Post'}
+              <Button type="submit" loading={submitting} disabled={!content.trim() && !image}>
+                <Send className="h-4 w-4" /> Post
               </Button>
             </div>
           </footer>
