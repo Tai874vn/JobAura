@@ -96,7 +96,7 @@ export function SavedPage() {
             <p className="mt-4 text-center text-xs font-semibold text-muted">Saved from your home feed — tap the bookmark on any post to remove it.</p>
           ) : null}
           {postsQuery.hasNextPage ? (
-            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} disabled={postsQuery.isFetchingNextPage}>
+            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} loading={postsQuery.isFetchingNextPage}>
               <ChevronDown className="h-4 w-4" />
               Load more posts
             </Button>
@@ -130,7 +130,7 @@ export function SavedPage() {
             <p className="mt-4 text-center text-xs font-semibold text-muted">Saved from Explore — the bookmark on each card removes it.</p>
           ) : null}
           {jobsQuery.hasNextPage ? (
-            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} disabled={jobsQuery.isFetchingNextPage}>
+            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} loading={jobsQuery.isFetchingNextPage}>
               <ChevronDown className="h-4 w-4" />
               Load more jobs
             </Button>

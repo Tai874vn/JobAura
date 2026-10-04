@@ -50,10 +50,12 @@ export function JobSaveButton({ jobId, initialSaved = false }: { jobId: number; 
         mutation.mutate(!saved)
       }}
       className={cn(
-        'absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface/95 text-foreground hover:border-primary hover:text-primary disabled:opacity-60',
+        'interaction absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface/95 text-foreground focus-visible:ring-2 focus-visible:ring-primary-bright hover:border-primary hover:text-primary disabled:opacity-60',
         saved && 'border-primary text-primary'
       )}
       aria-label={saved ? 'Remove saved job' : 'Save job'}
+      aria-pressed={saved}
+      aria-busy={mutation.isPending}
       title={saved ? 'Remove saved job' : 'Save job'}
     >
       <Bookmark className={cn('h-4 w-4', saved && 'fill-primary')} />

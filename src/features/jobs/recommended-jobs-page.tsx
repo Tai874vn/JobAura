@@ -257,8 +257,8 @@ function StartRecommendationCard({
           <p className="mt-2 text-xs leading-5 text-muted">
             {resetAt ? `Resets ${formatReset(resetAt)}` : 'Daily AI recommendation allowance.'}
           </p>
-          <Button className="mt-5 w-full" size="lg" type="button" onClick={onRun} disabled={isLoadingQuota || isRunning || !canRun}>
-            {isRunning ? <Spinner className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
+          <Button className="mt-5 w-full" size="lg" type="button" onClick={onRun} loading={isRunning} disabled={isLoadingQuota || !canRun}>
+            <Sparkles className="h-4 w-4" />
             {canRun ? (hasResults ? 'Run again' : 'Proceed to match') : 'No uses left'}
           </Button>
         </div>

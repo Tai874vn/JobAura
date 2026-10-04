@@ -2,7 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import type { CreateHiringPost } from "@/shared/schemas";
-import { Button, Input, Spinner, Textarea } from "@/shared/ui";
+import { Button, Input, Textarea } from "@/shared/ui";
 
 export const emptyHiringPostDraft: CreateHiringPost = {
   title: "",
@@ -32,8 +32,8 @@ export function CreateHiringPostModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="create-hiring-post-title">
-      <div className="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-white shadow-xl">
+    <div className="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby="create-hiring-post-title">
+      <div className="motion-panel max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-white shadow-xl">
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-white p-5">
           <div>
             <p className="text-xs font-bold uppercase text-primary">Recruiter post</p>
@@ -122,8 +122,8 @@ export function CreateHiringPostModal({
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={saving}>
-              {saving ? <Spinner className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            <Button type="submit" loading={saving}>
+              <Plus className="h-4 w-4" />
               Create hiring post
             </Button>
           </div>

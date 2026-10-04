@@ -54,7 +54,7 @@ export function FeedPostCard({
                 <MoreHorizontal className="h-5 w-5" />
               </Button>
               {menuOpen ? (
-                <div className="absolute right-0 top-10 z-10 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                <div className="motion-popover absolute right-0 top-10 z-10 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
                   <button
                     type="button"
                     className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-danger hover:bg-danger/5"
@@ -102,17 +102,19 @@ export function FeedPostCard({
           <button
             type="button"
             disabled={liking}
+            aria-pressed={post.viewerHasLiked}
+            aria-busy={liking}
             onClick={() => onLike(post)}
             className={cn(
-              'flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold hover:bg-surface-muted disabled:opacity-60',
+              'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
               post.viewerHasLiked && 'text-danger'
             )}
           >
-            <Heart className={cn('h-5 w-5', post.viewerHasLiked && 'fill-danger')} /> Like
+            <Heart className={cn('h-5 w-5 transition-colors', post.viewerHasLiked && 'fill-danger')} /> {post.viewerHasLiked ? 'Liked' : 'Like'}
           </button>
           <button
             type="button"
-            className="flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold hover:bg-surface-muted"
+            className="interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted"
             onClick={() => onOpenComments(post)}
           >
             <MessageCircle className="h-5 w-5" /> Comment
@@ -120,9 +122,12 @@ export function FeedPostCard({
           <button
             type="button"
             disabled={saving}
+            aria-pressed={post.viewerHasSaved}
+            aria-busy={saving}
+            aria-label={post.viewerHasSaved ? 'Remove saved post' : 'Save post'}
             onClick={() => onSave(post)}
             className={cn(
-              'flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold hover:bg-surface-muted disabled:opacity-60',
+              'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
               post.viewerHasSaved && 'text-primary'
             )}
           >

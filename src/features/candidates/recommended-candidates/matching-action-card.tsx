@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { HiringPost, RecommendationQuota } from "@/shared/schemas";
-import { Button, Card, CardContent, Spinner } from "@/shared/ui";
+import { Button, Card, CardContent } from "@/shared/ui";
 
 type StartCandidateMatchingCardProps = {
   hasResults: boolean;
@@ -80,13 +80,10 @@ export function StartCandidateMatchingCard({
             size="lg"
             type="button"
             onClick={onRun}
-            disabled={loadingQuota || isRunning || !canRun}
+            loading={isRunning}
+            disabled={loadingQuota || !canRun}
           >
-            {isRunning ? (
-              <Spinner className="h-4 w-4" />
-            ) : (
-              <Sparkles className="h-4 w-4" />
-            )}
+            <Sparkles className="h-4 w-4" />
             {canRun
               ? hasResults
                 ? "Run again"

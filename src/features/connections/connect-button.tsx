@@ -52,6 +52,12 @@ export function ConnectionActions({
       if (action === 'unfriend') {
         setConfirmingUnfriend(false)
         toast.success(`You and ${userName} are no longer connected`)
+      } else if (action === 'send') {
+        toast.success('Connection request sent')
+      } else if (action === 'accept') {
+        toast.success('Connection request accepted')
+      } else {
+        toast.success(action === 'cancel' ? 'Connection request cancelled' : 'Connection request declined')
       }
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not update connection')),
@@ -90,7 +96,18 @@ export function ConnectionActions({
       </ButtonLink>
     )
   }
-  if (statusQuery.isPending || statusQuery.isError || !controls) return null
+  if (statusQuery.isPending) {
+    return <Button className={className} size="sm" variant="secondary" loading>Loading connection</Button>
+  }
+  if (statusQuery.isError) {
+    return (
+      <div className={cn('flex flex-wrap items-center gap-2', className)}>
+        <span role="status" className="text-xs text-muted">Connection status unavailable.</span>
+        <Button size="sm" variant="secondary" loading={statusQuery.isFetching} onClick={() => statusQuery.refetch()}>Retry</Button>
+      </div>
+    )
+  }
+  if (!controls) return null
 
   return (
     <>
@@ -112,7 +129,8 @@ export function ConnectionActions({
               size="sm"
               variant={command.destructive ? 'danger' : command.variant}
               onClick={() => runCommand(command)}
-              disabled={pending}
+              loading={pending}
+              disabled={relationshipMutation.isPending || messageMutation.isPending}
             >
               <Icon className="h-4 w-4" /> {command.label}
             </Button>

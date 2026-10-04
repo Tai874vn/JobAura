@@ -52,6 +52,10 @@
 
 ## How changes are checked and managed
 
+### 2026-10-04 — Frontend motion and feedback polish
+
+Extended shared motion and loading feedback across navigation, dialogs, profile/settings, hiring, recommendations, connections, notifications, saved items, purchases/reviews, and chat. Added accessible selected/busy states, connection success messages, and retry controls. Reused small shared UI primitives rather than creating a module responsible for multiple features. Typechecking, 115 regression tests, and the production build pass; lint has zero errors and one existing warning. Public desktop/mobile smoke checks passed; authenticated workflows still need a running backend. See [motion and feedback notes](motion-feedback-polish.md) for scope and verification. Owner: Tai874vn only.
+
 Each change is kept in Git so its purpose and affected code can be reviewed. Fixes are checked with:
 
 - ESLint for code quality and unsafe patterns.

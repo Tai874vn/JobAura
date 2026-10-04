@@ -191,7 +191,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                 </div>
                 <Textarea placeholder="Share what it was like working with this seller…" value={review} onChange={(event) => setReview(event.target.value)} />
                 <div className="mt-3 flex justify-end">
-                  <Button onClick={() => requireLogin(() => commentMutation.mutate())} disabled={!review.trim() || commentMutation.isPending}>
+                  <Button onClick={() => requireLogin(() => commentMutation.mutate())} loading={commentMutation.isPending} disabled={!review.trim()}>
                     <Send className="h-4 w-4" />
                     Post review
                   </Button>
@@ -213,15 +213,15 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                   <BuyStep number={3} title="Track in My jobs" text="Follow progress until the work is marked complete." />
                 </ol>
               </div>
-              <Button className="mt-5 w-full" size="lg" onClick={() => requireLogin(() => hireMutation.mutate())} disabled={hireMutation.isPending}>Continue ({currency(job.giaTien)})</Button>
+              <Button className="mt-5 w-full" size="lg" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>Continue ({currency(job.giaTien)})</Button>
               <Button
                 className="mt-3 w-full"
                 variant="secondary"
                 onClick={() => requireLogin(() => contactSellerMutation.mutate())}
-                disabled={contactSellerMutation.isPending}
+                loading={contactSellerMutation.isPending}
               >
                 <MessageSquare className="h-4 w-4" />
-                {contactSellerMutation.isPending ? 'Opening chat...' : 'Contact seller'}
+                Contact seller
               </Button>
             </CardContent>
           </Card>
@@ -255,7 +255,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           <b className="block font-display text-lg font-bold">{currency(job.giaTien)}</b>
           <span className="text-[11px] font-semibold text-muted">Starting at</span>
         </div>
-        <Button className="ml-auto flex-1" onClick={() => requireLogin(() => hireMutation.mutate())} disabled={hireMutation.isPending}>
+        <Button className="ml-auto flex-1" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>
           Continue
         </Button>
       </div>

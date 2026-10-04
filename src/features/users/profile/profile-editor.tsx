@@ -4,6 +4,7 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react'
 import { Edit3, FileText, Plus, Save, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
+import { cn } from '@/shared/lib/utils'
 import type { UpdateProfile, UserResume } from '@/shared/schemas'
 import { Button, Input, Textarea } from '@/shared/ui'
 import { formatFileSize, removeListItem, updateList } from '../profile-form-utils'
@@ -186,7 +187,7 @@ export function ProfileEditDrawer({
             }
           >
             <Save className="h-4 w-4" />
-            {isSaving ? 'Saving...' : 'Save changes'}
+            Save changes
           </Button>
         </div>
       </div>
@@ -212,23 +213,25 @@ export function OwnerUploadButton({
   icon,
   className,
   disabled,
+  loading = false,
   onChange,
 }: {
   label: string
   icon: ReactNode
   className?: string
   disabled?: boolean
+  loading?: boolean
   onChange: (file: File) => void
 }) {
   return (
-    <label className={`inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold text-foreground hover:border-primary hover:text-primary ${className ?? ''}`}>
-      {icon}
+    <label aria-busy={loading} className={cn('interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:border-primary hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright', className, loading && 'pointer-events-none !opacity-100')}>
+      {loading ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" /> : icon}
       {label}
       <input
         className="sr-only"
         type="file"
         accept={imageUploadAccept}
-        disabled={disabled}
+        disabled={disabled || loading}
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (file) {

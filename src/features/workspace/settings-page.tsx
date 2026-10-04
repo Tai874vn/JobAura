@@ -313,7 +313,7 @@ export function SettingsPage() {
                   <h2 className="font-display text-2xl font-bold">Profile settings</h2>
                   <p className="mt-0.5 text-sm text-muted">Your public marketplace identity, skills, and portfolio.</p>
                 </div>
-                <Button disabled={isSaving} onClick={() => saveBasic.mutate()}>
+                <Button loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
                   <Save className="h-4 w-4" />
                   Save profile
                 </Button>
@@ -355,7 +355,7 @@ export function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <EditorSection title="Skills" onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
+              <EditorSection title="Skills" saving={saveSkills.isPending} onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
                 {skills.map((skill, index) => (
                   <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
                     <Input value={skill.name} placeholder="React" onChange={(event) => updateList(setSkills, index, { name: event.target.value })} />
@@ -365,7 +365,7 @@ export function SettingsPage() {
                 ))}
               </EditorSection>
 
-              <EditorSection title="Certifications" onAdd={() => setCertifications((items) => [...items, { ...emptyCertification, sortOrder: items.length }])} onSave={() => saveCertifications.mutate()}>
+              <EditorSection title="Certifications" saving={saveCertifications.isPending} onAdd={() => setCertifications((items) => [...items, { ...emptyCertification, sortOrder: items.length }])} onSave={() => saveCertifications.mutate()}>
                 {certifications.map((cert, index) => (
                   <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-2">
                     <Input value={cert.name} placeholder="Certification name" onChange={(event) => updateList(setCertifications, index, { name: event.target.value })} />
@@ -381,7 +381,7 @@ export function SettingsPage() {
                 ))}
               </EditorSection>
 
-              <EditorSection title="New portfolio item" onSave={() => createPortfolio.mutate()} saveLabel="Create">
+              <EditorSection title="New portfolio item" saving={createPortfolio.isPending} onSave={() => createPortfolio.mutate()} saveLabel="Create">
                 <PortfolioFields item={newPortfolio} onChange={(patch) => setNewPortfolio((item) => ({ ...item, ...patch }))} />
               </EditorSection>
 
@@ -390,7 +390,7 @@ export function SettingsPage() {
                   <div key={item.id ?? index} className="grid gap-3 rounded-lg border border-border p-3">
                     <PortfolioFields item={item} onChange={(patch) => updateList(setPortfolio, index, patch)} />
                     <div className="flex justify-end gap-2">
-                      <Button variant="secondary" size="sm" disabled={!item.id} onClick={() => updatePortfolio.mutate(item)}>
+                      <Button variant="secondary" size="sm" loading={updatePortfolio.isPending && updatePortfolio.variables?.id === item.id} disabled={!item.id || updatePortfolio.isPending} onClick={() => updatePortfolio.mutate(item)}>
                         Save
                       </Button>
                       <Button variant="danger" size="sm" disabled={!item.id} onClick={() => setPendingPortfolioDelete(item)}>
@@ -425,7 +425,7 @@ export function SettingsPage() {
                       </span>
                     </label>
                     <div className="mt-3 flex justify-end">
-                      <Button size="sm" disabled={isSaving} onClick={() => saveBasic.mutate()}>
+                      <Button size="sm" loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
                         <Save className="h-4 w-4" />
                         Save visibility
                       </Button>

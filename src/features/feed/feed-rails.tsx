@@ -14,7 +14,7 @@ import { connectionsApi, hiringPostsApi, recommendationsApi, skillsApi } from '@
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, currency, getErrorMessage } from '@/shared/lib/utils'
 import type { ConnectionSuggestion, RecommendedJob } from '@/shared/schemas'
-import { ButtonLink, Card } from '@/shared/ui'
+import { Button, ButtonLink, Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 
 const recommendationParams = { topK: 12, poolSize: 50 }
@@ -167,18 +167,20 @@ function SuggestedPeople({ suggestions }: { suggestions: ConnectionSuggestion[] 
                 <Link href={`/profile/${person.id}`} className="block truncate text-[13px] font-bold hover:text-primary">{person.name}</Link>
                 <p className="truncate text-[11.5px] text-muted">{person.headline || 'JobAura member'}</p>
               </div>
-              <button
+              <Button
                 type="button"
+                size="sm"
+                loading={sendMutation.isPending && sendMutation.variables === person.id}
                 disabled={sent || sendMutation.isPending}
                 onClick={() => sendMutation.mutate(person.id)}
                 className={cn(
-                  'inline-flex h-[30px] shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition',
+                  'h-[30px] shrink-0 gap-1.5 font-bold',
                   sent ? 'bg-primary/10 text-primary' : 'bg-primary text-white hover:bg-primary-bright',
                 )}
               >
                 <UserPlus className="h-3.5 w-3.5" />
                 {sent ? 'Sent' : 'Connect'}
-              </button>
+              </Button>
             </div>
           )
         })}

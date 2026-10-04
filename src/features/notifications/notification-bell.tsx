@@ -9,7 +9,6 @@ import {
 import {
   Bell,
   CheckCheck,
-  Loader2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Socket } from "socket.io-client";
@@ -204,14 +203,11 @@ export function NotificationBell() {
             <Button
               size="sm"
               variant="ghost"
-              disabled={!unreadCount || markAllRead.isPending}
+              loading={markAllRead.isPending}
+              disabled={!unreadCount}
               onClick={() => markAllRead.mutate()}
             >
-              {markAllRead.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCheck className="h-4 w-4" />
-              )}
+              <CheckCheck className="h-4 w-4" />
               Mark all
             </Button>
           </div>
@@ -222,6 +218,7 @@ export function NotificationBell() {
             ) : listQuery.isError ? (
               <div className="p-6 text-center text-sm text-muted">
                 Notifications could not be loaded.
+                <Button className="mt-3" size="sm" variant="secondary" loading={listQuery.isFetching} onClick={() => listQuery.refetch()}>Retry</Button>
               </div>
             ) : notifications.length ? (
               <>

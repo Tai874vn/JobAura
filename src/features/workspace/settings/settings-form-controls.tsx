@@ -13,6 +13,7 @@ export function EditorSection({
   onSave,
   saveLabel = 'Save',
   hideActions = false,
+  saving = false,
 }: {
   title: string
   children: React.ReactNode
@@ -20,6 +21,7 @@ export function EditorSection({
   onSave?: () => void
   saveLabel?: string
   hideActions?: boolean
+  saving?: boolean
 }) {
   return (
     <Card>
@@ -33,7 +35,7 @@ export function EditorSection({
                   <Plus className="h-4 w-4" />Add
                 </Button>
               ) : null}
-              {onSave ? <Button size="sm" onClick={onSave}>{saveLabel}</Button> : null}
+              {onSave ? <Button size="sm" loading={saving} onClick={onSave}>{saveLabel}</Button> : null}
             </div>
           ) : null}
         </div>

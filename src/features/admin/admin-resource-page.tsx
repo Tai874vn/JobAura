@@ -248,8 +248,8 @@ function CreateResourceDialog({
   if (!open || !config.create) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <form className="w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-2xl" onSubmit={submit}>
+    <div className="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <form className="motion-panel w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-2xl" onSubmit={submit}>
         <div className="mb-5">
           <h2 className="font-display text-2xl font-bold">{config.create.label}</h2>
           <p className="text-sm text-muted">Add a new marketplace classification.</p>
@@ -281,8 +281,8 @@ function CreateResourceDialog({
           <Button type="button" variant="secondary" onClick={closeDialog}>
             Cancel
           </Button>
-          <Button type="submit" disabled={createMutation.isPending || parentTypesQuery.isLoading}>
-            {createMutation.isPending ? 'Creating...' : 'Create'}
+          <Button type="submit" loading={createMutation.isPending} disabled={parentTypesQuery.isLoading}>
+            Create
           </Button>
         </div>
       </form>

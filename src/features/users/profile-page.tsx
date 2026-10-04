@@ -205,7 +205,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               className="absolute right-4 top-4 opacity-0 shadow-sm transition group-hover/cover:opacity-100 focus-within:opacity-100"
               label="Edit cover"
               icon={<ImageUp className="h-4 w-4" />}
-              disabled={uploadCover.isPending}
+              loading={uploadCover.isPending}
               onChange={(file) => uploadCover.mutate(file)}
             />
           ) : null}
@@ -224,7 +224,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                   className="absolute inset-0 h-full rounded-full border-0 bg-black/55 text-white opacity-0 transition hover:bg-black/65 group-hover/avatar:opacity-100 focus-within:opacity-100"
                   label="Edit avatar"
                   icon={<Upload className="h-4 w-4" />}
-                  disabled={uploadAvatar.isPending}
+                  loading={uploadAvatar.isPending}
                   onChange={(file) => uploadAvatar.mutate(file)}
                 />
               ) : null}

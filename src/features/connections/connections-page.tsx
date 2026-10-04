@@ -61,13 +61,30 @@ export function ConnectionsPage() {
   })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['connections'] })
-  const sendMutation = useMutation({ mutationFn: connectionsApi.send, onSuccess: refresh, onError: (error) => toast.error(getErrorMessage(error, 'Could not send request')) })
-  const acceptMutation = useMutation({ mutationFn: connectionsApi.accept, onSuccess: refresh, onError: (error) => toast.error(getErrorMessage(error, 'Could not accept request')) })
+  const sendMutation = useMutation({
+    mutationFn: connectionsApi.send,
+    onSuccess: async () => {
+      await refresh()
+      toast.success('Connection request sent')
+    },
+    onError: (error) => toast.error(getErrorMessage(error, 'Could not send request')),
+  })
+  const acceptMutation = useMutation({
+    mutationFn: connectionsApi.accept,
+    onSuccess: async () => {
+      await refresh()
+      toast.success('Connection request accepted')
+    },
+    onError: (error) => toast.error(getErrorMessage(error, 'Could not accept request')),
+  })
   const removeMutation = useMutation({
     mutationFn: connectionsApi.remove,
     onSuccess: async (_response, connectionId) => {
+      const isIncoming = requestsQuery.data?.content?.incoming.some((request) => request.id === connectionId)
+      const isOutgoing = requestsQuery.data?.content?.outgoing.some((request) => request.id === connectionId)
       await refresh()
       if (connectionToRemove?.id === connectionId) setConnectionToRemove(null)
+      toast.success(isIncoming ? 'Connection request declined' : isOutgoing ? 'Connection request cancelled' : 'Connection removed')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not update connection')),
   })
@@ -113,7 +130,7 @@ export function ConnectionsPage() {
         {tab === 'connections' ? (
           <>
             <PeopleGrid loading={connectionsQuery.isPending} empty="No connections yet. Discover people to start building your network.">
-              {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
+              {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} messaging={messageMutation.isPending && messageMutation.variables === connection.user.id} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
             </PeopleGrid>
             <PaginationControls
               pageIndex={connectionsQuery.data?.content?.pageIndex}
@@ -127,10 +144,10 @@ export function ConnectionsPage() {
         {tab === 'requests' ? (
           <div className="grid gap-8 lg:grid-cols-2">
             <RequestSection title="Incoming" empty="No incoming requests.">
-              {(requests?.incoming ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} incoming onAccept={() => acceptMutation.mutate(connection.id)} onRemove={() => removeMutation.mutate(connection.id)} />)}
+              {(requests?.incoming ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} incoming accepting={acceptMutation.isPending && acceptMutation.variables === connection.id} removing={removeMutation.isPending && removeMutation.variables === connection.id} onAccept={() => acceptMutation.mutate(connection.id)} onRemove={() => removeMutation.mutate(connection.id)} />)}
             </RequestSection>
             <RequestSection title="Sent" empty="No sent requests.">
-              {(requests?.outgoing ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} onRemove={() => removeMutation.mutate(connection.id)} />)}
+              {(requests?.outgoing ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} removing={removeMutation.isPending && removeMutation.variables === connection.id} onRemove={() => removeMutation.mutate(connection.id)} />)}
             </RequestSection>
           </div>
         ) : null}
@@ -225,16 +242,16 @@ function SkillList({ user, highlighted = [] }: { user: ConnectionProfile; highli
   return <div className="mt-4 flex min-h-7 flex-wrap gap-2">{skills.map((skill) => <span key={skill} className="rounded border border-border bg-surface-muted px-2 py-1 text-xs font-semibold">{skill}</span>)}</div>
 }
 
-function ConnectionCard({ connection, onMessage, onRemove }: { connection: Connection; onMessage: () => void; onRemove: () => void }) {
-  return <Card className="p-4"><ProfileSummary user={connection.user} /><SkillList user={connection.user} /><div className="mt-5 flex gap-2 border-t border-border pt-4"><Button className="flex-1" size="sm" onClick={onMessage}><MessageCircle className="h-4 w-4" />Message</Button><Button variant="secondary" size="icon" onClick={onRemove} title="Remove connection"><UserMinus className="h-4 w-4" /></Button></div></Card>
+function ConnectionCard({ connection, messaging, onMessage, onRemove }: { connection: Connection; messaging: boolean; onMessage: () => void; onRemove: () => void }) {
+  return <Card className="p-4"><ProfileSummary user={connection.user} /><SkillList user={connection.user} /><div className="mt-5 flex gap-2 border-t border-border pt-4"><Button className="flex-1" size="sm" loading={messaging} onClick={onMessage}><MessageCircle className="h-4 w-4" />Message</Button><Button variant="secondary" size="icon" onClick={onRemove} title="Remove connection"><UserMinus className="h-4 w-4" /></Button></div></Card>
 }
 
-function RequestCard({ connection, incoming = false, onAccept, onRemove }: { connection: Connection; incoming?: boolean; onAccept?: () => void; onRemove: () => void }) {
-  return <Card className="p-4"><ProfileSummary user={connection.user} /><div className="mt-4 flex gap-2">{incoming ? <Button size="sm" onClick={onAccept}><Check className="h-4 w-4" />Accept</Button> : null}<Button size="sm" variant="secondary" onClick={onRemove}><X className="h-4 w-4" />{incoming ? 'Reject' : 'Cancel'}</Button></div></Card>
+function RequestCard({ connection, incoming = false, accepting = false, removing = false, onAccept, onRemove }: { connection: Connection; incoming?: boolean; accepting?: boolean; removing?: boolean; onAccept?: () => void; onRemove: () => void }) {
+  return <Card className="p-4"><ProfileSummary user={connection.user} /><div className="mt-4 flex gap-2">{incoming ? <Button size="sm" loading={accepting} disabled={removing} onClick={onAccept}><Check className="h-4 w-4" />Accept</Button> : null}<Button size="sm" variant="secondary" loading={removing} disabled={accepting} onClick={onRemove}><X className="h-4 w-4" />{incoming ? 'Reject' : 'Cancel'}</Button></div></Card>
 }
 
 function SuggestionCard({ person, pending, onConnect }: { person: ConnectionSuggestion; pending: boolean; onConnect: () => void }) {
-  return <Card className="p-4"><ProfileSummary user={person} /><SkillList user={person} highlighted={person.sharedSkills} /><div className="mt-5 border-t border-border pt-4"><Button className="w-full" size="sm" onClick={onConnect} disabled={pending}><UserPlus className="h-4 w-4" />{pending ? 'Sending' : 'Connect'}</Button></div></Card>
+  return <Card className="p-4"><ProfileSummary user={person} /><SkillList user={person} highlighted={person.sharedSkills} /><div className="mt-5 border-t border-border pt-4"><Button className="w-full" size="sm" onClick={onConnect} loading={pending}><UserPlus className="h-4 w-4" />Connect</Button></div></Card>
 }
 
 function RequestSection({ title, empty, children }: { title: string; empty: string; children: React.ReactNode }) {

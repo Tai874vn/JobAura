@@ -212,7 +212,7 @@ export function ChatShell() {
         </Button>
       ) : null}
       {isOpen ? (
-        <section className="fixed bottom-5 right-5 z-50 grid h-[580px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[280px_minmax(0,1fr)] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_24px_60px_rgba(27,28,28,0.22)]">
+        <section className="motion-panel fixed bottom-5 right-5 z-50 grid h-[580px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[280px_minmax(0,1fr)] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_24px_60px_rgba(27,28,28,0.22)]">
           <aside className="flex min-w-0 flex-col border-r border-border bg-surface">
             <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
               <h2 className="font-display text-[15px] font-extrabold">Messages</h2>
@@ -347,6 +347,7 @@ export function ChatShell() {
               </div>
               <Button
                 className="h-10 w-10 shrink-0 rounded-full p-0"
+                loading={isSending}
                 disabled={!activeRoomId || !draft.trim() || isSending}
                 aria-label="Send message"
               >

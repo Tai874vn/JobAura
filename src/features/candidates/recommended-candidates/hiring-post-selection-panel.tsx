@@ -10,7 +10,7 @@ import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { CreateHiringPost, HiringPost } from "@/shared/schemas";
 import { createHiringPostSchema } from "@/shared/schemas";
-import { Badge, Button, Card, CardContent, Input, Select, Spinner, Textarea } from "@/shared/ui";
+import { Badge, Button, Card, CardContent, Input, Select, Textarea } from "@/shared/ui";
 import {
   emptyHiringPostDraft,
   hiringPostPageParams,
@@ -239,12 +239,8 @@ export function HiringPostSelectionPanel({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? (
-                  <Spinner className="h-4 w-4" />
-                ) : (
-                  <BriefcaseBusiness className="h-4 w-4" />
-                )}
+              <Button type="submit" loading={createMutation.isPending}>
+                <BriefcaseBusiness className="h-4 w-4" />
                 Create hiring post
               </Button>
             </div>
@@ -274,7 +270,8 @@ export function HiringPostSelectionPanel({
               >
                 <button
                   type="button"
-                  className="w-full text-left"
+                  className="w-full rounded text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+                  aria-pressed={selectedHiringPostId === post.id}
                   onClick={() => onSelectHiringPost(post.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -301,13 +298,10 @@ export function HiringPostSelectionPanel({
                     size="sm"
                     variant="secondary"
                     disabled={predictSeniority.isPending}
+                    loading={predictSeniority.isPending && predictSeniority.variables === post.id}
                     onClick={() => predictSeniority.mutate(post.id)}
                   >
-                    {predictSeniority.isPending && predictSeniority.variables === post.id ? (
-                      <Spinner className="h-4 w-4" />
-                    ) : (
-                      <Sparkles className="h-4 w-4" />
-                    )}
+                    <Sparkles className="h-4 w-4" />
                     Predict level
                   </Button>
                 </div>

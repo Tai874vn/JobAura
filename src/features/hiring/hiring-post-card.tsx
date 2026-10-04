@@ -2,7 +2,7 @@ import { CheckCircle2, Clock3, MapPin, Send, Users } from "lucide-react";
 import { FeedAvatar } from "@/features/feed/feed-avatar";
 import { cn } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
-import { Badge, Button, ButtonLink, Card, CardContent, Spinner, Textarea } from "@/shared/ui";
+import { Badge, Button, ButtonLink, Card, CardContent, Textarea } from "@/shared/ui";
 
 export function HiringPostCard({
   post,
@@ -84,7 +84,7 @@ export function HiringPostCard({
         </div>
 
         {active && !post.viewerHasApplied ? (
-          <div className="mt-4 rounded-lg border border-border bg-surface-muted p-4">
+          <div className="motion-popover mt-4 rounded-lg border border-border bg-surface-muted p-4">
             <label className="grid gap-2">
               <span className="text-xs font-bold uppercase text-muted">Short message</span>
               <Textarea
@@ -95,8 +95,8 @@ export function HiringPostCard({
               />
             </label>
             <div className="mt-3 flex justify-end gap-2">
-              <Button type="button" variant="secondary" onClick={onApply} disabled={applying}>
-                {applying ? <Spinner className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+              <Button type="button" variant="secondary" onClick={onApply} loading={applying}>
+                <Send className="h-4 w-4" />
                 Send application
               </Button>
             </div>

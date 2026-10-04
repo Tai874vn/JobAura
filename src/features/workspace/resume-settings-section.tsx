@@ -117,9 +117,9 @@ export function ResumeSettingsSection({
               <p className="text-xs leading-5 text-muted">
                 If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
               </p>
-              <Button disabled={!canImport || isImporting} onClick={onImport}>
+              <Button loading={isImporting} disabled={!canImport} onClick={onImport}>
                 <FileJson className="h-4 w-4" />
-                {isImporting ? 'Saving...' : attachedFile ? 'Upload and save' : 'Save resume'}
+                {attachedFile ? 'Upload and save' : 'Save resume'}
               </Button>
             </div>
           </CardContent>
@@ -177,9 +177,9 @@ function ResumePreview({
                   : 'Save your resume, then run AI evaluation when you need it.'}
               </p>
             </div>
-            <Button type="button" size="sm" variant="secondary" disabled={!resume || isPredicting} onClick={onPredictSeniority}>
+            <Button type="button" size="sm" variant="secondary" loading={isPredicting} disabled={!resume} onClick={onPredictSeniority}>
               <Sparkles className="h-4 w-4" />
-              {isPredicting ? 'Evaluating...' : resume?.predictedSeniority ? 'Run again' : 'Predict'}
+              {resume?.predictedSeniority ? 'Run again' : 'Predict'}
             </Button>
           </div>
         </div>

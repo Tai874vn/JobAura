@@ -159,7 +159,7 @@ export function SiteHeader() {
           <div className="relative hidden shrink-0 items-center gap-2 md:flex">
             <button
               type="button"
-              className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white"
+              className="interaction relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2"
               onClick={() => setAccountMenuOpen((value) => !value)}
               aria-label={accountMenuOpen ? "Close account menu" : "Open account menu"}
               aria-controls="account-navigation"
@@ -286,7 +286,7 @@ export function SiteHeader() {
       {mobileMenuOpen ? (
         <div
           id="mobile-navigation"
-          className="border-t border-border bg-surface p-4 md:hidden"
+          className="motion-popover border-t border-border bg-surface p-4 md:hidden"
         >
           <div className="grid gap-2 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
             {user && canUseEmployeeTools ? <Link href="/">Home feed</Link> : null}
@@ -340,7 +340,7 @@ function MenuLink({
 }) {
   return (
     <Link
-      className="flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold hover:bg-surface-muted"
+      className="interaction flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
       href={href}
       onClick={onClick}
     >
