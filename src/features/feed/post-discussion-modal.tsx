@@ -13,6 +13,7 @@ import { Button, ConfirmationDialog } from '@/shared/ui'
 import { mergeComments } from './feed-data'
 import { FeedAvatar } from './feed-avatar'
 import { CommentRow } from './feed-post-card'
+import { timeAgo } from './time-ago'
 
 export function PostDiscussionModal({
   post,
@@ -44,6 +45,8 @@ export function PostDiscussionModal({
   const [editContent, setEditContent] = useState('')
   const [commentToDelete, setCommentToDelete] = useState<PostComment | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const didInitialScroll = useRef(false)
   const image = resolveAssetUrl(post.imageUrl)
   const commentsQuery = useInfiniteQuery({
     queryKey: queryKeys.postComments(post.id),
@@ -70,10 +73,19 @@ export function PostDiscussionModal({
     }
   }, [onClose, open])
 
-  if (!open) return null
-
   const loadedGroups = commentsQuery.data?.pages.map((page) => page.data) ?? []
   const comments = mergeComments([...loadedGroups, post.recentComments])
+
+  useEffect(() => {
+    if (!open || !comments.length) return
+    const frame = window.requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: didInitialScroll.current ? 'smooth' : 'auto', block: 'end' })
+      didInitialScroll.current = true
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [comments.length, open])
+
+  if (!open) return null
 
   async function submitComment(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -127,7 +139,7 @@ export function PostDiscussionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-discussion-title"
-        className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-2xl sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
+        className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-surface shadow-2xl sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
       >
         <header className="relative flex h-14 shrink-0 items-center justify-center border-b border-border px-14">
           <h2 id="post-discussion-title" className="truncate font-display text-lg font-bold">
@@ -146,7 +158,9 @@ export function PostDiscussionModal({
                 <Link href={`/profile/${post.author.id}`} className="block truncate text-sm font-bold hover:text-primary">
                   {post.author.name}
                 </Link>
-                <p className="truncate text-xs text-muted">{post.author.headline || 'JobAura member'}</p>
+                <p className="truncate text-xs text-muted">
+                  {post.author.headline ? `${post.author.headline} · ` : ''}{timeAgo(post.createdAt)}
+                </p>
               </div>
             </div>
             {post.content ? <p className="whitespace-pre-wrap px-4 pb-4 text-sm leading-6">{post.content}</p> : null}
@@ -214,7 +228,7 @@ export function PostDiscussionModal({
                         maxLength={1000}
                         autoFocus
                         aria-label="Edit comment"
-                        className="h-9 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-primary"
+                        className="h-10 w-full rounded-full border border-border bg-surface px-4 text-sm outline-none transition focus:border-primary"
                       />
                       <div className="mt-2 flex justify-end gap-1">
                         <Button
@@ -274,19 +288,28 @@ export function PostDiscussionModal({
                 />
               )
             })}
+            <div ref={bottomRef} aria-hidden="true" className="h-px" />
           </div>
         </div>
 
-        <form onSubmit={submitComment} className="flex shrink-0 items-center gap-2 border-t border-border bg-white p-3 sm:p-4">
+        <form onSubmit={submitComment} className="flex shrink-0 items-center gap-2 border-t border-border bg-surface p-3 sm:p-4">
           <input
             ref={inputRef}
             value={comment}
             onChange={(event) => setComment(event.target.value)}
             maxLength={1000}
             placeholder="Write a comment..."
-            className="h-10 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-sm outline-none focus:border-primary"
+            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-sm outline-none transition focus:border-primary focus:bg-surface"
           />
-          <Button type="submit" size="icon" variant="ghost" loading={submitting} disabled={!comment.trim()} aria-label="Send comment" title="Send comment">
+          <Button
+            type="submit"
+            size="icon"
+            className="h-11 w-11 shrink-0 rounded-full"
+            loading={submitting}
+            disabled={!comment.trim()}
+            aria-label="Send comment"
+            title="Send comment"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </form>

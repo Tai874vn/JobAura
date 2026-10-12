@@ -8,6 +8,7 @@ import type { FeedPost, PostComment } from '@/shared/schemas'
 import { cn, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
+import { timeAgo } from './time-ago'
 
 export function FeedPostCard({
   post,
@@ -45,7 +46,7 @@ export function FeedPostCard({
               {post.author.name}
             </Link>
             <p className="truncate text-xs text-muted">
-              {post.author.headline || 'JobAura member'} - {formatPostDate(post.createdAt)}
+              {post.author.headline ? `${post.author.headline} · ` : ''}{timeAgo(post.createdAt)}
             </p>
           </div>
           {post.author.id === currentUserId ? (
@@ -147,22 +148,20 @@ export function FeedPostCard({
 }
 
 export function CommentRow({ comment, actions }: { comment: PostComment; actions?: React.ReactNode }) {
+  const edited = Boolean(comment.updatedAt && comment.updatedAt !== comment.createdAt)
   return (
     <div className="group/comment flex items-start gap-2">
       <FeedAvatar user={comment.author} size="sm" />
-      <div className="min-w-0 rounded-lg bg-surface-muted px-3 py-2">
-        <Link href={`/profile/${comment.author.id}`} className="text-xs font-bold hover:text-primary">{comment.author.name}</Link>
-        <p className="whitespace-pre-wrap wrap-break-words text-sm leading-5">{comment.content}</p>
-        {comment.updatedAt && comment.updatedAt !== comment.createdAt ? <span className="text-[11px] text-muted">Edited</span> : null}
+      <div className="min-w-0 rounded-xl bg-surface-muted px-3 py-2">
+        <p className="flex items-baseline gap-1.5 text-xs">
+          <Link href={`/profile/${comment.author.id}`} className="truncate font-bold hover:text-primary">{comment.author.name}</Link>
+          <span className="shrink-0 text-[11px] font-medium text-muted">
+            {timeAgo(comment.createdAt)}{edited ? ' · Edited' : ''}
+          </span>
+        </p>
+        <p className="mt-0.5 whitespace-pre-wrap wrap-break-words text-sm leading-5">{comment.content}</p>
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-1 opacity-100 sm:opacity-0 sm:transition sm:group-hover/comment:opacity-100 sm:focus-within:opacity-100">{actions}</div> : null}
     </div>
   )
-}
-
-function formatPostDate(value: string) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'Recently'
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${months[date.getUTCMonth()]} ${date.getUTCDate()}`
 }
