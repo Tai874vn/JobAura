@@ -85,6 +85,8 @@ export function normalizePostComment(raw: unknown): PostComment {
     id: pickNumber(record, "id") ?? 0,
     postId: pickNumber(record, "postId") ?? 0,
     authorId: pickNumber(record, "authorId") ?? 0,
+    parentId: pickNumber(record, "parentId") ?? null,
+    replyCount: pickNumber(record, "replyCount") ?? 0,
     content: pickString(record, "content") ?? "",
     createdAt: pickString(record, "createdAt") ?? "",
     updatedAt: pickString(record, "updatedAt"),

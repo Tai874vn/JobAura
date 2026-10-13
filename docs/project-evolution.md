@@ -52,6 +52,10 @@
 
 ## How changes are checked and managed
 
+### 2026-10-13 — Feed comment reply integration (not committed yet)
+
+Added single-level reply threads with cursor pagination, inline composing, retry/pending feedback, and author/admin controls. Kept layout, thread state, mutations, and cache synchronization in separate modules. Feed and saved-post totals include replies; previews remain root-only, and deleting a root removes its thread. Reused cookie/CSRF handling and validated trimmed comment content. Review identified a race between discussion refreshes and pending likes/saves; deferred-response regression tests reproduced it, and settlement refreshes fix the final state. Typecheck, 137 tests, production build and simulated-response browser checks passed; lint has zero errors and one existing warning. See [reply integration notes](feed-comment-replies.md) for implementation boundaries and verification. Owner: Tai874vn only. No commit, push, backend migration, or deployment performed in this change.
+
 ### 2026-10-04 — Frontend motion and feedback polish
 
 Extended shared motion and loading feedback across navigation, dialogs, profile/settings, hiring, recommendations, connections, notifications, saved items, purchases/reviews, and chat. Added accessible selected/busy states, connection success messages, and retry controls. Reused small shared UI primitives rather than creating a module responsible for multiple features. Typechecking, 115 regression tests, and the production build pass; lint has zero errors and one existing warning. Public desktop/mobile smoke checks passed; authenticated workflows still need a running backend. See [motion and feedback notes](motion-feedback-polish.md) for scope and verification. Owner: Tai874vn only.

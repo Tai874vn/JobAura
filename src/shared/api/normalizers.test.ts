@@ -4,6 +4,7 @@ import {
   normalizeComment,
   normalizeHiredJob,
   normalizeFeedResponse,
+  normalizePostComment,
   normalizeConnectionRequestsResponse,
   normalizeConnectionsResponse,
   normalizeSavedJobsResponse,
@@ -23,6 +24,13 @@ import {
 } from "./normalizers";
 
 describe("normalizers", () => {
+  it("preserves root/reply metadata and defaults legacy comments to roots", () => {
+    expect(normalizePostComment({ id: 8, postId: 10, parentId: 4, replyCount: 2 }))
+      .toMatchObject({ id: 8, postId: 10, parentId: 4, replyCount: 2 });
+    expect(normalizePostComment({ id: 4, postId: 10 }))
+      .toMatchObject({ parentId: null, replyCount: 0 });
+  });
+
   it("normalizes the social feed contract and preserves its cursor", () => {
     const response = normalizeFeedResponse({
       content: {

@@ -2,6 +2,7 @@ import { apiClient, uploadClient } from '../client'
 import { normalizeFeedPost, normalizeFeedResponse, normalizePostComment } from '../normalizers'
 import { assertValidImageFile } from '@/shared/lib/file-validation'
 import type { ApiResponse, FeedPage, FeedPost, FeedStats, PostComment } from '@/shared/schemas'
+import { postCommentContentSchema } from '@/shared/schemas'
 
 export const postsApi = {
   feed: async ({ cursor, limit = 10 }: { cursor?: string; limit?: number } = {}) =>
@@ -51,17 +52,37 @@ export const postsApi = {
   },
   createComment: async (postId: number, content: string) => {
     const response = (
-      await apiClient.post<ApiResponse<PostComment>>(`/api/posts/${postId}/comments`, { content })
+      await apiClient.post<ApiResponse<PostComment>>(`/api/posts/${postId}/comments`, { content: postCommentContentSchema.parse(content) })
     ).data
     return response.content
       ? { ...response, content: normalizePostComment(response.content) }
       : response
   },
+  replies: async (postId: number, commentId: number, cursor?: number, limit = 10) => {
+    const response = (
+      await apiClient.get<ApiResponse<{ data: PostComment[]; nextCursor: number | null }>>(
+        `/api/posts/${postId}/comments/${commentId}/replies`,
+        { params: { limit, cursor } },
+      )
+    ).data
+    return response.content
+      ? { ...response, content: { ...response.content, data: response.content.data.map(normalizePostComment) } }
+      : response
+  },
+  createReply: async (postId: number, commentId: number, content: string) => {
+    const response = (
+      await apiClient.post<ApiResponse<PostComment>>(
+        `/api/posts/${postId}/comments/${commentId}/replies`,
+        { content: postCommentContentSchema.parse(content) },
+      )
+    ).data
+    return response.content ? { ...response, content: normalizePostComment(response.content) } : response
+  },
   updateComment: async (postId: number, commentId: number, content: string) => {
     const response = (
       await apiClient.put<ApiResponse<PostComment>>(
         `/api/posts/${postId}/comments/${commentId}`,
-        { content },
+        { content: postCommentContentSchema.parse(content) },
       )
     ).data
     return response.content

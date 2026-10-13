@@ -6,29 +6,19 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
-import { postsApi, savedItemsApi } from '@/shared/api/endpoints'
+import { postsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { FeedPage, FeedPost } from '@/shared/schemas'
 import { Button, Card, ConfirmationDialog, EmptyState, Skeleton } from '@/shared/ui'
-import {
-  addCommentToPost,
-  appendCommentToPages,
-  mergeFeedPages,
-  removeCommentFromPages,
-  removeCommentFromPost,
-  togglePostLike,
-  togglePostSaved,
-  updateCommentInPages,
-  updateCommentInPost,
-  type CommentCache,
-} from './feed-data'
+import { mergeFeedPages } from './feed-data'
 import { FeedGreeting } from './feed-greeting'
 import { LeftFeedRail } from './feed-left-rail'
 import { FeedPostCard } from './feed-post-card'
 import { RightFeedRail } from './feed-rails'
 import { PostComposer } from './post-composer'
 import { PostDiscussionModal } from './post-discussion-modal'
+import { postLikeOptions, postSaveOptions } from './post-reactions'
 
 type FeedCache = InfiniteData<FeedPage, string | null>
 
@@ -60,76 +50,8 @@ export function FeedPage() {
     onError: (error) => toast.error(getErrorMessage(error, 'Could not publish this post')),
   })
 
-  const likeMutation = useMutation({
-    mutationFn: ({ id, liked }: { id: number; liked: boolean }) => liked ? postsApi.like(id) : postsApi.unlike(id),
-    onMutate: async ({ id, liked }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.feed })
-      const previous = queryClient.getQueryData<FeedCache>(queryKeys.feed)
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) => mapPost(current, id, (post) => togglePostLike(post, liked)))
-      return { previous }
-    },
-    onError: (error, _variables, context) => {
-      queryClient.setQueryData(queryKeys.feed, context?.previous)
-      toast.error(getErrorMessage(error, 'Could not update like'))
-    },
-  })
-
-  const commentMutation = useMutation({
-    mutationFn: ({ postId, content }: { postId: number; content: string }) => postsApi.createComment(postId, content),
-    onSuccess: (response, variables) => {
-      if (!response.content) return
-      const createdComment = response.content
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) =>
-        mapPost(current, variables.postId, (post) => addCommentToPost(post, createdComment)))
-      queryClient.setQueryData<CommentCache>(queryKeys.postComments(variables.postId), (current) =>
-        appendCommentToPages(current, createdComment))
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Could not add comment')),
-  })
-
-  const editCommentMutation = useMutation({
-    mutationFn: ({ postId, commentId, content }: { postId: number; commentId: number; content: string }) =>
-      postsApi.updateComment(postId, commentId, content),
-    onSuccess: (response, variables) => {
-      if (!response.content) return
-      const updatedComment = response.content
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) =>
-        mapPost(current, variables.postId, (post) => updateCommentInPost(post, updatedComment)))
-      queryClient.setQueryData<CommentCache>(queryKeys.postComments(variables.postId), (current) =>
-        updateCommentInPages(current, updatedComment))
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Could not edit comment')),
-  })
-
-  const deleteCommentMutation = useMutation({
-    mutationFn: ({ postId, commentId }: { postId: number; commentId: number }) =>
-      postsApi.deleteComment(postId, commentId),
-    onSuccess: (_response, variables) => {
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) =>
-        mapPost(current, variables.postId, (post) => removeCommentFromPost(post, variables.commentId)))
-      queryClient.setQueryData<CommentCache>(queryKeys.postComments(variables.postId), (current) =>
-        removeCommentFromPages(current, variables.commentId))
-      toast.success('Comment deleted')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Could not delete comment')),
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: ({ id, saved }: { id: number; saved: boolean }) =>
-      saved ? savedItemsApi.savePost(id) : savedItemsApi.unsavePost(id),
-    onMutate: async ({ id, saved }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.feed })
-      const previous = queryClient.getQueryData<FeedCache>(queryKeys.feed)
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) =>
-        mapPost(current, id, (post) => togglePostSaved(post, saved)))
-      return { previous }
-    },
-    onError: (error, _variables, context) => {
-      queryClient.setQueryData(queryKeys.feed, context?.previous)
-      toast.error(getErrorMessage(error, 'Could not update saved posts'))
-    },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.savedPosts }),
-  })
+  const likeMutation = useMutation(postLikeOptions(queryClient))
+  const saveMutation = useMutation(postSaveOptions(queryClient))
 
   const deleteMutation = useMutation({
     mutationFn: postsApi.delete,
@@ -213,21 +135,12 @@ export function FeedPage() {
       </div>
       {selectedPost ? (
         <PostDiscussionModal
+          key={selectedPost.id}
           post={selectedPost}
           open
           currentUserId={user.id}
           currentUserRole={user.role}
-          submitting={commentMutation.isPending && commentMutation.variables?.postId === selectedPost.id}
-          editingCommentId={editCommentMutation.isPending ? editCommentMutation.variables?.commentId : undefined}
-          deletingCommentId={deleteCommentMutation.isPending ? deleteCommentMutation.variables?.commentId : undefined}
           onClose={closeDiscussion}
-          onSubmit={async (postId, content) => { await commentMutation.mutateAsync({ postId, content }) }}
-          onEdit={async (postId, commentId, content) => {
-            await editCommentMutation.mutateAsync({ postId, commentId, content })
-          }}
-          onDelete={async (postId, commentId) => {
-            await deleteCommentMutation.mutateAsync({ postId, commentId })
-          }}
         />
       ) : null}
       <ConfirmationDialog
@@ -251,11 +164,6 @@ function MobileTab({ href, label }: { href: string; label: string }) {
 
 function FeedSkeleton() {
   return <div className="space-y-4">{[1, 2].map((item) => <Card key={item} className="space-y-4 p-4"><div className="flex gap-3"><Skeleton className="h-10 w-10 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-48" /></div></div><Skeleton className="h-4 w-full" /><Skeleton className="h-64 w-full" /></Card>)}</div>
-}
-
-function mapPost(cache: FeedCache | undefined, postId: number, mapper: (post: FeedPost) => FeedPost) {
-  if (!cache) return cache
-  return { ...cache, pages: cache.pages.map((page) => ({ ...page, data: page.data.map((post) => post.id === postId ? mapper(post) : post) })) }
 }
 
 function prependPost(cache: FeedCache | undefined, post: FeedPost): FeedCache {

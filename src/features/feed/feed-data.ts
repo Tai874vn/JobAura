@@ -30,7 +30,7 @@ export function togglePostSaved(post: FeedPost, saved: boolean): FeedPost {
 }
 
 export function mergeComments(groups: PostComment[][]): PostComment[] {
-  const comments = dedupeComments(groups.flat())
+  const comments = dedupeComments(groups.flat().filter((comment) => comment.parentId == null))
   return comments.sort((left, right) => {
     const timeDifference = new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime()
     return timeDifference || left.id - right.id
@@ -38,6 +38,13 @@ export function mergeComments(groups: PostComment[][]): PostComment[] {
 }
 
 export function addCommentToPost(post: FeedPost, comment: PostComment, limit = 5): FeedPost {
+  if (comment.parentId != null) {
+    return {
+      ...post,
+      commentCount: post.commentCount + 1,
+      recentComments: adjustRootReplyCount(post.recentComments, comment.parentId, 1),
+    }
+  }
   const exists = post.recentComments.some((item) => item.id === comment.id)
   const recentComments = mergeComments([post.recentComments, [comment]]).slice(-limit)
   return {
@@ -83,12 +90,24 @@ export function updateCommentInPages(
   }
 }
 
-export function removeCommentFromPost(post: FeedPost, commentId: number): FeedPost {
+export function removeCommentFromPost(post: FeedPost, comment: PostComment): FeedPost {
   return {
     ...post,
-    commentCount: Math.max(0, post.commentCount - 1),
-    recentComments: post.recentComments.filter((comment) => comment.id !== commentId),
+    commentCount: Math.max(0, post.commentCount - 1 - (comment.parentId == null ? comment.replyCount : 0)),
+    recentComments: comment.parentId == null
+      ? post.recentComments.filter((item) => item.id !== comment.id)
+      : adjustRootReplyCount(post.recentComments, comment.parentId, -1),
   }
+}
+
+export function adjustRootReplyCount(comments: PostComment[], rootId: number, delta: number) {
+  return comments.map((comment) => comment.id === rootId
+    ? { ...comment, replyCount: Math.max(0, comment.replyCount + delta) }
+    : comment)
+}
+
+export function mergeReplies(groups: PostComment[][]) {
+  return dedupeComments(groups.flat()).sort((left, right) => right.id - left.id)
 }
 
 export function removeCommentFromPages(

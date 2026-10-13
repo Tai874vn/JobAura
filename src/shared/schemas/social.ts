@@ -12,11 +12,15 @@ export const postCommentSchema = z.object({
   id: z.number(),
   postId: z.number(),
   authorId: z.number(),
+  parentId: z.number().nullable().default(null),
+  replyCount: z.number().int().nonnegative().default(0),
   content: z.string(),
   createdAt: z.string(),
   updatedAt: z.string().optional(),
   author: feedAuthorSchema,
 });
+
+export const postCommentContentSchema = z.string().trim().min(1, 'Enter a comment').max(1000, 'Comments must be 1,000 characters or fewer');
 
 export const feedPostSchema = z.object({
   id: z.number(),

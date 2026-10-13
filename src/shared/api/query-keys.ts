@@ -24,6 +24,7 @@ export const queryKeys = {
   feed: ['posts', 'feed'] as const,
   feedStats: ['posts', 'me', 'stats'] as const,
   postComments: (postId: number) => ['posts', postId, 'comments'] as const,
+  postReplies: (postId: number, commentId: number) => ['posts', postId, 'comments', commentId, 'replies'] as const,
   savedPosts: ['saved', 'posts'] as const,
   savedJobs: ['saved', 'jobs', 'pages'] as const,
   savedJobsPreview: ['saved', 'jobs', 'preview'] as const,
