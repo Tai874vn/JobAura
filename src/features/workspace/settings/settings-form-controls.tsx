@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react'
+import { LoaderCircle, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import type { ProfilePortfolioItem } from '@/shared/schemas'
@@ -26,8 +26,8 @@ export function EditorSection({
   return (
     <Card>
       <CardContent className="p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <h2 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h2>
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <h3 className="font-display text-lg font-bold">{title}</h3>
           {!hideActions ? (
             <div className="ml-auto flex gap-2">
               {onAdd ? (
@@ -54,7 +54,7 @@ export function Field({ label, value, onChange, type = 'text', className }: {
 }) {
   return (
     <label className={`grid gap-1 ${className ?? ''}`}>
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <span className="text-sm font-semibold">{label}</span>
       <Input type={type} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
@@ -63,22 +63,24 @@ export function Field({ label, value, onChange, type = 'text', className }: {
 export function PortfolioFields({ item, onChange }: { item: PortfolioDraft; onChange: (patch: Partial<PortfolioDraft>) => void }) {
   return (
     <>
-      <Input value={item.title} placeholder="Project title" onChange={(event) => onChange({ title: event.target.value })} />
-      <Textarea value={item.description ?? ''} placeholder="Description" onChange={(event) => onChange({ description: event.target.value })} />
-      <Input value={item.image ?? ''} placeholder="Image URL" onChange={(event) => onChange({ image: event.target.value })} />
-      <Input value={item.url ?? ''} placeholder="Project URL" onChange={(event) => onChange({ url: event.target.value })} />
+      <Field label="Project title" value={item.title} onChange={(title) => onChange({ title })} />
+      <label className="grid gap-1"><span className="text-sm font-semibold">Description</span><Textarea value={item.description ?? ''} onChange={(event) => onChange({ description: event.target.value })} /></label>
+      <Field label="Image URL" value={item.image} onChange={(image) => onChange({ image })} />
+      <Field label="Project URL" value={item.url} onChange={(url) => onChange({ url })} />
     </>
   )
 }
 
-export function UploadField({ label, icon, onChange }: { label: string; icon: React.ReactNode; onChange: (file: File) => void }) {
+export function UploadField({ label, icon, onChange, pending = false }: { label: string; icon: React.ReactNode; onChange: (file: File) => void; pending?: boolean }) {
   return (
-    <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-4 text-sm font-semibold text-muted hover:border-primary hover:text-primary">
-      {icon}
-      {label}
+    <label aria-busy={pending} className="interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-4 text-sm font-semibold text-muted hover:border-primary hover:bg-primary/5 hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright">
+      {pending ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : icon}
+      <span role={pending ? 'status' : undefined}>{pending ? label.replace(/^Upload /, 'Uploading ') + '…' : label}</span>
       <input
         className="sr-only"
         type="file"
+        aria-label={label}
+        disabled={pending}
         accept={imageUploadAccept}
         onChange={(event) => {
           const file = event.target.files?.[0]

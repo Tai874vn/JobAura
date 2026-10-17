@@ -7,7 +7,6 @@ import { formatFileSize } from '@/features/users/profile-form-utils'
 import {
   hasResumeDraftInput,
   resumeFileAccept,
-  resumeSchemaVersion,
   resumeSkills,
   type ResumeDraft,
   type ResumeFieldKey,
@@ -43,10 +42,9 @@ export function ResumeSettingsSection({
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Resume intelligence</p>
-        <h2 className="mt-1 font-display text-3xl font-bold">Resume details</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-          Maintain structured CV data for AI matching and future public profile display.
+        <h2 className="font-display text-2xl font-bold">Resume details</h2>
+        <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
+          Review your experience, attach a CV, and save the details used for job matching.
         </p>
       </div>
 
@@ -55,12 +53,12 @@ export function ResumeSettingsSection({
           <CardContent className="grid gap-4 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-2xl font-bold">Career fields</h3>
+                <h3 className="font-display text-lg font-bold">Career fields</h3>
                 <p className="mt-1 text-sm text-muted">Fill the resume fields directly, or upload a CV file to extract the fields.</p>
               </div>
               <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
-                {resumeSchemaVersion}
+                {resume ? 'Saved resume' : 'New resume'}
               </span>
             </div>
 
@@ -87,7 +85,7 @@ export function ResumeSettingsSection({
                   <p className="mt-1 text-xs leading-5 text-muted">Supports PDF, DOC, and DOCX up to 10MB. PDF and DOCX are extracted for review before saving.</p>
                   <p className="mt-1 text-xs leading-5 text-muted">For best results, attach DOCX, PDF, or another readable document instead of an image, which cannot be read here.</p>
                 </div>
-                <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
+                <label className="interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold hover:border-primary hover:bg-primary/5 hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright">
                   <FileText className="h-4 w-4" />
                   Attach file
                   <input
@@ -103,7 +101,7 @@ export function ResumeSettingsSection({
                 </label>
               </div>
               {attachedFile ? (
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-white px-3 py-2">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{attachedFile.name}</p>
                     <p className="text-xs text-muted">{formatFileSize(attachedFile.size)} ready to upload</p>
@@ -160,7 +158,7 @@ function ResumePreview({
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-2xl font-bold">Preview</h3>
+            <h3 className="font-display text-lg font-bold">Preview</h3>
             <p className="mt-1 text-sm text-muted">{resume?.updatedAt ? `Last imported ${formatDate(resume.updatedAt)}` : 'Resume data preview'}</p>
           </div>
           {resume ? <CheckCircle2 className="h-5 w-5 text-primary" /> : null}
@@ -222,7 +220,7 @@ function ResumePreview({
 function ResumeField({ label, value, onChange }: { label: string; value?: string | null; onChange: (value: string) => void }) {
   return (
     <label className="grid gap-1">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <span className="text-sm font-semibold">{label}</span>
       <Input value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
@@ -231,7 +229,7 @@ function ResumeField({ label, value, onChange }: { label: string; value?: string
 function ResumeTextarea({ label, value, onChange, className }: { label: string; value?: string | null; onChange: (value: string) => void; className?: string }) {
   return (
     <label className="grid gap-1">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <span className="text-sm font-semibold">{label}</span>
       <Textarea className={className} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
