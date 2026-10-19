@@ -40,7 +40,7 @@ export function ResumeSettingsSection({
   const canImport = hasResumeDraftInput(draft)
 
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-4">
       <div>
         <h2 className="font-display text-2xl font-bold">Resume details</h2>
         <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
@@ -48,9 +48,9 @@ export function ResumeSettingsSection({
         </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_288px] xl:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
-          <CardContent className="grid gap-4 p-5">
+          <CardContent className="grid gap-3 p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h3 className="font-display text-lg font-bold">Career fields</h3>
@@ -62,7 +62,7 @@ export function ResumeSettingsSection({
               </span>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <ResumeField label="Name" value={draft.Name} onChange={(value) => onFieldChange('Name', value)} />
               <ResumeField label="Email" value={draft.Email} onChange={(value) => onFieldChange('Email', value)} />
               <ResumeField label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
@@ -74,9 +74,16 @@ export function ResumeSettingsSection({
 
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
             <ResumeField label="Skills" value={draft.Skills} onChange={(value) => onFieldChange('Skills', value)} />
-            <ResumeTextarea label="Experience" className="min-h-36" value={draft.Experience} onChange={(value) => onFieldChange('Experience', value)} />
-            <ResumeTextarea label="Education" value={draft.Education} onChange={(value) => onFieldChange('Education', value)} />
-            <ResumeTextarea label="Full extracted text" className="min-h-40" value={draft.Text} onChange={(value) => onFieldChange('Text', value)} />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ResumeTextarea label="Experience" className="min-h-24" value={draft.Experience} onChange={(value) => onFieldChange('Experience', value)} />
+              <ResumeTextarea label="Education" className="min-h-24" value={draft.Education} onChange={(value) => onFieldChange('Education', value)} />
+            </div>
+            <details className="rounded-lg border border-border p-3">
+              <summary className="cursor-pointer rounded text-sm font-semibold text-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">Full extracted text</summary>
+              <div className="mt-3">
+                <ResumeTextarea label="Extracted text" className="min-h-32" value={draft.Text} onChange={(value) => onFieldChange('Text', value)} />
+              </div>
+            </details>
 
             <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -123,13 +130,15 @@ export function ResumeSettingsSection({
           </CardContent>
         </Card>
 
-        <ResumePreview
-          resume={resume}
-          data={draft}
-          isLoading={isLoading}
-          isPredicting={isPredicting}
-          onPredictSeniority={onPredictSeniority}
-        />
+        <div className="min-w-0 lg:sticky lg:top-24">
+          <ResumePreview
+            resume={resume}
+            data={draft}
+            isLoading={isLoading}
+            isPredicting={isPredicting}
+            onPredictSeniority={onPredictSeniority}
+          />
+        </div>
       </div>
     </div>
   )
@@ -226,7 +235,7 @@ function ResumeField({ label, value, onChange }: { label: string; value?: string
   )
 }
 
-function ResumeTextarea({ label, value, onChange, className }: { label: string; value?: string | null; onChange: (value: string) => void; className?: string }) {
+function ResumeTextarea({ label, value, onChange, className = 'min-h-20' }: { label: string; value?: string | null; onChange: (value: string) => void; className?: string }) {
   return (
     <label className="grid gap-1">
       <span className="text-sm font-semibold">{label}</span>

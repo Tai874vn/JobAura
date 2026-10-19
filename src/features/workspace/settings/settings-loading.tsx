@@ -20,7 +20,7 @@ export function SettingsPanelSkeleton() {
 
 export function SettingsLoading() {
   return (
-    <div className="container-page max-w-6xl py-8 sm:py-10">
+    <div className="container-page py-8 sm:py-10">
       <Skeleton className="mb-3 h-9 w-40" />
       <Skeleton className="mb-8 h-4 w-64 max-w-full" />
       <div className="grid gap-6 lg:grid-cols-[224px_minmax(0,1fr)]">
