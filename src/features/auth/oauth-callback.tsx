@@ -64,7 +64,7 @@ function OAuthShell({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
         <CardContent className="p-6">
           <Link href="/" className="mb-8 inline-block font-display text-2xl font-bold text-primary">

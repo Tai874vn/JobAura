@@ -35,7 +35,7 @@ export function LogoutPage() {
   }, [queryClient, resetChat])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="flex min-h-screen items-center justify-center">
       <div className="max-w-sm px-4 text-center">
         {failed ? null : <Spinner className="mx-auto h-7 w-7" />}
         <p className="mt-4 text-sm font-semibold text-muted">

@@ -17,7 +17,7 @@ export function AuthPageGate({ children, nextPath }: { children: React.ReactNode
 
   if (isLoading || user) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-background" aria-labelledby="auth-status-title">
+      <main className="flex min-h-screen items-center justify-center" aria-labelledby="auth-status-title">
         <h1 id="auth-status-title" className="sr-only">Checking authentication</h1>
         <Spinner className="h-7 w-7" />
         <span className="sr-only" role="status">Checking authentication</span>
@@ -30,7 +30,7 @@ export function AuthPageGate({ children, nextPath }: { children: React.ReactNode
 
 export function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
         <CardContent className="p-7 pt-8">
           <div className="mb-6 flex flex-col items-center gap-1.5">

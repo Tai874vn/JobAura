@@ -23,7 +23,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const { user } = useSession()
 
   return (
-    <div className="min-h-screen bg-background lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="min-h-screen lg:grid lg:grid-cols-[260px_1fr]">
       <aside className="border-r border-border bg-surface">
         <div className="flex h-16 items-center border-b border-border px-5">
           <Link href="/" className="font-display text-2xl font-bold text-primary">
