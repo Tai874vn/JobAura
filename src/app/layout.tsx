@@ -20,9 +20,9 @@ const defaultDescription = 'Find trusted freelance services and manage work in o
 
 function siteUrl() {
   try {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001')
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000')
   } catch {
-    return new URL('http://localhost:3001')
+    return new URL('http://localhost:3000')
   }
 }
 

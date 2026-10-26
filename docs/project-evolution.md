@@ -52,6 +52,10 @@
 
 ## How changes are checked and managed
 
+### 2026-10-24 — Approved custom background (not committed yet)
+
+Applied the approved sage/ivory background with four-point stars using a shared static CSS layer. Optimized the 1.98 MB generated PNG into a 55 KB WebP, kept existing cards and controls unchanged, and adjusted full-page shells so the artwork is visible. Verified desktop/mobile layout, production asset delivery, print/high-contrast fallback, typecheck, all 146 tests, and production build; lint has zero errors and one existing warning. Independent review found no actionable issue. See [background notes](custom-background-2026-10-24.md). Owner: Tai874vn only; no commit, push, or deployment.
+
 ### 2026-10-13 — Feed comment reply integration (not committed yet)
 
 Added single-level reply threads with cursor pagination, inline composing, retry/pending feedback, and author/admin controls. Kept layout, thread state, mutations, and cache synchronization in separate modules. Feed and saved-post totals include replies; previews remain root-only, and deleting a root removes its thread. Reused cookie/CSRF handling and validated trimmed comment content. Review identified a race between discussion refreshes and pending likes/saves; deferred-response regression tests reproduced it, and settlement refreshes fix the final state. Typecheck, 137 tests, production build and simulated-response browser checks passed; lint has zero errors and one existing warning. See [reply integration notes](feed-comment-replies.md) for implementation boundaries and verification. Owner: Tai874vn only. No commit, push, backend migration, or deployment performed in this change.

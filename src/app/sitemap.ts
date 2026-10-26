@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 function siteOrigin() {
   try {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001').origin
+    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').origin
   } catch {
-    return 'http://localhost:3001'
+    return 'http://localhost:3000'
   }
 }
 

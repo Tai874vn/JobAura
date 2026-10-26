@@ -3,14 +3,13 @@ FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,id=jobaura-frontend-npm,target=/root/.npm,sharing=locked npm ci --no-audit --no-fund
 
 FROM deps AS builder
 
 ARG NEXT_PUBLIC_SITE_URL=http://localhost:8080
 ARG NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
 ARG NEXT_PUBLIC_USE_SAME_ORIGIN_API=true
-ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID=replace-with-google-client-id
 ARG NEXT_PUBLIC_IMAGE_HOSTS=res.cloudinary.com,images.unsplash.com,i.pravatar.cc,lh3.googleusercontent.com
 ARG BACKEND_API_BASE_URL=http://backend:3002
 ARG CSP_ENFORCE_STRICT=false
@@ -19,7 +18,6 @@ ARG CSP_REPORT_ONLY=true
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_USE_SAME_ORIGIN_API=$NEXT_PUBLIC_USE_SAME_ORIGIN_API
-ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ENV NEXT_PUBLIC_IMAGE_HOSTS=$NEXT_PUBLIC_IMAGE_HOSTS
 ENV BACKEND_API_BASE_URL=$BACKEND_API_BASE_URL
 ENV CSP_ENFORCE_STRICT=$CSP_ENFORCE_STRICT
@@ -28,7 +26,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY . .
 RUN mkdir -p public
-RUN npm run build
+RUN --mount=type=cache,id=jobaura-frontend-next,target=/app/.next/cache npm run build
 
 FROM node:22-bookworm-slim AS runner
 
