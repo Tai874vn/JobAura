@@ -47,7 +47,6 @@ export function SettingsPage() {
     <div className="container-page py-8 sm:py-10">
       <header className="mb-7 border-b border-border pb-6">
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Settings</h1>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-muted">Manage how you show up, share your experience, and get matched with opportunities.</p>
       </header>
       <div className="grid items-start gap-6 lg:grid-cols-[224px_minmax(0,1fr)] lg:gap-8">
         <SettingsNavigation active={activeSection} hrefFor={hrefFor} onSelect={selectSection} />

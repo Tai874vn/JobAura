@@ -43,7 +43,6 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
         <PageHeader
           className="mb-6"
           title={`Manage ${config.title}`}
-          description="Search, inspect, and maintain marketplace records."
           actions={<CreateButton config={config} onCreate={() => setIsCreateOpen(true)} />}
         />
       ) : null}

@@ -40,7 +40,6 @@ export function MyPostsPage() {
       <div className="mt-1.5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">My posts</h1>
-          <p className="mt-1 text-sm text-muted">Manage the services you sell on JobAura.</p>
         </div>
         <ButtonLink href="/jobs/new">
           <Plus className="h-4 w-4" /> New service

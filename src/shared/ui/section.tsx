@@ -31,13 +31,11 @@ export function Section({
 export function PageHeader({
   eyebrow,
   title,
-  description,
   actions,
   className,
 }: {
   eyebrow?: ReactNode
   title: string
-  description?: ReactNode
   actions?: ReactNode
   className?: string
 }) {
@@ -48,7 +46,6 @@ export function PageHeader({
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase text-primary">{eyebrow}</div>
         ) : null}
         <h1 className="font-display text-3xl font-bold sm:text-4xl">{title}</h1>
-        {description ? <p className="mt-2 text-sm leading-6 text-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>

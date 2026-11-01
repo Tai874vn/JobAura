@@ -167,7 +167,6 @@ export function RecommendedCandidatesPage() {
           </>
         }
         title="Recommended candidates"
-        description="Select a recruiter hiring post, review your daily AI usage, then run matching when you are ready."
       />
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">

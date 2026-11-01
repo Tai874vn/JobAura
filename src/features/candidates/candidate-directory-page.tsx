@@ -132,9 +132,6 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
         <Users className="h-3.5 w-3.5" /> Employer workspace
       </p>
       <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight">Find candidates</h1>
-      <p className="mt-1 max-w-xl text-sm text-muted">
-        Search discoverable worker profiles, review fit signals, and start hiring conversations.
-      </p>
 
       <form
         onSubmit={submitKeyword}

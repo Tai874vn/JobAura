@@ -50,7 +50,6 @@ export function SavedPage() {
   return (
     <div className="container-page pt-10 pb-16">
       <h1 className="font-display text-3xl font-bold tracking-tight">Saved</h1>
-      <p className="mt-1 text-sm text-muted">Posts and opportunities you want to return to.</p>
 
       <div className="mt-5 flex gap-2" role="tablist" aria-label="Saved items">
         <TabChip

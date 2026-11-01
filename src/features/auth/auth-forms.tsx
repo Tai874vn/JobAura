@@ -98,7 +98,6 @@ function LoginFormFields({
   return (
     <AuthCard
       title="Welcome back"
-      subtitle="Sign in to hire, post, and manage JobAura services."
     >
       <form
         className="space-y-4"
@@ -232,7 +231,6 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
   return (
     <AuthCard
       title="Create your JobAura account"
-      subtitle="Start buying or selling trusted freelance services."
     >
       {notice === "google-role-required" ? (
         <p className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-medium text-primary">

@@ -28,7 +28,7 @@ export function AuthPageGate({ children, nextPath }: { children: React.ReactNode
   return <>{children}</>
 }
 
-export function AuthCard({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+export function AuthCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
@@ -38,7 +38,6 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
             <Link href="/" className="font-display text-[22px] font-bold tracking-tight text-primary">JobAura</Link>
           </div>
           <h1 className="text-center font-display text-2xl font-bold tracking-tight">{title}</h1>
-          <p className="mt-1.5 text-center text-[13.5px] text-muted">{subtitle}</p>
           <div className="mt-6">{children}</div>
         </CardContent>
       </Card>

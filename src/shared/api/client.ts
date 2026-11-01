@@ -6,7 +6,10 @@ import { env } from '@/shared/config/env'
 import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { csrfTokenForMethod, hasCsrfTokenCookie } from './csrf'
-import { resetClientSession } from './session-cache'
+import type { ApiResponse, UserProfile } from '@/shared/schemas'
+import { getQueryClient } from './query-client'
+import { queryKeys } from './query-keys'
+import { resetClientSession, setCachedSession } from './session-cache'
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
 type QueueItem = {
@@ -56,8 +59,13 @@ function installCsrfInterceptor(instance: typeof apiClient | typeof uploadClient
 installCsrfInterceptor(apiClient)
 installCsrfInterceptor(uploadClient)
 
-function handleSessionExpired() {
-  resetClientSession()
+function handleSessionExpired(isGuestSessionCheck = false) {
+  const client = getQueryClient()
+  const knownUser = client.getQueryData<ApiResponse<UserProfile>>(queryKeys.me)?.content
+  // A first guest /me check is not a logout. Removing other queries here can
+  // strand their active observers while public pages are still loading.
+  if (isGuestSessionCheck && !knownUser) setCachedSession(null, client)
+  else resetClientSession(client)
   useChatStore.getState().reset()
   if (typeof window !== 'undefined') {
     const redirect = getSessionExpiredRedirect(window.location.pathname)
@@ -96,7 +104,7 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
       }
 
       if (!hasCsrfTokenCookie()) {
-        handleSessionExpired()
+        handleSessionExpired(originalRequest.url === '/api/auth/me')
         return Promise.reject(error)
       }
 

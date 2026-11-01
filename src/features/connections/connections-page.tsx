@@ -102,7 +102,6 @@ export function ConnectionsPage() {
     <div className="container-page py-8">
       <PageHeader
         title="Connections"
-        description="Build and manage your professional network."
         actions={
           tab !== 'requests' ? (
             <label className="relative w-full max-w-sm">

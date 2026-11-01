@@ -75,7 +75,6 @@ export function RecommendedJobsPage() {
       <PageHeader
         eyebrow={<><Sparkles className="h-4 w-4" /> AI recommendations</>}
         title="Recommended jobs"
-        description="Review your AI usage first. Matching starts only after you proceed."
       />
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">

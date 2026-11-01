@@ -39,7 +39,6 @@ export function MyJobsPage() {
     <div className="container-page pt-10 pb-16">
       <p className="text-[11px] font-bold uppercase tracking-wide text-primary">Buyer workspace</p>
       <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight">My hired jobs</h1>
-      <p className="mt-1 text-sm text-muted">Track services you have hired.</p>
 
       {jobs.length ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Hired jobs summary">

@@ -9,6 +9,7 @@ export function EmptyState({
   action,
   titleAs = 'h2',
   className,
+  fill = false,
 }: {
   icon?: ReactNode
   title: string
@@ -16,12 +17,13 @@ export function EmptyState({
   action?: ReactNode
   titleAs?: 'h1' | 'h2'
   className?: string
+  fill?: boolean
 }) {
   const Title = titleAs
 
   return (
-    <Card className={className}>
-      <CardContent className="flex flex-col items-center justify-center p-10 text-center">
+    <Card className={cn(fill && 'flex min-h-64 flex-1 flex-col', className)}>
+      <CardContent className={cn('flex flex-col items-center justify-center p-10 text-center', fill && 'flex-1')}>
         {icon ? (
           <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary [&_svg]:h-6 [&_svg]:w-6">
             {icon}

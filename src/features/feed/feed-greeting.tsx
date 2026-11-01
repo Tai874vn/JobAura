@@ -49,7 +49,6 @@ export function FeedGreeting({ user }: { user: UserProfile }) {
         <h1 className="font-display text-xl font-bold" suppressHydrationWarning>
           {greeting}, {user.name.split(' ')[0]} 👋
         </h1>
-        <p className="mt-1 text-sm text-muted">Here&rsquo;s what&rsquo;s happening in your network today.</p>
       </div>
       <div className="flex flex-wrap gap-2.5">
         {stats.map((stat) => (

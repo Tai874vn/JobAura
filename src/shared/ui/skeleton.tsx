@@ -5,9 +5,9 @@ export function Skeleton({ className }: { className?: string }) {
   return <div className={cn('animate-pulse rounded bg-surface-muted', className)} aria-hidden="true" />
 }
 
-export function CardSkeleton() {
+export function CardSkeleton({ className }: { className?: string } = {}) {
   return (
-    <Card className="overflow-hidden">
+    <Card className={cn('overflow-hidden', className)}>
       <Skeleton className="aspect-4/3 w-full rounded-none" />
       <div className="p-4">
         <div className="mb-3 flex items-center gap-2">

@@ -95,7 +95,6 @@ export function JobForm() {
     <div className="container-page pt-10 pb-16">
       <PageHeader
         title="Post a service"
-        description="Create a clear, searchable offer for buyers. The preview updates as you type."
       />
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">

@@ -153,11 +153,6 @@ export function HiringPostsPage() {
           </>
         }
         title={canCreateHiringPost ? "Manage recruiter roles" : "Apply to recruiter roles"}
-        description={
-          canCreateHiringPost
-            ? "Create hiring posts, review your open roles, and send them to AI candidate matching."
-            : "These are recruiter hiring posts. Explore Services stays for employee service listings; this page is for roles you can apply to."
-        }
         actions={
           canCreateHiringPost ? (
             <>

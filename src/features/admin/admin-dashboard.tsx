@@ -22,7 +22,6 @@ export function AdminDashboard() {
       <PageHeader
         className="mb-6"
         title="Admin workbench"
-        description="Monitor marketplace activity and manage JobAura records."
       />
       <div className="mb-6 grid gap-4 md:grid-cols-4">
         {metrics.map(({ label, value, loading, icon: Icon }) => (

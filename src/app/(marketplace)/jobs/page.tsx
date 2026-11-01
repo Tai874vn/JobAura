@@ -6,7 +6,7 @@ import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { absoluteSiteUrl, JsonLd, organizationJsonLd, websiteJsonLd } from '@/shared/lib/seo'
 import type { ApiResponse, Job, PaginatedContent } from '@/shared/schemas'
-import { Spinner } from '@/shared/ui'
+import { JobsPageSkeleton } from '@/features/jobs/job-results-skeleton'
 
 export const metadata: Metadata = {
   title: 'Explore services',
@@ -48,7 +48,7 @@ export default async function JobsPage() {
   return (
     <>
       <JsonLd data={[organizationJsonLd(), websiteJsonLd(), jobsItemListJsonLd(jobs)]} />
-      <Suspense fallback={<div className="flex justify-center py-20"><Spinner /></div>}>
+      <Suspense fallback={<JobsPageSkeleton />}>
         <JobListView />
       </Suspense>
     </>

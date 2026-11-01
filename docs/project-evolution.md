@@ -52,6 +52,10 @@
 
 ## How changes are checked and managed
 
+### 2026-10-26 — Explore loading and heading cleanup (not committed yet)
+
+Removed generic page-title subtitles while retaining useful guidance and error messages. Explore now has full-width search, wrapping/expandable categories, foreground navigation/filter skeletons, image-ready service cards, and empty/error cards that fill the remaining body to the footer. Browser testing also exposed a guest-session 401 race that removed active public queries; a narrow frontend fix preserves those queries while keeping signed-in/logout cleanup. Kept components focused and protected server-rendered landing cards after independent review. Verified 158 tests, typecheck, production build, desktop/mobile loading, image fallbacks, cache reuse, retry, pagination, and overflow. See [Explore polish notes](explore-ui-polish-2026-10-26.md). Owner: Tai874vn only; no commit, push, backend/infrastructure change, or deployment.
+
 ### 2026-10-24 — Approved custom background (not committed yet)
 
 Applied the approved sage/ivory background with four-point stars using a shared static CSS layer. Optimized the 1.98 MB generated PNG into a 55 KB WebP, kept existing cards and controls unchanged, and adjusted full-page shells so the artwork is visible. Verified desktop/mobile layout, production asset delivery, print/high-contrast fallback, typecheck, all 146 tests, and production build; lint has zero errors and one existing warning. Independent review found no actionable issue. See [background notes](custom-background-2026-10-24.md). Owner: Tai874vn only; no commit, push, or deployment.

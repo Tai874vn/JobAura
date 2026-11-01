@@ -2,16 +2,18 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { ChevronDown, LayoutGrid, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronDown, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useTransition } from 'react'
 import { jobTypesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { JobSearchParams } from '@/shared/schemas'
 import { cn } from '@/shared/lib/utils'
-import { categoryIcon } from './category-icon'
 import { JobCard } from './job-card'
-import { Button, ButtonLink, Card, CardSkeleton, EmptyState } from '@/shared/ui'
+import { JobCategoryNav } from './job-category-nav'
+import { JobFilterPanel } from './job-filter-panel'
+import { JobResultsSkeleton } from './job-results-skeleton'
+import { Button, EmptyState, Spinner } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -26,8 +28,10 @@ type FilterKey = 'keyword' | 'category' | 'subcategory' | 'minPrice' | 'maxPrice
 
 export function JobListView() {
   const router = useRouter()
+  const [isNavigating, startNavigation] = useTransition()
+  const [isApplying, setIsApplying] = useState(false)
   const searchParams = useSearchParams()
-  const page = Math.max(1, Number(searchParams.get('page') ?? 1) || 1)
+  const page = positiveNumber(searchParams.get('page')) ?? 1
   const keyword = searchParams.get('keyword') ?? undefined
   const categoryId = positiveNumber(searchParams.get('category') ?? searchParams.get('categoryId'))
   const subcategoryId = positiveNumber(searchParams.get('subcategory') ?? searchParams.get('subcategoryId'))
@@ -51,6 +55,18 @@ export function JobListView() {
   const [panelOpen, setPanelOpen] = useState(
     () => Boolean(subcategoryId || minPrice !== undefined || maxPrice !== undefined || minRating !== undefined)
   )
+  const isLoading = isNavigating || query.isPending || query.isPlaceholderData
+    || (query.isFetching && (!content || isApplying))
+  // The route transition covers the click-to-URL phase; the query covers the
+  // subsequent API fetch. Keep the form visible until both have settled.
+  if (isApplying && !isNavigating && !query.isFetching) {
+    setIsApplying(false)
+    if (!query.isError) setPanelOpen(false)
+  }
+
+  function navigate(href: string) {
+    startNavigation(() => router.push(href))
+  }
 
   const activeFilters = useMemo(() => {
     const filters: Array<{ key: FilterKey; label: string }> = []
@@ -74,7 +90,7 @@ export function JobListView() {
     mutate(params)
     params.delete('page')
     const queryString = params.toString()
-    router.push(queryString ? `/jobs?${queryString}` : '/jobs')
+    navigate(queryString ? `/jobs?${queryString}` : '/jobs')
   }
 
   function submitKeyword(event: React.FormEvent<HTMLFormElement>) {
@@ -97,27 +113,28 @@ export function JobListView() {
   function applyPanel(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
+    setIsApplying(true)
     pushParams((params) => {
       setParam(params, 'subcategory', stringValue(data.get('subcategory')))
       setParam(params, 'minPrice', stringValue(data.get('minPrice')))
       setParam(params, 'maxPrice', stringValue(data.get('maxPrice')))
       setParam(params, 'minRating', stringValue(data.get('minRating')))
     })
-    setPanelOpen(false)
   }
 
   function clearAllFilters() {
-    router.push('/jobs')
+    navigate('/jobs')
   }
 
   const heroSearch = (
     <form
       onSubmit={submitKeyword}
-      className="mt-5 flex max-w-2xl items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition focus-within:border-primary"
+      className="mt-5 flex w-full items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition focus-within:border-primary"
     >
       <div className="flex min-w-0 flex-1 items-center gap-2.5 px-4">
         <Search className="h-5 w-5 shrink-0 text-muted" />
         <input
+          key={keyword ?? ''}
           name="keyword"
           defaultValue={keyword ?? ''}
           placeholder="Search services or sellers…"
@@ -125,63 +142,49 @@ export function JobListView() {
           className="h-[52px] w-full min-w-0 bg-transparent text-sm outline-none"
         />
       </div>
-      <button type="submit" className="flex shrink-0 items-center gap-2 bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary-bright">
-        <Search className="h-4 w-4" />
+      <Button type="submit" loading={isLoading} className="h-auto shrink-0 rounded-none px-5">
+        <Search className="h-4 w-4" aria-hidden="true" />
         Search
-      </button>
+      </Button>
     </form>
   )
 
   const popularSearches = ['logo design', 'web development', 'video editing', 'SEO', 'data entry']
 
   return (
-    <div>
+    <div className="flex min-w-0 flex-1 flex-col">
       <div className="container-page pt-10">
         <h1 className="font-display text-3xl font-bold tracking-tight">Explore services</h1>
-        <p className="mt-1 text-sm text-muted">Search and compare services from skilled professionals.</p>
         {heroSearch}
         <div className="mt-3.5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px]">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted">Popular</span>
           {popularSearches.map((term) => (
-            <Link key={term} href={`/jobs?keyword=${encodeURIComponent(term)}`} className="font-medium text-muted transition hover:text-primary hover:underline">
+            <Link key={term} href={`/jobs?keyword=${encodeURIComponent(term)}`} onNavigate={(event) => { event.preventDefault(); navigate(`/jobs?keyword=${encodeURIComponent(term)}`) }} className="rounded font-medium text-muted transition hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary-bright">
               {term}
             </Link>
           ))}
         </div>
       </div>
 
-      <nav className="container-page mt-7 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" aria-label="Categories">
-        <CategoryChip href="/jobs" active={!categoryId} icon={<LayoutGrid className="h-3.5 w-3.5" />} label="All" />
-        {categories.map((category) => {
-          const Icon = categoryIcon(category.tenLoaiCongViec)
-          return (
-            <CategoryChip
-              key={category.id}
-              href={`/jobs?category=${category.id}`}
-              active={categoryId === category.id}
-              icon={<Icon className="h-3.5 w-3.5" />}
-              label={category.tenLoaiCongViec}
-            />
-          )
-        })}
-      </nav>
+      <JobCategoryNav categories={categories} selectedId={categoryId} loading={categoriesQuery.isPending} navigate={navigate} />
 
-      <div className="container-page mt-4 pb-14">
+      <div className="container-page mt-4 flex min-w-0 flex-1 flex-col pb-8">
         <div className="flex flex-wrap items-center gap-2.5">
           <p className="text-sm text-muted" aria-live="polite">
-            <b className="font-bold text-foreground">{query.isPending && !content ? '…' : content?.totalRow ?? 0}</b> services
+            <b className="font-bold text-foreground">{isLoading ? '…' : content?.totalRow ?? 0}</b> services
           </p>
-          <div className="flex flex-wrap gap-1.5">
+          {query.isFetching && !isLoading ? <span role="status" className="inline-flex items-center gap-1.5 text-xs text-muted"><Spinner className="h-3.5 w-3.5" /> Updating services</span> : null}
+          <div className="flex min-w-0 max-w-full flex-wrap gap-1.5">
             {activeFilters.map((filter) => (
               <button
                 key={filter.key}
                 type="button"
                 onClick={() => removeFilter(filter.key)}
                 title="Remove filter"
-                className="inline-flex h-7 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-xs font-semibold text-foreground transition hover:border-danger hover:text-danger"
+                className="inline-flex min-h-7 max-w-full items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-xs font-semibold text-foreground transition hover:border-danger hover:text-danger focus-visible:ring-2 focus-visible:ring-primary-bright"
               >
-                {filter.label}
-                <X className="h-3 w-3 text-muted" />
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">{filter.label}</span>
+                <X className="h-3 w-3 shrink-0 text-muted" />
               </button>
             ))}
           </div>
@@ -192,7 +195,7 @@ export function JobListView() {
                 value={sort ?? ''}
                 onChange={(event) => setSort(event.target.value)}
                 aria-label="Sort services"
-                className="h-9 rounded-lg border border-border bg-surface px-2.5 text-[13px] font-semibold text-foreground"
+                className="h-9 rounded-lg border border-border bg-surface px-2.5 text-[13px] font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary-bright"
               >
                 <option value="">Default</option>
                 <option value="newest">Newest</option>
@@ -206,8 +209,9 @@ export function JobListView() {
               onClick={() => setPanelOpen((open) => !open)}
               aria-expanded={panelOpen}
               aria-controls="job-filter-panel"
+              disabled={isApplying}
               className={cn(
-                'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-semibold transition',
+                'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-semibold transition focus-visible:ring-2 focus-visible:ring-primary-bright disabled:opacity-50',
                 panelOpen ? 'border-primary text-primary' : 'text-foreground hover:border-primary hover:text-primary'
               )}
             >
@@ -224,48 +228,15 @@ export function JobListView() {
         </div>
 
         {panelOpen ? (
-          <Card id="job-filter-panel" className="mt-3 p-4 sm:p-5">
-            <form onSubmit={applyPanel}>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <PanelField label="Specialty">
-                  <select name="subcategory" defaultValue={subcategoryId ?? ''} className="w-full bg-transparent text-sm outline-none" aria-label="Specialty">
-                    <option value="">All specialties</option>
-                    {subcategories.map((subcategory) => (
-                      <option key={subcategory.id} value={subcategory.id}>{subcategory.tenChiTiet}</option>
-                    ))}
-                  </select>
-                </PanelField>
-                <PanelField label="Price range ($)">
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <input name="minPrice" type="number" min={0} defaultValue={minPrice ?? ''} placeholder="Min" aria-label="Minimum price" className="w-full min-w-0 bg-transparent text-sm outline-none" />
-                    <span aria-hidden="true" className="text-border">–</span>
-                    <input name="maxPrice" type="number" min={0} defaultValue={maxPrice ?? ''} placeholder="Max" aria-label="Maximum price" className="w-full min-w-0 bg-transparent text-sm outline-none" />
-                  </div>
-                </PanelField>
-                <PanelField label="Minimum rating">
-                  <select name="minRating" defaultValue={minRating ?? ''} className="w-full bg-transparent text-sm outline-none" aria-label="Minimum rating">
-                    <option value="">Any rating</option>
-                    <option value="3">3+ stars</option>
-                    <option value="4">4+ stars</option>
-                    <option value="5">5 stars</option>
-                  </select>
-                </PanelField>
-              </div>
-              <div className="mt-4 flex items-center justify-end gap-2">
-                <Button type="button" variant="ghost" size="sm" onClick={clearAllFilters}>Clear all</Button>
-                <Button type="submit">Apply filters</Button>
-              </div>
-            </form>
-          </Card>
+          <JobFilterPanel key={JSON.stringify([subcategoryId, minPrice, maxPrice, minRating])} values={{ subcategoryId, minPrice, maxPrice, minRating }} subcategories={subcategories} loading={isApplying} onApply={applyPanel} onClear={clearAllFilters} />
         ) : null}
 
-        <section className="mt-5 min-h-[1180px] sm:min-h-[980px] lg:min-h-[860px]" aria-busy={query.isPending} aria-live="polite">
-          {query.isPending ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {Array.from({ length: pageSize }).map((_, index) => <CardSkeleton key={index} />)}
-            </div>
+        <section className="mt-5 flex flex-1 flex-col" aria-label="Service results" aria-busy={isLoading}>
+          {isLoading ? (
+            <JobResultsSkeleton />
           ) : query.isError ? (
             <EmptyState
+              fill
               icon={<SearchX />}
               title="Unable to load services"
               description="Check the backend connection and try again."
@@ -274,16 +245,17 @@ export function JobListView() {
           ) : jobs.length ? (
             <>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index === 0} />)}
+                {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index === 0} waitForImages />)}
               </div>
-              <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref(searchParams)} />
+              <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref(searchParams)} navigate={navigate} />
             </>
           ) : (
             <EmptyState
+              fill
               icon={<SearchX />}
               title="No services found"
               description="Try another keyword or clear some filters to see more results."
-              action={<ButtonLink href="/jobs" variant="secondary">Clear filters</ButtonLink>}
+              action={<Button variant="secondary" onClick={clearAllFilters}>Clear filters</Button>}
             />
           )}
         </section>
@@ -300,34 +272,6 @@ export function JobListView() {
       return queryString ? `/jobs?${queryString}` : '/jobs'
     }
   }
-}
-
-function CategoryChip({ href, active, icon, label }: { href: string; active: boolean; icon: React.ReactNode; label: string }) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? 'page' : undefined}
-      className={cn(
-        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-semibold transition',
-        active ? 'border-foreground bg-foreground text-white' : 'border-border bg-surface text-muted hover:border-primary hover:text-primary',
-        '[scrollbar-width:none]'
-      )}
-    >
-      <span className={active ? 'text-accent' : 'text-primary'}>{icon}</span>
-      {label}
-    </Link>
-  )
-}
-
-function PanelField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">{label}</span>
-      <span className="flex h-10 items-center rounded-lg border border-border bg-surface px-3 transition focus-within:border-primary">
-        {children}
-      </span>
-    </label>
-  )
 }
 
 function positiveNumber(value: string | null) {
@@ -359,10 +303,12 @@ function PaginationControls({
   currentPage,
   totalPages,
   pageHref,
+  navigate,
 }: {
   currentPage: number
   totalPages: number
   pageHref: (page: number) => string
+  navigate: (href: string) => void
 }) {
   if (totalPages <= 1) return null
 
@@ -370,18 +316,18 @@ function PaginationControls({
 
   return (
     <nav className="mt-8 flex flex-wrap items-center justify-center gap-2" aria-label="Jobs pagination">
-      <PageLink href={pageHref(currentPage - 1)} disabled={currentPage <= 1}>
+      <PageLink href={pageHref(currentPage - 1)} disabled={currentPage <= 1} navigate={navigate}>
         Previous
       </PageLink>
       {pages.map((page, index) => (
         <span key={page} className="flex items-center gap-2">
           {index > 0 && page - pages[index - 1] > 1 ? <span className="px-1 text-sm font-semibold text-muted">...</span> : null}
-          <PageLink href={pageHref(page)} active={page === currentPage}>
+          <PageLink href={pageHref(page)} active={page === currentPage} navigate={navigate}>
             {page}
           </PageLink>
         </span>
       ))}
-      <PageLink href={pageHref(currentPage + 1)} disabled={currentPage >= totalPages}>
+      <PageLink href={pageHref(currentPage + 1)} disabled={currentPage >= totalPages} navigate={navigate}>
         Next
       </PageLink>
     </nav>
@@ -393,20 +339,24 @@ function PageLink({
   active = false,
   disabled = false,
   children,
+  navigate,
 }: {
   href: string
   active?: boolean
   disabled?: boolean
   children: React.ReactNode
+  navigate: (href: string) => void
 }) {
   const className = [
-    'inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition',
+    'inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-primary-bright',
     active ? 'border-primary bg-primary text-white' : 'border-border bg-surface text-foreground hover:border-primary hover:text-primary',
     disabled ? 'pointer-events-none opacity-50' : '',
   ].join(' ')
 
+  if (disabled || active) return <span className={className} aria-disabled={disabled || undefined} aria-current={active ? 'page' : undefined}>{children}</span>
+
   return (
-    <Link href={disabled ? '#' : href} className={className} aria-current={active ? 'page' : undefined}>
+    <Link href={href} onNavigate={(event) => { event.preventDefault(); navigate(href) }} className={className}>
       {children}
     </Link>
   )
