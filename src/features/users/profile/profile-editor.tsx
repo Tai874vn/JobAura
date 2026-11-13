@@ -8,7 +8,11 @@ import { cn } from '@/shared/lib/utils'
 import type { UpdateProfile, UserResume } from '@/shared/schemas'
 import { Button, Input, Textarea } from '@/shared/ui'
 import { formatFileSize, removeListItem, updateList } from '../profile-form-utils'
-import { hasResumeDraftInput, resumeFileAccept, type ResumeDraft, type ResumeFieldKey } from '../resume'
+import { hasResumeDraftInput, resumeFileAccept, resumeSkills, type ResumeDraft, type ResumeFieldKey } from '../resume'
+import { SkillLevelSelect, SkillPicker } from '../skill-picker'
+import type { FoundSkill } from '@/shared/api/endpoints/users'
+import { ResumeCareerFields } from '../resume-career-fields'
+import { resumeCareerProblems } from '../resume-career'
 import { emptyCertification, emptySkill, formatFullDate, type CertificationDraft, type ProfileEditPanel, type SkillDraft } from './model'
 
 export function ProfileEditDrawer({
@@ -31,6 +35,7 @@ export function ProfileEditDrawer({
   onSaveSkills,
   onSaveCertifications,
   onSaveResume,
+  foundSkills = [],
 }: {
   activePanel: ProfileEditPanel
   profile: UpdateProfile
@@ -51,6 +56,8 @@ export function ProfileEditDrawer({
   onSaveSkills: () => void
   onSaveCertifications: () => void
   onSaveResume: () => void
+  /** Dictionary skills found in an attached CV, offered for the user to add. */
+  foundSkills?: FoundSkill[]
 }) {
   if (!activePanel) return null
 
@@ -95,8 +102,9 @@ export function ProfileEditDrawer({
             <EditListShell onAdd={() => onSkillsChange((items) => [...items, { ...emptySkill, sortOrder: items.length }])}>
               {skills.map((skill, index) => (
                 <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
-                  <Input value={skill.name} placeholder="React" onChange={(event) => updateList(onSkillsChange, index, { name: event.target.value })} />
-                  <Input value={skill.level ?? ''} placeholder="advanced" onChange={(event) => updateList(onSkillsChange, index, { level: event.target.value })} />
+                  <SkillPicker label="Skill" hideLabel max={1} value={skill.name ? [skill.name] : []}
+                    onChange={(names) => updateList(onSkillsChange, index, { name: names[0] ?? '' })} />
+                  <SkillLevelSelect hideLabel value={skill.level} onChange={(level) => updateList(onSkillsChange, index, { level })} />
                   <IconButton label="Remove skill" onClick={() => removeListItem(onSkillsChange, index)} />
                 </div>
               ))}
@@ -132,13 +140,14 @@ export function ProfileEditDrawer({
                 <EditField label="Email" value={resumeDraft.Email} onChange={(value) => onResumeFieldChange('Email', value)} />
                 <EditField label="Phone" value={resumeDraft.Phone} onChange={(value) => onResumeFieldChange('Phone', value)} />
                 <EditField label="Location" value={resumeDraft.Location} onChange={(value) => onResumeFieldChange('Location', value)} />
-                <EditField label="Role" value={resumeDraft.Role} onChange={(value) => onResumeFieldChange('Role', value)} />
-                <EditField label="Industry" value={resumeDraft.Industry} onChange={(value) => onResumeFieldChange('Industry', value)} />
+                <EditField label="Current job title" value={resumeDraft.Role} onChange={(value) => onResumeFieldChange('Role', value)} />
                 <EditField label="Years experience" value={resumeDraft.YearsExperience} onChange={(value) => onResumeFieldChange('YearsExperience', value)} />
               </div>
+              <ResumeCareerFields draft={resumeDraft} onFieldChange={onResumeFieldChange} />
               <EditText label="Summary" value={resumeDraft.Summary} onChange={(value) => onResumeFieldChange('Summary', value)} />
-              <EditField label="Skills" value={resumeDraft.Skills} onChange={(value) => onResumeFieldChange('Skills', value)} />
-              <EditText label="Experience" value={resumeDraft.Experience} onChange={(value) => onResumeFieldChange('Experience', value)} />
+              <SkillPicker value={resumeSkills(resumeDraft.Skills)} field={resumeDraft.Industry} suggestions={foundSkills}
+                onChange={(names) => onResumeFieldChange('Skills', names.join(', '))} />
+              <EditText label="Other experience notes" value={resumeDraft.Experience} onChange={(value) => onResumeFieldChange('Experience', value)} />
               <EditText label="Education" value={resumeDraft.Education} onChange={(value) => onResumeFieldChange('Education', value)} />
               <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-sm font-semibold hover:border-primary hover:text-primary">
                 <FileText className="h-4 w-4" />
@@ -175,7 +184,7 @@ export function ProfileEditDrawer({
           </Button>
           <Button
             loading={isSaving}
-            disabled={isSaving || (activePanel === 'resume' && !hasResumeDraftInput(resumeDraft))}
+            disabled={isSaving || (activePanel === 'resume' && (!hasResumeDraftInput(resumeDraft) || resumeCareerProblems(resumeDraft).length > 0))}
             onClick={
               activePanel === 'profile'
                 ? onSaveProfile

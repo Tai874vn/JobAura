@@ -94,6 +94,29 @@ export const usersApi = {
   },
 }
 
+/** A skill from JobAura's dictionary (ESCO and O*NET), served by the AI service through the backend. */
+export type DictionarySkill = {
+  id: string
+  name: string
+  kind: string
+  reuse: string | null
+  fields: Record<string, number>
+  hot: boolean
+}
+
+export type FoundSkill = DictionarySkill & { matched: string[]; count: number }
+
+export type FieldOfStudy = { code: string; name: string; broad: string; narrow: string }
+
 export const skillsApi = {
   all: async () => (await apiClient.get<ApiResponse<string[]>>('/api/skill')).data,
+  search: async (q: string, field?: string, limit = 10) =>
+    (await apiClient.get<ApiResponse<DictionarySkill[]>>('/api/skill/search', {
+      params: { q, limit, ...(field ? { field } : {}) },
+    })).data,
+  /** Skills named in CV text, as suggestions for the user to confirm. */
+  extract: async (text: string) =>
+    (await apiClient.post<ApiResponse<FoundSkill[]>>('/api/skill/extract', { text: text.slice(0, 20000) })).data,
+  fieldsOfStudy: async () =>
+    (await apiClient.get<ApiResponse<FieldOfStudy[]>>('/api/skill/fields-of-study')).data,
 }

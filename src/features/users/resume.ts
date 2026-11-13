@@ -1,4 +1,5 @@
 import type { ImportResume, ResumeData, UserResume } from '@/shared/schemas'
+import { parseResumeJobs, savedResumeJobs, serializeResumeJobs } from './resume-career'
 
 export const resumeSchemaVersion = 'resume-atlas-v1'
 export const resumeFieldKeys = [
@@ -10,11 +11,15 @@ export const resumeFieldKeys = [
   'Location',
   'Role',
   'Industry',
+  'Specialty',
+  'Degree',
+  'FieldOfStudy',
   'YearsExperience',
   'Summary',
   'Skills',
   'Experience',
   'Education',
+  'Jobs',
   'Text',
   'Source',
 ] as const
@@ -25,11 +30,15 @@ export const userResumeFieldKeys = [
   'Location',
   'Role',
   'Industry',
+  'Specialty',
+  'Degree',
+  'FieldOfStudy',
   'YearsExperience',
   'Summary',
   'Skills',
   'Experience',
   'Education',
+  'Jobs',
   'Text',
 ] as const
 
@@ -75,36 +84,6 @@ const resumeSectionHeadings = [
   'portfolio',
 ] as const
 
-const knownSkills = [
-  'JavaScript',
-  'TypeScript',
-  'React',
-  'Next.js',
-  'Node.js',
-  'NestJS',
-  'Express',
-  'Java',
-  'Spring',
-  'Python',
-  'Django',
-  'SQL',
-  'PostgreSQL',
-  'MySQL',
-  'MongoDB',
-  'Redis',
-  'Git',
-  'Linux',
-  'Docker',
-  'Kubernetes',
-  'AWS',
-  'Azure',
-  'GCP',
-  'HTML',
-  'CSS',
-  'Tailwind',
-  'GraphQL',
-  'REST',
-] as const
 
 export const emptyResumeDraft: ResumeDraft = {
   ResumeID: '',
@@ -115,11 +94,15 @@ export const emptyResumeDraft: ResumeDraft = {
   Location: '',
   Role: '',
   Industry: '',
+  Specialty: '',
+  Degree: '',
+  FieldOfStudy: '',
   YearsExperience: '',
   Summary: '',
   Skills: '',
   Experience: '',
   Education: '',
+  Jobs: '',
   Text: '',
   Source: '',
 }
@@ -213,7 +196,6 @@ export function extractResumeFromText(text: string, sourceFileName?: string): Im
     .filter(Boolean)
 
   const summary = extractSection(normalizedText, ['professional summary', 'summary', 'profile', 'objective'])
-  const skills = extractSkills(normalizedText)
   const experience = extractSection(normalizedText, [
     'work history',
     'professional experience',
@@ -233,7 +215,8 @@ export function extractResumeFromText(text: string, sourceFileName?: string): Im
       Industry: findLabeledValue(normalizedText, 'Industry') ?? '',
       YearsExperience: findLabeledValue(normalizedText, 'Years Experience') ?? inferYearsExperience(normalizedText),
       Summary: summary,
-      Skills: skills,
+      // Skills are not copied from the text: the dictionary scan suggests them and the user confirms.
+      Skills: '',
       Experience: experience,
       Education: education,
       Text: normalizedText,
@@ -257,7 +240,9 @@ export function getResumeData(resume?: UserResume | null) {
 export function resumeDraftFromData(data?: ResumeData | null): ResumeDraft {
   return resumeFieldKeys.reduce<ResumeDraft>((draft, key) => {
     const value = data?.[key]
-    draft[key] = typeof value === 'string' ? value : ''
+    // The draft holds strings only, so the job list travels inside it as JSON.
+    draft[key] = key === 'Jobs' ? (parseResumeJobs(value).length ? serializeResumeJobs(parseResumeJobs(value)) : '')
+      : typeof value === 'string' ? value : ''
     return draft
   }, { ...emptyResumeDraft })
 }
@@ -267,6 +252,11 @@ export function resumeDraftToImportPayload(
   schemaVersion = resumeSchemaVersion
 ): ImportResume {
   const data = userResumeFieldKeys.reduce<ResumeData>((result, key) => {
+    if (key === 'Jobs') {
+      const jobs = savedResumeJobs(parseResumeJobs(draft.Jobs))
+      if (jobs.length) result.Jobs = jobs
+      return result
+    }
     const value = draft[key].trim()
     if (value) result[key] = value
     return result
@@ -279,7 +269,8 @@ export function resumeDraftToImportPayload(
 }
 
 export function hasResumeDraftInput(draft: ResumeDraft) {
-  return userResumeFieldKeys.some((key) => Boolean(draft[key].trim()))
+  return userResumeFieldKeys.some((key) =>
+    key === 'Jobs' ? savedResumeJobs(parseResumeJobs(draft.Jobs)).length > 0 : Boolean(draft[key].trim()))
 }
 
 function normalizeResumeData(data: ResumeData): ResumeData {
@@ -435,21 +426,7 @@ function extractSection(text: string, headings: string[]) {
   return compactSection(sectionLines)
 }
 
-function extractSkills(text: string) {
-  const explicitSkills = extractSection(text, ['technical skills', 'core skills', 'skills'])
-  const skills = explicitSkills
-    ? explicitSkills
-        .split(/[,|;\n]/)
-        .map((skill) => cleanSkill(skill))
-        .filter(Boolean)
-    : knownSkills.filter((skill) => new RegExp(`\\b${escapeRegExp(skill)}\\b`, 'i').test(text))
 
-  return Array.from(new Set(skills)).slice(0, 40).join(', ')
-}
-
-function cleanSkill(value: string) {
-  return value.replace(/^[-*]\s*/, '').trim()
-}
 
 function compactSection(lines: string[]) {
   return lines.join(' ').replace(/\s+/g, ' ').trim()
@@ -465,6 +442,3 @@ function isHeading(line: string) {
   return resumeSectionHeadings.some((heading) => normalized === heading || normalized.startsWith(`${heading}:`))
 }
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}

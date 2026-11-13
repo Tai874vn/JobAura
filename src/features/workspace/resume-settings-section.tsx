@@ -11,6 +11,10 @@ import {
   type ResumeDraft,
   type ResumeFieldKey,
 } from '@/features/users/resume'
+import { ResumeCareerFields } from '@/features/users/resume-career-fields'
+import { SkillPicker } from '@/features/users/skill-picker'
+import type { FoundSkill } from '@/shared/api/endpoints/users'
+import { resumeCareerProblems } from '@/features/users/resume-career'
 
 export function ResumeSettingsSection({
   resume,
@@ -24,6 +28,7 @@ export function ResumeSettingsSection({
   onImport,
   onPredictSeniority,
   onResumeFile,
+  foundSkills = [],
 }: {
   resume: UserResume | null
   draft: ResumeDraft
@@ -36,8 +41,11 @@ export function ResumeSettingsSection({
   onImport: () => void
   onPredictSeniority: () => void
   onResumeFile: (file: File) => void
+  /** Dictionary skills found in the attached CV, offered for the user to add. */
+  foundSkills?: FoundSkill[]
 }) {
-  const canImport = hasResumeDraftInput(draft)
+  const careerProblems = resumeCareerProblems(draft)
+  const canImport = hasResumeDraftInput(draft) && careerProblems.length === 0
 
   return (
     <div className="grid gap-4">
@@ -67,15 +75,17 @@ export function ResumeSettingsSection({
               <ResumeField label="Email" value={draft.Email} onChange={(value) => onFieldChange('Email', value)} />
               <ResumeField label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
               <ResumeField label="Location" value={draft.Location} onChange={(value) => onFieldChange('Location', value)} />
-              <ResumeField label="Role" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
-              <ResumeField label="Industry" value={draft.Industry} onChange={(value) => onFieldChange('Industry', value)} />
+              <ResumeField label="Current job title" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
               <ResumeField label="Years experience" value={draft.YearsExperience} onChange={(value) => onFieldChange('YearsExperience', value)} />
             </div>
 
+            <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} />
+
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
-            <ResumeField label="Skills" value={draft.Skills} onChange={(value) => onFieldChange('Skills', value)} />
+            <SkillPicker value={resumeSkills(draft.Skills)} field={draft.Industry} suggestions={foundSkills}
+              onChange={(names) => onFieldChange('Skills', names.join(', '))} />
             <div className="grid gap-3 sm:grid-cols-2">
-              <ResumeTextarea label="Experience" className="min-h-24" value={draft.Experience} onChange={(value) => onFieldChange('Experience', value)} />
+              <ResumeTextarea label="Other experience notes" className="min-h-24" value={draft.Experience} onChange={(value) => onFieldChange('Experience', value)} />
               <ResumeTextarea label="Education" className="min-h-24" value={draft.Education} onChange={(value) => onFieldChange('Education', value)} />
             </div>
             <details className="rounded-lg border border-border p-3">
@@ -120,6 +130,7 @@ export function ResumeSettingsSection({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs leading-5 text-muted">
+                {careerProblems.length ? 'Fill the required field and specialty, and complete each job, before saving. ' : null}
                 If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
               </p>
               <Button loading={isImporting} disabled={!canImport} onClick={onImport}>
@@ -158,6 +169,7 @@ function ResumePreview({
   onPredictSeniority: () => void
 }) {
   const skills = resumeSkills(data.Skills)
+  const prediction = seniorityDetails(resume)
   const confidence = resume?.predictedSeniorityConfidence != null
     ? Math.round(resume.predictedSeniorityConfidence * 100)
     : null
@@ -178,11 +190,17 @@ function ResumePreview({
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">AI seniority</p>
               <h4 className="mt-1 font-display text-xl font-bold">{resume?.predictedSeniority ?? 'Not evaluated yet'}</h4>
+              {prediction.tier ? <p className="text-sm font-semibold text-primary">{prediction.tier}</p> : null}
               <p className="mt-1 text-xs leading-5 text-muted">
                 {resume?.predictedSeniorityAt
                   ? `Evaluated ${formatDate(resume.predictedSeniorityAt)}${confidence != null ? ` with ${confidence}% confidence` : ''}.`
                   : 'Save your resume, then run AI evaluation when you need it.'}
               </p>
+              {prediction.reasons.length ? (
+                <ul className="mt-2 list-disc pl-4 text-xs leading-5 text-muted" aria-label="Why this level">
+                  {prediction.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+                </ul>
+              ) : null}
             </div>
             <Button type="button" size="sm" variant="secondary" loading={isPredicting} disabled={!resume} onClick={onPredictSeniority}>
               <Sparkles className="h-4 w-4" />
@@ -200,8 +218,9 @@ function ResumePreview({
               <ResumeMeta label="Email" value={data.Email} />
               <ResumeMeta label="Phone" value={data.Phone} />
               <ResumeMeta label="Location" value={data.Location} />
-              <ResumeMeta label="Role" value={data.Role} />
-              <ResumeMeta label="Industry" value={data.Industry} />
+              <ResumeMeta label="Job title" value={data.Role} />
+              <ResumeMeta label="Field" value={data.Industry} />
+              <ResumeMeta label="Specialty" value={data.Specialty} />
               <ResumeMeta label="Years experience" value={data.YearsExperience} />
             </div>
             {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
@@ -268,4 +287,15 @@ function formatDate(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
+}
+
+/** Display tier and reasons the AI service returns with a prediction (stored in its metadata). */
+export function seniorityDetails(resume: UserResume | null): { tier: string | null; reasons: string[] } {
+  const features = resume?.predictedSeniorityMetadata?.features
+  if (!features || typeof features !== 'object') return { tier: null, reasons: [] }
+  const { tier, reasons } = features as { tier?: unknown; reasons?: unknown }
+  return {
+    tier: typeof tier === 'string' ? tier : null,
+    reasons: Array.isArray(reasons) ? reasons.filter((reason): reason is string => typeof reason === 'string').slice(0, 6) : [],
+  }
 }

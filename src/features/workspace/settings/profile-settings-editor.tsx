@@ -6,6 +6,7 @@ import { Avatar, Button, Card, CardContent, ConfirmationDialog, Textarea } from 
 import { removeListItem, updateList } from '@/features/users/profile-form-utils'
 import { EditorSection, Field, IconButton, PortfolioFields, UploadField } from './settings-form-controls'
 import { emptyCertification, emptySkill, useProfileSettings } from './use-profile-settings'
+import { SkillLevelSelect, SkillPicker } from '@/features/users/skill-picker'
 
 export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
   const {
@@ -68,8 +69,9 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
           <EditorSection title="Skills" saving={saveSkills.isPending} onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
             {skills.map((skill, index) => (
               <div key={index} className="grid items-end gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
-                <Field label="Skill" value={skill.name} onChange={(name) => updateList(setSkills, index, { name })} />
-                <Field label="Level" value={skill.level} onChange={(level) => updateList(setSkills, index, { level })} />
+                <SkillPicker label="Skill" max={1} value={skill.name ? [skill.name] : []}
+                  onChange={(names) => updateList(setSkills, index, { name: names[0] ?? '' })} />
+                <SkillLevelSelect value={skill.level} onChange={(level) => updateList(setSkills, index, { level })} />
                 <IconButton label="Remove skill" onClick={() => removeListItem(setSkills, index)} />
               </div>
             ))}

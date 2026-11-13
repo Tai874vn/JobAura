@@ -74,11 +74,28 @@ export const resumeDataSchema = z
     Location: z.string().optional().nullable(),
     Role: z.string().optional().nullable(),
     Industry: z.string().optional().nullable(),
+    Specialty: z.string().optional().nullable(),
+    Degree: z.string().optional().nullable(),
+    /** ISCED-F 2013 detailed field code, e.g. "0613". */
+    FieldOfStudy: z.string().optional().nullable(),
     YearsExperience: z.string().optional().nullable(),
     Summary: z.string().optional().nullable(),
     Skills: z.string().optional().nullable(),
     Experience: z.string().optional().nullable(),
     Education: z.string().optional().nullable(),
+    Jobs: z
+      .array(
+        z.object({
+          title: z.string(),
+          field: z.string(),
+          start: z.string(),
+          end: z.string(),
+          current: z.boolean(),
+          description: z.string(),
+        }),
+      )
+      .optional()
+      .nullable(),
     Text: z.string().optional().nullable(),
     Source: z.string().optional().nullable(),
   })

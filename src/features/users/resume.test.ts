@@ -102,7 +102,7 @@ describe('resume helpers', () => {
         Role: 'Java Developer',
         YearsExperience: '10',
         Summary: 'Highly skilled software development professional bringing 10 years software design development integration.',
-        Skills: 'Python, SQL, Git, Linux',
+        Skills: '',
         Experience: 'Senior Java Developer / Tech Lead Built customer facing internal web applications.',
         Education: 'Computer Science degree',
         Text: expect.stringContaining('Professional Summary'),
@@ -112,10 +112,11 @@ describe('resume helpers', () => {
     })
   })
 
-  it('infers known skills when a skills section is missing', () => {
+  it('leaves skills for the user to confirm instead of copying them from the text', () => {
     const result = extractResumeFromText('Jane Doe\nBackend Engineer\nBuilt APIs with NestJS, TypeScript, PostgreSQL, Docker, and AWS.')
 
-    expect(result.data.Skills).toBe('TypeScript, NestJS, PostgreSQL, Docker, AWS')
+    expect(result.data.Skills).toBe('')
+    expect(result.data.Text).toContain('NestJS')
   })
 
   it('accepts backend-supported resume document files', () => {

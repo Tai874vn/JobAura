@@ -37,6 +37,7 @@ import {
   resumeDraftToImportPayload,
   type ResumeDraft,
 } from '@/features/users/resume'
+import { resumeCareerProblems } from '@/features/users/resume-career'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { calculateProfileCompletion } from './profile-posts'
 import { cleanObject, toDateInput } from './profile-form-utils'
@@ -174,6 +175,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const saveResume = useMutation({
     mutationFn: async () => {
       if (!hasResumeDraftInput(currentResumeDraft)) throw new Error('Fill at least one resume field before saving.')
+      const careerProblems = resumeCareerProblems(currentResumeDraft)
+      if (careerProblems.length) throw new Error(careerProblems[0])
       const response = await usersApi.importResume(resumeDraftToImportPayload(currentResumeDraft))
       if (attachedResumeFile) return usersApi.uploadResumeFile(attachedResumeFile)
       return response
