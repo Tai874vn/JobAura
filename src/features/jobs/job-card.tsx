@@ -11,7 +11,7 @@ import { getSellerAvatar, getSellerHref, getSellerName } from './seller-profile'
 import { JobSaveButton } from './job-save-button'
 
 export function JobCard({ job, priority = false, initialSaved = false, waitForImages = false }: { job: Job; priority?: boolean; initialSaved?: boolean; waitForImages?: boolean }) {
-  const imageUrl = resolveAssetUrl(job.hinhAnh)
+  const imageUrl = resolveAssetUrl(job.image)
   const avatarUrl = resolveAssetUrl(getSellerAvatar(job))
 
   // A changed service/image starts a fresh readiness cycle, not the previous image's state.
@@ -24,7 +24,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
   const [cover, setCover] = useState(imageUrl ? 'pending' : 'ready')
   const [avatar, setAvatar] = useState(avatarUrl ? 'pending' : 'ready')
   const ready = !waitForImages || (cover !== 'pending' && avatar !== 'pending')
-  const bypassOptimizer = shouldBypassImageOptimizer(job.hinhAnh)
+  const bypassOptimizer = shouldBypassImageOptimizer(job.image)
   const sellerName = getSellerName(job)
   const sellerHref = getSellerHref(job)
   const sellerAvatarSource = getSellerAvatar(job)
@@ -40,7 +40,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
               {imageUrl && cover !== 'failed' ? (
                 <Image
                   src={imageUrl}
-                  alt={job.tenCongViec}
+                  alt={job.title}
                   fill
                   priority={priority}
                   unoptimized={bypassOptimizer}
@@ -71,15 +71,15 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
             </div>
           )}
           <Link href={`/jobs/${job.id}`} className="block">
-            <h3 className="line-clamp-2 min-h-11 text-sm font-semibold leading-5 hover:text-primary">{job.tenCongViec}</h3>
+            <h3 className="line-clamp-2 min-h-11 text-sm font-semibold leading-5 hover:text-primary">{job.title}</h3>
           </Link>
           <div className="mt-3 flex items-center justify-between">
             <Badge tone="rating">
               <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
-              {(job.saoCongViec ?? 0).toFixed(1)}
+              {(job.rating ?? 0).toFixed(1)}
             </Badge>
             <span className="text-sm text-muted">
-              From <strong className="text-foreground">{currency(job.giaTien)}</strong>
+              From <strong className="text-foreground">{currency(job.price)}</strong>
             </span>
           </div>
         </div>

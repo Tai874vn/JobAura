@@ -1,7 +1,7 @@
 import type { Job } from '@/shared/schemas'
 
 export function getSellerId(job: Job) {
-  return job.nguoiDung?.id ?? job.nguoiTao
+  return job.user?.id ?? job.creatorId
 }
 
 export function getSellerHref(job: Job) {
@@ -10,9 +10,9 @@ export function getSellerHref(job: Job) {
 }
 
 export function getSellerName(job: Job) {
-  return job.nguoiDung?.name?.trim() || 'JobAura seller'
+  return job.user?.name?.trim() || 'JobAura seller'
 }
 
 export function getSellerAvatar(job: Job) {
-  return job.nguoiDung?.avatar?.trim() || undefined
+  return job.user?.avatar?.trim() || undefined
 }

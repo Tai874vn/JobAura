@@ -3,13 +3,13 @@
 import Link from 'next/link'
 import { useId, useState } from 'react'
 import { ChevronDown, LayoutGrid } from 'lucide-react'
-import type { JobType } from '@/shared/schemas'
+import type { Category } from '@/shared/schemas'
 import { cn } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'
 import { categoryIcon } from './category-icon'
 
 export function JobCategoryNav({ categories, selectedId, loading, navigate }: {
-  categories: JobType[]; selectedId?: number; loading: boolean; navigate: (href: string) => void
+  categories: Category[]; selectedId?: number; loading: boolean; navigate: (href: string) => void
 }) {
   const [expanded, setExpanded] = useState(false)
   const id = useId()
@@ -32,8 +32,8 @@ export function JobCategoryNav({ categories, selectedId, loading, navigate }: {
     <div id={id} className="flex min-w-0 flex-wrap items-center gap-2">
       {chip('/jobs', 'All', !selectedId, <LayoutGrid className="h-3.5 w-3.5" />)}
       {items.map((category) => {
-        const Icon = categoryIcon(category.tenLoaiCongViec)
-        return chip(`/jobs?category=${category.id}`, category.tenLoaiCongViec, selectedId === category.id, <Icon className="h-3.5 w-3.5" />)
+        const Icon = categoryIcon(category.name)
+        return chip(`/jobs?category=${category.id}`, category.name, selectedId === category.id, <Icon className="h-3.5 w-3.5" />)
       })}
       {loading ? <><Skeleton className="h-9 w-28 rounded-full" /><Skeleton className="h-9 w-32 rounded-full" /></> : null}
     </div>

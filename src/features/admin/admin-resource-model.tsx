@@ -1,11 +1,11 @@
 import Image from 'next/image'
-import { commentsApi, hiredJobsApi, jobDetailTypesApi, jobTypesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
+import { commentsApi, hiresApi, subcategoriesApi, categoriesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
 import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import type { Comment, HiredJob, Job, JobDetailType, JobType, User } from '@/shared/schemas'
+import type { Comment, Hire, Job, Subcategory, Category, User } from '@/shared/schemas'
 import { Badge } from '@/shared/ui'
 
-export type Resource = 'jobs' | 'users' | 'job-types' | 'job-detail-types' | 'hired-jobs' | 'comments'
-export type ResourceRow = Job | User | JobType | JobDetailType | HiredJob | Comment
+export type Resource = 'jobs' | 'users' | 'categories' | 'subcategories' | 'hires' | 'comments'
+export type ResourceRow = Job | User | Category | Subcategory | Hire | Comment
 export type CreateValues = { name: string; parentTypeId?: number }
 export type ResourceConfig = {
   title: string
@@ -42,32 +42,32 @@ const resourceConfigs: Record<Resource, ResourceConfig> = {
     renderCells: renderUserCells,
     viewHref: (row) => `/profile/${row.id}`,
   },
-  'job-types': {
-    title: 'Job types',
+  'categories': {
+    title: 'Categories',
     columns: ['ID', 'Name'],
-    load: async () => (await jobTypesApi.all()).content ?? [],
-    remove: jobTypesApi.delete,
-    renderCells: renderJobTypeCells,
-    create: { label: 'Create Job Type', submit: ({ name }) => jobTypesApi.create({ tenLoaiCongViec: name }) },
+    load: async () => (await categoriesApi.all()).content ?? [],
+    remove: categoriesApi.delete,
+    renderCells: renderCategoryCells,
+    create: { label: 'Create Job Type', submit: ({ name }) => categoriesApi.create({ name: name }) },
   },
-  'job-detail-types': {
-    title: 'Job detail types',
+  'subcategories': {
+    title: 'Subcategories',
     columns: ['ID', 'Name', 'Parent type'],
-    load: async () => (await jobDetailTypesApi.all()).content ?? [],
-    remove: jobDetailTypesApi.delete,
-    renderCells: renderJobDetailTypeCells,
+    load: async () => (await subcategoriesApi.all()).content ?? [],
+    remove: subcategoriesApi.delete,
+    renderCells: renderSubcategoryCells,
     create: {
       label: 'Create Detail Type',
-      submit: ({ name, parentTypeId }) => jobDetailTypesApi.create({ tenChiTiet: name, maLoaiCongViec: parentTypeId }),
+      submit: ({ name, parentTypeId }) => subcategoriesApi.create({ name: name, categoryId: parentTypeId }),
       needsParentType: true,
     },
   },
-  'hired-jobs': {
-    title: 'Hired jobs',
+  'hires': {
+    title: 'Hires',
     columns: ['ID', 'Job', 'User', 'Completed'],
-    load: async () => (await hiredJobsApi.all()).content ?? [],
-    remove: hiredJobsApi.delete,
-    renderCells: renderHiredJobCells,
+    load: async () => (await hiresApi.all()).content ?? [],
+    remove: hiresApi.delete,
+    renderCells: renderHireCells,
   },
   comments: {
     title: 'Comments',
@@ -89,11 +89,11 @@ function renderJobCells(row: ResourceRow) {
   return (
     <>
       <td className="px-4 py-3 font-mono text-xs">#{job.id}</td>
-      <td className="px-4 py-3"><Thumb src={job.hinhAnh ?? undefined} label={job.tenCongViec} /></td>
-      <td className="max-w-xs px-4 py-3 font-semibold">{job.tenCongViec}</td>
-      <td className="px-4 py-3">{job.nguoiDung?.name ?? job.nguoiTao ?? 'Unknown'}</td>
-      <td className="px-4 py-3 font-semibold">{currency(job.giaTien)}</td>
-      <td className="px-4 py-3 text-rating">{(job.saoCongViec ?? 0).toFixed(1)}</td>
+      <td className="px-4 py-3"><Thumb src={job.image ?? undefined} label={job.title} /></td>
+      <td className="max-w-xs px-4 py-3 font-semibold">{job.title}</td>
+      <td className="px-4 py-3">{job.user?.name ?? job.creatorId ?? 'Unknown'}</td>
+      <td className="px-4 py-3 font-semibold">{currency(job.price)}</td>
+      <td className="px-4 py-3 text-rating">{(job.rating ?? 0).toFixed(1)}</td>
       <td className="px-4 py-3"><Badge tone="primary">Active</Badge></td>
     </>
   )
@@ -112,31 +112,31 @@ function renderUserCells(row: ResourceRow) {
   )
 }
 
-function renderJobTypeCells(row: ResourceRow) {
-  const type = row as JobType
-  return <><td className="px-4 py-3 font-mono text-xs">#{type.id}</td><td className="px-4 py-3 font-semibold">{type.tenLoaiCongViec}</td></>
+function renderCategoryCells(row: ResourceRow) {
+  const type = row as Category
+  return <><td className="px-4 py-3 font-mono text-xs">#{type.id}</td><td className="px-4 py-3 font-semibold">{type.name}</td></>
 }
 
-function renderJobDetailTypeCells(row: ResourceRow) {
-  const detail = row as JobDetailType
-  return <><td className="px-4 py-3 font-mono text-xs">#{detail.id}</td><td className="px-4 py-3 font-semibold">{detail.tenChiTiet}</td><td className="px-4 py-3">{detail.maLoaiCongViec ?? '-'}</td></>
+function renderSubcategoryCells(row: ResourceRow) {
+  const detail = row as Subcategory
+  return <><td className="px-4 py-3 font-mono text-xs">#{detail.id}</td><td className="px-4 py-3 font-semibold">{detail.name}</td><td className="px-4 py-3">{detail.categoryId ?? '-'}</td></>
 }
 
-function renderHiredJobCells(row: ResourceRow) {
-  const hire = row as HiredJob
-  return <><td className="px-4 py-3 font-mono text-xs">#{hire.id}</td><td className="px-4 py-3">{hire.maCongViec}</td><td className="px-4 py-3">{hire.maNguoiThue ?? '-'}</td><td className="px-4 py-3"><Badge tone={hire.hoanThanh ? 'primary' : 'neutral'}>{hire.hoanThanh ? 'Done' : 'Open'}</Badge></td></>
+function renderHireCells(row: ResourceRow) {
+  const hire = row as Hire
+  return <><td className="px-4 py-3 font-mono text-xs">#{hire.id}</td><td className="px-4 py-3">{hire.jobId}</td><td className="px-4 py-3">{hire.hirerId ?? '-'}</td><td className="px-4 py-3"><Badge tone={hire.completed ? 'primary' : 'neutral'}>{hire.completed ? 'Done' : 'Open'}</Badge></td></>
 }
 
 function renderCommentCells(row: ResourceRow) {
   const comment = row as Comment
-  const commenterId = comment.maNguoiBinhLuan ?? comment.nguoiDung?.id
+  const commenterId = comment.commenterId ?? comment.user?.id
   return (
     <>
       <td className="px-4 py-3 font-mono text-xs">#{comment.id}</td>
-      <td className="px-4 py-3">{comment.maCongViec}</td>
-      <td className="px-4 py-3"><div className="flex items-center gap-2">{comment.nguoiDung?.name ? <Avatar name={comment.nguoiDung.name} /> : null}<div><p className="font-semibold">{comment.nguoiDung?.name ?? 'Unknown user'}</p><p className="font-mono text-xs text-muted">{commenterId ? `#${commenterId}` : '-'}</p></div></div></td>
-      <td className="px-4 py-3 text-rating">{comment.saoBinhLuan}</td>
-      <td className="max-w-sm px-4 py-3">{comment.noiDung}</td>
+      <td className="px-4 py-3">{comment.jobId}</td>
+      <td className="px-4 py-3"><div className="flex items-center gap-2">{comment.user?.name ? <Avatar name={comment.user.name} /> : null}<div><p className="font-semibold">{comment.user?.name ?? 'Unknown user'}</p><p className="font-mono text-xs text-muted">{commenterId ? `#${commenterId}` : '-'}</p></div></div></td>
+      <td className="px-4 py-3 text-rating">{comment.rating}</td>
+      <td className="max-w-sm px-4 py-3">{comment.content}</td>
     </>
   )
 }

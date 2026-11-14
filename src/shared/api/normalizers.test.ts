@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeCategory,
   normalizeComment,
-  normalizeHiredJob,
+  normalizeHire,
   normalizeFeedResponse,
   normalizePostComment,
   normalizeConnectionRequestsResponse,
@@ -121,7 +121,7 @@ describe("normalizers", () => {
         nextCursor: "saved-cursor",
       },
     } as never);
-    expect(savedJobs.content?.data[0].tenCongViec).toBe("NestJS API");
+    expect(savedJobs.content?.data[0].title).toBe("NestJS API");
     expect(savedJobs.content?.nextCursor).toBe("saved-cursor");
 
     const connections = normalizeConnectionsResponse({
@@ -165,7 +165,6 @@ describe("normalizers", () => {
     expect(normalizeCategory({ id: 3, name: "Design" })).toEqual({
       id: 3,
       name: "Design",
-      tenLoaiCongViec: "Design",
       subcategories: undefined,
     });
     expect(
@@ -176,8 +175,8 @@ describe("normalizers", () => {
       }).subcategories?.[0],
     ).toMatchObject({
       id: 8,
-      tenChiTiet: "Logo",
-      maLoaiCongViec: 3,
+      name: "Logo",
+      categoryId: 3,
     });
 
     expect(
@@ -190,9 +189,8 @@ describe("normalizers", () => {
     ).toMatchObject({
       id: 8,
       name: "Logo",
-      tenChiTiet: "Logo",
-      hinhAnh: "/logo.png",
-      maLoaiCongViec: 3,
+      image: "/logo.png",
+      categoryId: 3,
     });
   });
 
@@ -210,10 +208,10 @@ describe("normalizers", () => {
       rating: 4.8,
       subcategory: { id: 8, name: "Logo" },
     });
-    expect(job.tenCongViec).toBe("Landing page");
-    expect(job.giaTien).toBe(120);
-    expect(job.nguoiTao).toBe(2);
-    expect(job.chiTietLoaiCongViec?.tenChiTiet).toBe("Logo");
+    expect(job.title).toBe("Landing page");
+    expect(job.price).toBe(120);
+    expect(job.creatorId).toBe(2);
+    expect(job.subcategory?.name).toBe("Logo");
 
     const aliasedOwner = normalizeJob({
       id: 11,
@@ -222,8 +220,8 @@ describe("normalizers", () => {
       userId: 6,
       creator: { id: 6, name: "Tai", avatar: null },
     });
-    expect(aliasedOwner.nguoiTao).toBe(6);
-    expect(aliasedOwner.nguoiDung?.id).toBe(6);
+    expect(aliasedOwner.creatorId).toBe(6);
+    expect(aliasedOwner.user?.id).toBe(6);
 
     expect(
       normalizeComment({
@@ -239,12 +237,9 @@ describe("normalizers", () => {
       userId: 2,
       content: "Great",
       rating: 5,
-      maCongViec: 10,
-      maNguoiBinhLuan: 2,
-      ngayBinhLuan: undefined,
-      noiDung: "Great",
-      saoBinhLuan: 5,
-      nguoiDung: undefined,
+      commenterId: 2,
+      commentedAt: undefined,
+      user: undefined,
     });
 
     const backendComment = normalizeComment({
@@ -256,20 +251,20 @@ describe("normalizers", () => {
       rating: 5,
       user: { id: 6, name: "Tai", avatar: "/avatar.png" },
     });
-    expect(backendComment.maNguoiBinhLuan).toBe(6);
-    expect(backendComment.ngayBinhLuan).toBe("2026-06-16T03:03:00.216Z");
-    expect(backendComment.nguoiDung?.name).toBe("Tai");
+    expect(backendComment.commenterId).toBe(6);
+    expect(backendComment.commentedAt).toBe("2026-06-16T03:03:00.216Z");
+    expect(backendComment.user?.name).toBe("Tai");
 
-    const hiredJob = normalizeHiredJob({
+    const hiredJob = normalizeHire({
       id: 4,
       jobId: 10,
       userId: 9,
       completed: true,
       job: { id: 10, title: "Landing page", price: 120 },
     });
-    expect(hiredJob.maCongViec).toBe(10);
-    expect(hiredJob.hoanThanh).toBe(true);
-    expect(hiredJob.congViec?.tenCongViec).toBe("Landing page");
+    expect(hiredJob.jobId).toBe(10);
+    expect(hiredJob.completed).toBe(true);
+    expect(hiredJob.job?.title).toBe("Landing page");
   });
 
   it("normalizes list and paginated responses while preserving metadata", () => {
@@ -288,7 +283,7 @@ describe("normalizers", () => {
     expect(response.statusCode).toBe(200);
     expect(response.content?.pageIndex).toBe(2);
     expect(response.content?.totalRow).toBe(21);
-    expect(response.content?.data[0].tenCongViec).toBe("Test");
+    expect(response.content?.data[0].title).toBe("Test");
   });
 
   it("normalizes paginated candidate directory responses without private contact fields", () => {
@@ -352,7 +347,7 @@ describe("normalizers", () => {
         comments: [{ id: 2, jobId: 6, comment: "Solid", rating: 4 }],
       },
     } as never);
-    expect(withComments.content?.binhLuans?.[0].noiDung).toBe("Solid");
+    expect(withComments.content?.binhLuans?.[0].content).toBe("Solid");
   });
 
   it("normalizes recommendation responses while preserving match metadata", () => {
@@ -378,7 +373,7 @@ describe("normalizers", () => {
     } as never);
 
     expect(jobs.content?.model).toBe("embedding-model");
-    expect(jobs.content?.data[0].tenCongViec).toBe("Python API");
+    expect(jobs.content?.data[0].title).toBe("Python API");
     expect(jobs.content?.data[0].recommendation.aiScore).toBe(0.84);
     expect(jobs.content?.data[0].recommendation.label).toBe("high_match");
 
@@ -415,13 +410,13 @@ describe("normalizers", () => {
   it("maps payloads to API contract keys", () => {
     expect(
       toJobPayload({
-        tenCongViec: "UI Design",
-        giaTien: 30,
-        moTaNgan: "short",
-        moTa: "long",
-        maChiTietLoai: 7,
-        danhGia: 2,
-        saoCongViec: 3,
+        title: "UI Design",
+        price: 30,
+        shortDescription: "short",
+        description: "long",
+        subcategoryId: 7,
+        reviews: 2,
+        rating: 3,
       }),
     ).toEqual({
       title: "UI Design",
@@ -431,14 +426,14 @@ describe("normalizers", () => {
       subcategoryId: 7,
     });
 
-    expect(toCategoryPayload({ tenLoaiCongViec: "Web" })).toEqual({
+    expect(toCategoryPayload({ name: "Web" })).toEqual({
       name: "Web",
     });
     expect(
       toSubcategoryPayload({
-        tenChiTiet: "Frontend",
-        hinhAnh: "/a.png",
-        maLoaiCongViec: 1,
+        name: "Frontend",
+        image: "/a.png",
+        categoryId: 1,
       }),
     ).toEqual({
       name: "Frontend",
@@ -446,7 +441,7 @@ describe("normalizers", () => {
       categoryId: 1,
     });
     expect(
-      toCommentPayload({ maCongViec: 4, noiDung: "Nice", saoBinhLuan: 5 }),
+      toCommentPayload({ jobId: 4, content: "Nice", rating: 5 }),
     ).toEqual({
       jobId: 4,
       content: "Nice",

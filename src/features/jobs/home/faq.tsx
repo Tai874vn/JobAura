@@ -14,7 +14,7 @@ export const landingFaqs: AccordionItem[] = [
   {
     question: 'How do I sell my services?',
     answer:
-      'Create a worker account and publish your service with clear pricing and a strong description. It appears in the marketplace, and you can also watch hiring posts and apply with a cover letter.',
+      'Create a candidate account and publish your service with clear pricing and a strong description. It appears in the marketplace, and you can also watch hiring posts and apply with a cover letter.',
   },
   {
     question: 'What is AI matching?',

@@ -9,7 +9,7 @@ export function getUserPosts(jobs: Job[], userId: number | undefined) {
   if (!userId) return []
 
   return jobs
-    .filter((job) => job.nguoiTao === userId || job.nguoiDung?.id === userId)
+    .filter((job) => job.creatorId === userId || job.user?.id === userId)
     .sort((a, b) => getTime(b.createdAt) - getTime(a.createdAt))
 }
 

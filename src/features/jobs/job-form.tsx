@@ -10,7 +10,7 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 import { useSession } from '@/features/auth/use-session'
-import { jobsApi, jobDetailTypesApi } from '@/shared/api/endpoints'
+import { jobsApi, subcategoriesApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { currency, getErrorMessage } from '@/shared/lib/utils'
@@ -31,11 +31,11 @@ export function JobForm() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const form = useForm<CreateJobInput>({
     resolver: zodResolver(createJobSchema),
-    defaultValues: { tenCongViec: '', giaTien: 25, moTaNgan: '', moTa: '', maChiTietLoai: 0, danhGia: 0, saoCongViec: 0 },
+    defaultValues: { title: '', price: 25, shortDescription: '', description: '', subcategoryId: 0, reviews: 0, rating: 0 },
   })
-  const title = form.watch('tenCongViec')
-  const price = form.watch('giaTien')
-  const detailsQuery = useQuery({ queryKey: queryKeys.jobDetailTypes, queryFn: jobDetailTypesApi.all })
+  const title = form.watch('title')
+  const price = form.watch('price')
+  const detailsQuery = useQuery({ queryKey: queryKeys.subcategories, queryFn: subcategoriesApi.all })
   const details = detailsQuery.data?.content ?? []
   const detailsUnavailable = detailsQuery.isError && !details.length
 
@@ -108,8 +108,8 @@ export function JobForm() {
                 <Info className="h-3.5 w-3.5 text-primary" /> Basics
               </h2>
               <div className="grid gap-4">
-                <Field label="Title" counter={`${(title ?? '').length}/${titleLimit}`} error={form.formState.errors.tenCongViec?.message}>
-                  <Input {...form.register('tenCongViec')} maxLength={titleLimit} placeholder="I will build a modern Next.js landing page" />
+                <Field label="Title" counter={`${(title ?? '').length}/${titleLimit}`} error={form.formState.errors.title?.message}>
+                  <Input {...form.register('title')} maxLength={titleLimit} placeholder="I will build a modern Next.js landing page" />
                   <p className="mt-1.5 text-xs text-muted">
                     Start with &ldquo;I will…&rdquo; — buyers search for verbs like <em>build, design, edit</em>.
                   </p>
@@ -117,16 +117,16 @@ export function JobForm() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
                     label="Category detail"
-                    error={form.formState.errors.maChiTietLoai?.message}
+                    error={form.formState.errors.subcategoryId?.message}
                     hint={detailsUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">Categories could not be loaded.<Button type="button" size="sm" variant="secondary" onClick={() => detailsQuery.refetch()}>Retry</Button></span> : undefined}
                   >
-                    <Select disabled={detailsQuery.isPending || detailsUnavailable} {...form.register('maChiTietLoai')}>
+                    <Select disabled={detailsQuery.isPending || detailsUnavailable} {...form.register('subcategoryId')}>
                       <option value={0}>{detailsQuery.isPending ? 'Loading details...' : detailsUnavailable ? 'Categories unavailable' : 'Choose detail'}</option>
-                      {details.map((detail) => <option key={detail.id} value={detail.id}>{detail.tenChiTiet}</option>)}
+                      {details.map((detail) => <option key={detail.id} value={detail.id}>{detail.name}</option>)}
                     </Select>
                   </Field>
-                  <Field label="Price" error={form.formState.errors.giaTien?.message}>
-                    <Input type="number" min={0} {...form.register('giaTien')} />
+                  <Field label="Price" error={form.formState.errors.price?.message}>
+                    <Input type="number" min={0} {...form.register('price')} />
                     <p className="mt-1.5 text-xs text-muted">Starting price shown on your card.</p>
                   </Field>
                 </div>
@@ -138,11 +138,11 @@ export function JobForm() {
                 <AlignLeft className="h-3.5 w-3.5 text-primary" /> Descriptions
               </h2>
               <div className="grid gap-4">
-                <Field label="Short description" counter={`${(form.watch('moTaNgan') ?? '').length}/${shortLimit}`} error={form.formState.errors.moTaNgan?.message}>
-                  <Input {...form.register('moTaNgan')} maxLength={shortLimit} placeholder="A crisp summary for cards and search results" />
+                <Field label="Short description" counter={`${(form.watch('shortDescription') ?? '').length}/${shortLimit}`} error={form.formState.errors.shortDescription?.message}>
+                  <Input {...form.register('shortDescription')} maxLength={shortLimit} placeholder="A crisp summary for cards and search results" />
                 </Field>
-                <Field label="Description" counter={`${(form.watch('moTa') ?? '').length}/${descriptionLimit}`} error={form.formState.errors.moTa?.message}>
-                  <Textarea {...form.register('moTa')} maxLength={descriptionLimit} placeholder="Explain process, deliverables, and what buyers get." />
+                <Field label="Description" counter={`${(form.watch('description') ?? '').length}/${descriptionLimit}`} error={form.formState.errors.description?.message}>
+                  <Textarea {...form.register('description')} maxLength={descriptionLimit} placeholder="Explain process, deliverables, and what buyers get." />
                   <p className="mt-1.5 text-xs text-muted">Cover your process, what&rsquo;s included, delivery time, and revision policy.</p>
                 </Field>
               </div>

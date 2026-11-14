@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
-import { chatApi, commentsApi, hiredJobsApi, jobsApi } from '@/shared/api/endpoints'
+import { chatApi, commentsApi, hiresApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { cn, currency, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
@@ -18,8 +18,8 @@ import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialo
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
 
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
-  const imageUrl = resolveAssetUrl(job.hinhAnh)
-  const bypassOptimizer = shouldBypassImageOptimizer(job.hinhAnh)
+  const imageUrl = resolveAssetUrl(job.image)
+  const bypassOptimizer = shouldBypassImageOptimizer(job.image)
   const router = useRouter()
   const queryClient = useQueryClient()
   const { user } = useSession()
@@ -28,7 +28,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const [review, setReview] = useState('')
   const [rating, setRating] = useState(5)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const isOwner = user?.id === job.nguoiTao
+  const isOwner = user?.id === job.creatorId
   const canViewCandidateMatches = Boolean(user?.role === 'admin' || (isOwner && canAccessCandidateDirectory(user?.role)))
   const sellerId = getSellerId(job)
   const sellerName = getSellerName(job)
@@ -37,13 +37,13 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const listedDate = formatListedDate(job.createdAt)
 
   const hireMutation = useMutation({
-    mutationFn: () => hiredJobsApi.create({ maCongViec: job.id }),
+    mutationFn: () => hiresApi.create({ jobId: job.id }),
     onSuccess: () => toast.success('Service hired successfully'),
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to hire this service')),
   })
 
   const commentMutation = useMutation({
-    mutationFn: () => commentsApi.create({ maCongViec: job.id, noiDung: review, saoBinhLuan: rating }),
+    mutationFn: () => commentsApi.create({ jobId: job.id, content: review, rating: rating }),
     onSuccess: () => {
       setReview('')
       queryClient.invalidateQueries({ queryKey: queryKeys.job(job.id) })
@@ -102,7 +102,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
             ) : (
               <p className="truncate font-bold">{sellerName}</p>
             )}
-            <p className="truncate text-xs text-muted">{job.chiTietLoaiCongViec?.tenChiTiet ?? 'Marketplace seller'}</p>
+            <p className="truncate text-xs text-muted">{job.subcategory?.name ?? 'Marketplace seller'}</p>
           </div>
           {sellerHref ? <ArrowUpRight className="h-4 w-4 shrink-0 text-muted" /> : null}
         </div>
@@ -120,25 +120,25 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
       <nav className="flex flex-wrap items-center gap-1.5 text-[12.5px] font-semibold text-muted" aria-label="Breadcrumb">
         <Link href="/jobs" className="hover:text-primary hover:underline">Marketplace</Link>
         <span aria-hidden="true" className="text-border">/</span>
-        <span>{job.chiTietLoaiCongViec?.tenChiTiet ?? 'Service'}</span>
+        <span>{job.subcategory?.name ?? 'Service'}</span>
         <span aria-hidden="true" className="text-border">/</span>
         <span className="text-foreground">#{job.id}</span>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <main>
-          <h1 className="max-w-4xl font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{job.tenCongViec}</h1>
+          <h1 className="max-w-4xl font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{job.title}</h1>
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
-            <Badge tone="rating"><Star className="mr-1 h-3 w-3 fill-rating text-rating" /> {(job.saoCongViec ?? 0).toFixed(1)}</Badge>
+            <Badge tone="rating"><Star className="mr-1 h-3 w-3 fill-rating text-rating" /> {(job.rating ?? 0).toFixed(1)}</Badge>
             <span className="text-sm font-semibold text-muted">{comments.length} {comments.length === 1 ? 'review' : 'reviews'}</span>
-            <Badge tone="accent">{job.chiTietLoaiCongViec?.tenChiTiet ?? 'Marketplace'}</Badge>
+            <Badge tone="accent">{job.subcategory?.name ?? 'Marketplace'}</Badge>
             <span className="text-[12.5px] font-semibold text-muted">Service #{job.id}</span>
           </div>
           <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-surface-muted">
             {imageUrl ? (
               <Image
                 src={imageUrl}
-                alt={job.tenCongViec}
+                alt={job.title}
                 fill
                 priority
                 sizes="(min-width: 1024px) calc(100vw - 456px), 100vw"
@@ -152,7 +152,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           <Card className="mt-5">
             <CardContent className="p-5">
               <h2 className="font-display text-2xl font-bold">About this service</h2>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">{job.moTa || job.moTaNgan || 'The seller has not added a long description yet.'}</p>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">{job.description || job.shortDescription || 'The seller has not added a long description yet.'}</p>
             </CardContent>
           </Card>
           <Card className="mt-5">
@@ -163,11 +163,11 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
               <div className="mt-2">
                 {comments.length ? comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3 border-b border-border py-4 last:border-0 last:pb-0">
-                    <Avatar name={comment.nguoiDung?.name ?? 'Buyer'} src={comment.nguoiDung?.avatar} size="md" className="shrink-0" />
+                    <Avatar name={comment.user?.name ?? 'Buyer'} src={comment.user?.avatar} size="md" className="shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-bold">{comment.nguoiDung?.name ?? 'Buyer'}</p>
-                      <ReviewStars count={comment.saoBinhLuan} />
-                      <p className="mt-1.5 text-sm leading-6 text-muted">{comment.noiDung}</p>
+                      <p className="text-sm font-bold">{comment.user?.name ?? 'Buyer'}</p>
+                      <ReviewStars count={comment.rating} />
+                      <p className="mt-1.5 text-sm leading-6 text-muted">{comment.content}</p>
                     </div>
                   </div>
                 )) : <p className="py-2 text-sm text-muted">No reviews yet. Be the first to share what it was like working with this seller.</p>}
@@ -204,7 +204,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           <Card>
             <CardContent className="p-5">
               <p className="text-sm text-muted">Starting at</p>
-              <p className="mt-0.5 font-display text-4xl font-bold tracking-tight">{currency(job.giaTien)}</p>
+              <p className="mt-0.5 font-display text-4xl font-bold tracking-tight">{currency(job.price)}</p>
               <div className="mt-4 border-t border-border pt-4">
                 <p className="text-[11px] font-bold uppercase tracking-wide text-muted">How it works</p>
                 <ol className="mt-3 grid gap-3">
@@ -213,7 +213,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                   <BuyStep number={3} title="Track in My jobs" text="Follow progress until the work is marked complete." />
                 </ol>
               </div>
-              <Button className="mt-5 w-full" size="lg" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>Continue ({currency(job.giaTien)})</Button>
+              <Button className="mt-5 w-full" size="lg" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>Continue ({currency(job.price)})</Button>
               <Button
                 className="mt-3 w-full"
                 variant="secondary"
@@ -252,7 +252,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
 
       <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden" aria-label="Purchase bar">
         <div className="leading-tight">
-          <b className="block font-display text-lg font-bold">{currency(job.giaTien)}</b>
+          <b className="block font-display text-lg font-bold">{currency(job.price)}</b>
           <span className="text-[11px] font-semibold text-muted">Starting at</span>
         </div>
         <Button className="ml-auto flex-1" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>
@@ -263,7 +263,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
       <ConfirmationDialog
         open={deleteOpen}
         title="Delete this service?"
-        description={`“${job.tenCongViec}” will be permanently removed. This action cannot be undone.`}
+        description={`“${job.title}” will be permanently removed. This action cannot be undone.`}
         confirmLabel="Delete service"
         pending={deleteMutation.isPending}
         onCancel={() => setDeleteOpen(false)}

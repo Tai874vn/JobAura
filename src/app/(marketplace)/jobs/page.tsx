@@ -37,7 +37,7 @@ function jobsItemListJsonLd(jobs: Job[]) {
       '@type': 'ListItem',
       position: index + 1,
       url: absoluteSiteUrl(`/jobs/${job.id}`),
-      name: job.tenCongViec,
+      name: job.title,
     })),
   }
 }

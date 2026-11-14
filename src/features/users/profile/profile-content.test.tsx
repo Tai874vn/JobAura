@@ -7,10 +7,10 @@ describe('ProfilePostCard', () => {
   it('labels an unrated service as new', () => {
     const post = {
       id: 1,
-      tenCongViec: 'Build a portfolio',
-      giaTien: 100,
-      danhGia: 0,
-      saoCongViec: 0,
+      title: 'Build a portfolio',
+      price: 100,
+      reviews: 0,
+      rating: 0,
     } as Job
     const user = { id: 2, name: 'Ava', email: 'ava@example.com' } as UserProfile
 

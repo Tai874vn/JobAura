@@ -150,6 +150,14 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  // Admin pages were renamed to match the backend; old bookmarks keep working.
+  async redirects() {
+    return [
+      { source: '/admin/job-types', destination: '/admin/categories', permanent: true },
+      { source: '/admin/job-detail-types', destination: '/admin/subcategories', permanent: true },
+      { source: '/admin/hired-jobs', destination: '/admin/hires', permanent: true },
+    ]
+  },
   turbopack: {
     root: __dirname,
   },

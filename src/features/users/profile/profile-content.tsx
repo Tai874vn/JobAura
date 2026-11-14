@@ -20,9 +20,9 @@ import { InlineEditButton, ResumeSnippet } from './profile-editor'
 import { formatDate, formatFullDate, type MarketplaceProfile } from './model'
 
 export function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile | UserProfile }) {
-  const imageUrl = resolveAssetUrl(post.hinhAnh)
-  const bypassOptimizer = shouldBypassImageOptimizer(post.hinhAnh)
-  const hasRating = (post.saoCongViec ?? 0) > 0
+  const imageUrl = resolveAssetUrl(post.image)
+  const bypassOptimizer = shouldBypassImageOptimizer(post.image)
+  const hasRating = (post.rating ?? 0) > 0
 
   return (
     <article className="overflow-hidden rounded-lg border border-border bg-surface">
@@ -39,7 +39,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
         {hasRating ? (
           <Badge tone="rating">
             <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
-            {(post.saoCongViec ?? 0).toFixed(1)}
+            {(post.rating ?? 0).toFixed(1)}
           </Badge>
         ) : (
           <Badge>New · no reviews yet</Badge>
@@ -48,7 +48,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
       <div className="grid gap-0 md:grid-cols-[220px_1fr]">
         <Link href={`/jobs/${post.id}`} className="relative block aspect-16/10 bg-surface-muted md:aspect-auto">
           {imageUrl ? (
-            <Image src={imageUrl} alt={post.tenCongViec} fill unoptimized={bypassOptimizer} className="object-cover" sizes="(min-width: 768px) 220px, 100vw" />
+            <Image src={imageUrl} alt={post.title} fill unoptimized={bypassOptimizer} className="object-cover" sizes="(min-width: 768px) 220px, 100vw" />
           ) : (
             <span className="flex h-full items-center justify-center text-primary">
               <BriefcaseBusiness className="h-8 w-8" />
@@ -58,15 +58,15 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
         <div className="grid gap-4 p-4">
           <div>
             <Link href={`/jobs/${post.id}`} className="font-display text-xl font-bold leading-snug hover:text-primary">
-              {post.tenCongViec}
+              {post.title}
             </Link>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
-              {post.moTaNgan || post.moTa || 'This service post is available on JobAura.'}
+              {post.shortDescription || post.description || 'This service post is available on JobAura.'}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-sm text-muted">
-              From <strong className="text-foreground">{currency(post.giaTien)}</strong>
+              From <strong className="text-foreground">{currency(post.price)}</strong>
             </span>
             <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
               View details

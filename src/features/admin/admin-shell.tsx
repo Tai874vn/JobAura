@@ -11,9 +11,9 @@ const nav = [
   { href: '/admin', label: 'Dashboard', icon: Home },
   { href: '/admin/jobs', label: 'Jobs', icon: BriefcaseBusiness },
   { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/job-types', label: 'Job types', icon: Tags },
-  { href: '/admin/job-detail-types', label: 'Detail types', icon: BarChart3 },
-  { href: '/admin/hired-jobs', label: 'Hired jobs', icon: Settings },
+  { href: '/admin/categories', label: 'Categories', icon: Tags },
+  { href: '/admin/subcategories', label: 'Subcategories', icon: BarChart3 },
+  { href: '/admin/hires', label: 'Hires', icon: Settings },
   { href: '/admin/comments', label: 'Comments', icon: MessageSquare },
   { href: '/settings?section=resume', activePath: '/settings', label: 'My resume', icon: FileJson },
 ]

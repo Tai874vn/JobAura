@@ -2,14 +2,14 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { normalizeCategoriesResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
-import type { ApiResponse, JobType } from '@/shared/schemas'
+import type { ApiResponse, Category } from '@/shared/schemas'
 import { categoryIcon } from '../category-icon'
 import { Section, SectionHeading } from '@/shared/ui'
 
 const fallbackCategories = ['Design', 'Development', 'Marketing', 'Business']
 
 export async function CategoryGrid() {
-  const typesRes = await serverRequest<ApiResponse<JobType[]>>('/api/categories', {
+  const typesRes = await serverRequest<ApiResponse<Category[]>>('/api/categories', {
     includeCookies: false,
     next: { revalidate: 300 },
   })
@@ -17,7 +17,7 @@ export async function CategoryGrid() {
   const displayed = categories.length
     ? categories.slice(0, 8).map((category) => ({
         key: String(category.id),
-        name: category.tenLoaiCongViec,
+        name: category.name,
         href: `/jobs?category=${category.id}`,
       }))
     : fallbackCategories.map((name) => ({

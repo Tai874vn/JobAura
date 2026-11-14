@@ -48,7 +48,7 @@ export function MyPostsPage() {
 
       <div className="mt-6 grid gap-3" aria-busy={query.isPending} aria-live="polite">
         {query.isPending ? Array.from({ length: 3 }).map((_, index) => <ListRowSkeleton key={index} />) : jobs.map((job) => (
-          <MyPostRow key={job.id} job={job} onDelete={() => setPendingDelete({ id: job.id, title: job.tenCongViec })} />
+          <MyPostRow key={job.id} job={job} onDelete={() => setPendingDelete({ id: job.id, title: job.title })} />
         ))}
         {query.isError ? (
           <EmptyState
@@ -83,30 +83,30 @@ export function MyPostsPage() {
 }
 
 function MyPostRow({ job, onDelete }: { job: Job; onDelete: () => void }) {
-  const imageUrl = resolveAssetUrl(job.hinhAnh)
-  const bypassOptimizer = shouldBypassImageOptimizer(job.hinhAnh)
-  const hasRating = (job.saoCongViec ?? 0) > 0
+  const imageUrl = resolveAssetUrl(job.image)
+  const bypassOptimizer = shouldBypassImageOptimizer(job.image)
+  const hasRating = (job.rating ?? 0) > 0
 
   return (
     <Card className="flex flex-wrap items-center gap-4 p-3.5 transition hover:border-primary hover:shadow-[0_8px_24px_rgba(27,28,28,0.06)]">
       <span className="relative block h-[63px] w-[84px] shrink-0 overflow-hidden rounded-lg bg-surface-muted">
         {imageUrl ? (
-          <Image src={imageUrl} alt={job.tenCongViec} fill unoptimized={bypassOptimizer} className="object-cover" sizes="84px" />
+          <Image src={imageUrl} alt={job.title} fill unoptimized={bypassOptimizer} className="object-cover" sizes="84px" />
         ) : (
           <span className="flex h-full items-center justify-center font-display text-xl font-bold text-primary/30">JA</span>
         )}
       </span>
       <div className="min-w-48 flex-1">
         <h2 className="text-[15px] font-bold leading-snug">
-          <Link href={`/jobs/${job.id}`} className="hover:text-primary">{job.tenCongViec}</Link>
+          <Link href={`/jobs/${job.id}`} className="hover:text-primary">{job.title}</Link>
         </h2>
         <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 text-xs font-semibold text-muted">
           <span className="inline-flex items-center gap-1">
             <Star className={cn('h-3 w-3', hasRating ? 'fill-rating text-rating' : 'text-muted')} />
-            {hasRating ? `${(job.saoCongViec ?? 0).toFixed(1)}` : 'New · no reviews yet'}
+            {hasRating ? `${(job.rating ?? 0).toFixed(1)}` : 'New · no reviews yet'}
           </span>
-          <span>From ${job.giaTien?.toLocaleString?.('en-US') ?? job.giaTien}</span>
-          {job.chiTietLoaiCongViec?.tenChiTiet ? <span>{job.chiTietLoaiCongViec.tenChiTiet}</span> : null}
+          <span>From ${job.price?.toLocaleString?.('en-US') ?? job.price}</span>
+          {job.subcategory?.name ? <span>{job.subcategory.name}</span> : null}
         </div>
       </div>
       <div className="flex gap-2">

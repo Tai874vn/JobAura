@@ -1,10 +1,10 @@
 import type { FormEvent } from 'react'
-import type { JobDetailType, JobSearchParams } from '@/shared/schemas'
+import type { Subcategory, JobSearchParams } from '@/shared/schemas'
 import { Button, Card } from '@/shared/ui'
 
 export function JobFilterPanel({ values, subcategories, loading, onApply, onClear }: {
   values: Pick<JobSearchParams, 'subcategoryId' | 'minPrice' | 'maxPrice' | 'minRating'>
-  subcategories: JobDetailType[]
+  subcategories: Subcategory[]
   loading: boolean
   onApply: (event: FormEvent<HTMLFormElement>) => void
   onClear: () => void
@@ -17,7 +17,7 @@ export function JobFilterPanel({ values, subcategories, loading, onApply, onClea
           <PanelField label="Specialty">
             <select name="subcategory" defaultValue={values.subcategoryId ?? ''} className="w-full min-w-0 bg-transparent text-sm outline-none" aria-label="Specialty">
               <option value="">All specialties</option>
-              {subcategories.map((subcategory) => <option key={subcategory.id} value={subcategory.id}>{subcategory.tenChiTiet}</option>)}
+              {subcategories.map((subcategory) => <option key={subcategory.id} value={subcategory.id}>{subcategory.name}</option>)}
             </select>
           </PanelField>
           <fieldset className="min-w-0">

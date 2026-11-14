@@ -12,7 +12,7 @@ vi.mock('next/navigation', () => ({
 
 function renderList(categoryNames: string[], loaded = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
-  client.setQueryData(queryKeys.jobTypes, { content: categoryNames.map((name, index) => ({ id: index + 1, tenLoaiCongViec: name, subcategories: [] })) })
+  client.setQueryData(queryKeys.categories, { content: categoryNames.map((name, index) => ({ id: index + 1, name: name, subcategories: [] })) })
   if (loaded) client.setQueryData(queryKeys.jobs({ page: 1, pageSize: 12, categoryId: Number(new URLSearchParams(navigation.search).get('category')) || undefined }), { content: { data: [], totalRow: 0, totalPages: 1 } })
   return renderToStaticMarkup(<QueryClientProvider client={client}><JobListView /></QueryClientProvider>)
 }

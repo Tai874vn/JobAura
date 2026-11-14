@@ -100,11 +100,11 @@ function personJsonLd(user: UserProfile, posts: Job[]) {
       '@type': 'Offer',
       itemOffered: {
         '@type': 'Service',
-        name: job.tenCongViec,
+        name: job.title,
         url: absoluteSiteUrl(`/jobs/${job.id}`),
       },
       priceCurrency: 'USD',
-      price: job.giaTien,
+      price: job.price,
     })),
   }
 }

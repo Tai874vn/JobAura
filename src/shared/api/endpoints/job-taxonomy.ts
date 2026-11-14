@@ -1,15 +1,15 @@
 import { apiClient } from '../client'
-import type { ApiResponse, JobDetailType, JobType } from '@/shared/schemas'
+import type { ApiResponse, Subcategory, Category } from '@/shared/schemas'
 import { normalizeCategoriesResponse, normalizeCategory, normalizeSubcategoriesResponse, normalizeSubcategory, toCategoryPayload, toSubcategoryPayload } from '../normalizers'
 
-export const jobTypesApi = {
+export const categoriesApi = {
   all: async () =>
     normalizeCategoriesResponse(
-      (await apiClient.get<ApiResponse<JobType[]>>("/api/categories")).data,
+      (await apiClient.get<ApiResponse<Category[]>>("/api/categories")).data,
     ),
-  create: async (data: Pick<JobType, "tenLoaiCongViec">) => {
+  create: async (data: Pick<Category, "name">) => {
     const response = (
-      await apiClient.post<ApiResponse<JobType>>(
+      await apiClient.post<ApiResponse<Category>>(
         "/api/categories",
         toCategoryPayload(data),
       )
@@ -20,10 +20,10 @@ export const jobTypesApi = {
   },
   update: async (
     id: number,
-    data: Partial<Pick<JobType, "tenLoaiCongViec">>,
+    data: Partial<Pick<Category, "name">>,
   ) => {
     const response = (
-      await apiClient.put<ApiResponse<JobType>>(
+      await apiClient.put<ApiResponse<Category>>(
         `/api/categories/${id}`,
         toCategoryPayload(data),
       )
@@ -36,15 +36,15 @@ export const jobTypesApi = {
     (await apiClient.delete<ApiResponse<void>>(`/api/categories/${id}`)).data,
 }
 
-export const jobDetailTypesApi = {
+export const subcategoriesApi = {
   all: async () =>
     normalizeSubcategoriesResponse(
-      (await apiClient.get<ApiResponse<JobDetailType[]>>("/api/subcategories"))
+      (await apiClient.get<ApiResponse<Subcategory[]>>("/api/subcategories"))
         .data,
     ),
-  create: async (data: Partial<JobDetailType>) => {
+  create: async (data: Partial<Subcategory>) => {
     const response = (
-      await apiClient.post<ApiResponse<JobDetailType>>(
+      await apiClient.post<ApiResponse<Subcategory>>(
         "/api/subcategories",
         toSubcategoryPayload(data),
       )
@@ -53,9 +53,9 @@ export const jobDetailTypesApi = {
       ? { ...response, content: normalizeSubcategory(response.content) }
       : response
   },
-  update: async (id: number, data: Partial<JobDetailType>) => {
+  update: async (id: number, data: Partial<Subcategory>) => {
     const response = (
-      await apiClient.put<ApiResponse<JobDetailType>>(
+      await apiClient.put<ApiResponse<Subcategory>>(
         `/api/subcategories/${id}`,
         toSubcategoryPayload(data),
       )

@@ -1,5 +1,5 @@
 import { AdminResourcePage } from '@/features/admin/admin-resource-page'
 
 export default function AdminJobDetailTypesPage() {
-  return <AdminResourcePage resource="job-detail-types" />
+  return <AdminResourcePage resource="subcategories" />
 }

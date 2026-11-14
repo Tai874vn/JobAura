@@ -13,13 +13,13 @@ export const signupRoleOptions: Array<{
 }> = [
   {
     value: 'user',
-    label: 'Worker',
-    description: 'Build a profile, post services, and receive job matches.',
+    label: 'Candidate',
+    description: 'Find hiring posts and apply, build your resume, and post your portfolio so recruiters can find you.',
   },
   {
     value: 'employer',
-    label: 'Employer',
-    description: 'Find candidates, review profiles, and start hiring conversations.',
+    label: 'Recruiter',
+    description: 'Publish hiring posts, find candidates, and start hiring conversations.',
   },
 ]
 
@@ -31,7 +31,7 @@ export function canAccessCandidateDirectory(role?: string | null) {
   return role === 'employer' || role === 'admin'
 }
 
-export function canAccessEmployeeTools(role?: string | null) {
+export function canAccessCandidateTools(role?: string | null) {
   return role === 'user' || role === 'admin'
 }
 

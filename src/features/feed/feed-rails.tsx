@@ -69,8 +69,8 @@ function RightFeedRailContent() {
             jobMatches.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`} className="flex items-center gap-3 border-b border-border py-2.5 first:pt-0 last:border-0 hover:[&_p]:text-primary">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold">{job.tenCongViec}</p>
-                  <p className="mt-0.5 text-[11.5px] text-muted">From {currency(job.giaTien)}</p>
+                  <p className="truncate text-[13px] font-semibold">{job.title}</p>
+                  <p className="mt-0.5 text-[11.5px] text-muted">From {currency(job.price)}</p>
                 </div>
                 <MatchBadge label={job.recommendation.label} score={job.recommendation.finalScore} />
               </Link>

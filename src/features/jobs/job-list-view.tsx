@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronDown, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { jobTypesApi, jobsApi } from '@/shared/api/endpoints'
+import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { JobSearchParams } from '@/shared/schemas'
 import { cn } from '@/shared/lib/utils'
@@ -39,7 +39,7 @@ export function JobListView() {
   const maxPrice = nonNegativeNumber(searchParams.get('maxPrice'))
   const minRating = nonNegativeNumber(searchParams.get('minRating'))
   const sort = jobSort(searchParams.get('sort'))
-  const categoriesQuery = useQuery({ queryKey: queryKeys.jobTypes, queryFn: jobTypesApi.all, staleTime: 5 * 60 * 1000 })
+  const categoriesQuery = useQuery({ queryKey: queryKeys.categories, queryFn: categoriesApi.all, staleTime: 5 * 60 * 1000 })
   const categories = useMemo(() => categoriesQuery.data?.content ?? [], [categoriesQuery.data?.content])
   const subcategories = useMemo(() => categories.flatMap((category) => category.subcategories ?? []), [categories])
   const apiParams: JobSearchParams = { page, pageSize, keyword, categoryId, subcategoryId, minPrice, maxPrice, minRating, sort }
@@ -72,11 +72,11 @@ export function JobListView() {
     const filters: Array<{ key: FilterKey; label: string }> = []
     if (keyword) filters.push({ key: 'keyword', label: `"${keyword}"` })
     if (categoryId) {
-      const name = categories.find((category) => category.id === categoryId)?.tenLoaiCongViec
+      const name = categories.find((category) => category.id === categoryId)?.name
       filters.push({ key: 'category', label: name ?? `Category #${categoryId}` })
     }
     if (subcategoryId) {
-      const name = subcategories.find((subcategory) => subcategory.id === subcategoryId)?.tenChiTiet
+      const name = subcategories.find((subcategory) => subcategory.id === subcategoryId)?.name
       filters.push({ key: 'subcategory', label: name ?? `Specialty #${subcategoryId}` })
     }
     if (minPrice !== undefined) filters.push({ key: 'minPrice', label: `From $${minPrice}` })

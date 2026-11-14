@@ -1,31 +1,27 @@
-import type { ApiResponse, Comment, CreateComment, CreateJob, HiredJob, Job, JobDetailType, JobType, PaginatedContent, UpdateJob } from '@/shared/schemas'
+import type { ApiResponse, Comment, CreateComment, CreateJob, Hire, Job, Subcategory, Category, PaginatedContent, UpdateJob } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickString, pickUser } from '../core'
 
-export function normalizeCategory(raw: unknown): JobType {
+export function normalizeCategory(raw: unknown): Category {
   const record = asRecord(raw);
   return {
-    ...(record as Partial<JobType>),
+    ...(record as Partial<Category>),
     id: pickNumber(record, "id") ?? 0,
-    tenLoaiCongViec: pickString(record, "tenLoaiCongViec", "name") ?? "",
+    name: pickString(record, "name") ?? "",
     subcategories: Array.isArray(record.subcategories)
       ? record.subcategories.map(normalizeSubcategory)
       : undefined,
   };
 }
 
-export function normalizeSubcategory(raw: unknown): JobDetailType {
+export function normalizeSubcategory(raw: unknown): Subcategory {
   const record = asRecord(raw);
   return {
-    ...(record as Partial<JobDetailType>),
+    ...(record as Partial<Subcategory>),
     id: pickNumber(record, "id") ?? 0,
-    tenChiTiet: pickString(record, "tenChiTiet", "name") ?? "",
-    hinhAnh: pickString(record, "hinhAnh", "image") ?? null,
-    maLoaiCongViec: pickNumber(record, "maLoaiCongViec", "categoryId"),
-    loaiCongViec: record.loaiCongViec
-      ? normalizeCategory(record.loaiCongViec)
-      : record.category
-        ? normalizeCategory(record.category)
-        : undefined,
+    name: pickString(record, "name") ?? "",
+    image: pickString(record, "image") ?? null,
+    categoryId: pickNumber(record, "categoryId"),
+    category: record.category ? normalizeCategory(record.category) : undefined,
   };
 }
 
@@ -34,39 +30,23 @@ export function normalizeJob(raw: unknown): Job {
   return {
     ...(record as Partial<Job>),
     id: pickNumber(record, "id") ?? 0,
-    tenCongViec: pickString(record, "tenCongViec", "title") ?? "",
-    giaTien: pickNumber(record, "giaTien", "price") ?? 0,
-    moTaNgan: pickString(record, "moTaNgan", "shortDescription") ?? null,
-    moTa: pickString(record, "moTa", "description") ?? null,
-    maChiTietLoai: pickNumber(record, "maChiTietLoai", "subcategoryId"),
-    nguoiTao: pickNumber(
+    title: pickString(record, "title") ?? "",
+    price: pickNumber(record, "price") ?? 0,
+    shortDescription: pickString(record, "shortDescription") ?? null,
+    description: pickString(record, "description") ?? null,
+    subcategoryId: pickNumber(record, "subcategoryId"),
+    creatorId: pickNumber(
       record,
-      "nguoiTao",
-      "creatorId",
-      "userId",
-      "ownerId",
-      "createdById",
-      "authorId",
-      "sellerId",
-    ),
-    hinhAnh: pickString(record, "hinhAnh", "image") ?? null,
-    danhGia: pickNumber(record, "danhGia", "reviews") ?? 0,
-    saoCongViec: pickNumber(record, "saoCongViec", "rating") ?? 0,
+      "creatorId", "userId", "ownerId", "createdById", "authorId", "sellerId"),
+    image: pickString(record, "image") ?? null,
+    reviews: pickNumber(record, "reviews") ?? 0,
+    rating: pickNumber(record, "rating") ?? 0,
     createdAt: pickString(record, "createdAt"),
     updatedAt: pickString(record, "updatedAt"),
-    chiTietLoaiCongViec: record.chiTietLoaiCongViec
-      ? normalizeSubcategory(record.chiTietLoaiCongViec)
-      : record.subcategory
-        ? normalizeSubcategory(record.subcategory)
-        : undefined,
-    nguoiDung: pickUser(
+    subcategory: record.subcategory ? normalizeSubcategory(record.subcategory) : undefined,
+    user: pickUser(
       record,
-      "nguoiDung",
-      "user",
-      "creator",
-      "owner",
-      "seller",
-    ),
+      "user", "creator", "owner", "seller"),
   };
 }
 
@@ -74,51 +54,34 @@ export function normalizeComment(raw: unknown): Comment {
   const record = asRecord(raw);
   const user = pickUser(
     record,
-    "nguoiDung",
-    "user",
-    "commenter",
-    "author",
-    "createdBy",
-  );
+    "user", "commenter", "author", "createdBy");
   return {
     ...(record as Partial<Comment>),
     id: pickNumber(record, "id") ?? 0,
-    maCongViec: pickNumber(record, "maCongViec", "jobId") ?? 0,
-    maNguoiBinhLuan:
+    jobId: pickNumber(record, "jobId") ?? 0,
+    commenterId:
       pickNumber(
         record,
-        "maNguoiBinhLuan",
-        "userId",
-        "commenterId",
-        "authorId",
-        "createdById",
-      ) ?? user?.id,
-    ngayBinhLuan: pickString(
+        "commenterId", "userId", "authorId", "createdById") ?? user?.id,
+    commentedAt: pickString(
       record,
-      "ngayBinhLuan",
-      "createdAt",
-      "commentedAt",
-    ),
-    noiDung: pickString(record, "noiDung", "content", "comment") ?? "",
-    saoBinhLuan: pickNumber(record, "saoBinhLuan", "rating") ?? 0,
-    nguoiDung: user,
+      "commentedAt", "createdAt"),
+    content: pickString(record, "content", "comment") ?? "",
+    rating: pickNumber(record, "rating") ?? 0,
+    user,
   };
 }
 
-export function normalizeHiredJob(raw: unknown): HiredJob {
+export function normalizeHire(raw: unknown): Hire {
   const record = asRecord(raw);
   return {
-    ...(record as Partial<HiredJob>),
+    ...(record as Partial<Hire>),
     id: pickNumber(record, "id") ?? 0,
-    maCongViec: pickNumber(record, "maCongViec", "jobId") ?? 0,
-    maNguoiThue: pickNumber(record, "maNguoiThue", "userId", "hirerId"),
-    ngayThue: pickString(record, "ngayThue", "createdAt"),
-    hoanThanh: pickBoolean(record, "hoanThanh", "completed"),
-    congViec: record.congViec
-      ? normalizeJob(record.congViec)
-      : record.job
-        ? normalizeJob(record.job)
-        : undefined,
+    jobId: pickNumber(record, "jobId") ?? 0,
+    hirerId: pickNumber(record, "hirerId", "userId"),
+    hiredAt: pickString(record, "hiredAt", "createdAt"),
+    completed: pickBoolean(record, "completed"),
+    job: record.job ? normalizeJob(record.job) : undefined,
   };
 }
 
@@ -162,14 +125,14 @@ export function normalizeJobResponse<
 }
 
 export function normalizeCategoriesResponse(
-  response: ApiResponse<JobType[]>,
-): ApiResponse<JobType[]> {
+  response: ApiResponse<Category[]>,
+): ApiResponse<Category[]> {
   return mapApiResponse(response, (content) => content.map(normalizeCategory));
 }
 
 export function normalizeSubcategoriesResponse(
-  response: ApiResponse<JobDetailType[]>,
-): ApiResponse<JobDetailType[]> {
+  response: ApiResponse<Subcategory[]>,
+): ApiResponse<Subcategory[]> {
   return mapApiResponse(response, (content) =>
     content.map(normalizeSubcategory),
   );
@@ -181,42 +144,42 @@ export function normalizeCommentsResponse(
   return mapApiResponse(response, (content) => content.map(normalizeComment));
 }
 
-export function normalizeHiredJobsResponse(
-  response: ApiResponse<HiredJob[]>,
-): ApiResponse<HiredJob[]> {
-  return mapApiResponse(response, (content) => content.map(normalizeHiredJob));
+export function normalizeHiresResponse(
+  response: ApiResponse<Hire[]>,
+): ApiResponse<Hire[]> {
+  return mapApiResponse(response, (content) => content.map(normalizeHire));
 }
 
 export function toJobPayload(data: CreateJob | UpdateJob) {
   return {
-    title: data.tenCongViec,
-    price: data.giaTien,
-    shortDescription: data.moTaNgan,
-    description: data.moTa,
-    subcategoryId: data.maChiTietLoai,
+    title: data.title,
+    price: data.price,
+    shortDescription: data.shortDescription,
+    description: data.description,
+    subcategoryId: data.subcategoryId,
   };
 }
 
 export function toCategoryPayload(
   data:
-    | Pick<JobType, "tenLoaiCongViec">
-    | Partial<Pick<JobType, "tenLoaiCongViec">>,
+    | Pick<Category, "name">
+    | Partial<Pick<Category, "name">>,
 ) {
-  return { name: data.tenLoaiCongViec };
+  return { name: data.name };
 }
 
-export function toSubcategoryPayload(data: Partial<JobDetailType>) {
+export function toSubcategoryPayload(data: Partial<Subcategory>) {
   return {
-    name: data.tenChiTiet,
-    image: data.hinhAnh,
-    categoryId: data.maLoaiCongViec,
+    name: data.name,
+    image: data.image,
+    categoryId: data.categoryId,
   };
 }
 
 export function toCommentPayload(data: CreateComment) {
   return {
-    jobId: data.maCongViec,
-    content: data.noiDung,
-    rating: data.saoBinhLuan,
+    jobId: data.jobId,
+    content: data.content,
+    rating: data.rating,
   };
 }

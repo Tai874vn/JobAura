@@ -1,38 +1,38 @@
 import { z } from 'zod'
 import { profileSkillSchema, userProfileSchema, userSchema } from './users'
 
-const baseJobTypeSchema = z.object({
+const baseCategorySchema = z.object({
   id: z.number(),
-  tenLoaiCongViec: z.string(),
+  name: z.string(),
 });
 
-export const jobDetailTypeSchema = z.object({
+export const subcategorySchema = z.object({
   id: z.number(),
-  tenChiTiet: z.string(),
-  hinhAnh: z.string().optional().nullable(),
-  maLoaiCongViec: z.number().optional(),
-  loaiCongViec: baseJobTypeSchema.optional(),
+  name: z.string(),
+  image: z.string().optional().nullable(),
+  categoryId: z.number().optional(),
+  category: baseCategorySchema.optional(),
 });
 
-export const jobTypeSchema = baseJobTypeSchema.extend({
-  subcategories: z.array(jobDetailTypeSchema).optional(),
+export const categorySchema = baseCategorySchema.extend({
+  subcategories: z.array(subcategorySchema).optional(),
 });
 
 export const jobSchema = z.object({
   id: z.number(),
-  tenCongViec: z.string(),
-  giaTien: z.number(),
-  moTaNgan: z.string().optional().nullable(),
-  moTa: z.string().optional().nullable(),
-  maChiTietLoai: z.number().optional(),
-  nguoiTao: z.number().optional(),
-  hinhAnh: z.string().optional().nullable(),
-  danhGia: z.number().optional().default(0),
-  saoCongViec: z.number().optional().default(0),
+  title: z.string(),
+  price: z.number(),
+  shortDescription: z.string().optional().nullable(),
+  description: z.string().optional().nullable(),
+  subcategoryId: z.number().optional(),
+  creatorId: z.number().optional(),
+  image: z.string().optional().nullable(),
+  reviews: z.number().optional().default(0),
+  rating: z.number().optional().default(0),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
-  chiTietLoaiCongViec: jobDetailTypeSchema.optional(),
-  nguoiDung: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
+  subcategory: subcategorySchema.optional(),
+  user: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
 });
 
 export const hiringPostStatusSchema = z.enum(["OPEN", "CLOSED"]);
@@ -194,54 +194,54 @@ export const recommendedCandidateSchema = userProfileSchema.extend({
 });
 
 export const createJobSchema = z.object({
-  tenCongViec: z
+  title: z
     .string()
     .trim()
     .min(3, "Service title is required")
     .max(160, "Service title must be 160 characters or fewer"),
-  giaTien: z.coerce.number().min(1, "Price must be greater than zero"),
-  moTaNgan: z
+  price: z.coerce.number().min(1, "Price must be greater than zero"),
+  shortDescription: z
     .string()
     .trim()
     .max(500, "Short description must be 500 characters or fewer")
     .optional(),
-  moTa: z
+  description: z
     .string()
     .trim()
     .max(5000, "Description must be 5000 characters or fewer")
     .optional(),
-  maChiTietLoai: z.coerce.number().min(1, "Choose a category detail"),
-  danhGia: z.coerce.number().default(0),
-  saoCongViec: z.coerce.number().min(0).max(5).default(0),
+  subcategoryId: z.coerce.number().min(1, "Choose a category detail"),
+  reviews: z.coerce.number().default(0),
+  rating: z.coerce.number().min(0).max(5).default(0),
 });
 
 export const updateJobSchema = createJobSchema.partial();
 
 export const commentSchema = z.object({
   id: z.number(),
-  maCongViec: z.number(),
-  maNguoiBinhLuan: z.number().optional(),
-  ngayBinhLuan: z.string().optional(),
-  noiDung: z.string(),
-  saoBinhLuan: z.number(),
-  nguoiDung: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
+  jobId: z.number(),
+  commenterId: z.number().optional(),
+  commentedAt: z.string().optional(),
+  content: z.string(),
+  rating: z.number(),
+  user: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
 });
 
 export const createCommentSchema = z.object({
-  maCongViec: z.number(),
-  noiDung: z
+  jobId: z.number(),
+  content: z
     .string()
     .trim()
     .min(1, "Comment is required")
     .max(2000, "Comment must be 2000 characters or fewer"),
-  saoBinhLuan: z.coerce.number().min(1).max(5),
+  rating: z.coerce.number().min(1).max(5),
 });
 
-export const hiredJobSchema = z.object({
+export const hireSchema = z.object({
   id: z.number(),
-  maCongViec: z.number(),
-  maNguoiThue: z.number().optional(),
-  ngayThue: z.string().optional(),
-  hoanThanh: z.boolean().optional(),
-  congViec: jobSchema.optional(),
+  jobId: z.number(),
+  hirerId: z.number().optional(),
+  hiredAt: z.string().optional(),
+  completed: z.boolean().optional(),
+  job: jobSchema.optional(),
 });

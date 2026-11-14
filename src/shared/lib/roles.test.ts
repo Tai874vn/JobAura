@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   accountRoles,
   canAccessCandidateDirectory,
-  canAccessEmployeeTools,
+  canAccessCandidateTools,
   canAccessRole,
   getSignedInRedirect,
   isAccountRole,
@@ -39,10 +39,10 @@ describe('account roles', () => {
     expect(canAccessRole('user', ['employer', 'admin'])).toBe(false)
   })
 
-  it('keeps employee tools available to normal users and admins', () => {
-    expect(canAccessEmployeeTools('user')).toBe(true)
-    expect(canAccessEmployeeTools('admin')).toBe(true)
-    expect(canAccessEmployeeTools('employer')).toBe(false)
-    expect(canAccessEmployeeTools(undefined)).toBe(false)
+  it('keeps candidate tools available to candidates and admins', () => {
+    expect(canAccessCandidateTools('user')).toBe(true)
+    expect(canAccessCandidateTools('admin')).toBe(true)
+    expect(canAccessCandidateTools('employer')).toBe(false)
+    expect(canAccessCandidateTools(undefined)).toBe(false)
   })
 })

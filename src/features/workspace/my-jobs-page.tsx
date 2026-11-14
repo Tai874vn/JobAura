@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, Clock3, Hash, SearchX, Tag, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { hiredJobsApi } from '@/shared/api/endpoints'
+import { hiresApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { currency, getErrorMessage } from '@/shared/lib/utils'
 import { Badge, Button, ButtonLink, Card, ConfirmationDialog, EmptyState, ListRowSkeleton } from '@/shared/ui'
@@ -12,28 +12,28 @@ import { Badge, Button, ButtonLink, Card, ConfirmationDialog, EmptyState, ListRo
 export function MyJobsPage() {
   const queryClient = useQueryClient()
   const [pendingRemove, setPendingRemove] = useState<number | null>(null)
-  const query = useQuery({ queryKey: queryKeys.hiredJobs, queryFn: hiredJobsApi.mine })
+  const query = useQuery({ queryKey: queryKeys.hires, queryFn: hiresApi.mine })
   const completeMutation = useMutation({
-    mutationFn: hiredJobsApi.complete,
+    mutationFn: hiresApi.complete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hiredJobs })
+      queryClient.invalidateQueries({ queryKey: queryKeys.hires })
       toast.success('Marked as complete')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to complete job')),
   })
   const deleteMutation = useMutation({
-    mutationFn: hiredJobsApi.delete,
+    mutationFn: hiresApi.delete,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.hiredJobs })
+      queryClient.invalidateQueries({ queryKey: queryKeys.hires })
       setPendingRemove(null)
       toast.success('Removed hired job')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to remove hired job')),
   })
   const jobs = query.data?.content ?? []
-  const inProgress = jobs.filter((item) => !item.hoanThanh).length
+  const inProgress = jobs.filter((item) => !item.completed).length
   const completed = jobs.length - inProgress
-  const totalValue = jobs.reduce((sum, item) => sum + (item.congViec?.giaTien ?? 0), 0)
+  const totalValue = jobs.reduce((sum, item) => sum + (item.job?.price ?? 0), 0)
 
   return (
     <div className="container-page pt-10 pb-16">
@@ -61,28 +61,28 @@ export function MyJobsPage() {
         {query.isPending ? Array.from({ length: 3 }).map((_, index) => <ListRowSkeleton key={index} />) : jobs.map((item) => (
           <Card key={item.id} className="flex flex-wrap items-center gap-4 p-3.5 transition hover:border-primary hover:shadow-[0_8px_24px_rgba(27,28,28,0.06)]">
             <div className="min-w-48 flex-1">
-              <Badge tone={item.hoanThanh ? 'primary' : 'neutral'}>
-                {item.hoanThanh ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Clock3 className="mr-1 h-3 w-3" />}
-                {item.hoanThanh ? 'Completed' : 'In progress'}
+              <Badge tone={item.completed ? 'primary' : 'neutral'}>
+                {item.completed ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Clock3 className="mr-1 h-3 w-3" />}
+                {item.completed ? 'Completed' : 'In progress'}
               </Badge>
               <h2 className="mt-1.5 text-[15px] font-bold leading-snug">
-                <a href={`/jobs/${item.maCongViec}`} className="hover:text-primary">{item.congViec?.tenCongViec ?? `Job #${item.maCongViec}`}</a>
+                <a href={`/jobs/${item.jobId}`} className="hover:text-primary">{item.job?.title ?? `Job #${item.jobId}`}</a>
               </h2>
               <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 text-xs font-semibold text-muted">
-                <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" /> {currency(item.congViec?.giaTien)}</span>
-                <span className="inline-flex items-center gap-1"><Hash className="h-3 w-3" /> Job #{item.maCongViec}</span>
+                <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" /> {currency(item.job?.price)}</span>
+                <span className="inline-flex items-center gap-1"><Hash className="h-3 w-3" /> Job #{item.jobId}</span>
               </div>
             </div>
             <div className="flex gap-2">
-              <ButtonLink href={`/jobs/${item.maCongViec}`} variant="secondary" size="sm">View</ButtonLink>
+              <ButtonLink href={`/jobs/${item.jobId}`} variant="secondary" size="sm">View</ButtonLink>
               <Button
                 variant="secondary"
                 size="sm"
                 loading={completeMutation.isPending && completeMutation.variables === item.id}
-                disabled={item.hoanThanh || (completeMutation.isPending && completeMutation.variables === item.id)}
+                disabled={item.completed || (completeMutation.isPending && completeMutation.variables === item.id)}
                 onClick={() => completeMutation.mutate(item.id)}
               >
-                <CheckCircle2 className="h-4 w-4" /> {item.hoanThanh ? 'Completed' : 'Complete'}
+                <CheckCircle2 className="h-4 w-4" /> {item.completed ? 'Completed' : 'Complete'}
               </Button>
               <Button variant="danger" size="sm" onClick={() => setPendingRemove(item.id)}>
                 <Trash2 className="h-4 w-4" /> Remove

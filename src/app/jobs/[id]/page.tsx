@@ -32,9 +32,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const title = job.tenCongViec
-  const description = seoDescription(job.moTaNgan || job.moTa, `Hire ${title} on JobAura.`)
-  const image = absoluteAssetUrl(job.hinhAnh)
+  const title = job.title
+  const description = seoDescription(job.shortDescription || job.description, `Hire ${title} on JobAura.`)
+  const image = absoluteAssetUrl(job.image)
   const canonical = `/jobs/${job.id}`
 
   return {
@@ -63,17 +63,17 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 function serviceJsonLd(job: Job & { binhLuans?: Comment[] }) {
   const sellerName = getSellerName(job)
   const sellerHref = getSellerHref(job)
-  const reviewCount = Math.max(job.danhGia ?? 0, job.binhLuans?.length ?? 0)
-  const ratingValue = job.saoCongViec ?? 0
+  const reviewCount = Math.max(job.reviews ?? 0, job.binhLuans?.length ?? 0)
+  const ratingValue = job.rating ?? 0
 
   return {
     '@context': 'https://schema.org',
     '@type': 'Service',
     '@id': absoluteSiteUrl(`/jobs/${job.id}#service`),
-    name: job.tenCongViec,
-    description: seoDescription(job.moTa || job.moTaNgan, `Hire ${job.tenCongViec} on JobAura.`, 500),
-    image: absoluteAssetUrl(job.hinhAnh),
-    category: job.chiTietLoaiCongViec?.tenChiTiet,
+    name: job.title,
+    description: seoDescription(job.description || job.shortDescription, `Hire ${job.title} on JobAura.`, 500),
+    image: absoluteAssetUrl(job.image),
+    category: job.subcategory?.name,
     provider: {
       '@type': 'Person',
       name: sellerName,
@@ -83,7 +83,7 @@ function serviceJsonLd(job: Job & { binhLuans?: Comment[] }) {
       '@type': 'Offer',
       url: absoluteSiteUrl(`/jobs/${job.id}`),
       priceCurrency: 'USD',
-      price: job.giaTien,
+      price: job.price,
       availability: 'https://schema.org/InStock',
     },
     aggregateRating:

@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, Plus, Search, Trash2 } from 'lucide-react'
 import { type FormEvent, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { jobTypesApi } from '@/shared/api/endpoints'
+import { categoriesApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, EmptyState, Input, PageHeader, Select, Skeleton } from '@/shared/ui'
@@ -199,8 +199,8 @@ function CreateResourceDialog({
   const [parentTypeId, setParentTypeId] = useState<number | undefined>()
   const queryClient = useQueryClient()
   const parentTypesQuery = useQuery({
-    queryKey: queryKeys.jobTypes,
-    queryFn: jobTypesApi.all,
+    queryKey: queryKeys.categories,
+    queryFn: categoriesApi.all,
     enabled: open && Boolean(config.create?.needsParentType),
   })
   const parentTypes = parentTypesQuery.data?.content ?? []
@@ -213,7 +213,7 @@ function CreateResourceDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', resource] })
-      queryClient.invalidateQueries({ queryKey: resource === 'job-types' ? queryKeys.jobTypes : queryKeys.jobDetailTypes })
+      queryClient.invalidateQueries({ queryKey: resource === 'categories' ? queryKeys.categories : queryKeys.subcategories })
       toast.success(`${config.title} created`)
       resetForm()
       onClose()
@@ -238,7 +238,7 @@ function CreateResourceDialog({
       return
     }
     if (config.create?.needsParentType && !resolvedParentTypeId) {
-      toast.error('Parent job type is required')
+      toast.error('Parent category is required')
       return
     }
     createMutation.mutate()
@@ -259,7 +259,7 @@ function CreateResourceDialog({
         </label>
         {config.create.needsParentType ? (
           <label className="mt-4 block">
-            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Parent job type</span>
+            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Parent category</span>
             <Select
               value={resolvedParentTypeId ?? ''}
               onChange={(event) => setParentTypeId(Number(event.target.value))}
@@ -270,7 +270,7 @@ function CreateResourceDialog({
               </option>
               {parentTypes.map((type) => (
                 <option key={type.id} value={type.id}>
-                  {type.tenLoaiCongViec}
+                  {type.name}
                 </option>
               ))}
             </Select>

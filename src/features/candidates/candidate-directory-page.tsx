@@ -273,7 +273,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
           <EmptyState
             icon={<Users />}
             title="No discoverable candidates yet"
-            description="Workers choose to be discoverable in their Settings. Share JobAura with talent you trust, or try AI matching on your hiring posts."
+            description="Candidates choose to be discoverable in their Settings. Share JobAura with talent you trust, or try AI matching on your hiring posts."
             action={<ButtonLink href="/recommendations/candidates">Open AI matching</ButtonLink>}
           />
         )}

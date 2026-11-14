@@ -6,8 +6,8 @@ import {
 } from './users'
 import {
   applyHiringPostSchema, candidateProfileSchema, commentSchema, createCommentSchema, createHiringPostSchema,
-  createJobSchema, hiredJobSchema, hiringApplicationSchema, hiringPostSchema, jobDetailTypeSchema, jobSchema,
-  jobTypeSchema, recommendationLabelSchema, recommendationScoreSchema, recommendedCandidateSchema,
+  createJobSchema, hireSchema, hiringApplicationSchema, hiringPostSchema, subcategorySchema, jobSchema,
+  categorySchema, recommendationLabelSchema, recommendationScoreSchema, recommendedCandidateSchema,
   recommendedJobSchema, updateJobSchema,
 } from './marketplace'
 import {
@@ -81,11 +81,11 @@ export type JobSearchParams = PaginationParams & {
 };
 export type CreateJob = z.infer<typeof createJobSchema>;
 export type UpdateJob = z.infer<typeof updateJobSchema>;
-export type JobType = z.infer<typeof jobTypeSchema>;
-export type JobDetailType = z.infer<typeof jobDetailTypeSchema>;
+export type Category = z.infer<typeof categorySchema>;
+export type Subcategory = z.infer<typeof subcategorySchema>;
 export type Comment = z.infer<typeof commentSchema>;
 export type CreateComment = z.infer<typeof createCommentSchema>;
-export type HiredJob = z.infer<typeof hiredJobSchema>;
+export type Hire = z.infer<typeof hireSchema>;
 export type FeedAuthor = z.infer<typeof feedAuthorSchema>;
 export type PostComment = z.infer<typeof postCommentSchema>;
 export type FeedPost = z.infer<typeof feedPostSchema>;

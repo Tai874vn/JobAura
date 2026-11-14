@@ -1,5 +1,5 @@
 import { AdminResourcePage } from '@/features/admin/admin-resource-page'
 
 export default function AdminHiredJobsPage() {
-  return <AdminResourcePage resource="hired-jobs" />
+  return <AdminResourcePage resource="hires" />
 }

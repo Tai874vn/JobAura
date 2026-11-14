@@ -73,7 +73,7 @@ export function HiringPostCard({
               className={cn(post.viewerHasApplied && "bg-primary/80")}
             >
               {post.viewerHasApplied ? <CheckCircle2 className="h-4 w-4" /> : <Send className="h-4 w-4" />}
-              {post.viewerHasApplied ? "Applied" : canApply ? "Apply" : "Employee only"}
+              {post.viewerHasApplied ? "Applied" : canApply ? "Apply" : "Candidates only"}
             </Button>
             {post.recruiter ? (
               <ButtonLink href={`/profile/${post.recruiter.id}`} className="w-full" variant="secondary">

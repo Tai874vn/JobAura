@@ -19,7 +19,7 @@ import { useSession } from "@/features/auth/use-session";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import {
   canAccessCandidateDirectory,
-  canAccessEmployeeTools,
+  canAccessCandidateTools,
 } from "@/shared/lib/roles";
 import { Avatar, Button } from "@/shared/ui";
 
@@ -31,7 +31,7 @@ export function SiteHeader() {
   const { user, isLoading: isSessionLoading } = useSession();
   const isRecruiter = user?.role === "employer";
   const canUseRecruiterTools = canAccessCandidateDirectory(user?.role);
-  const canUseEmployeeTools = canAccessEmployeeTools(user?.role);
+  const canUseCandidateTools = canAccessCandidateTools(user?.role);
   const homeHref = user
     ? user.role === "admin"
       ? "/admin"
@@ -85,7 +85,7 @@ export function SiteHeader() {
           />
         </form>
         <nav className="hidden items-center gap-2 md:flex">
-          {user && canUseEmployeeTools ? (
+          {user && canUseCandidateTools ? (
             <Link
               className="flex items-center gap-1.5 px-2 text-sm font-semibold text-muted hover:text-foreground"
               href="/"
@@ -93,7 +93,7 @@ export function SiteHeader() {
               <Home className="h-4 w-4" /> Home
             </Link>
           ) : null}
-          {canUseEmployeeTools ? (
+          {canUseCandidateTools ? (
             <>
               <Link
                 className="px-2 text-sm font-semibold text-muted hover:text-foreground"
@@ -175,7 +175,7 @@ export function SiteHeader() {
                   label="Profile"
                   onClick={() => setAccountMenuOpen(false)}
                 />
-                {canUseEmployeeTools ? (
+                {canUseCandidateTools ? (
                   <>
                     <MenuLink
                       href="/my-posts"
@@ -289,9 +289,9 @@ export function SiteHeader() {
           className="motion-popover border-t border-border bg-surface p-4 md:hidden"
         >
           <div className="grid gap-2 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
-            {user && canUseEmployeeTools ? <Link href="/">Home feed</Link> : null}
-            {canUseEmployeeTools ? <Link href="/jobs">Explore</Link> : null}
-            {canUseEmployeeTools ? (
+            {user && canUseCandidateTools ? <Link href="/">Home feed</Link> : null}
+            {canUseCandidateTools ? <Link href="/jobs">Explore</Link> : null}
+            {canUseCandidateTools ? (
               <Link href="/jobs/new" className="flex items-center gap-2">
                 <Plus className="h-4 w-4" /> Post Service
               </Link>

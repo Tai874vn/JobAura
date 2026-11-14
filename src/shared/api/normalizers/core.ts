@@ -49,10 +49,10 @@ export function pickRole(record: ApiRecord) {
 export function pickUser(
   record: ApiRecord,
   ...keys: string[]
-): Job["nguoiDung"] | undefined {
+): Job["user"] | undefined {
   for (const key of keys) {
     const value = record[key];
-    if (value && typeof value === "object") return value as Job["nguoiDung"];
+    if (value && typeof value === "object") return value as Job["user"];
   }
   return undefined;
 }
