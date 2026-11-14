@@ -104,13 +104,10 @@ function HiringPostSeniorityBadge({ post }: { post: HiringPost }) {
     );
   }
 
-  const confidence = post.predictedSeniorityConfidence != null
-    ? ` ${Math.round(post.predictedSeniorityConfidence * 100)}%`
-    : "";
-
+  // No percentage: the model applies fixed rules, so its "confidence" is near 100% and reads as certainty.
   return (
     <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
-      AI level {post.predictedSeniority}{confidence}
+      AI level {post.predictedSeniority}
     </span>
   );
 }

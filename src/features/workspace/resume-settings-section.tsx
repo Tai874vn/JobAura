@@ -4,6 +4,7 @@ import { CheckCircle2, FileJson, FileText, Sparkles } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea } from '@/shared/ui'
 import { formatFileSize } from '@/features/users/profile-form-utils'
+import { cn } from '@/shared/lib/utils'
 import {
   hasResumeDraftInput,
   resumeFileAccept,
@@ -13,6 +14,7 @@ import {
 } from '@/features/users/resume'
 import { ResumeCareerFields } from '@/features/users/resume-career-fields'
 import { SkillPicker } from '@/features/users/skill-picker'
+import { canRetryResumeAi, isResumeAiPending, resumeAiStatus, unrecognisedSkills } from '@/features/users/resume-ai'
 import type { FoundSkill } from '@/shared/api/endpoints/users'
 import { resumeCareerProblems } from '@/features/users/resume-career'
 
@@ -170,9 +172,10 @@ function ResumePreview({
 }) {
   const skills = resumeSkills(data.Skills)
   const prediction = seniorityDetails(resume)
-  const confidence = resume?.predictedSeniorityConfidence != null
-    ? Math.round(resume.predictedSeniorityConfidence * 100)
-    : null
+  const aiStatus = resumeAiStatus(resume)
+  const pending = isResumeAiPending(resume)
+  const retry = canRetryResumeAi(resume)
+  const unknownSkills = unrecognisedSkills(resume)
 
   return (
     <Card>
@@ -193,7 +196,8 @@ function ResumePreview({
               {prediction.tier ? <p className="text-sm font-semibold text-primary">{prediction.tier}</p> : null}
               <p className="mt-1 text-xs leading-5 text-muted">
                 {resume?.predictedSeniorityAt
-                  ? `Evaluated ${formatDate(resume.predictedSeniorityAt)}${confidence != null ? ` with ${confidence}% confidence` : ''}.`
+                  // No percentage: the model applies fixed rules, so it is near 100% and would read as certainty.
+                  ? `Evaluated ${formatDate(resume.predictedSeniorityAt)}. A preview from years in your field and the skills and work you describe, not a test result.`
                   : 'Save your resume, then run AI evaluation when you need it.'}
               </p>
               {prediction.reasons.length ? (
@@ -201,10 +205,27 @@ function ResumePreview({
                   {prediction.reasons.map((reason) => <li key={reason}>{reason}</li>)}
                 </ul>
               ) : null}
+              <div aria-live="polite">
+                {pending ? (
+                  <p className="mt-2 text-xs font-semibold text-primary">AI evaluation in progress…</p>
+                ) : null}
+                {(retry || aiStatus === 'NEEDS_INPUT') && resume?.aiStatusMessage ? (
+                  <p role={retry ? 'alert' : undefined}
+                    className={cn('mt-2 rounded border px-2 py-1 text-xs leading-5',
+                      retry ? 'border-danger/30 bg-danger/5 text-danger' : 'border-border text-muted')}>
+                    {resume.aiStatusMessage}
+                  </p>
+                ) : null}
+                {unknownSkills.length ? (
+                  <p className="mt-2 text-xs leading-5 text-muted">
+                    Not in the skill list: {unknownSkills.join(', ')}. Choose them from the list to count them.
+                  </p>
+                ) : null}
+              </div>
             </div>
-            <Button type="button" size="sm" variant="secondary" loading={isPredicting} disabled={!resume} onClick={onPredictSeniority}>
+            <Button type="button" size="sm" variant="secondary" loading={isPredicting} disabled={!resume || pending} onClick={onPredictSeniority}>
               <Sparkles className="h-4 w-4" />
-              {resume?.predictedSeniority ? 'Run again' : 'Predict'}
+              {retry ? 'Try again' : pending ? 'Queued' : resume?.predictedSeniority ? 'Run again' : 'Predict'}
             </Button>
           </div>
         </div>

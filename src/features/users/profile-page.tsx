@@ -38,6 +38,7 @@ import {
   type ResumeDraft,
 } from '@/features/users/resume'
 import { resumeCareerProblems } from '@/features/users/resume-career'
+import { suggestedSkills } from '@/features/users/resume-ai'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { calculateProfileCompletion } from './profile-posts'
 import { cleanObject, toDateInput } from './profile-form-utils'
@@ -452,6 +453,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
 
       {isOwner ? (
         <ProfileEditDrawer
+          foundSkills={suggestedSkills(resume)}
           activePanel={activePanel}
           profile={editableProfile}
           skills={editableSkills}

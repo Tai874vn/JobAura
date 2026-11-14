@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { skillsApi, usersApi, type FoundSkill } from '@/shared/api/endpoints/users'
+import { usersApi } from '@/shared/api/endpoints/users'
+import { suggestedSkills } from '@/features/users/resume-ai'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
@@ -23,7 +24,6 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
   const [draft, setDraft] = useState<Partial<ResumeDraft>>({})
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [extracting, setExtracting] = useState(false)
-  const [foundSkills, setFoundSkills] = useState<FoundSkill[]>([])
   const currentDraft = { ...resumeDraftFromData(resume?.data), ...draft }
   const save = useMutation({
     mutationFn: async ({ data, file }: { data: ResumeDraft; file: File | null }) => {
@@ -42,8 +42,8 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
     onSuccess: (response, variables) => {
       if (response.content) client.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content })
       void client.invalidateQueries({ queryKey: queryKeys.myResume })
-      setDraft({}); setAttachedFile(null); setFoundSkills([])
-      toast.success(variables.file ? 'Resume file and details saved' : 'Resume saved')
+      setDraft({}); setAttachedFile(null)
+      toast.success(`${variables.file ? 'Resume file and details saved' : 'Resume saved'}. AI evaluation is queued.`)
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to save resume')),
   })
@@ -52,7 +52,7 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
     onSuccess: (response) => {
       if (response.content) client.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content })
       void client.invalidateQueries({ queryKey: queryKeys.myResume })
-      toast.success('Resume seniority predicted')
+      toast.success('AI evaluation queued')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to predict resume seniority')),
   })
@@ -69,14 +69,8 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
     try {
       const parsed = await extractResumeFile(file)
       setDraft(resumeDraftFromData(parsed.data))
-      setFoundSkills([])
-      toast.success('Resume extracted. Review the fields before saving.')
-      try {
-        const found = await skillsApi.extract(parsed.data.Text ?? '')
-        setFoundSkills(found.content ?? [])
-      } catch {
-        toast.info('Skills could not be scanned from the CV. Search and add them yourself.')
-      }
+      // Skills found in the CV are suggested by the backend's AI queue after saving, not here.
+      toast.success('Resume extracted. Review the fields, then save.')
     } catch (error) {
       toast.error(getErrorMessage(error, 'File attached, but extraction failed. Fill the fields manually.'))
     } finally {
@@ -104,7 +98,7 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
         <ResumeSettingsSection resume={resume} draft={currentDraft} attachedFile={attachedFile} isLoading={false}
           isImporting={save.isPending} isPredicting={predict.isPending} onFieldChange={updateField}
           onClearAttachedFile={() => setAttachedFile(null)} onImport={() => save.mutate({ data: currentDraft, file: attachedFile })}
-          onPredictSeniority={() => predict.mutate()} onResumeFile={loadFile} foundSkills={foundSkills} />
+          onPredictSeniority={() => predict.mutate()} onResumeFile={loadFile} foundSkills={suggestedSkills(resume)} />
       </fieldset>
     </div>
   )

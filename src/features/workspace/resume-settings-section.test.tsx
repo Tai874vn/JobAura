@@ -52,3 +52,32 @@ describe('seniority details', () => {
     })).toEqual({ tier: 'New Senior', reasons: ['6 years in QA', 'leads people'] })
   })
 })
+
+describe('AI queue status in the preview', () => {
+  const render = (resume: Record<string, unknown>) => renderWithQuery(<ResumeSettingsSection
+    resume={{ data: {}, ...resume }} draft={resumeDraftFromData({ Name: 'Ava' })} attachedFile={null}
+    isLoading={false} isImporting={false} isPredicting={false} onFieldChange={() => undefined}
+    onClearAttachedFile={() => undefined} onImport={() => undefined} onPredictSeniority={() => undefined}
+    onResumeFile={() => undefined} />)
+
+  it('offers Try again when the AI service is unavailable', () => {
+    const html = render({ aiStatus: 'AI_UNAVAILABLE', aiStatusMessage: 'The AI service is unavailable right now.' })
+    expect(html).toContain('The AI service is unavailable right now.')
+    expect(html).toContain('Try again')
+  })
+
+  it('shows progress and disables the button while queued', () => {
+    const html = render({ aiStatus: 'QUEUED' })
+    expect(html).toContain('AI evaluation in progress')
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>(?:(?!<\/button>)[\s\S])*Queued/)
+  })
+
+  it('shows the level without a confidence percentage', () => {
+    const html = render({ aiStatus: 'DONE', predictedSeniority: 'Mid', predictedSeniorityConfidence: 1,
+      predictedSeniorityAt: '2026-11-15T00:00:00Z',
+      predictedSeniorityMetadata: { features: { tier: 'New Mid', reasons: ['2 years in Software development'] } } })
+    expect(html).toContain('New Mid')
+    expect(html).toContain('not a test result')
+    expect(html).not.toContain('100%')
+  })
+})

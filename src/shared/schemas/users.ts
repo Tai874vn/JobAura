@@ -119,6 +119,12 @@ export const userResumeSchema = importResumeSchema.extend({
   predictedSeniorityModel: z.string().optional().nullable(),
   predictedSeniorityMetadata: z.record(z.string(), z.unknown()).optional().nullable(),
   predictedSeniorityAt: z.string().optional().nullable(),
+  /** Backend AI queue: QUEUED, PROCESSING, DONE, AI_UNAVAILABLE, NEEDS_INPUT, FAILED. */
+  aiStatus: z.string().optional().nullable(),
+  aiStatusMessage: z.string().optional().nullable(),
+  aiQueuedAt: z.string().optional().nullable(),
+  aiAttempts: z.number().optional().nullable(),
+  aiInsights: z.record(z.string(), z.unknown()).optional().nullable(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });
