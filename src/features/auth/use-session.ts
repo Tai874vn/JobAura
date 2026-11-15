@@ -1,21 +1,31 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useSyncExternalStore } from 'react'
+import { hasCsrfTokenCookie } from '@/shared/api/csrf'
 import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 
+const subscribeNever = () => () => {}
+
 export function useSession() {
+  // Sign-in sets the readable csrf_token cookie and sign-out clears it, so without it nobody is signed in here:
+  // don't ask the server (a visitor would only get a 401). Cookies can't be read during the server render or the
+  // hydration pass, so the session counts as loading until hydration ends, and only then is the server asked.
+  const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false)
+  const hasSessionCookie = hydrated && hasCsrfTokenCookie()
   const query = useQuery({
     queryKey: queryKeys.me,
     queryFn: authApi.me,
     retry: false,
     staleTime: 60_000,
+    enabled: hasSessionCookie,
   })
-  const user = query.data?.content ?? null
+  const user = hasSessionCookie ? query.data?.content ?? null : null
 
   return {
     user,
-    isLoading: query.isPending,
+    isLoading: !hydrated || (hasSessionCookie && query.isPending),
     isAuthenticated: Boolean(user),
   }
 }
