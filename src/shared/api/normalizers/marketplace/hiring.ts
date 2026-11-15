@@ -25,6 +25,8 @@ export function normalizeHiringPost(raw: unknown): HiringPost {
       ? record.skills.filter((skill): skill is string => typeof skill === "string")
       : [],
     closesAt: pickString(record, "closesAt") ?? null,
+    aiStatus: pickString(record, "aiStatus") ?? null,
+    aiStatusMessage: pickString(record, "aiStatusMessage") ?? null,
     predictedSeniority: pickString(record, "predictedSeniority") ?? null,
     predictedSeniorityConfidence:
       pickNumber(record, "predictedSeniorityConfidence") ?? null,

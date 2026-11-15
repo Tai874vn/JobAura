@@ -59,6 +59,9 @@ export const hiringPostSchema = z.object({
   yearsRequired: z.number().optional().nullable(),
   skills: z.array(z.string()).optional().default([]),
   closesAt: z.string().optional().nullable(),
+  /** Backend AI level queue: QUEUED, PROCESSING, DONE, AI_UNAVAILABLE, NEEDS_INPUT, FAILED. */
+  aiStatus: z.string().optional().nullable(),
+  aiStatusMessage: z.string().optional().nullable(),
   predictedSeniority: z.string().optional().nullable(),
   predictedSeniorityConfidence: z.number().optional().nullable(),
   predictedSeniorityModel: z.string().optional().nullable(),

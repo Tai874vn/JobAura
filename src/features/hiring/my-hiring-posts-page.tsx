@@ -11,6 +11,7 @@ import { queryKeys } from "@/shared/api/query-keys";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
 import { Badge, Button, ButtonLink, Card, CardContent, EmptyState, PageHeader } from "@/shared/ui";
+import { hiringPostAiState, isHiringPostAiPending } from "./hiring-post-ai";
 import { formatDate, formatYearsRequired } from "./hiring-post-card";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
 
@@ -26,6 +27,9 @@ export function MyHiringPostsPage() {
   const query = useQuery({
     queryKey: queryKeys.myHiringPosts(params),
     queryFn: () => hiringPostsApi.mine(params),
+    // While the backend's AI queue works on a post, check back until it finishes.
+    refetchInterval: (current) =>
+      current.state.data?.content?.data.some(isHiringPostAiPending) ? 3000 : false,
   });
   const posts = query.data?.content?.data ?? [];
   // ?edit=ID opens a post's form, so other pages can link straight to editing it.
@@ -45,10 +49,10 @@ export function MyHiringPostsPage() {
   const predict = useMutation({
     mutationFn: hiringPostsApi.predictSeniority,
     onSuccess: () => {
-      toast.success("AI level updated");
+      toast.success("Working out the AI level");
       void refresh();
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Could not work out the level for this post")),
+    onError: (error) => toast.error(getErrorMessage(error, "Could not queue this post for its AI level")),
   });
 
   const open = posts.filter((post) => post.status === "OPEN");
@@ -96,16 +100,16 @@ export function MyHiringPostsPage() {
                     <span>{post.location || "Location flexible"}</span>
                     {post.closesAt ? <span>Closes {formatDate(post.closesAt)}</span> : null}
                   </p>
-                  {post.careerField == null || post.yearsRequired == null ? (
-                    <p className="mt-2 text-sm text-muted">Add the field and required years so candidates can filter for this role and the AI can read its level.</p>
-                  ) : null}
+                  <AiLevelStatus post={post} />
                 </div>
                 <div className="flex flex-wrap gap-2 lg:w-72 lg:justify-end">
                   <ButtonLink href={`/recommendations/candidates?hiringPostId=${post.id}`} size="sm"><Sparkles className="h-4 w-4" />Match candidates</ButtonLink>
                   <Button type="button" size="sm" variant="secondary" onClick={() => router.replace(`${pathname}?edit=${post.id}`, { scroll: false })}><Pencil className="h-4 w-4" />Edit</Button>
-                  <Button type="button" size="sm" variant="secondary" loading={predict.isPending && predict.variables === post.id} disabled={predict.isPending} onClick={() => predict.mutate(post.id)}>
-                    {post.predictedSeniority ? "Update AI level" : "Get AI level"}
-                  </Button>
+                  {hiringPostAiState(post).action ? (
+                    <Button type="button" size="sm" variant="secondary" loading={predict.isPending && predict.variables === post.id} disabled={predict.isPending} onClick={() => predict.mutate(post.id)}>
+                      {hiringPostAiState(post).action}
+                    </Button>
+                  ) : null}
                   <Button type="button" size="sm" variant="ghost" loading={setStatus.isPending && setStatus.variables?.id === post.id}
                     onClick={() => setStatus.mutate({ id: post.id, status: post.status === "OPEN" ? "CLOSED" : "OPEN" })}>
                     {post.status === "OPEN" ? <><Lock className="h-4 w-4" />Close</> : <><LockOpen className="h-4 w-4" />Reopen</>}
@@ -137,6 +141,17 @@ function Stat({ label, value }: { label: string; value: number }) {
       </CardContent>
     </Card>
   );
+}
+
+function AiLevelStatus({ post }: { post: HiringPost }) {
+  const state = hiringPostAiState(post);
+  if (state.label) {
+    return <p role="status" className="mt-2 text-sm text-muted">{state.label}</p>;
+  }
+  if (state.message) {
+    return <p className="mt-2 text-sm text-muted">{state.message}</p>;
+  }
+  return null;
 }
 
 function LevelBadge({ post }: { post: HiringPost }) {
