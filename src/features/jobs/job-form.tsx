@@ -10,12 +10,13 @@ import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 import { useSession } from '@/features/auth/use-session'
-import { jobsApi, subcategoriesApi } from '@/shared/api/endpoints'
+import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
-import { currency, getErrorMessage } from '@/shared/lib/utils'
+import { getErrorMessage } from '@/shared/lib/utils'
 import { createJobSchema, type CreateJob } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, Card, Input, PageHeader, Select, Textarea } from '@/shared/ui'
+import { servicePriceLabel } from './service-price'
 
 type CreateJobInput = z.input<typeof createJobSchema>
 
@@ -23,6 +24,7 @@ const titleLimit = 160
 const shortLimit = 500
 const descriptionLimit = 5000
 
+/** A candidate's portfolio post: a project or the kind of work they do, so recruiters can find them. */
 export function JobForm() {
   const router = useRouter()
   const { user } = useSession()
@@ -31,13 +33,16 @@ export function JobForm() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const form = useForm<CreateJobInput>({
     resolver: zodResolver(createJobSchema),
-    defaultValues: { title: '', price: 25, shortDescription: '', description: '', subcategoryId: 0, reviews: 0, rating: 0 },
+    defaultValues: { title: '', price: 0, shortDescription: '', description: '', subcategoryId: 0, reviews: 0, rating: 0 },
   })
   const title = form.watch('title')
   const price = form.watch('price')
-  const detailsQuery = useQuery({ queryKey: queryKeys.subcategories, queryFn: subcategoriesApi.all })
-  const details = detailsQuery.data?.content ?? []
-  const detailsUnavailable = detailsQuery.isError && !details.length
+  // Pick the field first (37 of them), then the kind of work inside it, instead of one list of 400+ entries.
+  const categoriesQuery = useQuery({ queryKey: queryKeys.categories, queryFn: categoriesApi.all })
+  const categories = categoriesQuery.data?.content ?? []
+  const categoriesUnavailable = categoriesQuery.isError && !categories.length
+  const [categoryId, setCategoryId] = useState(0)
+  const subcategories = categories.find((category) => category.id === categoryId)?.subcategories ?? []
 
   useEffect(() => {
     return () => {
@@ -48,7 +53,7 @@ export function JobForm() {
   const mutation = useMutation({
     mutationFn: async (values: CreateJob) => {
       if (file) {
-        const validation = validateImageFile(file, { label: 'Service image' })
+        const validation = validateImageFile(file, { label: 'Cover image' })
         if (!validation.valid) throw new Error(validation.message)
       }
 
@@ -57,16 +62,16 @@ export function JobForm() {
       return created
     },
     onSuccess: (res) => {
-      toast.success('Service created')
+      toast.success('Portfolio post published')
       router.push(res.content?.id ? `/jobs/${res.content.id}` : '/my-posts')
     },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to create service')),
+    onError: (error) => toast.error(getErrorMessage(error, 'Could not publish your post')),
   })
 
   function selectImage(nextFile?: File) {
     if (!nextFile) return
 
-    const validation = validateImageFile(nextFile, { label: 'Service image' })
+    const validation = validateImageFile(nextFile, { label: 'Cover image' })
     if (!validation.valid) {
       toast.error(validation.message)
       return
@@ -88,13 +93,14 @@ export function JobForm() {
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  const previewTitle = (typeof title === 'string' ? title.trim() : '') || 'I will build a modern Next.js landing page'
-  const previewPrice = typeof price === 'number' && Number.isFinite(price) ? currency(price) : currency(0)
+  const previewTitle = (typeof title === 'string' ? title.trim() : '') || 'Checkout redesign for an online store'
+  const previewPrice = servicePriceLabel(Number(price))
 
   return (
     <div className="container-page pt-10 pb-16">
       <PageHeader
-        title="Post a service"
+        title="Post your portfolio"
+        description="Show a project or the kind of work you do. Recruiters find you through these posts and your profile."
       />
 
       <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -108,28 +114,40 @@ export function JobForm() {
                 <Info className="h-3.5 w-3.5 text-primary" /> Basics
               </h2>
               <div className="grid gap-4">
-                <Field label="Title" counter={`${(title ?? '').length}/${titleLimit}`} error={form.formState.errors.title?.message}>
-                  <Input {...form.register('title')} maxLength={titleLimit} placeholder="I will build a modern Next.js landing page" />
-                  <p className="mt-1.5 text-xs text-muted">
-                    Start with &ldquo;I will…&rdquo; — buyers search for verbs like <em>build, design, edit</em>.
-                  </p>
+                <Field id="post-title" label="Title" counter={`${(title ?? '').length}/${titleLimit}`} error={form.formState.errors.title?.message}>
+                  <Input id="post-title" {...form.register('title')} maxLength={titleLimit} placeholder="Checkout redesign for an online store" />
+                  <p className="mt-1.5 text-xs font-normal text-muted">Name the project or the work you do, the way a recruiter would search for it.</p>
                 </Field>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field
-                    label="Category detail"
-                    error={form.formState.errors.subcategoryId?.message}
-                    hint={detailsUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">Categories could not be loaded.<Button type="button" size="sm" variant="secondary" onClick={() => detailsQuery.refetch()}>Retry</Button></span> : undefined}
+                    id="post-field"
+                    label="Field"
+                    hint={categoriesUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">Fields could not be loaded.<Button type="button" size="sm" variant="secondary" onClick={() => categoriesQuery.refetch()}>Retry</Button></span> : undefined}
                   >
-                    <Select disabled={detailsQuery.isPending || detailsUnavailable} {...form.register('subcategoryId')}>
-                      <option value={0}>{detailsQuery.isPending ? 'Loading details...' : detailsUnavailable ? 'Categories unavailable' : 'Choose detail'}</option>
-                      {details.map((detail) => <option key={detail.id} value={detail.id}>{detail.name}</option>)}
+                    <Select
+                      id="post-field"
+                      value={categoryId}
+                      disabled={categoriesQuery.isPending || categoriesUnavailable}
+                      onChange={(event) => {
+                        setCategoryId(Number(event.target.value))
+                        form.setValue('subcategoryId', 0)
+                      }}
+                    >
+                      <option value={0}>{categoriesQuery.isPending ? 'Loading fields…' : categoriesUnavailable ? 'Fields unavailable' : 'Choose a field'}</option>
+                      {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                     </Select>
                   </Field>
-                  <Field label="Price" error={form.formState.errors.price?.message}>
-                    <Input type="number" min={0} {...form.register('price')} />
-                    <p className="mt-1.5 text-xs text-muted">Starting price shown on your card.</p>
+                  <Field id="post-kind" label="Kind of work" error={form.formState.errors.subcategoryId?.message}>
+                    <Select id="post-kind" disabled={!subcategories.length} {...form.register('subcategoryId')}>
+                      <option value={0}>{categoryId ? 'Choose the kind of work' : 'Choose a field first'}</option>
+                      {subcategories.map((detail) => <option key={detail.id} value={detail.id}>{detail.name}</option>)}
+                    </Select>
                   </Field>
                 </div>
+                <Field id="post-rate" label="Rate in USD (optional)" error={form.formState.errors.price?.message}>
+                  <Input id="post-rate" type="number" min={0} inputMode="numeric" {...form.register('price')} />
+                  <p className="mt-1.5 text-xs font-normal text-muted">Leave 0 to show your work without a price; recruiters contact you directly.</p>
+                </Field>
               </div>
             </section>
 
@@ -138,12 +156,12 @@ export function JobForm() {
                 <AlignLeft className="h-3.5 w-3.5 text-primary" /> Descriptions
               </h2>
               <div className="grid gap-4">
-                <Field label="Short description" counter={`${(form.watch('shortDescription') ?? '').length}/${shortLimit}`} error={form.formState.errors.shortDescription?.message}>
-                  <Input {...form.register('shortDescription')} maxLength={shortLimit} placeholder="A crisp summary for cards and search results" />
+                <Field id="post-summary" label="Summary" counter={`${(form.watch('shortDescription') ?? '').length}/${shortLimit}`} error={form.formState.errors.shortDescription?.message}>
+                  <Input id="post-summary" {...form.register('shortDescription')} maxLength={shortLimit} placeholder="One line shown on cards and in search" />
                 </Field>
-                <Field label="Description" counter={`${(form.watch('description') ?? '').length}/${descriptionLimit}`} error={form.formState.errors.description?.message}>
-                  <Textarea {...form.register('description')} maxLength={descriptionLimit} placeholder="Explain process, deliverables, and what buyers get." />
-                  <p className="mt-1.5 text-xs text-muted">Cover your process, what&rsquo;s included, delivery time, and revision policy.</p>
+                <Field id="post-description" label="Description" counter={`${(form.watch('description') ?? '').length}/${descriptionLimit}`} error={form.formState.errors.description?.message}>
+                  <Textarea id="post-description" {...form.register('description')} maxLength={descriptionLimit} placeholder="What you built, your part in it, the tools you used, and the result." />
+                  <p className="mt-1.5 text-xs font-normal text-muted">Concrete results help recruiters most: numbers, links, what changed.</p>
                 </Field>
               </div>
             </section>
@@ -200,7 +218,7 @@ export function JobForm() {
               <ButtonLink href="/my-posts" variant="secondary">Cancel</ButtonLink>
               <Button type="submit" loading={mutation.isPending}>
                 <Send className="h-4 w-4" />
-                Publish service
+                Publish post
               </Button>
             </section>
           </form>
@@ -208,7 +226,7 @@ export function JobForm() {
 
         <aside className="grid content-start gap-2.5 lg:sticky lg:top-24" aria-label="Live preview">
           <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">
-            <Send className="h-3 w-3 rotate-180 text-primary" /> Live preview — how buyers see it
+            <Send className="h-3 w-3 rotate-180 text-primary" /> Live preview — how recruiters see it
           </p>
           <Card className="overflow-hidden transition hover:shadow-[0_12px_28px_rgba(27,28,28,0.09)]">
             <div className="relative aspect-[4/3] bg-surface-muted">
@@ -228,11 +246,11 @@ export function JobForm() {
               <p className="line-clamp-2 min-h-10 text-sm font-semibold leading-snug">{previewTitle}</p>
               <div className="mt-3 flex items-center justify-between">
                 <Badge tone="rating">New</Badge>
-                <span className="text-sm text-muted">From <strong className="text-foreground">{previewPrice}</strong></span>
+                <span className="text-sm text-muted">{previewPrice ?? 'Portfolio'}</span>
               </div>
             </div>
           </Card>
-          <p className="text-center text-xs text-muted">Your service appears in Explore and search once published.</p>
+          <p className="text-center text-xs text-muted">Your post appears in Portfolios, search, and on your profile once published.</p>
         </aside>
       </div>
     </div>
@@ -240,12 +258,15 @@ export function JobForm() {
 }
 
 function Field({
+  id,
   label,
   counter,
   error,
   hint,
   children,
 }: {
+  /** The id of the input inside, so the label names it for screen readers. */
+  id: string
   label: string
   counter?: string
   error?: string
@@ -254,7 +275,7 @@ function Field({
 }) {
   return (
     <div className="grid gap-1.5 text-sm font-semibold">
-      <label className="flex items-baseline justify-between gap-2">
+      <label htmlFor={id} className="flex items-baseline justify-between gap-2">
         <span>{label}</span>
         {counter ? <span className="text-[11px] font-medium text-muted">{counter}</span> : null}
       </label>

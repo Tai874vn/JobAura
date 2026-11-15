@@ -122,7 +122,7 @@ export function SavedPage() {
               icon={<Bookmark />}
               title="No saved jobs yet"
               description="Tap the bookmark on any service in Explore and it will be waiting for you here."
-              action={<ButtonLink href="/jobs">Explore services</ButtonLink>}
+              action={<ButtonLink href="/hiring-posts">Browse hiring posts</ButtonLink>}
             />
           ) : null}
           {jobs.length ? (

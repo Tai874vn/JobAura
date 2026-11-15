@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Star } from 'lucide-react'
 import { Badge, Card, CardSkeleton } from '@/shared/ui'
-import { cn, currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { cn, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { servicePriceLabel } from './service-price'
 import type { Job } from '@/shared/schemas'
 import { getSellerAvatar, getSellerHref, getSellerName } from './seller-profile'
 import { JobSaveButton } from './job-save-button'
@@ -78,9 +79,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
               <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
               {(job.rating ?? 0).toFixed(1)}
             </Badge>
-            <span className="text-sm text-muted">
-              From <strong className="text-foreground">{currency(job.price)}</strong>
-            </span>
+            <span className="text-sm font-semibold text-foreground">{servicePriceLabel(job.price) ?? 'Portfolio'}</span>
           </div>
         </div>
       </Card>

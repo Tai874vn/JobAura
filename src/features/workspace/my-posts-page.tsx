@@ -10,6 +10,7 @@ import { useSession } from '@/features/auth/use-session'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { servicePriceLabel } from '@/features/jobs/service-price'
 import type { Job } from '@/shared/schemas'
 import { Button, ButtonLink, Card, ConfirmationDialog, EmptyState, ListRowSkeleton } from '@/shared/ui'
 
@@ -39,7 +40,7 @@ export function MyPostsPage() {
       <p className="text-[11px] font-bold uppercase tracking-wide text-primary">Seller workspace</p>
       <div className="mt-1.5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">My posts</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">My portfolio posts</h1>
         </div>
         <ButtonLink href="/jobs/new">
           <Plus className="h-4 w-4" /> New service
@@ -61,9 +62,9 @@ export function MyPostsPage() {
         {!query.isPending && !query.isError && !jobs.length ? (
           <EmptyState
             icon={<Plus />}
-            title="No services yet"
-            description="Publish your first one and it appears in Explore instantly."
-            action={<ButtonLink href="/jobs/new">Post your first service</ButtonLink>}
+            title="No portfolio posts yet"
+            description="Publish your first one; recruiters find it in Portfolios and on your profile."
+            action={<ButtonLink href="/jobs/new">Post your portfolio</ButtonLink>}
           />
         ) : null}
       </div>
@@ -105,7 +106,7 @@ function MyPostRow({ job, onDelete }: { job: Job; onDelete: () => void }) {
             <Star className={cn('h-3 w-3', hasRating ? 'fill-rating text-rating' : 'text-muted')} />
             {hasRating ? `${(job.rating ?? 0).toFixed(1)}` : 'New · no reviews yet'}
           </span>
-          <span>From ${job.price?.toLocaleString?.('en-US') ?? job.price}</span>
+          <span>{servicePriceLabel(job.price) ?? 'Portfolio'}</span>
           {job.subcategory?.name ? <span>{job.subcategory.name}</span> : null}
         </div>
       </div>

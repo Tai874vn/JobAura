@@ -137,8 +137,8 @@ export function JobListView() {
           key={keyword ?? ''}
           name="keyword"
           defaultValue={keyword ?? ''}
-          placeholder="Search services or sellers…"
-          aria-label="Search services or sellers"
+          placeholder="Search portfolios by role, skill, or name…"
+          aria-label="Search portfolios"
           className="h-[52px] w-full min-w-0 bg-transparent text-sm outline-none"
         />
       </div>
@@ -154,7 +154,7 @@ export function JobListView() {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <div className="container-page pt-10">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Explore services</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight">Candidate portfolios</h1>
         {heroSearch}
         <div className="mt-3.5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px]">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted">Popular</span>
@@ -245,7 +245,7 @@ export function JobListView() {
           ) : jobs.length ? (
             <>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index === 0} waitForImages />)}
+                {jobs.map((job, index) => <JobCard key={job.id} job={job} priority={index < 4} waitForImages />)}
               </div>
               <PaginationControls currentPage={page} totalPages={totalPages} pageHref={pageHref(searchParams)} navigate={navigate} />
             </>
@@ -253,7 +253,7 @@ export function JobListView() {
             <EmptyState
               fill
               icon={<SearchX />}
-              title="No services found"
+              title="No portfolio posts found"
               description="Try another keyword or clear some filters to see more results."
               action={<Button variant="secondary" onClick={clearAllFilters}>Clear filters</Button>}
             />

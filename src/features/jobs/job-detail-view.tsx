@@ -12,6 +12,7 @@ import { chatApi, commentsApi, hiresApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { cn, currency, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { isPortfolioPost } from './service-price'
 import type { Comment, Job } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog, Textarea } from '@/shared/ui'
@@ -29,6 +30,8 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const [rating, setRating] = useState(5)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const isOwner = user?.id === job.creatorId
+  // A post without a rate is a portfolio post: no purchase steps, just ways to reach the candidate.
+  const portfolio = isPortfolioPost(job.price)
   const canViewCandidateMatches = Boolean(user?.role === 'admin' || (isOwner && canAccessCandidateDirectory(user?.role)))
   const sellerId = getSellerId(job)
   const sellerName = getSellerName(job)
@@ -189,7 +192,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                     </button>
                   ))}
                 </div>
-                <Textarea placeholder="Share what it was like working with this seller…" value={review} onChange={(event) => setReview(event.target.value)} />
+                <Textarea aria-label="Your review" placeholder="Share what it was like working with this seller…" value={review} onChange={(event) => setReview(event.target.value)} />
                 <div className="mt-3 flex justify-end">
                   <Button onClick={() => requireLogin(() => commentMutation.mutate())} loading={commentMutation.isPending} disabled={!review.trim()}>
                     <Send className="h-4 w-4" />
@@ -201,6 +204,19 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           </Card>
         </main>
         <aside className="grid content-start gap-4 lg:sticky lg:top-24">
+          {portfolio ? (
+            <Card>
+              <CardContent className="p-5">
+                <p className="text-xs font-bold uppercase tracking-wide text-primary">Portfolio post</p>
+                <p className="mt-2 text-sm leading-6 text-muted">This shows the candidate&rsquo;s work. Message them to talk about a role, or open their profile and resume.</p>
+                <Button className="mt-4 w-full" onClick={() => requireLogin(() => contactSellerMutation.mutate())} loading={contactSellerMutation.isPending}>
+                  <MessageSquare className="h-4 w-4" />
+                  Message candidate
+                </Button>
+                {job.creatorId ? <ButtonLink href={`/profile/${job.creatorId}`} className="mt-3 w-full" variant="secondary">View profile</ButtonLink> : null}
+              </CardContent>
+            </Card>
+          ) : (
           <Card>
             <CardContent className="p-5">
               <p className="text-sm text-muted">Starting at</p>
@@ -225,9 +241,10 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
               </Button>
             </CardContent>
           </Card>
+          )}
           {sellerCard}
           {isOwner ? (
-            <Button variant="danger" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /> Delete service</Button>
+            <Button variant="danger" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /> Delete post</Button>
           ) : null}
           {canViewCandidateMatches ? (
             <Card>
@@ -250,7 +267,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden" aria-label="Purchase bar">
+      {portfolio ? null : <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden" aria-label="Purchase bar">
         <div className="leading-tight">
           <b className="block font-display text-lg font-bold">{currency(job.price)}</b>
           <span className="text-[11px] font-semibold text-muted">Starting at</span>
@@ -258,7 +275,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
         <Button className="ml-auto flex-1" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>
           Continue
         </Button>
-      </div>
+      </div>}
 
       <ConfirmationDialog
         open={deleteOpen}

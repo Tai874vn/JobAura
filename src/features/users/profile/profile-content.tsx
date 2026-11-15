@@ -13,7 +13,8 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { hasResumeDraftInput, resumeSkills, type ResumeDraft } from '@/features/users/resume'
-import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { servicePriceLabel } from '@/features/jobs/service-price'
 import type { Job, UserProfile, UserResume } from '@/shared/schemas'
 import { Badge, ButtonLink, Card, CardContent } from '@/shared/ui'
 import { InlineEditButton, ResumeSnippet } from './profile-editor'
@@ -65,9 +66,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-sm text-muted">
-              From <strong className="text-foreground">{currency(post.price)}</strong>
-            </span>
+            <span className="text-sm font-semibold">{servicePriceLabel(post.price) ?? 'Portfolio'}</span>
             <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
               View details
             </ButtonLink>
