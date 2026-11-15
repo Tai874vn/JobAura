@@ -1,19 +1,19 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { io, type Socket } from 'socket.io-client'
-import { CheckCheck, MessageCircle, Send, X } from 'lucide-react'
+import type { Socket } from 'socket.io-client'
+import { ArrowLeft, CheckCheck, MessageCircle, Send, X } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { useRealtimeConnection } from '@/features/auth/realtime-provider'
 import { useSession } from '@/features/auth/use-session'
-import { authApi, chatApi } from '@/shared/api/endpoints'
+import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { env } from '@/shared/config/env'
 import { cn } from '@/shared/lib/utils'
-import { fetchRealtimeAuth } from '@/shared/realtime/realtime-auth'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
+import { synchronizeChatConnection } from './chat-connection'
 import { shouldLoadRoomMessages } from './chat-data'
 
 type SendMessageAcknowledgement = {
@@ -23,6 +23,7 @@ type SendMessageAcknowledgement = {
 
 export function ChatShell() {
   const { user } = useSession()
+  const connection = useRealtimeConnection()
   const userId = user?.id
   const isOpen = useChatStore((state) => state.isOpen)
   const isSocketActive = useChatStore((state) => state.isSocketActive)
@@ -38,6 +39,7 @@ export function ChatShell() {
   const setOnlineUserIds = useChatStore((state) => state.setOnlineUserIds)
   const onlineUserIds = useChatStore((state) => state.onlineUserIds)
   const socketRef = useRef<Socket | null>(null)
+  const messageListRef = useRef<HTMLDivElement | null>(null)
   const [draft, setDraft] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [readReceipts, setReadReceipts] = useState<Record<number, number[]>>({})
@@ -54,64 +56,73 @@ export function ChatShell() {
   }, [roomsQuery.data, setRooms])
 
   useEffect(() => {
-    if (!userId || !isSocketActive) return
-    const nextSocket = io(`${env.apiBaseUrl}/chat`, {
-      withCredentials: true,
-      autoConnect: true,
-      transports: ['websocket', 'polling'],
-      auth: (callback) => {
-        void fetchRealtimeAuth(authApi.realtimeTicket)
-          .then(callback)
-          .catch(() => callback({}))
-      },
-    })
-
-    nextSocket.on('connect', () => nextSocket.emit('get-online-users'))
-    nextSocket.on('connect_error', (error) => {
-      console.error('Chat connection failed:', error.message)
-    })
-    nextSocket.on('new-message', (message: ChatMessage) => addMessage(message, userId))
-    nextSocket.on('messages-read', ({ roomId, userId: readerId }: { roomId: number; userId: number }) => {
-      setReadReceipts((current) => {
-        const readers = current[roomId] ?? []
-        if (readers.includes(readerId)) return current
-        return { ...current, [roomId]: [...readers, readerId] }
-      })
-    })
-    nextSocket.on('typing', (payload: { roomId?: number; userId?: number; isTyping?: boolean }) => {
-      const roomId = payload?.roomId
-      const typingUserId = payload?.userId
-      if (!roomId || !typingUserId || typingUserId === userId) return
-      setTypingByRoom((current) => {
-        const typers = new Set(current[roomId] ?? [])
-        if (payload.isTyping === false) {
-          typers.delete(typingUserId)
-          if (!typers.size) {
-            const rest = { ...current }
-            delete rest[roomId]
-            return rest
+    if (!userId || !isSocketActive || !connection) return
+    return connection.subscribe('/chat', (nextSocket) => {
+      const onConnect = () => synchronizeChatConnection(nextSocket, useChatStore.getState().activeRoomId)
+      const onConnectError = (error: Error) => {
+        console.error('Chat connection failed:', error.message)
+      }
+      const onNewMessage = (message: ChatMessage) => addMessage(message, userId)
+      const onMessagesRead = ({ roomId, userId: readerId }: { roomId: number; userId: number }) => {
+        setReadReceipts((current) => {
+          const readers = current[roomId] ?? []
+          if (readers.includes(readerId)) return current
+          return { ...current, [roomId]: [...readers, readerId] }
+        })
+      }
+      const onTyping = (payload: { roomId?: number; userId?: number; isTyping?: boolean }) => {
+        const roomId = payload?.roomId
+        const typingUserId = payload?.userId
+        if (!roomId || !typingUserId || typingUserId === userId) return
+        setTypingByRoom((current) => {
+          const typers = new Set(current[roomId] ?? [])
+          if (payload.isTyping === false) {
+            typers.delete(typingUserId)
+            if (!typers.size) {
+              const rest = { ...current }
+              delete rest[roomId]
+              return rest
+            }
+          } else {
+            typers.add(typingUserId)
           }
-        } else {
-          typers.add(typingUserId)
-        }
-        return { ...current, [roomId]: [...typers] }
-      })
-    })
-    nextSocket.on('online-users', (ids: number[]) => setOnlineUserIds(ids))
-    nextSocket.on('user-online', ({ userId: onlineUserId }: { userId: number }) => {
-      const current = useChatStore.getState().onlineUserIds
-      if (!current.includes(onlineUserId)) setOnlineUserIds([...current, onlineUserId])
-    })
-    nextSocket.on('user-offline', ({ userId: offlineUserId }: { userId: number }) => {
-      setOnlineUserIds(useChatStore.getState().onlineUserIds.filter((id) => id !== offlineUserId))
-    })
-    socketRef.current = nextSocket
+          return { ...current, [roomId]: [...typers] }
+        })
+      }
+      const onUserOnline = ({ userId: onlineUserId }: { userId: number }) => {
+        const current = useChatStore.getState().onlineUserIds
+        if (!current.includes(onlineUserId)) setOnlineUserIds([...current, onlineUserId])
+      }
+      const onUserOffline = ({ userId: offlineUserId }: { userId: number }) => {
+        setOnlineUserIds(useChatStore.getState().onlineUserIds.filter((id) => id !== offlineUserId))
+      }
 
-    return () => {
-      nextSocket.disconnect()
-      socketRef.current = null
-    }
-  }, [addMessage, isSocketActive, setOnlineUserIds, userId])
+      nextSocket.on('connect', onConnect)
+      nextSocket.on('connect_error', onConnectError)
+      nextSocket.on('new-message', onNewMessage)
+      nextSocket.on('messages-read', onMessagesRead)
+      nextSocket.on('typing', onTyping)
+      nextSocket.on('online-users', setOnlineUserIds)
+      nextSocket.on('user-online', onUserOnline)
+      nextSocket.on('user-offline', onUserOffline)
+      socketRef.current = nextSocket
+      if (nextSocket.connected) onConnect()
+
+      return () => {
+        // Remove only this feature's handlers; another subscriber may still
+        // use the namespace and the Manager also serves notifications.
+        nextSocket.off('connect', onConnect)
+        nextSocket.off('connect_error', onConnectError)
+        nextSocket.off('new-message', onNewMessage)
+        nextSocket.off('messages-read', onMessagesRead)
+        nextSocket.off('typing', onTyping)
+        nextSocket.off('online-users', setOnlineUserIds)
+        nextSocket.off('user-online', onUserOnline)
+        nextSocket.off('user-offline', onUserOffline)
+        if (socketRef.current === nextSocket) socketRef.current = null
+      }
+    })
+  }, [addMessage, connection, isSocketActive, setOnlineUserIds, userId])
 
   const activeMessages = useMemo(
     () => activeRoomId ? messagesByRoom[activeRoomId] ?? [] : [],
@@ -148,6 +159,13 @@ export function ChatShell() {
       socketRef.current?.emit('mark-as-read', { roomId: activeRoomId })
     }
   }, [activeMessages, activeRoomId, userId])
+
+  // Keep the newest message in view when a conversation opens, a message arrives, or someone starts typing.
+  const typingCount = activeRoomId ? typingByRoom[activeRoomId]?.length ?? 0 : 0
+  useEffect(() => {
+    const list = messageListRef.current
+    if (list) list.scrollTop = list.scrollHeight
+  }, [activeRoomId, activeMessages.length, typingCount])
 
   function openRoom(room: ChatRoom) {
     setActiveRoom(room.id)
@@ -212,8 +230,9 @@ export function ChatShell() {
         </Button>
       ) : null}
       {isOpen ? (
-        <section className="motion-panel fixed bottom-5 right-5 z-50 grid h-[580px] w-[720px] max-w-[calc(100vw-40px)] grid-cols-[280px_minmax(0,1fr)] overflow-hidden rounded-lg border border-border bg-surface shadow-[0_24px_60px_rgba(27,28,28,0.22)]">
-          <aside className="flex min-w-0 flex-col border-r border-border bg-surface">
+        // On a phone the panel is one column: the conversation list, or the open conversation with a back button.
+        <section className="motion-panel fixed bottom-5 right-5 z-50 grid h-[min(580px,calc(100dvh-40px))] w-[720px] max-w-[calc(100vw-40px)] grid-cols-1 overflow-hidden rounded-lg border border-border bg-surface shadow-[0_24px_60px_rgba(27,28,28,0.22)] sm:grid-cols-[280px_minmax(0,1fr)]">
+          <aside className={cn('min-w-0 flex-col border-r border-border bg-surface sm:flex', activeRoomId ? 'hidden' : 'flex')}>
             <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
               <h2 className="font-display text-[15px] font-extrabold">Messages</h2>
             </div>
@@ -269,10 +288,13 @@ export function ChatShell() {
               )}
             </div>
           </aside>
-          <main className="flex min-w-0 flex-col">
+          <main className={cn('min-h-0 min-w-0 flex-col sm:flex', activeRoomId ? 'flex' : 'hidden')}>
             <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
               {activeRoomId ? (
                 <span className="flex min-w-0 items-center gap-2.5">
+                  <Button variant="ghost" size="icon" className="-ml-2 shrink-0 sm:hidden" onClick={() => setActiveRoom(null)} aria-label="Back to conversations">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
                   <Avatar name={title} src={peer?.avatar} size="sm" className="h-8 w-8" />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-bold">{title}</span>
@@ -290,15 +312,16 @@ export function ChatShell() {
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex-1 space-y-2.5 overflow-y-auto bg-background p-4">
+            {/* A flex column, so each message can sit on its own side: yours on the right, theirs on the left. */}
+            <div ref={messageListRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto bg-background p-4">
               {activeRoomId ? (
                 <>
                   {activeMessages.map((message) => {
                     const own = message.sender.id === user.id
                     return (
-                      <div key={message.id} className={cn('flex max-w-[76%] flex-col', own ? 'self-end items-end' : 'self-start')}>
+                      <div key={message.id} className={cn('flex min-w-0 max-w-[76%] flex-col', own ? 'self-end items-end' : 'self-start items-start')}>
                         <div className={cn(
-                          'rounded-2xl px-3.5 py-2 text-sm leading-6',
+                          'max-w-full whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-6 [overflow-wrap:anywhere]',
                           own ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-border bg-surface'
                         )}>
                           {message.content}
@@ -325,7 +348,7 @@ export function ChatShell() {
                   ) : null}
                 </>
               ) : (
-                <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted">
+                <div className="flex flex-1 flex-col items-center justify-center gap-2 text-sm text-muted">
                   <MessageCircle className="h-6 w-6 text-primary/40" />
                   Choose a conversation to start chatting.
                 </div>
@@ -346,6 +369,7 @@ export function ChatShell() {
                 />
               </div>
               <Button
+                type="submit"
                 className="h-10 w-10 shrink-0 rounded-full p-0"
                 loading={isSending}
                 disabled={!activeRoomId || !draft.trim() || isSending}

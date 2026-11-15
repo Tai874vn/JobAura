@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Hanken_Grotesk, Inter } from 'next/font/google'
 import './globals.css'
+import { RealtimeProvider } from '@/features/auth/realtime-provider'
 import { LazyChatShell } from '@/features/chat/lazy-chat-shell'
 import { AppProviders } from '@/shared/providers/app-providers'
 
@@ -61,8 +62,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${inter.variable} ${hankenGrotesk.variable}`}>
       <body className="font-sans antialiased">
         <AppProviders>
-          {children}
-          <LazyChatShell />
+          <RealtimeProvider>
+            {children}
+            <LazyChatShell />
+          </RealtimeProvider>
         </AppProviders>
       </body>
     </html>

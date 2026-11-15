@@ -11,14 +11,12 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
+import { useRealtimeConnection } from "@/features/auth/realtime-provider";
 import { useSession } from "@/features/auth/use-session";
-import { authApi, chatApi, notificationsApi } from "@/shared/api/endpoints";
+import { chatApi, notificationsApi } from "@/shared/api/endpoints";
 import { normalizeNotification } from "@/shared/api/normalizers";
 import { queryKeys } from "@/shared/api/query-keys";
-import { env } from "@/shared/config/env";
-import { fetchRealtimeAuth } from "@/shared/realtime/realtime-auth";
 import type { ApiResponse, AppNotification } from "@/shared/schemas";
 import { useChatStore } from "@/shared/stores/chat-store";
 import { Button } from "@/shared/ui";
@@ -40,6 +38,7 @@ export function NotificationBell() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useSession();
+  const connection = useRealtimeConnection();
   const userId = user?.id;
   const openChatForRoom = useChatStore((state) => state.openChatForRoom);
   const [open, setOpen] = useState(false);
@@ -84,50 +83,30 @@ export function NotificationBell() {
   });
 
   useEffect(() => {
-    if (!userId) return;
-    let socket: Socket | undefined;
-    let cancelled = false;
-
-    async function connect() {
-      const { io } = await import("socket.io-client");
-      if (cancelled) return;
-
-      socket = io(`${env.apiBaseUrl}/notifications`, {
-        withCredentials: true,
-        autoConnect: true,
-        transports: ["websocket", "polling"],
-        auth: (callback) => {
-          void fetchRealtimeAuth(authApi.realtimeTicket)
-            .then(callback)
-            .catch(() => callback({}));
-        },
-      });
-
-      socket.on("notification:new", (raw: unknown) => {
+    if (!userId || !connection) return;
+    return connection.subscribe("/notifications", (socket) => {
+      const onNotification = (raw: unknown) => {
         const notification = normalizeNotification(raw);
         prependNotification(queryClient, notification, previewLimit);
-      });
-      socket.on(
-        "notifications:unread-count",
-        ({ unreadCount }: { unreadCount: number }) => {
-          queryClient.setQueryData<ApiResponse<{ unreadCount: number }>>(
-            queryKeys.notificationUnreadCount,
-            (current) => ({
-              ...(current ?? {}),
-              content: { unreadCount },
-            }),
-          );
-        },
-      );
-    }
+      };
+      const onUnreadCount = ({ unreadCount }: { unreadCount: number }) => {
+        queryClient.setQueryData<ApiResponse<{ unreadCount: number }>>(
+          queryKeys.notificationUnreadCount,
+          (current) => ({
+            ...(current ?? {}),
+            content: { unreadCount },
+          }),
+        );
+      };
 
-    void connect();
-
-    return () => {
-      cancelled = true;
-      socket?.disconnect();
-    };
-  }, [queryClient, userId]);
+      socket.on("notification:new", onNotification);
+      socket.on("notifications:unread-count", onUnreadCount);
+      return () => {
+        socket.off("notification:new", onNotification);
+        socket.off("notifications:unread-count", onUnreadCount);
+      };
+    });
+  }, [connection, queryClient, userId]);
 
   async function openNotification(notification: AppNotification) {
     if (!notification.readAt) {
