@@ -4,15 +4,16 @@ import { ChevronRight } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { settingSections, type SettingSection } from './setting-sections'
 
-export function SettingsNavigation({ active, hrefFor, onSelect }: {
+export function SettingsNavigation({ active, hrefFor, onSelect, showResume = true }: {
   active: SettingSection
+  showResume?: boolean
   hrefFor: (section: SettingSection) => string
   onSelect: (section: SettingSection) => void
 }) {
   return (
     <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
       <nav aria-label="Settings sections" className="flex gap-2 rounded-xl border border-border bg-surface p-2 lg:flex-col">
-        {settingSections.slice(0, 3).map((section) => (
+        {settingSections.slice(0, 3).filter((section) => showResume || section.id !== 'resume').map((section) => (
           <a key={section.id} href={hrefFor(section.id)} aria-current={active === section.id ? 'page' : undefined}
             onClick={(event) => {
               if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return

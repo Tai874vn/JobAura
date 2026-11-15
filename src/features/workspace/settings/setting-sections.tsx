@@ -13,6 +13,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import type { UserProfile, UserResume } from '@/shared/schemas'
+import { canAccessCandidateTools } from '@/shared/lib/roles'
 import { Avatar, Button, Card, CardContent } from '@/shared/ui'
 
 export type SettingSection = 'overview' | 'profile' | 'resume' | 'account' | 'security' | 'appearance' | 'notifications' | 'billing'
@@ -37,6 +38,11 @@ const settingSectionIds = new Set<SettingSection>(settingSections.map((section) 
 
 export function isSettingSection(value: string | null): value is SettingSection {
   return Boolean(value && settingSectionIds.has(value as SettingSection))
+}
+
+/** Only candidates (and admins) keep a resume; recruiters don't see the Resume section. */
+export function hasResumeSection(role?: string | null) {
+  return canAccessCandidateTools(role)
 }
 
 
@@ -91,7 +97,7 @@ export function SettingsOverview({
             <Button className="mt-4 w-full" variant="secondary" onClick={() => onSelect('profile')}>Manage profile <ArrowRight className="h-4 w-4" /></Button>
           </CardContent>
         </Card>
-        <Card>
+        {hasResumeSection(profile.role) ? <Card>
           <CardContent className="flex h-full flex-col p-5 sm:p-6">
             <FileJson className="h-5 w-5 text-primary" />
             <h3 className="mt-3 font-display text-lg font-bold">Resume</h3>
@@ -113,7 +119,7 @@ export function SettingsOverview({
               {resumeLoading || resumeError ? 'Open resume' : resume ? 'Manage resume' : 'Add resume'} <ArrowRight className="h-4 w-4" />
             </Button>
           </CardContent>
-        </Card>
+        </Card> : null}
       </div>
     </div>
   )

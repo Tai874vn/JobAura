@@ -9,6 +9,20 @@ import type { ReactNode } from "react";
 import type { HiringPost, RecommendationQuota } from "@/shared/schemas";
 import { Button, Card, CardContent } from "@/shared/ui";
 
+/** Say why matching can't run: no post chosen is not the same as no AI uses left. */
+export function matchingButtonLabel({ canRun, hasResults, hasHiringPost, quota, loadingQuota }: {
+  canRun: boolean
+  hasResults: boolean
+  hasHiringPost: boolean
+  quota?: RecommendationQuota
+  loadingQuota: boolean
+}) {
+  if (canRun) return hasResults ? "Run again" : "Proceed to match"
+  if (!hasHiringPost) return "Choose a hiring post first"
+  if (loadingQuota) return "Checking AI uses..."
+  return (quota?.remaining ?? 0) > 0 ? "Proceed to match" : "No AI uses left"
+}
+
 type StartCandidateMatchingCardProps = {
   hasResults: boolean;
   selectedHiringPost: HiringPost | null;
@@ -43,23 +57,23 @@ export function StartCandidateMatchingCard({
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             {hasResults
               ? "Your current matches stay visible until you choose to refresh them. A fresh run uses the selected hiring post and the latest candidate profiles."
-              : "Matching starts only after you proceed. If the AI service is unavailable, the page stays here and shows the error as a pop-up."}
+              : "Nothing runs until you start it. You'll see the best-fitting candidates for the selected post, with the skills they match and miss."}
           </p>
           <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
             <ProcessItem
               icon={<ShieldCheck className="h-4 w-4" />}
-              label="Owner checked"
-              text="Backend verifies this is your hiring post."
+              label="Visible candidates"
+              text="Only people who opened their profile to recruiters."
             />
             <ProcessItem
               icon={<Zap className="h-4 w-4" />}
-              label="One AI token"
-              text="A successful non-empty run spends one daily use."
+              label="One AI run"
+              text="Uses one daily run when it finds candidates."
             />
             <ProcessItem
               icon={<Database className="h-4 w-4" />}
               label="Keeps your matches"
-              text="Your latest matches can load again without spending another AI use."
+              text="Your latest matches load again without using another run."
             />
           </div>
         </div>
@@ -72,8 +86,8 @@ export function StartCandidateMatchingCard({
           </h3>
           <p className="mt-2 text-xs leading-5 text-muted">
             {loadingQuota
-              ? "Checking daily AI quota..."
-              : `${quota?.remaining ?? 0} of ${quota?.limit ?? 0} AI tokens left today.`}
+              ? "Checking your AI runs..."
+              : `${quota?.remaining ?? 0} of ${quota?.limit ?? 0} AI runs left today.`}
           </p>
           <Button
             className="mt-5 w-full"
@@ -84,11 +98,7 @@ export function StartCandidateMatchingCard({
             disabled={loadingQuota || !canRun}
           >
             <Sparkles className="h-4 w-4" />
-            {canRun
-              ? hasResults
-                ? "Run again"
-                : "Proceed to match"
-              : "No AI uses left"}
+            {matchingButtonLabel({ canRun, hasResults, hasHiringPost: Boolean(selectedHiringPost), quota, loadingQuota })}
           </Button>
         </div>
       </CardContent>

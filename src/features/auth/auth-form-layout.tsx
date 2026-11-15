@@ -2,20 +2,25 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { getSignedInRedirect } from '@/shared/lib/roles'
 import { Card, CardContent, Spinner } from '@/shared/ui'
 import { useSession } from './use-session'
 
+const subscribeNever = () => () => {}
+
 export function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextPath?: string | null }) {
   const router = useRouter()
   const { user, isLoading } = useSession()
+  // The server always renders the "checking" state. This page sits in a Suspense boundary that hydrates after
+  // the header has already asked who is signed in, so render that same state until hydration ends.
+  const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false)
 
   useEffect(() => {
     if (!isLoading && user) router.replace(getSignedInRedirect(user, nextPath))
   }, [isLoading, nextPath, router, user])
 
-  if (isLoading || user) {
+  if (!hydrated || isLoading || user) {
     return (
       <main className="flex min-h-screen items-center justify-center" aria-labelledby="auth-status-title">
         <h1 id="auth-status-title" className="sr-only">Checking authentication</h1>

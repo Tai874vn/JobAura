@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { Button } from '@/shared/ui'
-import { isSettingSection, SettingsPlaceholder, type SettingSection } from './settings/setting-sections'
+import { hasResumeSection, isSettingSection, SettingsPlaceholder, type SettingSection } from './settings/setting-sections'
 import { SettingsLoading, SettingsPanelSkeleton } from './settings/settings-loading'
 import { SettingsNavigation } from './settings/settings-navigation'
 import { SettingsOverviewPanel } from './settings/settings-overview-panel'
@@ -22,7 +22,10 @@ export function SettingsPage() {
   const searchParams = useSearchParams()
   const { user: profile, isLoading } = useSession()
   const requestedSection = searchParams.get('section')
-  const activeSection = isSettingSection(requestedSection) ? requestedSection : 'overview'
+  const showResume = hasResumeSection(profile?.role)
+  const activeSection = isSettingSection(requestedSection) && (showResume || requestedSection !== 'resume')
+    ? requestedSection
+    : 'overview'
   const [visited, setVisited] = useState<SettingSection[]>([activeSection])
   // Remember direct links and browser history changes as well as clicks. A
   // previously opened editor stays mounted, so changing section keeps its draft.
@@ -49,7 +52,7 @@ export function SettingsPage() {
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Settings</h1>
       </header>
       <div className="grid items-start gap-6 lg:grid-cols-[224px_minmax(0,1fr)] lg:gap-8">
-        <SettingsNavigation active={activeSection} hrefFor={hrefFor} onSelect={selectSection} />
+        <SettingsNavigation active={activeSection} hrefFor={hrefFor} onSelect={selectSection} showResume={showResume} />
         <div className="min-w-0">
           {activeSection === 'overview' ? <SettingsOverviewPanel profile={profile} onSelect={selectSection} /> : null}
           {visited.includes('profile') ? <section hidden={activeSection !== 'profile'} aria-label="Profile settings">

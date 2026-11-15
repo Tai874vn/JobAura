@@ -27,4 +27,11 @@ describe('Settings overview resume status', () => {
     expect(html).toContain('Resume not imported')
     expect(html).toContain('Add resume')
   })
+
+  it('does not show a resume card to recruiters', () => {
+    const recruiter: UserProfile = { ...profile, role: 'employer' }
+    const html = renderToStaticMarkup(<SettingsOverview profile={recruiter} completion={20} resume={null}
+      resumeError onSelect={() => undefined} />)
+    expect(html).not.toContain('Resume')
+  })
 })

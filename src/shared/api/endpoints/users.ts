@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { apiClient, uploadClient } from '../client'
 import { normalizePaginatedCandidatesResponse } from '../normalizers'
 import { assertValidImageFile } from '@/shared/lib/file-validation'
@@ -31,8 +32,15 @@ export const usersApi = {
     (await apiClient.get<ApiResponse<UserProfile>>(`/api/users/profile/${id}`)).data,
   myProfile: async () =>
     (await apiClient.get<ApiResponse<UserProfile>>('/api/users/me/profile')).data,
-  myResume: async () =>
-    (await apiClient.get<ApiResponse<UserResume | null>>('/api/users/me/resume')).data,
+  myResume: async (): Promise<ApiResponse<UserResume | null>> => {
+    try {
+      return (await apiClient.get<ApiResponse<UserResume | null>>('/api/users/me/resume')).data
+    } catch (error) {
+      // The backend answers 404 until the user saves a resume; that is an empty form, not a failure.
+      if (axios.isAxiosError(error) && error.response?.status === 404) return { message: 'No resume yet', content: null }
+      throw error
+    }
+  },
   importResume: async (data: ImportResume) =>
     (await apiClient.put<ApiResponse<UserResume>>('/api/users/me/resume', data)).data,
   predictResumeSeniority: async () =>
