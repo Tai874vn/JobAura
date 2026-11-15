@@ -11,23 +11,15 @@ import { getQueryClient } from './query-client'
 import { queryKeys } from './query-keys'
 import { resetClientSession, setCachedSession } from './session-cache'
 
-type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
-type QueueItem = {
-  resolve: () => void
-  reject: (error: unknown) => void
-}
+type RefreshFlight = { promise: Promise<void> | null }
+type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean; _refreshFlight?: RefreshFlight }
 
-let isRefreshing = false
-let failedQueue: QueueItem[] = []
+// Shared by both clients in this tab only. Cross-tab REFRESH_REUSED is terminal;
+// this does not add consumed-token replay or any reuse grace.
+let refreshFlight: RefreshFlight = { promise: null }
 const API_TIMEOUT_MS = 15_000
-
-function flushQueue(error?: unknown) {
-  failedQueue.forEach((item) => {
-    if (error) item.reject(error)
-    else item.resolve()
-  })
-  failedQueue = []
-}
+const ACCESS_TOKEN_ERRORS = new Set(['ACCESS_TOKEN_EXPIRED', 'ACCESS_TOKEN_MISSING', 'INVALID_ACCESS_TOKEN'])
+const TERMINAL_AUTH_ERRORS = new Set(['SESSION_REVOKED', 'REFRESH_REUSED', 'REFRESH_TOKEN_EXPIRED', 'INVALID_REFRESH_TOKEN'])
 
 const clientApiBaseUrl = resolveClientOrigin(
   env.apiBaseUrl,
@@ -49,7 +41,8 @@ export const uploadClient = axios.create({
 })
 
 function installCsrfInterceptor(instance: typeof apiClient | typeof uploadClient) {
-  instance.interceptors.request.use((config) => {
+  instance.interceptors.request.use((config: RetryConfig) => {
+    config._refreshFlight = refreshFlight
     const token = csrfTokenForMethod(config.method)
     if (token) config.headers.set('X-CSRF-Token', token)
     return config
@@ -73,20 +66,43 @@ function handleSessionExpired(isGuestSessionCheck = false) {
   }
 }
 
-async function refreshSession() {
-  const csrfToken = csrfTokenForMethod('post')
-  await axios.post(`${clientApiBaseUrl}/api/auth/refresh`, {}, {
-    withCredentials: true,
-    headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
-    timeout: API_TIMEOUT_MS,
-  })
+function authErrorCode(error: AxiosError): string | undefined {
+  const data = error.response?.data
+  if (data && typeof data === 'object' && 'code' in data && typeof data.code === 'string') return data.code
+}
+
+function isTerminalAuthError(error: unknown): boolean {
+  return axios.isAxiosError(error)
+    && error.response?.status === 401
+    && TERMINAL_AUTH_ERRORS.has(authErrorCode(error) ?? '')
+}
+
+function refreshSession(flight: RefreshFlight): Promise<void> {
+  if (!flight.promise) {
+    const csrfToken = csrfTokenForMethod('post')
+    flight.promise = axios.post(`${clientApiBaseUrl}/api/auth/refresh`, {}, {
+      withCredentials: true,
+      headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : undefined,
+      timeout: API_TIMEOUT_MS,
+    }).then(() => undefined).catch((error: unknown) => {
+      // An untyped refresh 401 is terminal for legacy backends only.
+      if (isTerminalAuthError(error) || (axios.isAxiosError(error) && error.response?.status === 401 && !authErrorCode(error))) {
+        handleSessionExpired()
+      }
+      throw error
+    }).finally(() => {
+      // New requests get a fresh flight; delayed 401s retain this settled one.
+      if (refreshFlight === flight) refreshFlight = { promise: null }
+    })
+  }
+  return flight.promise
 }
 
 function shouldSkipRefresh(request: RetryConfig) {
-  const url = request.url ?? ''
+  const url = (request.url ?? '').split(/[?#]/)[0]
   return (
     url.includes('/api/auth/refresh') ||
-    url.includes('/api/auth/logout') ||
+    url.endsWith('/api/auth/logout') ||
     url.includes('/api/auth/signin') ||
     url.includes('/api/auth/signup') ||
     url.includes('/api/auth/google')
@@ -99,7 +115,17 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
     async (error: AxiosError) => {
       const originalRequest = error.config as RetryConfig | undefined
 
-      if (error.response?.status !== 401 || !originalRequest || originalRequest._retry || shouldSkipRefresh(originalRequest)) {
+      if (error.response?.status !== 401 || !originalRequest) {
+        return Promise.reject(error)
+      }
+
+      if (isTerminalAuthError(error)) {
+        handleSessionExpired(originalRequest.url === '/api/auth/me')
+        return Promise.reject(error)
+      }
+
+      const code = authErrorCode(error)
+      if (originalRequest._retry || shouldSkipRefresh(originalRequest) || (code && !ACCESS_TOKEN_ERRORS.has(code))) {
         return Promise.reject(error)
       }
 
@@ -108,26 +134,10 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
         return Promise.reject(error)
       }
 
-      if (isRefreshing) {
-        return new Promise<void>((resolve, reject) => {
-          failedQueue.push({ resolve, reject })
-        }).then(() => instance(originalRequest))
-      }
-
       originalRequest._retry = true
-      isRefreshing = true
 
-      try {
-        await refreshSession()
-        flushQueue()
-        return instance(originalRequest)
-      } catch (refreshError) {
-        flushQueue(refreshError)
-        handleSessionExpired()
-        return Promise.reject(refreshError)
-      } finally {
-        isRefreshing = false
-      }
+      await refreshSession(originalRequest._refreshFlight ?? refreshFlight)
+      return instance(originalRequest)
     }
   )
 }

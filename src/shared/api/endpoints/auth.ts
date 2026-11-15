@@ -1,6 +1,8 @@
 import { apiClient } from '../client'
 import type { ApiResponse, SignIn, SignUp, UserProfile } from '@/shared/schemas'
 
+export type ChangePasswordRequest = { currentPassword: string; newPassword: string }
+
 export const authApi = {
   signIn: async (data: SignIn) =>
     (
@@ -27,5 +29,9 @@ export const authApi = {
   refresh: async () =>
     (await apiClient.post<ApiResponse<void>>('/api/auth/refresh')).data,
   logout: async () =>
-    (await apiClient.post<ApiResponse<void>>('/api/auth/logout')).data,
+    (await apiClient.post<ApiResponse<void>>('/api/auth/refresh/logout')).data,
+  logoutAll: async () =>
+    (await apiClient.post<ApiResponse<void>>('/api/auth/logout-all')).data,
+  changePassword: async (data: ChangePasswordRequest) =>
+    (await apiClient.patch<ApiResponse<void>>('/api/auth/password', data)).data,
 }
