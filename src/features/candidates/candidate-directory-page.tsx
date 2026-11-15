@@ -7,7 +7,6 @@ import { useSearchParams } from 'next/navigation'
 import {
   ArrowUpRight,
   Award,
-  CheckCircle2,
   ChevronDown,
   Clock3,
   FolderOpen,
@@ -21,18 +20,20 @@ import {
   X,
 } from 'lucide-react'
 import {
+  formatCandidateCareer,
   formatCandidateRating,
   getCandidateLocation,
   getCandidateSkillNames,
   getCandidateSummary,
 } from './candidate-directory'
+import { careerFields } from '@/features/users/resume-career'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { skillsApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn } from '@/shared/lib/utils'
 import type { CandidateProfile } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, Input } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, Input, Select } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -50,6 +51,9 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
   const [debouncedKeyword, setDebouncedKeyword] = useState(initialKeyword.trim())
   const [debouncedSkill, setDebouncedSkill] = useState('')
   const [debouncedLocation, setDebouncedLocation] = useState('')
+  const [careerField, setCareerField] = useState('')
+  const [level, setLevel] = useState('')
+  const [minYears, setMinYears] = useState('')
   const [page, setPage] = useState(1)
   const [panelOpen, setPanelOpen] = useState(false)
 
@@ -70,8 +74,11 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
       keyword: debouncedKeyword || undefined,
       skill: debouncedSkill || undefined,
       location: debouncedLocation || undefined,
+      careerField: careerField || undefined,
+      level: level || undefined,
+      minYears: Number(minYears) > 0 ? Number(minYears) : undefined,
     }),
-    [debouncedKeyword, debouncedLocation, debouncedSkill, page]
+    [careerField, debouncedKeyword, debouncedLocation, debouncedSkill, level, minYears, page]
   )
   const query = useQuery({
     queryKey: queryKeys.candidates(params),
@@ -94,6 +101,9 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
     setKeyword('')
     setSkill('')
     setLocation('')
+    setCareerField('')
+    setLevel('')
+    setMinYears('')
     setDebouncedKeyword('')
     setDebouncedSkill('')
     setDebouncedLocation('')
@@ -124,6 +134,9 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
   const activeFilters = [
     skill.trim() ? { key: 'skill' as const, label: skill.trim(), onRemove: () => updateSkill('') } : null,
     location.trim() ? { key: 'location' as const, label: location.trim(), onRemove: () => updateLocation('') } : null,
+    careerField ? { key: 'careerField' as const, label: careerField, onRemove: () => { setCareerField(''); setPage(1) } } : null,
+    level ? { key: 'level' as const, label: level, onRemove: () => { setLevel(''); setPage(1) } } : null,
+    Number(minYears) > 0 ? { key: 'minYears' as const, label: `${minYears}+ years`, onRemove: () => { setMinYears(''); setPage(1) } } : null,
   ].filter((filter): filter is NonNullable<typeof filter> => Boolean(filter))
 
   return (
@@ -218,7 +231,30 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
               setPanelOpen(false)
             }}
           >
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Field</span>
+                <Select value={careerField} onChange={(event) => { setCareerField(event.target.value); setPage(1) }}>
+                  <option value="">Any field</option>
+                  {careerFields.map((field) => <option key={field} value={field}>{field}</option>)}
+                </Select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">AI level</span>
+                <Select value={level} onChange={(event) => { setLevel(event.target.value); setPage(1) }}>
+                  <option value="">Any level</option>
+                  <option value="Junior">Junior</option>
+                  <option value="Mid">Mid</option>
+                  <option value="Senior">Senior</option>
+                </Select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Years in field, at least</span>
+                <Input type="number" min={0} max={40} inputMode="numeric" value={minYears} placeholder="0"
+                  onChange={(event) => { setMinYears(event.target.value); setPage(1) }} />
+              </label>
+            </div>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <PanelField label="Skill">
                 <Input
                   className="h-8 border-0 bg-transparent px-0 shadow-none ring-0 focus:border-0 focus:ring-0"
@@ -324,7 +360,7 @@ function PanelField({ label, children }: { label: string; children: React.ReactN
 function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
   const skills = getCandidateSkillNames(candidate)
   const summary = getCandidateSummary(candidate)
-  const isMatch = candidate.match.label !== 'low_match'
+  const career = formatCandidateCareer(candidate)
 
   return (
     <Card className="transition hover:shadow-[0_12px_28px_rgba(27,28,28,0.09)]">
@@ -337,21 +373,18 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
             </h2>
             <p className="mt-0.5 truncate text-sm font-semibold text-muted">{candidate.headline}</p>
           </div>
-          <span
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11.5px] font-bold',
-              isMatch ? 'bg-primary/10 text-primary' : 'bg-surface-muted text-muted'
-            )}
-          >
-            {isMatch ? <Sparkles className="h-3 w-3" /> : null}
-            {isMatch ? 'Match' : 'No match yet'}
-          </span>
+          {candidate.career?.level ? (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11.5px] font-bold text-primary" title="Level read by AI from the resume">
+              <Sparkles className="h-3 w-3" aria-hidden="true" />
+              {candidate.career.level}
+            </span>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold text-muted">
           <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
           <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-rating text-rating" /> {formatCandidateRating(candidate)}</span>
-          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> Open to work</span>
+          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> {career ?? 'No resume yet'}</span>
         </div>
 
         {summary ? <p className="line-clamp-2 text-sm leading-6 text-muted">{summary}</p> : null}
@@ -364,9 +397,8 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-3 gap-2 border-y border-border py-2.5">
-          <CardStat icon={<CheckCircle2 className="h-3.5 w-3.5" />} label="Completed" value={String(candidate.stats.completedWork)} />
-          <CardStat icon={<Award className="h-3.5 w-3.5" />} label="Certs" value={String(candidate.stats.certifications)} />
+        <div className="grid grid-cols-2 gap-2 border-y border-border py-2.5">
+          <CardStat icon={<Award className="h-3.5 w-3.5" />} label="Certificates" value={String(candidate.stats.certifications)} />
           <CardStat icon={<FolderOpen className="h-3.5 w-3.5" />} label="Portfolio" value={String(candidate.stats.portfolioItems)} />
         </div>
 

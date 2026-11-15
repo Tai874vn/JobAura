@@ -2,7 +2,6 @@ import {
   BriefcaseBusiness,
   Clock3,
   ShieldCheck,
-  SlidersHorizontal,
   Sparkles,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -28,10 +27,10 @@ export function RecruiterQuotaCard({
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase text-primary">
-              AI tokens
+              Today
             </p>
             <h2 className="mt-1 font-display text-xl font-bold">
-              Daily rate limit
+              AI runs left
             </h2>
           </div>
           <Sparkles className="h-5 w-5 text-primary" />
@@ -53,8 +52,8 @@ export function RecruiterQuotaCard({
               />
             </div>
             <p className="mt-3 text-xs leading-5 text-muted">
-              Used {used}. One successful non-empty AI result consumes one
-              token.{" "}
+              Used {used}. A run that finds candidates uses one; a run
+              that finds nobody is free.{" "}
               {quota?.resetAt
                 ? `Resets ${formatReset(quota.resetAt)}.`
                 : "Resets daily."}
@@ -71,31 +70,26 @@ export function MatchingPolicyCard() {
     <Card>
       <CardContent className="p-4">
         <p className="text-xs font-bold uppercase text-primary">
-          Matching rules
+          How matching works
         </p>
         <h2 className="mt-1 font-display text-xl font-bold">
-          Backend-controlled access
+          Better posts, better matches
         </h2>
         <div className="mt-4 grid gap-3 text-sm">
           <PolicyRow
             icon={<ShieldCheck className="h-4 w-4" />}
-            label="Authorization"
-            text="Only employers and admins can run candidate recommendations."
+            label="Who is ranked"
+            text="Candidates who chose to be visible to recruiters, ranked by their resume, skills, field, and years."
           />
           <PolicyRow
             icon={<BriefcaseBusiness className="h-4 w-4" />}
-            label="Ownership"
-            text="Employers can only match candidates for hiring posts they created."
+            label="What it reads from your post"
+            text="The field, required years, and skills you set. Fill them in for the best ranking."
           />
           <PolicyRow
             icon={<Clock3 className="h-4 w-4" />}
-            label="Rate limit"
-            text="Daily quota is enforced by the backend and shared with job recommendations."
-          />
-          <PolicyRow
-            icon={<SlidersHorizontal className="h-4 w-4" />}
-            label="Classifier"
-            text="The recruiter AI returns a binary match or no-match decision with a match probability."
+            label="Saved results"
+            text="Your last matches for each post stay here, so reopening them doesn't use a run."
           />
         </div>
       </CardContent>
