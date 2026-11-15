@@ -75,10 +75,13 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
             <h3 className="line-clamp-2 min-h-11 text-sm font-semibold leading-5 hover:text-primary">{job.title}</h3>
           </Link>
           <div className="mt-3 flex items-center justify-between">
-            <Badge tone="rating">
-              <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
-              {(job.rating ?? 0).toFixed(1)}
-            </Badge>
+            {/* A star only once someone has reviewed it; portfolio posts usually have no reviews. */}
+            {job.reviews ? (
+              <Badge tone="rating">
+                <Star className="mr-1 h-3 w-3 fill-rating text-rating" />
+                {(job.rating ?? 0).toFixed(1)}
+              </Badge>
+            ) : <span />}
             <span className="text-sm font-semibold text-foreground">{servicePriceLabel(job.price) ?? 'Portfolio'}</span>
           </div>
         </div>

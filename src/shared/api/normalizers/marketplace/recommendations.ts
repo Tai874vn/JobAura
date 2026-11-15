@@ -149,6 +149,7 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
     profileSkills,
     stats: {
       portfolioItems: pickNumber(statsRecord, "portfolioItems") ?? 0,
+      listedServices: pickNumber(statsRecord, "listedServices") ?? 0,
       certifications: pickNumber(statsRecord, "certifications") ?? 0,
       completedWork: pickNumber(statsRecord, "completedWork") ?? 0,
       rating: pickNumber(statsRecord, "rating") ?? 0,

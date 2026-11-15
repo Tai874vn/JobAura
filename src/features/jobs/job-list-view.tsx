@@ -149,7 +149,7 @@ export function JobListView() {
     </form>
   )
 
-  const popularSearches = ['logo design', 'web development', 'video editing', 'SEO', 'data entry']
+  const popularSearches = ['Software Engineer', 'Data Analyst', 'Product Designer', 'QA', 'Marketing']
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
@@ -171,9 +171,9 @@ export function JobListView() {
       <div className="container-page mt-4 flex min-w-0 flex-1 flex-col pb-8">
         <div className="flex flex-wrap items-center gap-2.5">
           <p className="text-sm text-muted" aria-live="polite">
-            <b className="font-bold text-foreground">{isLoading ? '…' : content?.totalRow ?? 0}</b> services
+            <b className="font-bold text-foreground">{isLoading ? '…' : content?.totalRow ?? 0}</b> portfolio posts
           </p>
-          {query.isFetching && !isLoading ? <span role="status" className="inline-flex items-center gap-1.5 text-xs text-muted"><Spinner className="h-3.5 w-3.5" /> Updating services</span> : null}
+          {query.isFetching && !isLoading ? <span role="status" className="inline-flex items-center gap-1.5 text-xs text-muted"><Spinner className="h-3.5 w-3.5" /> Updating</span> : null}
           <div className="flex min-w-0 max-w-full flex-wrap gap-1.5">
             {activeFilters.map((filter) => (
               <button
@@ -194,14 +194,11 @@ export function JobListView() {
               <select
                 value={sort ?? ''}
                 onChange={(event) => setSort(event.target.value)}
-                aria-label="Sort services"
+                aria-label="Sort portfolio posts"
                 className="h-9 rounded-lg border border-border bg-surface px-2.5 text-[13px] font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary-bright"
               >
                 <option value="">Default</option>
                 <option value="newest">Newest</option>
-                <option value="rating_desc">Top rated</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
               </select>
             </label>
             <button
@@ -238,7 +235,7 @@ export function JobListView() {
             <EmptyState
               fill
               icon={<SearchX />}
-              title="Unable to load services"
+              title="Unable to load portfolio posts"
               description="Check the backend connection and try again."
               action={<Button variant="secondary" onClick={() => query.refetch()}>Retry</Button>}
             />

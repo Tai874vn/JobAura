@@ -399,7 +399,7 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
 
         <div className="grid grid-cols-2 gap-2 border-y border-border py-2.5">
           <CardStat icon={<Award className="h-3.5 w-3.5" />} label="Certificates" value={String(candidate.stats.certifications)} />
-          <CardStat icon={<FolderOpen className="h-3.5 w-3.5" />} label="Portfolio" value={String(candidate.stats.portfolioItems)} />
+          <CardStat icon={<FolderOpen className="h-3.5 w-3.5" />} label="Portfolio" value={String(candidate.stats.portfolioItems + candidate.stats.listedServices)} />
         </div>
 
         <div className="flex items-center gap-2 text-[11.5px] font-semibold text-muted">

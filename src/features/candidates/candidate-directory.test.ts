@@ -16,6 +16,7 @@ describe('candidate directory data', () => {
     ],
     stats: {
       portfolioItems: 2,
+      listedServices: 0,
       certifications: 1,
       completedWork: 4,
       rating: 4.8,

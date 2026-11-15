@@ -280,7 +280,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               )}
               <a href="#services" className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface text-sm font-semibold transition hover:border-primary hover:text-primary">
                 <ArrowUpRight className="h-4 w-4" />
-                View services below
+                View portfolio below
               </a>
             </div>
           </CardContent>
@@ -308,14 +308,13 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
 
           <Card id="services">
             <CardHeader className="flex flex-wrap items-center justify-between gap-3">
-              <SectionTitle title="Services" meta={`${posts.length} listed`} />
-              <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">Public marketplace activity</span>
+              <SectionTitle title="Portfolio posts" meta={`${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`} />
             </CardHeader>
             <CardContent className="grid gap-4 p-5 md:p-6">
               {posts.length ? (
                 posts.map((post) => <ProfilePostCard key={post.id} post={post} user={profile} />)
               ) : (
-                <EmptyState icon={<BriefcaseBusiness className="h-5 w-5" />} text="No service posts from this member yet." />
+                <EmptyState icon={<BriefcaseBusiness className="h-5 w-5" />} text="No portfolio posts from this member yet." />
               )}
             </CardContent>
           </Card>

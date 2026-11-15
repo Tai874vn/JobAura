@@ -163,6 +163,8 @@ export const recommendationLabelSchema = z.enum([
 
 export const candidateDirectoryStatsSchema = z.object({
   portfolioItems: z.coerce.number().default(0),
+  /** Portfolio posts the candidate published (the backend still calls them listed services). */
+  listedServices: z.coerce.number().default(0),
   certifications: z.coerce.number().default(0),
   completedWork: z.coerce.number().default(0),
   rating: z.coerce.number().default(0),

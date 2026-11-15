@@ -34,7 +34,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
           </span>
           <span className="min-w-0">
             <span className="block truncate text-sm font-bold">{user.name}</span>
-            <span className="block text-xs text-muted">{post.createdAt ? formatDate(post.createdAt) : 'Marketplace service'}</span>
+            <span className="block text-xs text-muted">{post.createdAt ? formatDate(post.createdAt) : 'Portfolio post'}</span>
           </span>
         </div>
         {hasRating ? (
@@ -62,7 +62,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
               {post.title}
             </Link>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
-              {post.shortDescription || post.description || 'This service post is available on JobAura.'}
+              {post.shortDescription || post.description || 'A portfolio post on JobAura.'}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">

@@ -17,7 +17,7 @@ function renderList(categoryNames: string[], loaded = true) {
   return renderToStaticMarkup(<QueryClientProvider client={client}><JobListView /></QueryClientProvider>)
 }
 
-describe('Explore services feedback', () => {
+describe('Portfolio list feedback', () => {
   beforeEach(() => { navigation.search = '' })
 
   it('collapses a long category list behind an accessible expansion control', () => {
@@ -40,9 +40,9 @@ describe('Explore services feedback', () => {
     expect(html).not.toContain('Show more')
   })
 
-  it('announces initial service loading instead of presenting an empty result', () => {
+  it('announces initial loading instead of presenting an empty result', () => {
     const html = renderList([], false)
-    expect(html).toContain('Loading services')
-    expect(html).not.toContain('No services found')
+    expect(html).toContain('Loading portfolio posts')
+    expect(html).not.toContain('No portfolio posts found')
   })
 })

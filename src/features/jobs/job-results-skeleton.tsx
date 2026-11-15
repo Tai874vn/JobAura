@@ -1,8 +1,8 @@
 import { CardSkeleton, Skeleton } from '@/shared/ui'
 
 export function JobResultsSkeleton() {
-  return <div role="status" aria-label="Loading services">
-    <span className="sr-only">Loading services</span>
+  return <div role="status" aria-label="Loading portfolio posts">
+    <span className="sr-only">Loading portfolio posts</span>
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: 12 }, (_, index) => <CardSkeleton key={index} />)}
     </div>
