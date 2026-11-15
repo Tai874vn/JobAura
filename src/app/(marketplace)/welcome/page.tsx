@@ -4,9 +4,9 @@ import { landingFaqs } from '@/features/jobs/home/faq'
 import { JsonLd, faqJsonLd, organizationJsonLd, websiteJsonLd } from '@/shared/lib/seo'
 
 export const metadata: Metadata = {
-  title: 'Hire trusted freelance talent',
+  title: 'Find a role or hire the right person',
   description:
-    'Browse trusted freelance services, connect with skilled professionals, and hire with confidence on JobAura.',
+    'Apply to open roles, post your portfolio, or publish hiring posts and get candidates ranked by AI on JobAura.',
   alternates: {
     canonical: '/welcome',
   },

@@ -4,27 +4,27 @@ export const landingFaqs: AccordionItem[] = [
   {
     question: 'Is JobAura free to join?',
     answer:
-      'Yes. Creating an account, posting services, and applying to hiring posts are all free. You agree on payment directly for the work you order.',
+      'Yes. Creating an account, applying to roles, posting your portfolio, and publishing hiring posts are all free.',
   },
   {
     question: 'How do I hire someone?',
     answer:
-      'Search the marketplace or browse categories, open a service to review the details, ratings, and seller profile, then start the conversation through built-in chat before you commit.',
+      'Create a recruiter account and publish a hiring post with the field, required years, and skills. Candidates apply to it, and AI matching ranks candidates for it. You can also search the candidate directory.',
   },
   {
-    question: 'How do I sell my services?',
+    question: 'How do I find a job?',
     answer:
-      'Create a candidate account and publish your service with clear pricing and a strong description. It appears in the marketplace, and you can also watch hiring posts and apply with a cover letter.',
+      'Create a candidate account, add your resume, and apply to hiring posts. Post your portfolio so recruiters can find you, and run AI matching to see the roles that fit you best.',
   },
   {
     question: 'What is AI matching?',
     answer:
-      'JobAura can score candidates against a hiring post automatically. Recruiters get a ranked shortlist without manual searching, and workers get recommended jobs that fit their skills.',
+      'JobAura scores candidates against a hiring post automatically. Recruiters get a ranked shortlist, and candidates get the open roles that fit their resume.',
   },
   {
     question: 'Can I chat before hiring?',
     answer:
-      'Yes. Connect with a professional and use real-time chat to agree on scope, timeline, and price before any money changes hands.',
+      'Yes. Connect with a recruiter or candidate and use real-time chat to talk about a role before applying or hiring.',
   },
 ]
 

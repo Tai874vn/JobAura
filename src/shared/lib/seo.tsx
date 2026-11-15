@@ -1,7 +1,7 @@
 import { resolveHttpUrl } from './urls'
 
 const defaultSiteUrl = 'http://localhost:3000'
-const defaultDescription = 'Find trusted freelance services and manage work in one marketplace.'
+const defaultDescription = 'Find a role, show your work, or hire the right person, with AI matching built in.'
 
 export function siteOrigin() {
   try {

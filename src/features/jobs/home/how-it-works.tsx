@@ -5,20 +5,20 @@ const steps = [
   {
     icon: Search,
     step: 'Step 1',
-    title: 'Search & discover',
-    text: 'Browse categories or search by keyword to find services that fit your project, timeline, and budget.',
+    title: 'Find or post a role',
+    text: 'Candidates search open roles by field, level, and location. Recruiters publish a role with the field, years, and skills it needs.',
   },
   {
     icon: MessagesSquare,
     step: 'Step 2',
-    title: 'Connect & chat',
-    text: 'Compare ratings and portfolios, then message professionals directly with built-in real-time chat.',
+    title: 'Show your work',
+    text: 'Candidates add a resume and portfolio posts; AI reads their level from the resume. Recruiters see it on every profile.',
   },
   {
     icon: Handshake,
     step: 'Step 3',
-    title: 'Hire & track',
-    text: 'Agree on scope and price, hire with confidence, and keep every project organized in your workspace.',
+    title: 'Match & talk',
+    text: 'AI ranks roles for each candidate and candidates for each role. Apply in one step, or message each other in real-time chat.',
   },
 ]
 

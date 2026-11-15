@@ -5,22 +5,22 @@ const features = [
   {
     icon: Sparkles,
     title: 'AI matching',
-    text: 'Smart recommendations pair recruiters with the right candidates and workers with the right jobs.',
+    text: 'Roles ranked for each candidate’s resume, and candidates ranked for each hiring post.',
   },
   {
     icon: MessagesSquare,
     title: 'Real-time chat',
-    text: 'Talk instantly with clients and professionals — scope, negotiate, and decide without leaving JobAura.',
+    text: 'Recruiters and candidates talk directly, without leaving JobAura.',
   },
   {
     icon: Star,
-    title: 'Verified ratings',
-    text: 'Every service shows real star ratings and comments from completed work, so you can hire with confidence.',
+    title: 'Levels from the resume',
+    text: 'Junior, Mid, or Senior is read from years in the field and the work described, with the reasons shown.',
   },
   {
     icon: Bookmark,
     title: 'Save & compare',
-    text: 'Bookmark services, posts, and candidates, then compare your shortlist side by side before committing.',
+    text: 'Bookmark roles, posts, and candidates, then compare your shortlist before you decide.',
   },
 ]
 

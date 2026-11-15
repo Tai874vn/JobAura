@@ -9,8 +9,8 @@ import type { ApiResponse, Job, PaginatedContent } from '@/shared/schemas'
 import { JobsPageSkeleton } from '@/features/jobs/job-results-skeleton'
 
 export const metadata: Metadata = {
-  title: 'Explore services',
-  description: 'Search and compare freelance services, skills, pricing, ratings, and specialists on JobAura.',
+  title: 'Candidate portfolios',
+  description: 'Browse candidate portfolio posts by field and skill on JobAura.',
   alternates: {
     canonical: '/jobs',
   },

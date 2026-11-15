@@ -1,51 +1,29 @@
 "use client";
 
-import {
-  BriefcaseBusiness,
-  Home,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Plus,
-  Search,
-  Settings,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { LogOut, Menu, Search, User } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSession } from "@/features/auth/use-session";
 import { NotificationBell } from "@/features/notifications/notification-bell";
-import {
-  canAccessCandidateDirectory,
-  canAccessCandidateTools,
-} from "@/shared/lib/roles";
+import { cn } from "@/shared/lib/utils";
 import { Avatar, Button } from "@/shared/ui";
+import { siteNav } from "./site-nav";
 
 export function SiteHeader() {
   const router = useRouter();
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isLoading: isSessionLoading } = useSession();
-  const isRecruiter = user?.role === "employer";
-  const canUseRecruiterTools = canAccessCandidateDirectory(user?.role);
-  const canUseCandidateTools = canAccessCandidateTools(user?.role);
-  const homeHref = user
-    ? user.role === "admin"
-      ? "/admin"
-      : isRecruiter
-        ? "/candidates"
-        : "/"
-    : "/welcome";
+  const nav = siteNav(user?.role);
+  const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
+
   function submitSearch(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const keyword = query.trim();
-    const target = isRecruiter ? "/candidates" : "/jobs";
-    router.push(
-      keyword ? `${target}?keyword=${encodeURIComponent(keyword)}` : target,
-    );
+    router.push(keyword ? `${nav.search.target}?keyword=${encodeURIComponent(keyword)}` : nav.search.target);
   }
 
   function goToLogout() {
@@ -57,98 +35,37 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface backdrop-blur">
       <div className="container-page flex h-16 items-center gap-4">
-        <Link
-          href={homeHref}
-          className="shrink-0 font-display text-2xl font-bold tracking-tight text-primary"
-        >
+        <Link href={nav.home} className="shrink-0 font-display text-2xl font-bold tracking-tight text-primary">
           JobAura
         </Link>
         <form
           onSubmit={submitSearch}
+          role="search"
           className="hidden min-w-0 flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
         >
-          <Search className="h-4 w-4 text-muted" />
+          <Search className="h-4 w-4 text-muted" aria-hidden="true" />
           <input
             className="h-10 flex-1 bg-transparent px-3 text-sm outline-none"
-            placeholder={
-              isRecruiter
-                ? "Search candidates, roles, or skills"
-                : "Search services, skills, or experts"
-            }
-            aria-label={
-              isRecruiter
-                ? "Search candidates, roles, or skills"
-                : "Search services, skills, or experts"
-            }
+            placeholder={nav.search.placeholder}
+            aria-label={nav.search.placeholder}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </form>
-        <nav className="hidden items-center gap-2 md:flex">
-          {user && canUseCandidateTools ? (
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+          {isSessionLoading ? null : nav.main.map((link) => (
             <Link
-              className="flex items-center gap-1.5 px-2 text-sm font-semibold text-muted hover:text-foreground"
-              href="/"
+              key={link.href}
+              href={link.href}
+              aria-current={isCurrent(link.href) ? "page" : undefined}
+              className={cn(
+                "whitespace-nowrap rounded px-2 py-1 text-sm font-semibold hover:text-foreground",
+                isCurrent(link.href) ? "text-primary" : "text-muted",
+              )}
             >
-              <Home className="h-4 w-4" /> Home
+              {link.label}
             </Link>
-          ) : null}
-          {canUseCandidateTools ? (
-            <>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/jobs"
-              >
-                Explore
-              </Link>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/jobs/new"
-              >
-                Post Service
-              </Link>
-            </>
-          ) : null}
-          {canUseRecruiterTools ? (
-            <>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/candidates"
-              >
-                Find Candidates
-              </Link>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/recommendations/candidates"
-              >
-                AI Matching
-              </Link>
-            </>
-          ) : null}
-          {user ? (
-            <>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/hiring-posts"
-              >
-                Hiring Posts
-              </Link>
-              <Link
-                className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-                href="/connections"
-              >
-                Connections
-              </Link>
-            </>
-          ) : null}
-          {user?.role === "admin" ? (
-            <Link
-              className="px-2 text-sm font-semibold text-muted hover:text-foreground"
-              href="/admin"
-            >
-              Admin
-            </Link>
-          ) : null}
+          ))}
         </nav>
         {user ? (
           <div className="ml-auto md:ml-0">
@@ -168,91 +85,25 @@ export function SiteHeader() {
               <Avatar name={user.name} src={user.avatar} className="h-9 w-9" />
             </button>
             {accountMenuOpen ? (
-              <div id="account-navigation" className="motion-popover absolute right-0 top-11 w-56 rounded-lg border border-border bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
-                <MenuLink
-                  href={`/profile/${user.id}`}
-                  icon={<User className="h-4 w-4" />}
-                  label="Profile"
-                  onClick={() => setAccountMenuOpen(false)}
-                />
-                {canUseCandidateTools ? (
-                  <>
-                    <MenuLink
-                      href="/my-posts"
-                      icon={<BriefcaseBusiness className="h-4 w-4" />}
-                      label="My posts"
-                      onClick={() => setAccountMenuOpen(false)}
-                    />
-                    <MenuLink
-                      href="/my-jobs"
-                      icon={<LayoutDashboard className="h-4 w-4" />}
-                      label="My jobs"
-                      onClick={() => setAccountMenuOpen(false)}
-                    />
-                  </>
-                ) : null}
-                {canUseRecruiterTools ? (
-                  <>
-                    <MenuLink
-                      href="/candidates"
-                      icon={<Search className="h-4 w-4" />}
-                      label="Find candidates"
-                      onClick={() => setAccountMenuOpen(false)}
-                    />
-                    <MenuLink
-                      href="/recommendations/candidates"
-                      icon={<Sparkles className="h-4 w-4" />}
-                      label="AI matching"
-                      onClick={() => setAccountMenuOpen(false)}
-                    />
-                  </>
-                ) : null}
-                <MenuLink
-                  href="/hiring-posts"
-                  icon={<BriefcaseBusiness className="h-4 w-4" />}
-                  label="Hiring posts"
-                  onClick={() => setAccountMenuOpen(false)}
-                />
-                <MenuLink
-                  href="/connections"
-                  icon={<LayoutDashboard className="h-4 w-4" />}
-                  label="Connections"
-                  onClick={() => setAccountMenuOpen(false)}
-                />
-                <MenuLink
-                  href="/settings"
-                  icon={<Settings className="h-4 w-4" />}
-                  label="Settings"
-                  onClick={() => setAccountMenuOpen(false)}
-                />
+              <div id="account-navigation" className="motion-popover absolute right-0 top-11 w-60 rounded-lg border border-border bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+                <MenuLink href={`/profile/${user.id}`} label="Profile" icon={<User className="h-4 w-4" />} onClick={() => setAccountMenuOpen(false)} />
+                {nav.account.map((link) => (
+                  <MenuLink key={link.href} href={link.href} label={link.label} onClick={() => setAccountMenuOpen(false)} />
+                ))}
                 <button
                   className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-semibold text-danger hover:bg-danger/5"
                   onClick={goToLogout}
                 >
                   <LogOut className="h-4 w-4" />
-                  Logout
+                  Log out
                 </button>
               </div>
             ) : null}
           </div>
         ) : (
-          <div
-            className="hidden shrink-0 items-center gap-2 md:flex"
-            aria-busy={isSessionLoading}
-          >
-            <Button
-              variant="secondary"
-              disabled={isSessionLoading}
-              onClick={() => router.push("/auth/login")}
-            >
-              Sign in
-            </Button>
-            <Button
-              disabled={isSessionLoading}
-              onClick={() => router.push("/auth/register")}
-            >
-              Join
-            </Button>
+          <div className="hidden shrink-0 items-center gap-2 md:flex" aria-busy={isSessionLoading}>
+            <Button variant="secondary" disabled={isSessionLoading} onClick={() => router.push("/auth/login")}>Sign in</Button>
+            <Button disabled={isSessionLoading} onClick={() => router.push("/auth/register")}>Join</Button>
           </div>
         )}
 
@@ -274,9 +125,7 @@ export function SiteHeader() {
           variant="ghost"
           size="icon"
           onClick={() => setMobileMenuOpen((value) => !value)}
-          aria-label={
-            mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
-          }
+          aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
           aria-controls="mobile-navigation"
           aria-expanded={mobileMenuOpen}
         >
@@ -284,41 +133,31 @@ export function SiteHeader() {
         </Button>
       </div>
       {mobileMenuOpen ? (
-        <div
-          id="mobile-navigation"
-          className="motion-popover border-t border-border bg-surface p-4 md:hidden"
-        >
-          <div className="grid gap-2 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
-            {user && canUseCandidateTools ? <Link href="/">Home feed</Link> : null}
-            {canUseCandidateTools ? <Link href="/jobs">Explore</Link> : null}
-            {canUseCandidateTools ? (
-              <Link href="/jobs/new" className="flex items-center gap-2">
-                <Plus className="h-4 w-4" /> Post Service
+        <div id="mobile-navigation" className="motion-popover border-t border-border bg-surface p-4 md:hidden">
+          <form onSubmit={(event) => { submitSearch(event); setMobileMenuOpen(false); }} role="search" className="mb-3 flex items-center rounded-lg border border-border px-3">
+            <Search className="h-4 w-4 text-muted" aria-hidden="true" />
+            <input className="h-10 flex-1 bg-transparent px-3 text-sm outline-none" placeholder={nav.search.placeholder}
+              aria-label={nav.search.placeholder} value={query} onChange={(event) => setQuery(event.target.value)} />
+          </form>
+          <div className="grid gap-1 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
+            {[...nav.main, ...nav.account.filter((link) => !nav.main.some((main) => main.href === link.href))].map((link) => (
+              <Link key={link.href} href={link.href} className="rounded px-2 py-2 hover:bg-surface-muted"
+                aria-current={isCurrent(link.href) ? "page" : undefined}>
+                {link.label}
               </Link>
-            ) : null}
-            {canUseRecruiterTools ? (
-              <Link href="/candidates">Find Candidates</Link>
-            ) : null}
-            {canUseRecruiterTools ? (
-              <Link href="/recommendations/candidates">AI Matching</Link>
-            ) : null}
-            {user ? (
-              <Link href="/hiring-posts">Hiring Posts</Link>
-            ) : null}
-            {user ? <Link href="/connections">Connections</Link> : null}
-            {user?.role === "admin" ? <Link href="/admin">Admin</Link> : null}
+            ))}
             {isSessionLoading ? null : user ? (
               <>
-                <Link href={`/profile/${user.id}`}>Profile</Link>
-                <button
-                  className="flex items-center gap-2 text-left text-danger"
-                  onClick={goToLogout}
-                >
-                  <LogOut className="h-4 w-4" /> Logout
+                <Link href={`/profile/${user.id}`} className="rounded px-2 py-2 hover:bg-surface-muted">Profile</Link>
+                <button className="flex items-center gap-2 rounded px-2 py-2 text-left text-danger" onClick={goToLogout}>
+                  <LogOut className="h-4 w-4" /> Log out
                 </button>
               </>
             ) : (
-              <Link href="/auth/login">Sign in</Link>
+              <>
+                <Link href="/auth/login" className="rounded px-2 py-2 hover:bg-surface-muted">Sign in</Link>
+                <Link href="/auth/register" className="rounded px-2 py-2 hover:bg-surface-muted">Create account</Link>
+              </>
             )}
           </div>
         </div>
@@ -327,14 +166,9 @@ export function SiteHeader() {
   );
 }
 
-function MenuLink({
-  href,
-  icon,
-  label,
-  onClick,
-}: {
+function MenuLink({ href, icon, label, onClick }: {
   href: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   label: string;
   onClick?: () => void;
 }) {

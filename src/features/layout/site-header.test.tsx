@@ -4,6 +4,7 @@ import { SiteHeader } from './site-header'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/',
 }))
 
 vi.mock('@/features/auth/use-session', () => ({
