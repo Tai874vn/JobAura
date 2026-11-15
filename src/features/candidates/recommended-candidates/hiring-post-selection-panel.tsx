@@ -2,17 +2,15 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BriefcaseBusiness, CheckCircle2, Sparkles } from "lucide-react";
-import type { FormEvent } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
-import type { CreateHiringPost, HiringPost } from "@/shared/schemas";
-import { createHiringPostSchema } from "@/shared/schemas";
-import { Badge, Button, Card, CardContent, Input, Select, Textarea } from "@/shared/ui";
+import type { HiringPost } from "@/shared/schemas";
+import { HiringPostFormDialog } from "@/features/hiring/hiring-post-form-dialog";
+import { Badge, Button, Card, CardContent, Select } from "@/shared/ui";
 import {
-  emptyHiringPostDraft,
   hiringPostPageParams,
   poolSizeOptions,
   topKOptions,
@@ -41,26 +39,6 @@ export function HiringPostSelectionPanel({
 }: HiringPostSelectionPanelProps) {
   const queryClient = useQueryClient();
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [draft, setDraft] = useState<CreateHiringPost>(emptyHiringPostDraft);
-
-  const createMutation = useMutation({
-    mutationFn: hiringPostsApi.create,
-    onSuccess: (response) => {
-      const post = response.content;
-      if (post) {
-        onSelectHiringPost(post.id);
-      }
-      setDraft(emptyHiringPostDraft);
-      setShowCreateForm(false);
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.myHiringPosts(hiringPostPageParams),
-      });
-      toast.success("Hiring post created");
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error, "Could not create hiring post"));
-    },
-  });
   const predictSeniority = useMutation({
     mutationFn: hiringPostsApi.predictSeniority,
     onSuccess: () => {
@@ -75,32 +53,6 @@ export function HiringPostSelectionPanel({
       );
     },
   });
-
-  function updateDraft<K extends keyof CreateHiringPost>(
-    key: K,
-    value: CreateHiringPost[K],
-  ) {
-    setDraft((current) => ({ ...current, [key]: value }));
-  }
-
-  function submitHiringPost(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const parsed = createHiringPostSchema.safeParse({
-      ...draft,
-      title: draft.title.trim(),
-      description: draft.description.trim(),
-      requirements: draft.requirements?.trim() || undefined,
-      location: draft.location?.trim() || undefined,
-      employmentType: draft.employmentType?.trim() || undefined,
-    });
-
-    if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Check the hiring post details");
-      return;
-    }
-
-    createMutation.mutate(parsed.data);
-  }
 
   return (
     <Card>
@@ -118,134 +70,21 @@ export function HiringPostSelectionPanel({
           <Button
             type="button"
             variant="secondary"
-            onClick={() => setShowCreateForm((value) => !value)}
+            onClick={() => setShowCreateForm(true)}
           >
             <BriefcaseBusiness className="h-4 w-4" />
-            {showCreateForm ? "Close form" : "New hiring post"}
+            New hiring post
           </Button>
         </div>
 
-        {showCreateForm ? (
-          <form
-            className="mt-4 grid gap-3 rounded-lg border border-border bg-surface-muted p-4"
-            onSubmit={submitHiringPost}
-          >
-            <div className="grid gap-3 md:grid-cols-2">
-              <label className="grid gap-1">
-                <span className="text-xs font-bold uppercase text-muted">
-                  Role title
-                </span>
-                <Input
-                  value={draft.title}
-                  maxLength={160}
-                  onChange={(event) => updateDraft("title", event.target.value)}
-                  placeholder="Senior React Developer"
-                />
-              </label>
-              <label className="grid gap-1">
-                <span className="text-xs font-bold uppercase text-muted">
-                  Employment type
-                </span>
-                <Input
-                  value={draft.employmentType ?? ""}
-                  maxLength={80}
-                  onChange={(event) =>
-                    updateDraft("employmentType", event.target.value)
-                  }
-                  placeholder="Full-time, contract, remote"
-                />
-              </label>
-            </div>
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">
-                Description
-              </span>
-              <Textarea
-                className="min-h-28"
-                value={draft.description}
-                maxLength={5000}
-                onChange={(event) =>
-                  updateDraft("description", event.target.value)
-                }
-                placeholder="Describe responsibilities, project context, and who you want to hire."
-              />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-xs font-bold uppercase text-muted">
-                Requirements
-              </span>
-              <Textarea
-                className="min-h-24"
-                value={draft.requirements ?? ""}
-                maxLength={3000}
-                onChange={(event) =>
-                  updateDraft("requirements", event.target.value)
-                }
-                placeholder="React, TypeScript, API integration, 3+ years experience..."
-              />
-            </label>
-            <div className="grid gap-3 md:grid-cols-3">
-              <label className="grid gap-1">
-                <span className="text-xs font-bold uppercase text-muted">
-                  Location
-                </span>
-                <Input
-                  value={draft.location ?? ""}
-                  maxLength={120}
-                  onChange={(event) =>
-                    updateDraft("location", event.target.value)
-                  }
-                  placeholder="Phnom Penh or Remote"
-                />
-              </label>
-              <label className="grid gap-1">
-                <span className="text-xs font-bold uppercase text-muted">
-                  Salary min
-                </span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={draft.salaryMin ?? ""}
-                  onChange={(event) =>
-                    updateDraft(
-                      "salaryMin",
-                      event.target.value ? Number(event.target.value) : undefined,
-                    )
-                  }
-                />
-              </label>
-              <label className="grid gap-1">
-                <span className="text-xs font-bold uppercase text-muted">
-                  Salary max
-                </span>
-                <Input
-                  type="number"
-                  min={0}
-                  value={draft.salaryMax ?? ""}
-                  onChange={(event) =>
-                    updateDraft(
-                      "salaryMax",
-                      event.target.value ? Number(event.target.value) : undefined,
-                    )
-                  }
-                />
-              </label>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowCreateForm(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" loading={createMutation.isPending}>
-                <BriefcaseBusiness className="h-4 w-4" />
-                Create hiring post
-              </Button>
-            </div>
-          </form>
-        ) : null}
+        <HiringPostFormDialog
+          open={showCreateForm}
+          onClose={() => setShowCreateForm(false)}
+          onSaved={(post) => {
+            onSelectHiringPost(post.id);
+            void queryClient.invalidateQueries({ queryKey: queryKeys.myHiringPosts(hiringPostPageParams) });
+          }}
+        />
 
         {loading ? (
           <div className="mt-4 grid gap-3 md:grid-cols-2">

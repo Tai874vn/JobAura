@@ -19,6 +19,8 @@ export function getSessionExpiredRedirect(pathname: string) {
   const isPublic =
     pathname === '/welcome' ||
     pathname === '/jobs' ||
+    pathname === '/hiring-posts' ||
+    /^\/hiring-posts\/\d+$/.test(pathname) ||
     /^\/jobs\/\d+$/.test(pathname) ||
     /^\/profile\/\d+$/.test(pathname) ||
     pathname.startsWith('/auth/')

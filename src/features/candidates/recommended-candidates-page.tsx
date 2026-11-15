@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/features/auth/use-session";
@@ -31,6 +32,7 @@ type CandidateRunVariables = {
 export function RecommendedCandidatesPage() {
   const queryClient = useQueryClient();
   const { user } = useSession();
+  const requestedHiringPostId = Number(useSearchParams().get("hiringPostId")) || null;
   const [manualSelectedHiringPostId, setManualSelectedHiringPostId] = useState<
     number | null
   >(null);
@@ -60,7 +62,11 @@ export function RecommendedCandidatesPage() {
     [hiringPostsQuery.data?.content?.data],
   );
   const selectedHiringPostId =
-    manualSelectedHiringPostId ?? hiringPosts[0]?.id ?? null;
+    manualSelectedHiringPostId ??
+    // "Match candidates" on a post links here with ?hiringPostId=ID.
+    hiringPosts.find((post) => post.id === requestedHiringPostId)?.id ??
+    hiringPosts[0]?.id ??
+    null;
   const selectedHiringPost = useMemo(
     () =>
       hiringPosts.find((post) => post.id === selectedHiringPostId) ?? null,

@@ -22,12 +22,12 @@ describe('account roles', () => {
 
   it('routes signed-in users by role', () => {
     expect(getSignedInRedirect({ role: 'admin' })).toBe('/admin')
-    expect(getSignedInRedirect({ role: 'employer' })).toBe('/candidates')
+    expect(getSignedInRedirect({ role: 'employer' })).toBe('/my-hiring-posts')
     expect(getSignedInRedirect({ role: 'user' })).toBe('/')
     expect(getSignedInRedirect({ role: 'employer' }, '/settings')).toBe('/settings')
-    expect(getSignedInRedirect({ role: 'employer' }, '//evil.example')).toBe('/candidates')
-    expect(getSignedInRedirect({ role: 'employer' }, '/\\evil.example')).toBe('/candidates')
-    expect(getSignedInRedirect({ role: 'employer' }, 'https://evil.example')).toBe('/candidates')
+    expect(getSignedInRedirect({ role: 'employer' }, '//evil.example')).toBe('/my-hiring-posts')
+    expect(getSignedInRedirect({ role: 'employer' }, '/\\evil.example')).toBe('/my-hiring-posts')
+    expect(getSignedInRedirect({ role: 'employer' }, 'https://evil.example')).toBe('/my-hiring-posts')
   })
 
   it('limits candidate directory access to employers and admins', () => {

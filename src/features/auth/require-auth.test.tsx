@@ -35,6 +35,6 @@ describe('RequireAuth', () => {
       </RequireAuth>
     )
 
-    expect(mocks.replace).toHaveBeenCalledWith('/candidates')
+    expect(mocks.replace).toHaveBeenCalledWith('/my-hiring-posts')
   })
 })

@@ -4,8 +4,8 @@ import dynamic from 'next/dynamic'
 import { useSession } from '@/features/auth/use-session'
 import { Skeleton } from '@/shared/ui'
 
-const CandidateDirectoryPage = dynamic(
-  () => import('@/features/candidates/candidate-directory-page').then((module) => module.CandidateDirectoryPage),
+const MyHiringPostsPage = dynamic(
+  () => import('@/features/hiring/my-hiring-posts-page').then((module) => module.MyHiringPostsPage),
   { loading: RoleHomeLoading, ssr: false }
 )
 const FeedPage = dynamic(
@@ -17,7 +17,8 @@ export function RoleHomePage() {
   const { user } = useSession()
   const role = user?.role
 
-  if (role === 'employer') return <CandidateDirectoryPage />
+  // A recruiter's home is their own hiring posts: status, applicants, and matching for each.
+  if (role === 'employer') return <MyHiringPostsPage />
 
   return <FeedPage />
 }

@@ -44,6 +44,6 @@ export function getSignedInRedirect(user?: { role?: string | null } | null, next
   const safeNextPath = safeInternalPath(nextPath)
   if (safeNextPath) return safeNextPath
   if (user?.role === 'admin') return '/admin'
-  if (user?.role === 'employer') return '/candidates'
+  if (user?.role === 'employer') return '/my-hiring-posts'
   return '/'
 }
