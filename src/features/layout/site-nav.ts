@@ -13,15 +13,38 @@ export type SiteNav = {
 }
 
 export function siteNav(role?: string | null): SiteNav {
-  if (role === 'employer' || role === 'admin') {
+  // Admins oversee both sides, so they reach every area: the admin pages, both public lists, the recruiter
+  // tools in the header, and the candidate tools in the account menu.
+  if (role === 'admin') {
     return {
-      home: role === 'admin' ? '/admin' : '/my-hiring-posts',
+      home: '/admin',
+      main: [
+        { href: '/admin', label: 'Admin' },
+        { href: '/hiring-posts', label: 'Hiring posts' },
+        { href: '/jobs', label: 'Portfolios' },
+        { href: '/candidates', label: 'Find candidates' },
+        { href: '/recommendations/candidates', label: 'AI matching' },
+        { href: '/connections', label: 'Connections' },
+      ],
+      account: [
+        { href: '/', label: 'Home feed' },
+        { href: '/my-hiring-posts', label: 'My hiring posts' },
+        { href: '/jobs/new', label: 'Post portfolio' },
+        { href: '/my-posts', label: 'My portfolio posts' },
+        { href: '/saved', label: 'Saved' },
+        { href: '/settings', label: 'Settings' },
+      ],
+      search: { target: '/candidates', placeholder: 'Search candidates by name, role, or skill' },
+    }
+  }
+  if (role === 'employer') {
+    return {
+      home: '/my-hiring-posts',
       main: [
         { href: '/my-hiring-posts', label: 'My hiring posts' },
         { href: '/candidates', label: 'Find candidates' },
         { href: '/recommendations/candidates', label: 'AI matching' },
         { href: '/connections', label: 'Connections' },
-        ...(role === 'admin' ? [{ href: '/admin', label: 'Admin' }] : []),
       ],
       account: [
         { href: '/my-hiring-posts', label: 'My hiring posts' },

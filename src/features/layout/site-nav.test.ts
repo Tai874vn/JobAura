@@ -20,8 +20,15 @@ describe('siteNav', () => {
     expect(siteNav(null).home).toBe('/welcome')
   })
 
-  it('adds the admin area for admins', () => {
-    expect(labels('admin')).toContain('Admin')
+  it('gives admins every area: admin pages, both public lists, and both roles\' tools', () => {
     expect(siteNav('admin').home).toBe('/admin')
+    expect(labels('admin')).toEqual(['Admin', 'Hiring posts', 'Portfolios', 'Find candidates', 'AI matching', 'Connections'])
+    const account = siteNav('admin').account.map((link) => link.label)
+    expect(account).toEqual(expect.arrayContaining(['Home feed', 'My hiring posts', 'Post portfolio', 'My portfolio posts', 'Settings']))
+  })
+
+  it('keeps the admin link out of recruiter and candidate headers', () => {
+    expect(labels('employer')).not.toContain('Admin')
+    expect(labels('user')).not.toContain('Admin')
   })
 })

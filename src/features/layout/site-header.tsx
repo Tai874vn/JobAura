@@ -41,18 +41,19 @@ export function SiteHeader() {
         <form
           onSubmit={submitSearch}
           role="search"
-          className="hidden min-w-0 flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
+          className="hidden min-w-[160px] flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
         >
-          <Search className="h-4 w-4 text-muted" aria-hidden="true" />
+          <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+          {/* min-w-0 lets the input shrink with its box; without it the placeholder spills over the menu. */}
           <input
-            className="h-10 flex-1 bg-transparent px-3 text-sm outline-none"
+            className="h-10 min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
             placeholder={nav.search.placeholder}
             aria-label={nav.search.placeholder}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </form>
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+        <nav className="hidden shrink-0 items-center gap-1 lg:flex" aria-label="Main">
           {isSessionLoading ? null : nav.main.map((link) => (
             <Link
               key={link.href}
@@ -121,7 +122,7 @@ export function SiteHeader() {
         ) : null}
 
         <Button
-          className="shrink-0 md:hidden"
+          className="shrink-0 lg:hidden"
           variant="ghost"
           size="icon"
           onClick={() => setMobileMenuOpen((value) => !value)}
@@ -133,7 +134,7 @@ export function SiteHeader() {
         </Button>
       </div>
       {mobileMenuOpen ? (
-        <div id="mobile-navigation" className="motion-popover border-t border-border bg-surface p-4 md:hidden">
+        <div id="mobile-navigation" className="motion-popover border-t border-border bg-surface p-4 lg:hidden">
           <form onSubmit={(event) => { submitSearch(event); setMobileMenuOpen(false); }} role="search" className="mb-3 flex items-center rounded-lg border border-border px-3">
             <Search className="h-4 w-4 text-muted" aria-hidden="true" />
             <input className="h-10 flex-1 bg-transparent px-3 text-sm outline-none" placeholder={nav.search.placeholder}
