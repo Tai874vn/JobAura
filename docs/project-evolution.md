@@ -52,6 +52,14 @@
 
 ## How changes are checked and managed
 
+### 2026-11-09 — Frontend demo question bank (not committed yet)
+
+Added a standalone Vietnamese HTML study bank with 380 main questions, 380 follow-ups, 33 topics, search, difficulty filtering, print-all, and source references covering 267 source/test files plus 17 configuration/tool files. Checked structure, offline use, filters, keyboard focus, desktop/mobile layout, and print-state restoration; physical printer/PDF output was not produced. Final review approved the two resolved findings at fix-list scope. No application tests/build were rerun for this documentation-only task, and pre-existing application edits were preserved. See [question bank notes](demo-question-bank-notes.md). Owner: Tai874vn only; no commit, push, or deployment.
+
+### 2026-11-01 — Shared realtime connection management (not committed yet)
+
+Centralized Socket.IO transport ownership in a session-scoped Manager while keeping chat and notification namespaces, event handlers, and UI separate. Preserved lazy loading and fresh authentication tickets; added namespace reuse, subscriber cleanup, stale-async guards, private buffer cleanup, and explanatory comments. Independent review caught an initial chat-room join race, fixed by synchronizing the selected room on connect/reconnect. Verified 170 tests, typecheck, production build, actual local WebSocket multiplexing/reconnect/logout, and controlled browser notification-to-chat and guest/logout flows. Lint has no errors and one existing warning. See [realtime notes](realtime-connection-management-2026-11-01.md). Owner: Tai874vn only; no commit, push, backend/infrastructure change, or deployment.
+
 ### 2026-10-26 — Explore loading and heading cleanup (not committed yet)
 
 Removed generic page-title subtitles while retaining useful guidance and error messages. Explore now has full-width search, wrapping/expandable categories, foreground navigation/filter skeletons, image-ready service cards, and empty/error cards that fill the remaining body to the footer. Browser testing also exposed a guest-session 401 race that removed active public queries; a narrow frontend fix preserves those queries while keeping signed-in/logout cleanup. Kept components focused and protected server-rendered landing cards after independent review. Verified 158 tests, typecheck, production build, desktop/mobile loading, image fallbacks, cache reuse, retry, pagination, and overflow. See [Explore polish notes](explore-ui-polish-2026-10-26.md). Owner: Tai874vn only; no commit, push, backend/infrastructure change, or deployment.
