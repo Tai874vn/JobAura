@@ -3,8 +3,16 @@ import type { ApiResponse, ApplyHiringPost, CreateHiringPost, HiringApplication,
 import { normalizeHiringApplication, normalizeHiringPost, normalizePaginatedHiringApplicationsResponse, normalizePaginatedHiringPostsResponse } from '../normalizers'
 import { definedParams } from './params'
 
+/** Filters a candidate uses on the hiring post list; the backend ignores empty ones. */
+export type HiringPostFilters = PaginationParams & {
+  careerField?: string
+  level?: string
+  employmentType?: string
+  location?: string
+}
+
 export const hiringPostsApi = {
-  open: async (params: PaginationParams) =>
+  open: async (params: HiringPostFilters) =>
     normalizePaginatedHiringPostsResponse(
       (
         await apiClient.get<ApiResponse<PaginatedContent<HiringPost>>>(
@@ -13,6 +21,12 @@ export const hiringPostsApi = {
         )
       ).data,
     ),
+  one: async (id: number) => {
+    const response = (await apiClient.get<ApiResponse<HiringPost>>(`/api/hiring-posts/${id}`)).data
+    return response.content
+      ? { ...response, content: normalizeHiringPost(response.content) }
+      : response
+  },
   mine: async (params: PaginationParams) =>
     normalizePaginatedHiringPostsResponse(
       (

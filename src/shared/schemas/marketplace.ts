@@ -54,6 +54,11 @@ export const hiringPostSchema = z.object({
   employmentType: z.string().optional().nullable(),
   salaryMin: z.number().optional().nullable(),
   salaryMax: z.number().optional().nullable(),
+  companyName: z.string().optional().nullable(),
+  careerField: z.string().optional().nullable(),
+  yearsRequired: z.number().optional().nullable(),
+  skills: z.array(z.string()).optional().default([]),
+  closesAt: z.string().optional().nullable(),
   predictedSeniority: z.string().optional().nullable(),
   predictedSeniorityConfidence: z.number().optional().nullable(),
   predictedSeniorityModel: z.string().optional().nullable(),
@@ -100,6 +105,21 @@ export const createHiringPostSchema = z
       .optional(),
     salaryMin: z.coerce.number().min(0).optional(),
     salaryMax: z.coerce.number().min(0).optional(),
+    companyName: z
+      .string()
+      .trim()
+      .max(120, "Company name must be 120 characters or fewer")
+      .optional(),
+    /** One of the 37 career fields; the form offers only those. */
+    careerField: z.string().trim().min(1, "Choose the field of work"),
+    yearsRequired: z.coerce
+      .number({ message: "Enter the years of experience required" })
+      .int("Use whole years")
+      .min(0, "Years cannot be negative")
+      .max(40, "Use 40 years or fewer"),
+    skills: z.array(z.string()).max(20, "Pick up to 20 skills").optional(),
+    /** A date (YYYY-MM-DD) after which the post is no longer listed. */
+    closesAt: z.string().optional(),
   })
   .refine(
     (data) =>
@@ -163,6 +183,15 @@ export const candidateProfileSchema = z.object({
   location: z.string().optional().nullable(),
   profileSkills: z.array(profileSkillSchema).default([]),
   stats: candidateDirectoryStatsSchema,
+  /** From the candidate's resume: chosen field, AI level, and years in that field. Null without a resume. */
+  career: z
+    .object({
+      careerField: z.string().nullable(),
+      level: z.string().nullable(),
+      yearsInField: z.number().nullable(),
+    })
+    .nullable()
+    .optional(),
   match: candidateDirectoryMatchSchema,
 });
 
@@ -185,7 +214,8 @@ export const recommendationScoreSchema = z.object({
   improvementTips: z.array(z.string()).optional().default([]),
 });
 
-export const recommendedJobSchema = jobSchema.extend({
+/** A hiring post ranked for the signed-in candidate's resume. */
+export const recommendedJobSchema = hiringPostSchema.extend({
   recommendation: recommendationScoreSchema,
 });
 
@@ -199,7 +229,8 @@ export const createJobSchema = z.object({
     .trim()
     .min(3, "Service title is required")
     .max(160, "Service title must be 160 characters or fewer"),
-  price: z.coerce.number().min(1, "Price must be greater than zero"),
+  /** Optional rate; 0 means a portfolio post with no price. */
+  price: z.coerce.number().min(0, "The rate cannot be negative").default(0),
   shortDescription: z
     .string()
     .trim()
@@ -210,7 +241,7 @@ export const createJobSchema = z.object({
     .trim()
     .max(5000, "Description must be 5000 characters or fewer")
     .optional(),
-  subcategoryId: z.coerce.number().min(1, "Choose a category detail"),
+  subcategoryId: z.coerce.number().min(1, "Choose the kind of work"),
   reviews: z.coerce.number().default(0),
   rating: z.coerce.number().min(0).max(5).default(0),
 });

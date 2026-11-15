@@ -53,8 +53,9 @@ describe('domain schemas', () => {
     expect(
       recommendedJobSchema.parse({
         id: 9,
+        recruiterId: 2,
         title: 'Backend API',
-        price: 250,
+        description: 'Build and run the public API.',
         recommendation,
       }).recommendation.finalScore
     ).toBe(0.79)

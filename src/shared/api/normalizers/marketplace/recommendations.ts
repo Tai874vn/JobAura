@@ -1,6 +1,6 @@
 import type { ApiResponse, CandidateProfile, PaginatedContent, RecommendationContent, RecommendationLabel, RecommendationScore, RecommendedCandidate, RecommendedJob, UserProfile } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickRole, pickString, pickStringArray } from '../core'
-import { normalizeJob } from './jobs'
+import { normalizeHiringPost } from './hiring'
 
 export function normalizeRecommendationScore(
   raw: unknown,
@@ -79,7 +79,7 @@ function normalizeRecommendationCache(
 export function normalizeRecommendedJob(raw: unknown): RecommendedJob {
   const record = asRecord(raw);
   return {
-    ...normalizeJob(raw),
+    ...normalizeHiringPost(raw),
     recommendation: normalizeRecommendationScore(record.recommendation),
   };
 }
@@ -131,6 +131,7 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
         .filter((skill) => skill.name)
     : [];
   const statsRecord = asRecord(record.stats);
+  const careerRecord = record.career && typeof record.career === "object" ? asRecord(record.career) : null;
   const matchRecord = asRecord(record.match);
   const label = pickString(matchRecord, "label");
   const validLabel: CandidateProfile["match"]["label"] =
@@ -152,6 +153,13 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
       completedWork: pickNumber(statsRecord, "completedWork") ?? 0,
       rating: pickNumber(statsRecord, "rating") ?? 0,
     },
+    career: careerRecord
+      ? {
+          careerField: pickString(careerRecord, "careerField") ?? null,
+          level: pickString(careerRecord, "level") ?? null,
+          yearsInField: pickNumber(careerRecord, "yearsInField") ?? null,
+        }
+      : null,
     match: {
       score: pickNumber(matchRecord, "score") ?? 0,
       label: validLabel,

@@ -70,6 +70,9 @@ export type CandidateDirectoryParams = PaginationParams & {
   location?: string;
   hasPortfolio?: boolean;
   hasCertification?: boolean;
+  careerField?: string;
+  level?: string;
+  minYears?: number;
 };
 export type JobSearchParams = PaginationParams & {
   categoryId?: number;

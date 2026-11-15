@@ -18,6 +18,13 @@ export function normalizeHiringPost(raw: unknown): HiringPost {
     employmentType: pickString(record, "employmentType") ?? null,
     salaryMin: pickNumber(record, "salaryMin") ?? null,
     salaryMax: pickNumber(record, "salaryMax") ?? null,
+    companyName: pickString(record, "companyName") ?? null,
+    careerField: pickString(record, "careerField") ?? null,
+    yearsRequired: pickNumber(record, "yearsRequired") ?? null,
+    skills: Array.isArray(record.skills)
+      ? record.skills.filter((skill): skill is string => typeof skill === "string")
+      : [],
+    closesAt: pickString(record, "closesAt") ?? null,
     predictedSeniority: pickString(record, "predictedSeniority") ?? null,
     predictedSeniorityConfidence:
       pickNumber(record, "predictedSeniorityConfidence") ?? null,
