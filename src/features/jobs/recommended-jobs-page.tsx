@@ -10,7 +10,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { RecommendationContent, RecommendedJob } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/ui'
-import { JobCard } from './job-card'
+import { HiringPostCard } from '@/features/hiring/hiring-post-card'
 import { MatchBadge } from './recommendation-ui'
 
 const recommendationParams = { topK: 12, poolSize: 50 }
@@ -25,6 +25,7 @@ export function RecommendedJobsPage() {
   const queryClient = useQueryClient()
   const [lastContent, setLastContent] = useState<RecommendationContent<RecommendedJob> | null>(null)
   const [skillGapTooltip, setSkillGapTooltip] = useState<SkillGapTooltipState>(null)
+  const [applyingId, setApplyingId] = useState<number | null>(null)
   const quotaQuery = useQuery({
     queryKey: queryKeys.recommendationQuota,
     queryFn: recommendationsApi.quota,
@@ -68,13 +69,14 @@ export function RecommendedJobsPage() {
 
   return (
     <div className="container-page pt-10 pb-16">
-      <Link href="/jobs" className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary">
+      <Link href="/hiring-posts" className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary">
         <ArrowLeft className="h-4 w-4" />
-        Back to explore
+        All hiring posts
       </Link>
       <PageHeader
         eyebrow={<><Sparkles className="h-4 w-4" /> AI recommendations</>}
-        title="Recommended jobs"
+        title="Hiring posts for you"
+        description="Open roles ranked for your resume and skills. Hover a role to see which skills match and which are missing."
       />
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -99,8 +101,8 @@ export function RecommendedJobsPage() {
                 onRun={() => runMutation.mutate(Boolean(content))}
               />
               {content ? jobs.length ? (
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {jobs.map((job, index) => (
+                <div className="grid gap-4">
+                  {jobs.map((job) => (
                     <div
                       key={job.id}
                       className="group/recommendation relative"
@@ -113,21 +115,33 @@ export function RecommendedJobsPage() {
                         }
                       }}
                     >
-                      <div className="absolute left-3 top-3 z-10">
+                      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
                         <MatchBadge label={job.recommendation.label} score={job.recommendation.finalScore} />
+                        {job.recommendation.missingSkills.length
+                          ? <span>Missing: {job.recommendation.missingSkills.slice(0, 3).join(', ')}</span>
+                          : null}
                       </div>
-                      <JobCard job={job} priority={index < 3} />
+                      <HiringPostCard
+                        post={job}
+                        viewer="candidate"
+                        active={applyingId === job.id}
+                        onToggleApply={() => setApplyingId((current) => (current === job.id ? null : job.id))}
+                        onApplied={() => {
+                          setApplyingId(null)
+                          void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
+                        }}
+                      />
                     </div>
                   ))}
                 </div>
               ) : (
                 <EmptyState
                   icon={<Sparkles />}
-                  title="No recommendations yet"
-                  description="Add resume details and profile skills, then run matching again."
+                  title="No matching roles yet"
+                  description="Add your resume and skills so roles can be ranked for you, or browse all hiring posts."
                   action={
-                    <ButtonLink href="/settings" variant="secondary">
-                      Update profile
+                    <ButtonLink href="/settings?section=resume" variant="secondary">
+                      Update resume
                     </ButtonLink>
                   }
                 />
@@ -237,11 +251,11 @@ function StartRecommendationCard({
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             {hasResults
-              ? 'Your current matches stay visible until you choose to refresh them. A fresh run uses your latest resume, skills, and available services.'
-              : 'This uses your resume, profile skills, and the current service marketplace to calculate semantic matches. The AI service is not called until you proceed.'}
+              ? 'Your current matches stay visible until you refresh them. A fresh run uses your latest resume, skills, and the hiring posts open today.'
+              : 'Ranks the open hiring posts for your resume and skills. Nothing runs until you start it.'}
           </p>
           <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
-            <ProcessItem icon={<CheckCircle2 className="h-4 w-4" />} label="Profile checked" text="Resume and skills are sent by backend." />
+            <ProcessItem icon={<CheckCircle2 className="h-4 w-4" />} label="Your resume" text="Your resume, skills, and field are compared with each role." />
             <ProcessItem icon={<Zap className="h-4 w-4" />} label="One AI use" text="Proceeding spends one daily run." />
             <ProcessItem icon={<Clock3 className="h-4 w-4" />} label="Keeps your matches" text="Your latest matches can load again without spending another AI use." />
           </div>

@@ -103,7 +103,7 @@ export function PostComposer({
             href="/jobs/new"
             className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted transition hover:bg-surface-muted hover:text-primary"
           >
-            <BriefcaseBusiness className="h-4 w-4 text-primary" /> Post a service
+            <BriefcaseBusiness className="h-4 w-4 text-primary" /> Post portfolio
           </Link>
         </div>
       </Card>

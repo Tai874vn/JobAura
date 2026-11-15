@@ -34,7 +34,8 @@ export function FeedPostCard({
   const [menuOpen, setMenuOpen] = useState(false)
   const image = resolveAssetUrl(post.imageUrl)
 
-  const isFirstVisible = index === 0
+  // The first two posts can be the largest image on screen (LCP), so they load right away.
+  const isFirstVisible = index < 2
 
   return (
     <Card className="overflow-hidden">

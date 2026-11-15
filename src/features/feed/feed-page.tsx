@@ -14,6 +14,7 @@ import { Button, Card, ConfirmationDialog, EmptyState, Skeleton } from '@/shared
 import { mergeFeedPages } from './feed-data'
 import { FeedGreeting } from './feed-greeting'
 import { LeftFeedRail } from './feed-left-rail'
+import { JobsForYou } from './jobs-for-you'
 import { FeedPostCard } from './feed-post-card'
 import { RightFeedRail } from './feed-rails'
 import { PostComposer } from './post-composer'
@@ -85,11 +86,14 @@ export function FeedPage() {
         <LeftFeedRail user={user} />
         <main className="min-w-0 space-y-4">
           <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
+            <MobileTab href="/hiring-posts" label="Hiring posts" />
+            <MobileTab href="/my-posts" label="My portfolio" />
             <MobileTab href="/saved" label="Saved" />
             <MobileTab href="/connections" label="Connections" />
-            <MobileTab href="/my-posts" label="My posts" />
           </div>
           <FeedGreeting user={user} />
+          {/* Roles to apply to come before the social feed: finding a job is why candidates are here. */}
+          <JobsForYou />
           <PostComposer
             user={user}
             submitting={createMutation.isPending}

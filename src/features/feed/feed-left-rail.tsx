@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { ArrowRight, Bookmark, BriefcaseBusiness, ClipboardCheck, FileText, Users } from 'lucide-react'
+import { ArrowRight, Bookmark, BriefcaseBusiness, FileText, Users } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { connectionsApi } from '@/shared/api/endpoints'
@@ -64,11 +64,10 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
           </div>
         </div>
         <nav className="border-t border-border p-2" aria-label="Personal shortcuts">
+          <UtilityLink href="/hiring-posts" icon={<BriefcaseBusiness className="h-4 w-4" />} label="Hiring posts" />
+          <UtilityLink href="/my-posts" icon={<FileText className="h-4 w-4" />} label="My portfolio posts" />
           <UtilityLink href="/saved" icon={<Bookmark className="h-4 w-4" />} label="Saved" />
           <UtilityLink href="/connections" icon={<Users className="h-4 w-4" />} label="Connections" badge={pending} />
-          <UtilityLink href="/hiring-posts" icon={<BriefcaseBusiness className="h-4 w-4" />} label="Hiring posts" />
-          <UtilityLink href="/my-posts" icon={<FileText className="h-4 w-4" />} label="My posts" />
-          <UtilityLink href="/my-jobs" icon={<ClipboardCheck className="h-4 w-4" />} label="My jobs" />
         </nav>
       </Card>
     </aside>
