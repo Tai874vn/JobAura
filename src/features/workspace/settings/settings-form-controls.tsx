@@ -14,7 +14,10 @@ export function EditorSection({
   saveLabel = 'Save',
   hideActions = false,
   saving = false,
+  focusId,
 }: {
+  /** Target for profile strength links (`?focus=`). */
+  focusId?: string
   title: string
   children: React.ReactNode
   onAdd?: () => void
@@ -24,7 +27,7 @@ export function EditorSection({
   saving?: boolean
 }) {
   return (
-    <Card>
+    <Card data-focus={focusId}>
       <CardContent className="p-5">
         <div className="mb-5 flex flex-wrap items-center gap-3">
           <h3 className="font-display text-lg font-bold">{title}</h3>
@@ -45,7 +48,8 @@ export function EditorSection({
   )
 }
 
-export function Field({ label, value, onChange, type = 'text', className }: {
+export function Field({ label, value, onChange, type = 'text', className, focusId }: {
+  focusId?: string
   label: string
   value?: string | null
   onChange: (value: string) => void
@@ -53,7 +57,7 @@ export function Field({ label, value, onChange, type = 'text', className }: {
   className?: string
 }) {
   return (
-    <label className={`grid gap-1 ${className ?? ''}`}>
+    <label data-focus={focusId} className={`grid gap-1 ${className ?? ''}`}>
       <span className="text-sm font-semibold">{label}</span>
       <Input type={type} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>

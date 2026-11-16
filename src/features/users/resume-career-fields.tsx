@@ -39,7 +39,7 @@ export function ResumeCareerFields({
   }
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border p-3 sm:p-4">
+    <div data-focus="career" className="grid gap-3 rounded-lg border border-border p-3 sm:p-4">
       <div>
         <h4 className="font-display text-base font-bold">Field and specialty</h4>
         <p className="mt-1 text-xs leading-5 text-muted">
@@ -62,7 +62,7 @@ export function ResumeCareerFields({
         </label>
       </div>
 
-      <div className="grid gap-2">
+      <div data-focus="jobs" className="grid gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h4 className="font-display text-base font-bold">Jobs</h4>
@@ -152,7 +152,7 @@ function EducationFields({
   const options = fields.data?.content ?? []
   const hasDegree = degree !== '' && degree !== 'Not stated'
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
+    <div data-focus="education" className="grid gap-3 sm:grid-cols-2">
       <label className="grid gap-1">
         <span className="text-sm font-semibold">Highest degree</span>
         <Select value={degree} onChange={(event) => {

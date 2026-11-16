@@ -16,7 +16,9 @@ import { useProfileStrength } from '@/features/users/profile-strength'
 export function LeftFeedRail({ user }: { user: UserProfile }) {
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests, queryFn: connectionsApi.requests, staleTime: 30_000 })
   const pending = requestsQuery.data?.content?.incomingCount ?? 0
-  const completeness = useProfileStrength(user).score
+  const strength = useProfileStrength(user)
+  const completeness = strength.score
+  const next = strength.missing[0]
   const coverSource = selectFeedCover(user)
   const coverUrl = resolveAssetUrl(coverSource)
 
@@ -56,9 +58,14 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
                 aria-valuemax={100}
               />
             </div>
-            {completeness < 100 ? (
-              <Link href="/settings" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
-                Complete your profile <ArrowRight className="h-3 w-3" />
+            {next ? (
+              <Link href={next.href} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                {next.hint} <ArrowRight className="h-3 w-3 shrink-0" />
+              </Link>
+            ) : null}
+            {strength.missing.length > 1 ? (
+              <Link href="/settings" className="mt-1 block text-[11px] font-semibold text-muted hover:text-primary">
+                {strength.missing.length - 1} more to complete
               </Link>
             ) : null}
           </div>

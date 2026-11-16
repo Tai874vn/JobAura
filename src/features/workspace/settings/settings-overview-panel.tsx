@@ -12,7 +12,7 @@ export function SettingsOverviewPanel({ profile, onSelect }: {
 }) {
   const strength = useProfileStrength(profile)
   const resumeQuery = useQuery(settingsResumeOptions(hasResumeSection(profile.role)))
-  return <SettingsOverview profile={profile} completion={strength.score} missing={strength.missing.map((item) => item.hint)}
+  return <SettingsOverview profile={profile} completion={strength.score} missing={strength.missing}
     resume={resumeQuery.data?.content ?? null} resumeLoading={resumeQuery.isLoading}
     resumeError={resumeQuery.isError} resumeRetrying={resumeQuery.isFetching}
     onRetryResume={() => void resumeQuery.refetch()} onSelect={onSelect} />

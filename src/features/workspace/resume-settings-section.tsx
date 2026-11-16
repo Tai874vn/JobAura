@@ -71,7 +71,7 @@ export function ResumeSettingsSection({
               <ResumeField label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
               <ResumeField label="Location" value={draft.Location} onChange={(value) => onFieldChange('Location', value)} />
               <ResumeField label="Current job title" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
-              <ResumeField label="Years experience" value={draft.YearsExperience} onChange={(value) => onFieldChange('YearsExperience', value)} />
+              <ResumeField label="Years experience" focusId="years" value={draft.YearsExperience} onChange={(value) => onFieldChange('YearsExperience', value)} />
             </div>
 
             <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} />
@@ -259,9 +259,9 @@ function ResumePreview({
   )
 }
 
-function ResumeField({ label, value, onChange }: { label: string; value?: string | null; onChange: (value: string) => void }) {
+function ResumeField({ label, value, onChange, focusId }: { label: string; value?: string | null; onChange: (value: string) => void; focusId?: string }) {
   return (
-    <label className="grid gap-1">
+    <label data-focus={focusId} className="grid gap-1">
       <span className="text-sm font-semibold">{label}</span>
       <Input value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>

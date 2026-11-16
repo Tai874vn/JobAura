@@ -18,15 +18,17 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
   return (
     <>
       <fieldset disabled={isSaving} className="min-w-0">
-        <div className="grid gap-4">
-          <div className="flex justify-end">
-            <Button loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
-              <Save className="h-4 w-4" />
-              Save profile
-            </Button>
-          </div>
+        {/* pb-24 keeps the last card clear of the floating buttons once scrolled to the end. */}
+        <div className="grid gap-4 pb-24">
+          {/* Floats above the Chat button (bottom-5, 48px tall) so it stays in reach while editing a long profile.
+              The open chat panel (z-50) covers it, and it hides with this section. */}
+          <Button className="fixed bottom-[84px] right-5 z-40 h-12 rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
+            loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
+            <Save className="h-4 w-4" />
+            Save profile
+          </Button>
 
-          <Card>
+          <Card data-focus="photo">
             <CardContent className="p-5">
               <SectionTitle icon={<ImageUp className="h-3.5 w-3.5" />}>Profile media</SectionTitle>
               <div className="flex flex-wrap items-center gap-4">
@@ -51,10 +53,10 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
                 <Field label="Phone" value={basic.phone} onChange={(value) => setBasic((state) => ({ ...state, phone: value }))} />
                 <Field label="Birthday" type="date" value={basic.birthDay} onChange={(value) => setBasic((state) => ({ ...state, birthDay: value }))} />
                 <Field label="Gender" value={basic.gender} onChange={(value) => setBasic((state) => ({ ...state, gender: value }))} />
-                <Field className="md:col-span-2" label="Headline" value={basic.headline} onChange={(value) => setBasic((state) => ({ ...state, headline: value }))} />
-                <Field label="Location" value={basic.location} onChange={(value) => setBasic((state) => ({ ...state, location: value }))} />
-                <Field label="Website" value={basic.website} onChange={(value) => setBasic((state) => ({ ...state, website: value }))} />
-                <label className="grid gap-1 md:col-span-2">
+                <Field className="md:col-span-2" label="Headline" focusId="headline" value={basic.headline} onChange={(value) => setBasic((state) => ({ ...state, headline: value }))} />
+                <Field label="Location" focusId="location" value={basic.location} onChange={(value) => setBasic((state) => ({ ...state, location: value }))} />
+                <Field label="Website" focusId="website" value={basic.website} onChange={(value) => setBasic((state) => ({ ...state, website: value }))} />
+                <label data-focus="bio" className="grid gap-1 md:col-span-2">
                   <span className="text-sm font-semibold">Bio</span>
                   <Textarea value={basic.bio ?? ''} onChange={(event) => setBasic((state) => ({ ...state, bio: event.target.value }))} />
                 </label>
@@ -62,7 +64,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
             </CardContent>
           </Card>
 
-          <EditorSection title="Skills" saving={saveSkills.isPending} onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
+          <EditorSection title="Skills" focusId="skills" saving={saveSkills.isPending} onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
             {skills.map((skill, index) => (
               <div key={index} className="grid items-end gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
                 <SkillPicker label="Skill" max={1} value={skill.name ? [skill.name] : []}
@@ -89,7 +91,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
             ))}
           </EditorSection>
 
-          <EditorSection title="New portfolio item" saving={createPortfolio.isPending} onSave={() => createPortfolio.mutate()} saveLabel="Create">
+          <EditorSection title="New portfolio item" focusId="portfolio" saving={createPortfolio.isPending} onSave={() => createPortfolio.mutate()} saveLabel="Create">
             <PortfolioFields item={newPortfolio} onChange={(patch) => setNewPortfolio((item) => ({ ...item, ...patch }))} />
           </EditorSection>
 

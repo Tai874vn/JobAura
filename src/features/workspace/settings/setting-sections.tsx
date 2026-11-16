@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   UserRound,
 } from 'lucide-react'
+import Link from 'next/link'
 import type { UserProfile, UserResume } from '@/shared/schemas'
 import { canAccessCandidateTools } from '@/shared/lib/roles'
 import { Avatar, Button, Card, CardContent } from '@/shared/ui'
@@ -52,7 +53,7 @@ export function SettingsOverview({
 }: {
   profile: UserProfile
   completion: number
-  missing?: string[]
+  missing?: Array<{ hint: string; href: string }>
   resume: UserResume | null
   resumeLoading?: boolean
   resumeError?: boolean
@@ -82,7 +83,13 @@ export function SettingsOverview({
             </div>
             {missing.length ? (
               <ul className="mt-3 grid gap-1 text-xs leading-5 text-muted">
-                {missing.map((hint) => <li key={hint} className="flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5 shrink-0" />{hint}</li>)}
+                {missing.map((item) => (
+                  <li key={item.hint}>
+                    <Link href={item.href} className="inline-flex items-center gap-1.5 rounded font-semibold hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0" />{item.hint}<ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </li>
+                ))}
               </ul>
             ) : <p className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-primary"><CheckCircle2 className="h-3.5 w-3.5" />Your profile is complete.</p>}
           </div>

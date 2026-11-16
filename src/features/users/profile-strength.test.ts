@@ -12,8 +12,8 @@ const fullCandidate = {
   profileSkills: ['Java', 'SQL', 'Docker', 'Spring', 'Git'].map((name) => ({ name })),
 }
 const fullResume = resume({
-  Industry: 'Software Engineering', YearsExperience: '4', Degree: 'Bachelor', FieldOfStudy: '0613',
-  Jobs: [{ title: 'Developer', field: 'Software Engineering', start: '2021-01', end: '', current: true, description: '' }],
+  Industry: 'Software development', YearsExperience: '4', Degree: 'Bachelor', FieldOfStudy: '0613',
+  Jobs: [{ title: 'Developer', field: 'Software development', start: '2021-01', end: '', current: true, description: '' }],
 })
 
 describe('profileStrength', () => {
@@ -51,5 +51,37 @@ describe('profileStrength', () => {
     expect(profileStrength({ profile: recruiter, hiringPosts: 1 }).score).toBe(100)
     expect(profileStrength({ profile: recruiter }).missing.map((item) => item.label)).toEqual(['Hiring post'])
     expect(profileStrength({ profile: { role: 'employer' } }).score).toBe(0)
+  })
+})
+
+describe('profileStrength links', () => {
+  it('sends each missing item to the field that fills it', () => {
+    const result = profileStrength({ profile: { role: 'user' }, resume: null })
+    const href = (label: string) => result.missing.find((item) => item.label === label)?.href
+    expect(href('Career field and years')).toBe('/settings?section=resume&focus=career')
+    expect(href('Skills')).toBe('/settings?section=profile&focus=skills')
+    expect(href('Education')).toBe('/settings?section=resume&focus=education')
+  })
+
+  it('points at years once the field is chosen, and recruiters at their hiring posts', () => {
+    const withField = profileStrength({ profile: { role: 'user' }, resume: resume({ Industry: 'Software development' }) })
+    expect(withField.missing[0].href).toBe('/settings?section=resume&focus=years')
+    expect(profileStrength({ profile: { role: 'employer' } }).missing.at(-1)?.href).toBe('/my-hiring-posts')
+  })
+})
+
+describe('profileStrength career years', () => {
+  const profile = { role: 'user' as const }
+  const career = (result: ReturnType<typeof profileStrength>) => result.missing.some((item) => item.label === 'Career field and years')
+
+  it('counts years from dated jobs in the main field, as the backend does', () => {
+    const jobs = [{ title: 'Developer', field: 'Software development', start: '2020-01', end: '', current: true, description: '' }]
+    expect(career(profileStrength({ profile, resume: resume({ Industry: 'Software development', Jobs: jobs }) }))).toBe(false)
+  })
+
+  it('needs a field from the list and a number of years', () => {
+    expect(career(profileStrength({ profile, resume: resume({ Industry: 'Rocket surgery', YearsExperience: '3' }) }))).toBe(true)
+    expect(career(profileStrength({ profile, resume: resume({ Industry: 'Software development', YearsExperience: 'many' }) }))).toBe(true)
+    expect(career(profileStrength({ profile, resume: resume({ Industry: 'Software development', YearsExperience: '3' }) }))).toBe(false)
   })
 })

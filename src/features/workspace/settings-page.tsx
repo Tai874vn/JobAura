@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { Button } from '@/shared/ui'
 import { hasResumeSection, isSettingSection, SettingsPlaceholder, type SettingSection } from './settings/setting-sections'
@@ -30,6 +30,30 @@ export function SettingsPage() {
   // Remember direct links and browser history changes as well as clicks. A
   // previously opened editor stays mounted, so changing section keeps its draft.
   if (!visited.includes(activeSection)) setVisited([...visited, activeSection])
+
+  // Profile strength links name a field (`?focus=headline`): scroll to it once its editor has loaded, focus it,
+  // flash a ring, then drop `focus` from the URL so switching sections does not jump again.
+  const focus = searchParams.get('focus')
+  useEffect(() => {
+    if (!focus) return
+    let tries = 0
+    const timer = window.setInterval(() => {
+      const target = [...document.querySelectorAll<HTMLElement>('[data-focus]')]
+        .find((element) => element.dataset.focus === focus && element.offsetParent !== null)
+      if (!target && ++tries < 60) return
+      window.clearInterval(timer)
+      const params = new URLSearchParams(window.location.search)
+      params.delete('focus')
+      window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
+      if (!target) return
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      target.querySelector<HTMLElement>('input:not([type=file]), textarea, select, button')?.focus({ preventScroll: true })
+      const ring = ['ring-2', 'ring-primary', 'ring-offset-4', 'rounded-lg']
+      target.classList.add(...ring)
+      window.setTimeout(() => target.classList.remove(...ring), 1800)
+    }, 50)
+    return () => window.clearInterval(timer)
+  }, [focus, activeSection])
 
   function hrefFor(section: SettingSection) {
     const params = new URLSearchParams(searchParams.toString())
