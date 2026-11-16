@@ -28,7 +28,7 @@ describe('HiringPostFormDialog', () => {
   it('opens a post saved before occupations with "previously" and asks for the occupation', () => {
     const html = render({ ...base, id: 1, occupationCode: null, legacyField: 'Software development' })
     expect(html).toContain('Choose the occupation (previously: Software development)')
-    expect(html).toContain('Choose your occupation first')
+    expect(html).toContain('Choose the occupation first')
   })
 
   it('shows a saved post with its occupation and specialty', () => {

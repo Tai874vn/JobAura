@@ -92,9 +92,17 @@ export function hiringPostPayload(
   return { data: parsed.data }
 }
 
-/** What a post card names: the occupation's title, or the old field of a post saved before occupations. */
-export function postOccupation(post: Pick<HiringPost, 'occupationTitle' | 'legacyField'>) {
+/**
+ * What a post card names: the occupation's title, or the old field of a post saved before occupations. A post
+ * with a code but no title (a recommendation saved before titles were added) uses `fetchedTitle`, the catalogue
+ * title loaded for its code.
+ */
+export function postOccupation(
+  post: Pick<HiringPost, 'occupationTitle' | 'legacyField'> & Partial<Pick<HiringPost, 'occupationCode'>>,
+  fetchedTitle?: string | null,
+) {
   if (post.occupationTitle) return { label: occupationLabel(post.occupationTitle), legacy: false }
+  if (post.occupationCode && fetchedTitle) return { label: occupationLabel(fetchedTitle), legacy: false }
   if (post.legacyField) return { label: post.legacyField, legacy: true }
   return null
 }

@@ -73,7 +73,7 @@ export function SpecialtyPicker({
         </div>
       ) : (
         <p id={hintId} className="text-xs text-muted">
-          {!occupation ? 'Choose your occupation first' : none ? 'No specialties are listed for this occupation' : 'None chosen'}
+          {!occupation ? 'Choose the occupation first' : none ? 'No specialties are listed for this occupation' : 'None chosen'}
         </p>
       )}
       {!listed ? <p id={errorId} className="text-xs text-danger">Not listed under this occupation. Choose a specialty from the list, or clear it.</p> : null}
@@ -91,7 +91,7 @@ export function SpecialtyPicker({
             autoComplete="off"
             disabled={!occupation}
             value={query}
-            placeholder={occupation ? 'Search specialties, for example Full Stack' : 'Choose your occupation first'}
+            placeholder={occupation ? 'Search specialties, for example Full Stack' : 'Choose the occupation first'}
             onChange={(event) => { setQuery(event.target.value); setOpen(true); setActive(0) }}
             onFocus={() => setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 120)}

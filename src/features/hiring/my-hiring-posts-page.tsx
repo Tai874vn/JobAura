@@ -13,7 +13,7 @@ import type { HiringPost } from "@/shared/schemas";
 import { Badge, Button, ButtonLink, Card, CardContent, EmptyState, PageHeader } from "@/shared/ui";
 import { hiringPostAiState, isHiringPostAiPending } from "./hiring-post-ai";
 import { formatDate, formatYearsRequired } from "./hiring-post-card";
-import { postOccupation } from "./hiring-post-form";
+import { usePostOccupation } from "./use-post-occupation";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
 
 const params = { page: 1, pageSize: 50 };
@@ -164,7 +164,7 @@ function LevelBadge({ post }: { post: HiringPost }) {
 
 /** The post's occupation; a post saved before occupations shows its old field and that it needs an occupation. */
 function OccupationBadge({ post }: { post: HiringPost }) {
-  const occupation = postOccupation(post);
+  const occupation = usePostOccupation(post);
   if (!occupation) return null;
   return occupation.legacy
     ? <Badge tone="neutral">Previously: {occupation.label} · choose the occupation</Badge>

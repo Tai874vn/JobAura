@@ -4,7 +4,7 @@ import { FeedAvatar } from "@/features/feed/feed-avatar";
 import type { HiringPost } from "@/shared/schemas";
 import { Badge, Button, ButtonLink, Card, CardContent } from "@/shared/ui";
 import { ApplyPanel } from "./apply-panel";
-import { postOccupation } from "./hiring-post-form";
+import { usePostOccupation } from "./use-post-occupation";
 
 /** Who is looking at the post decides the action: candidates apply, visitors sign in first, recruiters only read. */
 export type HiringPostViewer = "candidate" | "visitor" | "recruiter";
@@ -87,7 +87,7 @@ export function HiringPostAction({ post, viewer, active = false, onToggleApply }
 }
 
 export function HiringPostBadges({ post }: { post: HiringPost }) {
-  const occupation = postOccupation(post);
+  const occupation = usePostOccupation(post);
   return (
     <div className="flex flex-wrap items-center gap-2">
       {post.status === "CLOSED" ? <Badge tone="neutral">Closed</Badge> : null}
