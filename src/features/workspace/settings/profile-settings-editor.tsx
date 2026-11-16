@@ -7,6 +7,8 @@ import { removeListItem, updateList } from '@/features/users/profile-form-utils'
 import { EditorSection, Field, IconButton, PortfolioFields, UploadField } from './settings-form-controls'
 import { emptyCertification, emptySkill, useProfileSettings } from './use-profile-settings'
 import { SkillLevelSelect, SkillPicker } from '@/features/users/skill-picker'
+import { CertificationFields } from '@/features/users/certification-fields'
+import { certificationProblems } from '@/features/users/certifications'
 
 export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
   const {
@@ -75,19 +77,12 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
             ))}
           </EditorSection>
 
-          <EditorSection title="Certifications" saving={saveCertifications.isPending} onAdd={() => setCertifications((items) => [...items, { ...emptyCertification, sortOrder: items.length }])} onSave={() => saveCertifications.mutate()}>
+          <EditorSection title="Certifications" saving={saveCertifications.isPending} onAdd={() => setCertifications((items) => [...items, { ...emptyCertification }])} onSave={() => saveCertifications.mutate()}>
             {certifications.map((cert, index) => (
-              <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-2">
-                <Field label="Certification name" value={cert.name} onChange={(name) => updateList(setCertifications, index, { name })} />
-                <Field label="Issuer" value={cert.issuer} onChange={(issuer) => updateList(setCertifications, index, { issuer })} />
-                <Field label="Issued on" type="date" value={cert.issuedAt} onChange={(issuedAt) => updateList(setCertifications, index, { issuedAt })} />
-                <Field label="Expires on" type="date" value={cert.expiresAt} onChange={(expiresAt) => updateList(setCertifications, index, { expiresAt })} />
-                <Field label="Credential URL" value={cert.credentialUrl} onChange={(credentialUrl) => updateList(setCertifications, index, { credentialUrl })} />
-                <div className="flex items-end gap-2">
-                  <Field className="min-w-0 flex-1" label="Credential ID" value={cert.credentialId} onChange={(credentialId) => updateList(setCertifications, index, { credentialId })} />
-                  <IconButton label="Remove certification" onClick={() => removeListItem(setCertifications, index)} />
-                </div>
-              </div>
+              <CertificationFields key={index} value={cert}
+                problems={saveCertifications.isError ? certificationProblems(cert, index + 1) : []}
+                onChange={(patch) => updateList(setCertifications, index, patch)}
+                onRemove={() => removeListItem(setCertifications, index)} />
             ))}
           </EditorSection>
 

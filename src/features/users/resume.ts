@@ -219,11 +219,33 @@ export function extractResumeFromText(text: string, sourceFileName?: string): Im
       Skills: '',
       Experience: experience,
       Education: education,
+      Degree: inferDegree(education),
       Text: normalizedText,
     },
     sourceFileName: sourceFileName?.trim() || undefined,
     schemaVersion: resumeSchemaVersion,
   }
+}
+
+/**
+ * The highest degree named in a CV's Education section, on the form's list (Bachelor, Master or higher, Below
+ * bachelor). Empty when none is named, so the user chooses.
+ */
+export function inferDegree(education: string): string {
+  const text = education.toLowerCase()
+  const has = (pattern: RegExp) => pattern.test(text)
+  if (has(/\b(ph\.?\s?d|doctor(ate)?|master'?s?|m\.?\s?sc|mba|m\.?\s?eng)\b/)) return 'Master or higher'
+  if (has(/\b(bachelor'?s?|b\.?\s?sc|b\.?\s?eng|bba|undergraduate degree|engineer'?s degree)\b/) || has(/\bb\.\s?[as]\./)) return 'Bachelor'
+  if (has(/\b(associate'?s? degree|diploma|high school|secondary school|college certificate|vocational)\b/)) return 'Below bachelor'
+  return ''
+}
+
+/**
+ * What a CV extraction found, without the empty fields: the extracted form fills in what it read and keeps the rest,
+ * so an extraction never clears the saved skill list or degree.
+ */
+export function extractedResumeFields(data?: ResumeData | null): Partial<ResumeDraft> {
+  return Object.fromEntries(Object.entries(resumeDraftFromData(data)).filter(([, value]) => value.trim())) as Partial<ResumeDraft>
 }
 
 export function resumeSkills(value?: string | null) {

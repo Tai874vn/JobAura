@@ -22,7 +22,8 @@ describe('Profile settings editor initialization', () => {
     // onto the fixed level list.
     expect(html).toContain('TypeScript<button')
     expect(html).toContain('value="Advanced" selected=""')
-    expect(html).toContain('value="2026-01-02"')
+    // Certifications are edited by month.
+    expect(html).toContain('value="2026-01"')
     expect(html).toContain('value="JobAura"')
     expect(html).toContain('checked=""')
     client.clear()

@@ -33,6 +33,9 @@ export const profileCertificationSchema = z.object({
   expiresAt: z.string().optional().nullable(),
   credentialUrl: z.string().optional().nullable(),
   credentialId: z.string().optional().nullable(),
+  /** Certification, License, Course, or Badge (schema.org credentialCategory). */
+  category: z.string().optional().nullable(),
+  skills: z.array(z.string()).optional().nullable(),
   sortOrder: z.number().optional().nullable(),
 });
 
@@ -62,6 +65,8 @@ export const userProfileSchema = userSchema.extend({
   portfolio: z.array(profilePortfolioItemSchema).optional().nullable(),
   portfolioItems: z.array(profilePortfolioItemSchema).optional().nullable(),
   candidateDiscoverable: z.boolean().optional(),
+  /** From the resume: highest degree and its ISCED-F field-of-study code. */
+  education: z.object({ degree: z.string(), fieldOfStudy: z.string().nullable() }).optional().nullable(),
 });
 
 export const resumeDataSchema = z

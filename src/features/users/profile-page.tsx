@@ -41,7 +41,9 @@ import { resumeCareerProblems } from '@/features/users/resume-career'
 import { suggestedSkills } from '@/features/users/resume-ai'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { useProfileStrength } from './profile-strength'
-import { cleanObject, toDateInput } from './profile-form-utils'
+import { cleanObject } from './profile-form-utils'
+import { ProfileEducation, resumeEducation } from './profile/profile-education'
+import { allCertificationProblems, certificationDraft, certificationPayload, formatCertificationMonth, isCertificationExpired } from './certifications'
 import { useProfileUpload } from './use-profile-upload'
 import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer } from './profile/profile-editor'
 import {
@@ -116,17 +118,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
         website: profile.website ?? '',
       })
       setEditableSkills(skills.map((skill, index) => ({ name: skill.name, level: skill.level ?? '', sortOrder: skill.sortOrder ?? index })))
-      setEditableCertifications(
-        certifications.map((cert, index) => ({
-          name: cert.name,
-          issuer: cert.issuer ?? '',
-          issuedAt: toDateInput(cert.issuedAt),
-          expiresAt: toDateInput(cert.expiresAt),
-          credentialUrl: cert.credentialUrl ?? '',
-          credentialId: cert.credentialId ?? '',
-          sortOrder: cert.sortOrder ?? index,
-        }))
-      )
+      setEditableCertifications(certifications.map(certificationDraft))
     }, 0)
     return () => window.clearTimeout(timer)
   }, [profile, skills, certifications])
@@ -155,6 +147,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
       usersApi.replaceSkills(editableSkills.map((skill, index) => cleanObject({ ...skill, sortOrder: index })).filter((skill) => skill.name)),
     onSuccess: (response) => {
       refreshProfile(response.content)
+      queryClient.invalidateQueries({ queryKey: queryKeys.myResume })
       setActivePanel(null)
       toast.success('Skills saved')
     },
@@ -162,8 +155,11 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   })
 
   const saveCertifications = useMutation({
-    mutationFn: () =>
-      usersApi.replaceCertifications(editableCertifications.map((cert, index) => cleanObject({ ...cert, sortOrder: index })).filter((cert) => cert.name)),
+    mutationFn: () => {
+      const problems = allCertificationProblems(editableCertifications)
+      if (problems.length) throw new Error(problems[0])
+      return usersApi.replaceCertifications(certificationPayload(editableCertifications))
+    },
     onSuccess: (response) => {
       refreshProfile(response.content)
       setActivePanel(null)
@@ -186,6 +182,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
     onSuccess: (response) => {
       queryClient.setQueryData(queryKeys.myResume, { content: response.content ?? null })
       queryClient.invalidateQueries({ queryKey: queryKeys.myResume })
+      // Resume skills are the profile's skill list.
+      queryClient.invalidateQueries({ queryKey: queryKeys.me })
       setAttachedResumeFile(null)
       setResumeDraft({})
       setActivePanel(null)
@@ -297,6 +295,9 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
             </CardContent>
           </Card>
 
+          {/* The session profile has no education; the owner's comes straight from their resume. */}
+          {profile.role !== 'employer' ? <ProfileEducation education={profile.education ?? resumeEducation(resume?.data)} isOwner={isOwner} /> : null}
+
           {(isOwner || resume) ? (
             <ResumeShowcase
               resume={resume}
@@ -396,16 +397,29 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                           <Award className="h-4 w-4" />
                         </span>
                         <div className="min-w-0">
-                          <h3 className="font-semibold leading-snug">{cert.name}</h3>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-semibold leading-snug">{cert.name}</h3>
+                            {cert.category ? <span className="rounded bg-surface-muted px-1.5 py-0.5 text-[11px] font-semibold text-muted">{cert.category}</span> : null}
+                            {isCertificationExpired(cert) ? <span className="rounded bg-danger/10 px-1.5 py-0.5 text-[11px] font-semibold text-danger">Expired</span> : null}
+                          </div>
                           {cert.issuer ? <p className="mt-0.5 text-sm text-muted">{cert.issuer}</p> : null}
-                          <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted">
-                            {cert.issuedAt ? <InlineInfo icon={<Calendar className="h-3.5 w-3.5" />} value={formatDate(cert.issuedAt)} /> : null}
+                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+                            {cert.issuedAt ? (
+                              <InlineInfo icon={<Calendar className="h-3.5 w-3.5" />}
+                                value={`Issued ${formatCertificationMonth(cert.issuedAt)}${cert.expiresAt ? ` · ${isCertificationExpired(cert) ? 'Expired' : 'Expires'} ${formatCertificationMonth(cert.expiresAt)}` : ' · No expiration date'}`} />
+                            ) : null}
+                            {cert.credentialId ? <span>Credential ID {cert.credentialId}</span> : null}
                             {credentialUrl ? (
-                              <a href={credentialUrl} target="_blank" rel="noreferrer noopener" className="font-semibold text-primary hover:underline">
-                                Credential
+                              <a href={credentialUrl} target="_blank" rel="noreferrer noopener" className="inline-flex items-center gap-0.5 font-semibold text-primary hover:underline">
+                                Show credential <ArrowUpRight className="h-3 w-3" />
                               </a>
                             ) : null}
                           </div>
+                          {cert.skills?.length ? (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {cert.skills.map((skill) => <span key={skill} className="rounded-full bg-accent/30 px-2 py-0.5 text-[11px] font-semibold">{skill}</span>)}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -472,6 +486,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
           onSaveProfile={() => saveProfile.mutate()}
           onSaveSkills={() => saveSkills.mutate()}
           onSaveCertifications={() => saveCertifications.mutate()}
+          showCertificationProblems={saveCertifications.isError}
           onSaveResume={() => saveResume.mutate()}
         />
       ) : null}

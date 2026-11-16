@@ -9,11 +9,12 @@ import { setCachedSession } from '@/shared/api/session-cache'
 import { cleanObject, toDateInput } from '@/features/users/profile-form-utils'
 import { useProfileUpload } from '@/features/users/use-profile-upload'
 import { getErrorMessage } from '@/shared/lib/utils'
-import type { ProfileCertification, ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
+import type { ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
 import type { PortfolioDraft } from './settings-form-controls'
+import { allCertificationProblems, certificationDraft, certificationPayload, type CertificationDraft } from '@/features/users/certifications'
 
 export const emptySkill: Omit<ProfileSkill, 'id'> = { name: '', level: '', sortOrder: 0 }
-export const emptyCertification: Omit<ProfileCertification, 'id'> = { name: '', issuer: '', issuedAt: '', expiresAt: '', credentialUrl: '', credentialId: '', sortOrder: 0 }
+export { emptyCertificationDraft as emptyCertification } from '@/features/users/certifications'
 const emptyPortfolio: PortfolioDraft = { title: '', description: '', image: '', url: '', sortOrder: 0 }
 
 export function useProfileSettings(profile: UserProfile) {
@@ -25,11 +26,15 @@ export function useProfileSettings(profile: UserProfile) {
     headline: profile.headline ?? '', bio: profile.bio ?? '', location: profile.location ?? '', website: profile.website ?? '',
     candidateDiscoverable: profile.candidateDiscoverable ?? false,
   }))
-  const [skills, setSkills] = useState<Array<Omit<ProfileSkill, 'id'>>>(() => (profile.profileSkills ?? profile.skills ?? []).map(({ name, level, sortOrder }, index) => ({ name, level: level ?? '', sortOrder: sortOrder ?? index })))
-  const [certifications, setCertifications] = useState<Array<Omit<ProfileCertification, 'id'>>>(() => (profile.profileCertifications ?? profile.certifications ?? []).map((item, index) => ({
-    name: item.name, issuer: item.issuer ?? '', issuedAt: toDateInput(item.issuedAt), expiresAt: toDateInput(item.expiresAt),
-    credentialUrl: item.credentialUrl ?? '', credentialId: item.credentialId ?? '', sortOrder: item.sortOrder ?? index,
-  })))
+  const serverSkills = skillDrafts(profile)
+  const [skills, setSkills] = useState<Array<Omit<ProfileSkill, 'id'>>>(serverSkills)
+  // The resume edits the same skill list. When it changes there, follow it, unless this list has unsaved edits.
+  const [skillsBase, setSkillsBase] = useState(() => JSON.stringify(serverSkills))
+  if (JSON.stringify(serverSkills) !== skillsBase) {
+    if (JSON.stringify(skills) === skillsBase) setSkills(serverSkills)
+    setSkillsBase(JSON.stringify(serverSkills))
+  }
+  const [certifications, setCertifications] = useState<CertificationDraft[]>(() => (profile.profileCertifications ?? profile.certifications ?? []).map(certificationDraft))
   const [portfolio, setPortfolio] = useState<ProfilePortfolioItem[]>(() => profile.portfolio ?? profile.portfolioItems ?? [])
   const [newPortfolio, setNewPortfolio] = useState<PortfolioDraft>(emptyPortfolio)
   const [pendingPortfolioDelete, setPendingPortfolioDelete] = useState<ProfilePortfolioItem | null>(null)
@@ -46,11 +51,20 @@ export function useProfileSettings(profile: UserProfile) {
   })
   const saveSkills = useMutation({
     scope, mutationFn: () => usersApi.replaceSkills(skills.map((skill, index) => cleanObject({ ...skill, sortOrder: index })).filter((skill) => skill.name)),
-    onSuccess: (response) => { refreshProfile(response.content); toast.success('Skills saved') },
+    onSuccess: (response) => {
+      refreshProfile(response.content)
+      // The resume shows the same list and is evaluated again.
+      void client.invalidateQueries({ queryKey: queryKeys.myResume })
+      toast.success('Skills saved')
+    },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to save skills')),
   })
   const saveCertifications = useMutation({
-    scope, mutationFn: () => usersApi.replaceCertifications(certifications.map((cert, index) => cleanObject({ ...cert, sortOrder: index })).filter((cert) => cert.name)),
+    scope, mutationFn: () => {
+      const problems = allCertificationProblems(certifications)
+      if (problems.length) throw new Error(problems[0])
+      return usersApi.replaceCertifications(certificationPayload(certifications))
+    },
     onSuccess: (response) => { refreshProfile(response.content); toast.success('Certifications saved') },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to save certifications')),
   })
@@ -88,4 +102,8 @@ export function useProfileSettings(profile: UserProfile) {
     pendingPortfolioDelete, setPendingPortfolioDelete, saveBasic, saveSkills, saveCertifications, createPortfolio, updatePortfolio,
     deletePortfolio, uploadAvatar, uploadCover, isSaving,
   }
+}
+
+function skillDrafts(profile: UserProfile): Array<Omit<ProfileSkill, 'id'>> {
+  return (profile.profileSkills ?? profile.skills ?? []).map(({ name, level, sortOrder }, index) => ({ name, level: level ?? '', sortOrder: sortOrder ?? index }))
 }

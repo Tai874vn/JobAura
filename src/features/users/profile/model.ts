@@ -15,6 +15,8 @@ export type Certification = {
   expiresAt?: string | null
   credentialUrl?: string | null
   credentialId?: string | null
+  category?: string | null
+  skills?: string[] | null
   sortOrder?: number | null
 }
 
@@ -28,7 +30,7 @@ export type PortfolioItem = {
 }
 
 export type SkillDraft = Omit<ProfileSkill, 'id'>
-export type CertificationDraft = Omit<Certification, 'id'>
+export type { CertificationDraft } from '../certifications'
 export type ProfileEditPanel = 'profile' | 'skills' | 'certifications' | 'resume' | null
 
 export type MarketplaceProfile = User & {
@@ -44,18 +46,11 @@ export type MarketplaceProfile = User & {
   profileCertifications?: Certification[] | null
   portfolio?: PortfolioItem[] | null
   portfolioItems?: PortfolioItem[] | null
+  education?: { degree: string; fieldOfStudy: string | null } | null
 }
 
 export const emptySkill: SkillDraft = { name: '', level: '', sortOrder: 0 }
-export const emptyCertification: CertificationDraft = {
-  name: '',
-  issuer: '',
-  issuedAt: '',
-  expiresAt: '',
-  credentialUrl: '',
-  credentialId: '',
-  sortOrder: 0,
-}
+export { emptyCertificationDraft as emptyCertification } from '../certifications'
 
 export function getProfileSkills(profile: MarketplaceProfile | UserProfile): ProfileSkill[] {
   return sortByOrder(profile.profileSkills ?? profile.skills ?? legacySkills(profile.skill))

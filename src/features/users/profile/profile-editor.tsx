@@ -14,6 +14,8 @@ import type { FoundSkill } from '@/shared/api/endpoints/users'
 import { ResumeCareerFields } from '../resume-career-fields'
 import { resumeCareerProblems } from '../resume-career'
 import { emptyCertification, emptySkill, formatFullDate, type CertificationDraft, type ProfileEditPanel, type SkillDraft } from './model'
+import { CertificationFields } from '../certification-fields'
+import { certificationProblems } from '../certifications'
 
 export function ProfileEditDrawer({
   activePanel,
@@ -36,6 +38,7 @@ export function ProfileEditDrawer({
   onSaveCertifications,
   onSaveResume,
   foundSkills = [],
+  showCertificationProblems = false,
 }: {
   activePanel: ProfileEditPanel
   profile: UpdateProfile
@@ -58,6 +61,8 @@ export function ProfileEditDrawer({
   onSaveResume: () => void
   /** Dictionary skills found in an attached CV, offered for the user to add. */
   foundSkills?: FoundSkill[]
+  /** After a save attempt, each certification lists what stops it from saving. */
+  showCertificationProblems?: boolean
 }) {
   if (!activePanel) return null
 
@@ -112,19 +117,12 @@ export function ProfileEditDrawer({
           ) : null}
 
           {activePanel === 'certifications' ? (
-            <EditListShell onAdd={() => onCertificationsChange((items) => [...items, { ...emptyCertification, sortOrder: items.length }])}>
+            <EditListShell onAdd={() => onCertificationsChange((items) => [...items, { ...emptyCertification }])}>
               {certifications.map((cert, index) => (
-                <div key={index} className="grid gap-3 rounded-lg border border-border p-3 md:grid-cols-2">
-                  <Input value={cert.name} placeholder="Certification name" onChange={(event) => updateList(onCertificationsChange, index, { name: event.target.value })} />
-                  <Input value={cert.issuer ?? ''} placeholder="Issuer" onChange={(event) => updateList(onCertificationsChange, index, { issuer: event.target.value })} />
-                  <Input type="date" value={cert.issuedAt ?? ''} onChange={(event) => updateList(onCertificationsChange, index, { issuedAt: event.target.value })} />
-                  <Input type="date" value={cert.expiresAt ?? ''} onChange={(event) => updateList(onCertificationsChange, index, { expiresAt: event.target.value })} />
-                  <Input value={cert.credentialUrl ?? ''} placeholder="Credential URL" onChange={(event) => updateList(onCertificationsChange, index, { credentialUrl: event.target.value })} />
-                  <div className="flex gap-2">
-                    <Input value={cert.credentialId ?? ''} placeholder="Credential ID" onChange={(event) => updateList(onCertificationsChange, index, { credentialId: event.target.value })} />
-                    <IconButton label="Remove certification" onClick={() => removeListItem(onCertificationsChange, index)} />
-                  </div>
-                </div>
+                <CertificationFields key={index} value={cert}
+                  problems={showCertificationProblems ? certificationProblems(cert, index + 1) : []}
+                  onChange={(patch) => updateList(onCertificationsChange, index, patch)}
+                  onRemove={() => removeListItem(onCertificationsChange, index)} />
               ))}
             </EditListShell>
           ) : null}

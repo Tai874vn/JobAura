@@ -9,7 +9,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
 import {
-  canExtractResumeFile, extractResumeFile, hasResumeDraftInput, resumeDraftFromData,
+  canExtractResumeFile, extractResumeFile, extractedResumeFields, hasResumeDraftInput, resumeDraftFromData,
   resumeDraftToImportPayload, validateResumeFile, type ResumeDraft, type ResumeFieldKey,
 } from '@/features/users/resume'
 import { resumeCareerProblems } from '@/features/users/resume-career'
@@ -42,6 +42,8 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
     onSuccess: (response, variables) => {
       if (response.content) client.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content })
       void client.invalidateQueries({ queryKey: queryKeys.myResume })
+      // Resume skills are the profile's skill list, so the profile reloads too.
+      void client.invalidateQueries({ queryKey: queryKeys.me })
       setDraft({}); setAttachedFile(null)
       toast.success(`${variables.file ? 'Resume file and details saved' : 'Resume saved'}. AI evaluation is queued.`)
     },
@@ -68,7 +70,8 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
     setExtracting(true)
     try {
       const parsed = await extractResumeFile(file)
-      setDraft(resumeDraftFromData(parsed.data))
+      // Fill in what the CV shows; fields it doesn't show (skills, an unnamed degree) keep their saved values.
+      setDraft((current) => ({ ...current, ...extractedResumeFields(parsed.data) }))
       // Skills found in the CV are suggested by the backend's AI queue after saving, not here.
       toast.success('Resume extracted. Review the fields, then save.')
     } catch (error) {

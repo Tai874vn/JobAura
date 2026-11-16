@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  extractedResumeFields,
+  inferDegree,
   extractResumeFromText,
   hasResumeDraftInput,
   parseResumeJson,
@@ -105,6 +107,7 @@ describe('resume helpers', () => {
         Skills: '',
         Experience: 'Senior Java Developer / Tech Lead Built customer facing internal web applications.',
         Education: 'Computer Science degree',
+        Degree: '',
         Text: expect.stringContaining('Professional Summary'),
       }),
       sourceFileName: 'chad-resume.pdf',
@@ -149,5 +152,18 @@ describe('resume helpers', () => {
       valid: false,
       message: 'Resume file must be 10MB or smaller.',
     })
+  })
+
+  it('reads the highest degree from the Education section', () => {
+    expect(inferDegree('B.Sc. in Computer Science, 2019')).toBe('Bachelor')
+    expect(inferDegree("Bachelor's degree, then MBA at Insead")).toBe('Master or higher')
+    expect(inferDegree('PhD, Physics')).toBe('Master or higher')
+    expect(inferDegree('High school diploma')).toBe('Below bachelor')
+    expect(inferDegree('Computer Science degree')).toBe('')
+  })
+
+  it('keeps saved fields that an extraction did not find, such as skills', () => {
+    const found = extractedResumeFields({ Name: 'Jane', Skills: '', Degree: '', Summary: 'Builds APIs' })
+    expect(found).toEqual({ Name: 'Jane', Summary: 'Builds APIs' })
   })
 })
