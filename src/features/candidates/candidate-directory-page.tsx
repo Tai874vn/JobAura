@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   ArrowUpRight,
   Award,
+  BriefcaseBusiness,
   ChevronDown,
   Clock3,
   FolderOpen,
@@ -25,15 +26,16 @@ import {
   getCandidateLocation,
   getCandidateSkillNames,
   getCandidateSummary,
+  occupationParams,
 } from './candidate-directory'
-import { careerFields } from '@/features/hiring/career-fields'
+import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { skillsApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn } from '@/shared/lib/utils'
 import type { CandidateProfile } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, Input, Select } from '@/shared/ui'
+import { Badge, Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, InfoTip, Input, Select } from '@/shared/ui'
 
 const pageSize = 12
 
@@ -51,7 +53,8 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
   const [debouncedKeyword, setDebouncedKeyword] = useState(initialKeyword.trim())
   const [debouncedSkill, setDebouncedSkill] = useState('')
   const [debouncedLocation, setDebouncedLocation] = useState('')
-  const [careerField, setCareerField] = useState('')
+  const [occupation, setOccupation] = useState('')
+  const [includeRelated, setIncludeRelated] = useState(false)
   const [level, setLevel] = useState('')
   const [minYears, setMinYears] = useState('')
   const [page, setPage] = useState(1)
@@ -74,11 +77,11 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
       keyword: debouncedKeyword || undefined,
       skill: debouncedSkill || undefined,
       location: debouncedLocation || undefined,
-      careerField: careerField || undefined,
+      ...occupationParams(occupation, includeRelated),
       level: level || undefined,
       minYears: Number(minYears) > 0 ? Number(minYears) : undefined,
     }),
-    [careerField, debouncedKeyword, debouncedLocation, debouncedSkill, level, minYears, page]
+    [debouncedKeyword, debouncedLocation, debouncedSkill, includeRelated, level, minYears, occupation, page]
   )
   const query = useQuery({
     queryKey: queryKeys.candidates(params),
@@ -101,7 +104,8 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
     setKeyword('')
     setSkill('')
     setLocation('')
-    setCareerField('')
+    setOccupation('')
+    setIncludeRelated(false)
     setLevel('')
     setMinYears('')
     setDebouncedKeyword('')
@@ -131,10 +135,15 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
     setPage(1)
   }
 
+  const occupationTitle = useOccupationTitle(occupation)
   const activeFilters = [
     skill.trim() ? { key: 'skill' as const, label: skill.trim(), onRemove: () => updateSkill('') } : null,
     location.trim() ? { key: 'location' as const, label: location.trim(), onRemove: () => updateLocation('') } : null,
-    careerField ? { key: 'careerField' as const, label: careerField, onRemove: () => { setCareerField(''); setPage(1) } } : null,
+    occupation ? {
+      key: 'occupation' as const,
+      label: `${occupationTitle ?? occupation}${includeRelated ? ' and related' : ''}`,
+      onRemove: () => { setOccupation(''); setIncludeRelated(false); setPage(1) },
+    } : null,
     level ? { key: 'level' as const, label: level, onRemove: () => { setLevel(''); setPage(1) } } : null,
     Number(minYears) > 0 ? { key: 'minYears' as const, label: `${minYears}+ years`, onRemove: () => { setMinYears(''); setPage(1) } } : null,
   ].filter((filter): filter is NonNullable<typeof filter> => Boolean(filter))
@@ -231,14 +240,22 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
               setPanelOpen(false)
             }}
           >
-            <div className="grid gap-4 sm:grid-cols-3">
-              <label className="block">
-                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Field</span>
-                <Select value={careerField} onChange={(event) => { setCareerField(event.target.value); setPage(1) }}>
-                  <option value="">Any field</option>
-                  {careerFields.map((field) => <option key={field} value={field}>{field}</option>)}
-                </Select>
-              </label>
+            <div className="mb-4 grid gap-2">
+              <OccupationPicker compact label="Main occupation" value={occupation} emptyLabel="Any occupation"
+                placeholder="Search occupations, for example web developer"
+                onPick={(hit) => { setOccupation(hit.code); setPage(1) }}
+                onClear={() => { setOccupation(''); setIncludeRelated(false); setPage(1) }} />
+              <div className="flex items-center gap-1.5">
+                <label className={cn('inline-flex items-center gap-2 text-sm font-semibold', !occupation && 'text-muted')}>
+                  <input type="checkbox" className="h-4 w-4 accent-primary" checked={includeRelated} disabled={!occupation}
+                    onChange={(event) => { setIncludeRelated(event.target.checked); setPage(1) }} />
+                  Include related occupations
+                </label>
+                <InfoTip label="What related occupations are"
+                  text="Also candidates whose main occupation shares many ESCO skill groups with this one (at least 25%), for example software developer for web developer." />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
                 <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">AI level</span>
                 <Select value={level} onChange={(event) => { setLevel(event.target.value); setPage(1) }}>
@@ -249,7 +266,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
                 </Select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Years in field, at least</span>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Years in occupation, at least</span>
                 <Input type="number" min={0} max={40} inputMode="numeric" value={minYears} placeholder="0"
                   onChange={(event) => { setMinYears(event.target.value); setPage(1) }} />
               </label>
@@ -386,8 +403,9 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold text-muted">
           <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
           <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-rating text-rating" /> {formatCandidateRating(candidate)}</span>
-          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> {career ?? 'No resume yet'}</span>
         </div>
+
+        <CareerLine career={career} />
 
         {summary ? <p className="line-clamp-2 text-sm leading-6 text-muted">{summary}</p> : null}
 
@@ -442,6 +460,33 @@ function CardStat({ icon, label, value }: { icon: React.ReactNode; label: string
         {value}
       </div>
       <p className="mt-0.5 truncate text-[11px] font-semibold text-muted">{label}</p>
+    </div>
+  )
+}
+
+/** Occupation and specialty, then years in the occupation and related years as separate facts. */
+function CareerLine({ career }: { career: ReturnType<typeof formatCandidateCareer> }) {
+  if (!career) return <p className="text-xs font-semibold text-muted">No resume yet</p>
+  if (!career.occupation) {
+    return (
+      <p className="text-xs font-semibold text-muted">
+        {career.previously ? `Previously: ${career.previously} · no occupation chosen yet` : 'No occupation chosen yet'}
+      </p>
+    )
+  }
+  return (
+    <div className="grid gap-1 text-xs font-semibold text-muted">
+      <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        <BriefcaseBusiness className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span className="text-foreground">{career.occupation}</span>
+        {career.specialty ? <span>· {career.specialty}</span> : null}
+      </p>
+      {career.years ? (
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" aria-hidden="true" />{career.years}</span>
+          {career.related ? <span>{career.related}</span> : null}
+        </p>
+      ) : null}
     </div>
   )
 }

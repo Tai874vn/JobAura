@@ -4,6 +4,7 @@ import { FeedAvatar } from "@/features/feed/feed-avatar";
 import type { HiringPost } from "@/shared/schemas";
 import { Badge, Button, ButtonLink, Card, CardContent } from "@/shared/ui";
 import { ApplyPanel } from "./apply-panel";
+import { postOccupation } from "./hiring-post-form";
 
 /** Who is looking at the post decides the action: candidates apply, visitors sign in first, recruiters only read. */
 export type HiringPostViewer = "candidate" | "visitor" | "recruiter";
@@ -86,10 +87,12 @@ export function HiringPostAction({ post, viewer, active = false, onToggleApply }
 }
 
 export function HiringPostBadges({ post }: { post: HiringPost }) {
+  const occupation = postOccupation(post);
   return (
     <div className="flex flex-wrap items-center gap-2">
       {post.status === "CLOSED" ? <Badge tone="neutral">Closed</Badge> : null}
-      {post.careerField ? <Badge tone="primary">{post.careerField}</Badge> : null}
+      {occupation ? <Badge tone={occupation.legacy ? "neutral" : "primary"}>{occupation.legacy ? `Previously: ${occupation.label}` : occupation.label}</Badge> : null}
+      {post.specialty && !occupation?.legacy ? <Badge tone="neutral">{post.specialty}</Badge> : null}
       {post.predictedSeniority ? <Badge tone="accent">{post.predictedSeniority}</Badge> : null}
       {post.employmentType ? <Badge tone="neutral">{post.employmentType}</Badge> : null}
     </div>

@@ -55,7 +55,13 @@ export const hiringPostSchema = z.object({
   salaryMin: z.number().optional().nullable(),
   salaryMax: z.number().optional().nullable(),
   companyName: z.string().optional().nullable(),
-  careerField: z.string().optional().nullable(),
+  /** ESCO occupation code the recruiter chose; null on a post saved before occupations. */
+  occupationCode: z.string().optional().nullable(),
+  /** The occupation's ESCO title (lower case), added by the backend to each card. */
+  occupationTitle: z.string().optional().nullable(),
+  specialty: z.string().optional().nullable(),
+  /** The old 37-field value of a post saved before occupations. Read-only; never sent. */
+  legacyField: z.string().optional().nullable(),
   yearsRequired: z.number().optional().nullable(),
   skills: z.array(z.string()).optional().default([]),
   closesAt: z.string().optional().nullable(),
@@ -113,8 +119,10 @@ export const createHiringPostSchema = z
       .trim()
       .max(120, "Company name must be 120 characters or fewer")
       .optional(),
-    /** One of the 37 career fields; the form offers only those. */
-    careerField: z.string().trim().min(1, "Choose the field of work"),
+    /** ESCO occupation code, picked from the catalogue search. */
+    occupationCode: z.string().trim().min(1, "Choose the occupation"),
+    /** One of the occupation's specialties; null clears it on an edit. */
+    specialty: z.string().trim().max(120).nullable().optional(),
     yearsRequired: z.coerce
       .number({ message: "Enter the years of experience required" })
       .int("Use whole years")
@@ -188,12 +196,20 @@ export const candidateProfileSchema = z.object({
   location: z.string().optional().nullable(),
   profileSkills: z.array(profileSkillSchema).default([]),
   stats: candidateDirectoryStatsSchema,
-  /** From the candidate's resume: chosen field, AI level, and years in that field. Null without a resume. */
+  /**
+   * From the candidate's resume: the ESCO occupation and specialty, the AI level, and the years the level was
+   * decided on (years in the occupation and related years, kept separate). Level and years are null without a
+   * saved prediction. Null without a resume.
+   */
   career: z
     .object({
-      careerField: z.string().nullable(),
+      occupationCode: z.string().nullable(),
+      occupationTitle: z.string().nullable(),
+      specialty: z.string().nullable(),
       level: z.string().nullable(),
-      yearsInField: z.number().nullable(),
+      yearsInOccupation: z.number().nullable(),
+      relatedYears: z.number().nullable(),
+      legacyField: z.string().nullable(),
     })
     .nullable()
     .optional(),

@@ -13,6 +13,7 @@ import type { HiringPost } from "@/shared/schemas";
 import { Badge, Button, ButtonLink, Card, CardContent, EmptyState, PageHeader } from "@/shared/ui";
 import { hiringPostAiState, isHiringPostAiPending } from "./hiring-post-ai";
 import { formatDate, formatYearsRequired } from "./hiring-post-card";
+import { postOccupation } from "./hiring-post-form";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
 
 const params = { page: 1, pageSize: 50 };
@@ -88,7 +89,7 @@ export function MyHiringPostsPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={post.status === "OPEN" ? "primary" : "neutral"}>{post.status === "OPEN" ? "Open" : "Closed"}</Badge>
-                    {post.careerField ? <Badge tone="neutral">{post.careerField}</Badge> : null}
+                    <OccupationBadge post={post} />
                     <LevelBadge post={post} />
                   </div>
                   <h2 className="mt-2 font-display text-xl font-bold">
@@ -159,4 +160,13 @@ function LevelBadge({ post }: { post: HiringPost }) {
   return post.predictedSeniority
     ? <Badge tone="accent">AI level: {post.predictedSeniority}</Badge>
     : <Badge tone="neutral">AI level not set</Badge>;
+}
+
+/** The post's occupation; a post saved before occupations shows its old field and that it needs an occupation. */
+function OccupationBadge({ post }: { post: HiringPost }) {
+  const occupation = postOccupation(post);
+  if (!occupation) return null;
+  return occupation.legacy
+    ? <Badge tone="neutral">Previously: {occupation.label} · choose the occupation</Badge>
+    : <Badge tone="neutral">{occupation.label}{post.specialty ? ` · ${post.specialty}` : ""}</Badge>;
 }

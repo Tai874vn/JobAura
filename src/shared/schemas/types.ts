@@ -72,7 +72,10 @@ export type CandidateDirectoryParams = PaginationParams & {
   location?: string;
   hasPortfolio?: boolean;
   hasCertification?: boolean;
-  careerField?: string;
+  /** ESCO occupation code: candidates whose main occupation it is. */
+  occupation?: string;
+  /** With `occupation`, also candidates whose main occupation is related to it. */
+  includeRelated?: boolean;
   level?: string;
   minYears?: number;
 };

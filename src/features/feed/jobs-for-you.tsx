@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { BriefcaseBusiness, MapPin, Sparkles } from 'lucide-react'
 import Link from 'next/link'
+import { postOccupation } from '@/features/hiring/hiring-post-form'
 import { MatchBadge } from '@/features/jobs/recommendation-ui'
 import { hiringPostsApi, recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -59,7 +60,7 @@ export function JobsForYou() {
                   <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted">
                     <span className="truncate">{post.companyName || post.recruiter?.name || 'Recruiter'}</span>
                     <span className="inline-flex items-center gap-0.5"><MapPin className="h-3 w-3" aria-hidden="true" />{post.location || 'Flexible'}</span>
-                    {post.careerField ? <span>{post.careerField}</span> : null}
+                    {post.occupationTitle ? <span>{postOccupation(post)?.label}</span> : null}
                   </p>
                 </div>
                 {'recommendation' in post ? <MatchBadge label={post.recommendation.label} score={post.recommendation.finalScore} /> : null}

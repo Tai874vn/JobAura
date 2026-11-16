@@ -1,16 +1,19 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Save, X } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
+import { occupationQuery, type OccupationHit } from "@/features/occupations/api";
+import { OccupationPicker } from "@/features/occupations/occupation-picker";
+import { SpecialtyPicker } from "@/features/occupations/specialty-picker";
+import { isStillChoice, mainOccupationChange, matchedSpecialty } from "@/features/users/resume-career-fields";
 import { SkillPicker } from "@/features/users/skill-picker";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
 import { Button, Input, Select, Textarea } from "@/shared/ui";
 import {
-  careerFields,
   draftFromPost,
   emptyHiringPostDraft,
   employmentTypes,
@@ -20,8 +23,9 @@ import {
 } from "./hiring-post-form";
 
 /**
- * Create a hiring post, or edit one when `post` is given. The field and required years are asked for so the AI
- * level and candidate matching don't have to guess them from the text.
+ * Create a hiring post, or edit one when `post` is given. The ESCO occupation (with an optional specialty) and the
+ * required years are asked for so the AI level and candidate matching don't have to guess them from the text. A
+ * post saved before occupations opens with "previously: X" and asks for the occupation.
  */
 export function HiringPostFormDialog({
   open,
@@ -53,6 +57,24 @@ function HiringPostForm({
   const [draft, setDraft] = useState<HiringPostDraft>(() => (post ? draftFromPost(post) : emptyHiringPostDraft));
   const set = <K extends keyof HiringPostDraft>(key: K, value: HiringPostDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
+  const detail = useQuery(occupationQuery(draft.occupationCode));
+
+  // The latest choice, read after the specialty list loads: a later pick or edit wins over a slow response.
+  const latest = useRef({ Occupation: draft.occupationCode, Specialty: draft.specialty });
+  useEffect(() => { latest.current = { Occupation: draft.occupationCode, Specialty: draft.specialty }; });
+
+  async function pickOccupation(hit: OccupationHit) {
+    const next = mainOccupationChange(hit, latest.current);
+    latest.current = next;
+    setDraft((current) => ({ ...current, occupationCode: next.Occupation, specialty: next.Specialty }));
+    if (!hit.matchedLabel) return;
+    try {
+      const found = matchedSpecialty(hit, (await queryClient.fetchQuery(occupationQuery(hit.code))).specialties);
+      if (found && isStillChoice(latest.current, next)) set("specialty", found);
+    } catch {
+      // The specialty stays empty; the recruiter can pick it from the list.
+    }
+  }
 
   const save = useMutation({
     mutationFn: (data: Parameters<typeof hiringPostsApi.create>[0]) =>
@@ -68,7 +90,7 @@ function HiringPostForm({
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const result = hiringPostPayload(draft);
+    const result = hiringPostPayload(draft, new Date(), detail.data?.specialties);
     if (result.error !== undefined) {
       toast.error(result.error);
       return;
@@ -100,24 +122,30 @@ function HiringPostForm({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Field of work" required hint="Candidates filter by this, and the AI level reads it.">
-              <Select value={draft.careerField} required onChange={(event) => set("careerField", event.target.value)}>
-                <option value="">Choose a field</option>
-                {careerFields.map((field) => <option key={field} value={field}>{field}</option>)}
-              </Select>
-            </Field>
-            <Field label="Years of experience required" required hint="Minimum years in this field. Use 0 for entry level.">
-              <Input type="number" inputMode="numeric" min={0} max={40} required value={draft.yearsRequired} onChange={(event) => set("yearsRequired", event.target.value)} placeholder="3" />
-            </Field>
+            <div className="grid content-start gap-1.5">
+              <OccupationPicker label="Occupation" required value={draft.occupationCode}
+                emptyLabel="Choose the occupation" previously={draft.legacyField || undefined}
+                placeholder="Search occupations, for example web developer"
+                invalid={!draft.occupationCode} onPick={(hit) => void pickOccupation(hit)}
+                onClear={() => setDraft((current) => ({ ...current, occupationCode: "", specialty: "" }))} />
+              <span className="text-xs leading-5 text-muted">Candidates are matched on this, and the AI level reads it.</span>
+            </div>
+            <SpecialtyPicker occupation={draft.occupationCode} value={draft.specialty} onChange={(value) => set("specialty", value)} />
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Years of experience required" required hint="Minimum years in this occupation. Use 0 for entry level.">
+              <Input type="number" inputMode="numeric" min={0} max={40} required value={draft.yearsRequired} onChange={(event) => set("yearsRequired", event.target.value)} placeholder="3" />
+            </Field>
             <Field label="Employment type">
               <Select value={draft.employmentType} onChange={(event) => set("employmentType", event.target.value)}>
                 <option value="">Not stated</option>
                 {employmentTypes.map((type) => <option key={type} value={type}>{type}</option>)}
               </Select>
             </Field>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
             <Field label="Location">
               <Input value={draft.location} maxLength={120} onChange={(event) => set("location", event.target.value)} placeholder="Ho Chi Minh City or Remote" />
             </Field>
@@ -131,7 +159,7 @@ function HiringPostForm({
               placeholder="What the role does, the team, and what success looks like." />
           </Field>
 
-          <SkillPicker value={draft.skills} onChange={(skills) => set("skills", skills)} field={draft.careerField || undefined} max={20}
+          <SkillPicker value={draft.skills} onChange={(skills) => set("skills", skills)} field={draft.occupationCode || undefined} max={20}
             label="Required skills" placeholder="Search skills, for example Python or Figma" />
 
           <Field label="Other requirements" hint="Anything the skills and years don't cover: languages, certificates, travel.">

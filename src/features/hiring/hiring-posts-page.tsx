@@ -9,11 +9,12 @@ import { hiringPostsApi, type HiringPostFilters } from "@/shared/api/endpoints/h
 import { queryKeys } from "@/shared/api/query-keys";
 import { Button, ButtonLink, Card, CardContent, EmptyState, Input, PageHeader, Select } from "@/shared/ui";
 import { HiringPostCard } from "./hiring-post-card";
-import { careerFields, employmentTypes, hiringPostLevels } from "./hiring-post-form";
+import { OccupationPicker } from "@/features/occupations/occupation-picker";
+import { employmentTypes, hiringPostLevels } from "./hiring-post-form";
 import { hiringPostViewer } from "./hiring-post-viewer";
 
 const pageSize = 10;
-const filterKeys = ["keyword", "careerField", "level", "employmentType", "location"] as const;
+const filterKeys = ["keyword", "occupation", "level", "employmentType", "location"] as const;
 type FilterKey = (typeof filterKeys)[number];
 type Filters = Record<FilterKey, string>;
 
@@ -81,7 +82,7 @@ export function HiringPostsPage() {
         title={viewer === "recruiter" ? "Browse hiring posts" : "Find a role and apply"}
         description={viewer === "recruiter"
           ? "See what other recruiters are hiring for. Your own posts are in My hiring posts."
-          : "Open roles from recruiters on JobAura. Filter by field, level, and location."}
+          : "Open roles from recruiters on JobAura. Filter by occupation, level, and location."}
         actions={viewer === "recruiter" ? (
           <ButtonLink href="/my-hiring-posts"><ListChecks className="h-4 w-4" />My hiring posts</ButtonLink>
         ) : viewer === "candidate" ? (
@@ -108,12 +109,9 @@ export function HiringPostsPage() {
             </div>
             {showFilters ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <FilterField label="Field of work">
-                  <Select value={draft.careerField} onChange={(event) => set("careerField", event.target.value)}>
-                    <option value="">Any field</option>
-                    {careerFields.map((field) => <option key={field} value={field}>{field}</option>)}
-                  </Select>
-                </FilterField>
+                <OccupationPicker compact label="Occupation" value={draft.occupation} emptyLabel="Any occupation"
+                  placeholder="Search occupations" onPick={(hit) => set("occupation", hit.code)}
+                  onClear={() => set("occupation", "")} />
                 <FilterField label="Level">
                   <Select value={draft.level} onChange={(event) => set("level", event.target.value)}>
                     <option value="">Any level</option>

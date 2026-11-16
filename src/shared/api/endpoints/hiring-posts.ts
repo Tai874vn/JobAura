@@ -5,7 +5,8 @@ import { definedParams } from './params'
 
 /** Filters a candidate uses on the hiring post list; the backend ignores empty ones. */
 export type HiringPostFilters = PaginationParams & {
-  careerField?: string
+  /** ESCO occupation code. */
+  occupation?: string
   level?: string
   employmentType?: string
   location?: string

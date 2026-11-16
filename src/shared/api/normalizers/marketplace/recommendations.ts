@@ -156,9 +156,13 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
     },
     career: careerRecord
       ? {
-          careerField: pickString(careerRecord, "careerField") ?? null,
+          occupationCode: pickString(careerRecord, "occupationCode") ?? null,
+          occupationTitle: pickString(careerRecord, "occupationTitle") ?? null,
+          specialty: pickString(careerRecord, "specialty") ?? null,
           level: pickString(careerRecord, "level") ?? null,
-          yearsInField: pickNumber(careerRecord, "yearsInField") ?? null,
+          yearsInOccupation: pickNumber(careerRecord, "yearsInOccupation") ?? null,
+          relatedYears: pickNumber(careerRecord, "relatedYears") ?? null,
+          legacyField: pickString(careerRecord, "legacyField") ?? null,
         }
       : null,
     profileStrength: pickNumber(record, "profileStrength") ?? null,
