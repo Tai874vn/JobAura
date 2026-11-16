@@ -1,9 +1,9 @@
 'use client'
 
 import { experienceLabel } from '@/features/users/resume-career'
-import { CheckCircle2, FileJson, FileText, Sparkles } from 'lucide-react'
+import { CheckCircle2, FileText, Sparkles } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
-import { Button, Card, CardContent, Input, Textarea } from '@/shared/ui'
+import { Button, Card, CardContent, Input, Textarea, UnsavedChangesBar } from '@/shared/ui'
 import { formatFileSize } from '@/features/users/profile-form-utils'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -14,7 +14,7 @@ import {
   type ResumeFieldKey,
 } from '@/features/users/resume'
 import { ResumeCareerFields } from '@/features/users/resume-career-fields'
-import { SkillPicker } from '@/features/users/skill-picker'
+import { SkillListEditor } from '@/features/users/skill-picker'
 import { canRetryResumeAi, isResumeAiPending, resumeAiStatus, unrecognisedSkills } from '@/features/users/resume-ai'
 import type { FoundSkill } from '@/shared/api/endpoints/users'
 import { resumeCareerProblems } from '@/features/users/resume-career'
@@ -32,7 +32,12 @@ export function ResumeSettingsSection({
   onPredictSeniority,
   onResumeFile,
   foundSkills = [],
+  hasChanges = false,
+  onReset = () => {},
 }: {
+  /** Unsaved edits or an attached file: the save bar shows. */
+  hasChanges?: boolean
+  onReset?: () => void
   resume: UserResume | null
   draft: ResumeDraft
   attachedFile: File | null
@@ -51,7 +56,8 @@ export function ResumeSettingsSection({
   const canImport = hasResumeDraftInput(draft) && careerProblems.length === 0
 
   return (
-    <div className="grid gap-4">
+    // pb-28 keeps the end of the form clear of the save bar.
+    <div className="grid gap-4 pb-28">
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_288px] xl:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
           <CardContent className="grid gap-3 p-4 sm:p-5">
@@ -78,9 +84,10 @@ export function ResumeSettingsSection({
 
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
             <div className="grid gap-1">
-              <SkillPicker value={resumeSkills(draft.Skills)} field={draft.Industry} suggestions={foundSkills}
-                onChange={(names) => onFieldChange('Skills', names.join(', '))} />
-              <p className="text-xs text-muted">One list with your profile: saving here updates the skills on your profile.</p>
+              <span className="text-sm font-semibold">Skills</span>
+              <SkillListEditor showLevel={false} value={resumeSkills(draft.Skills).map((name) => ({ name }))} field={draft.Industry}
+                suggestions={foundSkills} onChange={(skills) => onFieldChange('Skills', skills.map((skill) => skill.name).join(', '))} />
+              <p className="text-xs text-muted">One list with your profile: saving here updates the skills on your profile, where you set their levels.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <ResumeTextarea label="Other experience notes" className="min-h-24" value={draft.Experience} onChange={(value) => onFieldChange('Experience', value)} />
@@ -131,11 +138,10 @@ export function ResumeSettingsSection({
                 {careerProblems.length ? 'Fill the required field and specialty, and complete each job, before saving. ' : null}
                 If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
               </p>
-              <Button loading={isImporting} disabled={!canImport} onClick={onImport}>
-                <FileJson className="h-4 w-4" />
-                {attachedFile ? 'Upload and save' : 'Save resume'}
-              </Button>
             </div>
+            <UnsavedChangesBar dirty={hasChanges} saving={isImporting} canSave={canImport}
+              blockedReason={careerProblems[0] ?? null} saveLabel={attachedFile ? 'Upload and save' : 'Save resume'}
+              onSave={onImport} onReset={onReset} />
           </CardContent>
         </Card>
 

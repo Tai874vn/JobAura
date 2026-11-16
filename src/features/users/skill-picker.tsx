@@ -33,7 +33,10 @@ export function SkillPicker({
   placeholder = 'Search skills, for example React or Accounting',
   hideLabel = false,
   suggestions = [],
+  hideChosen = false,
 }: {
+  /** The chosen skills are listed by the caller (SkillListEditor), so the picker shows only the search. */
+  hideChosen?: boolean
   value: string[]
   onChange: (names: string[]) => void
   /** The user's career field; skills from it are listed first. */
@@ -72,7 +75,7 @@ export function SkillPicker({
   return (
     <div className="grid gap-1">
       <label htmlFor={inputId} className={cn('text-sm font-semibold', hideLabel && 'sr-only')}>{label}</label>
-      {value.length ? (
+      {value.length && !hideChosen ? (
         <ul className="flex flex-wrap gap-1.5" aria-label={`Chosen ${label.toLowerCase()}`}>
           {value.map((name) => (
             <li key={name} className="inline-flex items-center gap-1 rounded bg-accent/30 py-0.5 pl-2 pr-1 text-xs font-semibold">
@@ -155,6 +158,73 @@ export function SkillPicker({
   )
 }
 
+
+export type SkillItem = { name: string; level?: string | null }
+
+/**
+ * The one skill list, the same in Profile and Resume: a single search to add (with suggestions from the CV), then
+ * one compact row per skill with its level and one remove button. `showLevel` is off where levels aren't edited.
+ */
+export function SkillListEditor<T extends SkillItem>({
+  value,
+  onChange,
+  field,
+  suggestions = [],
+  showLevel = true,
+  max = 50,
+}: {
+  value: T[]
+  onChange: (skills: T[]) => void
+  field?: string
+  suggestions?: FoundSkill[]
+  showLevel?: boolean
+  max?: number
+}) {
+  const names = value.map((skill) => skill.name).filter(Boolean)
+  function setNames(next: string[]) {
+    // Keep each kept skill (and its level); new names come in without a level.
+    const byName = new Map(value.map((skill) => [skill.name.toLowerCase(), skill]))
+    onChange(next.map((name) => byName.get(name.toLowerCase()) ?? ({ name, level: '' } as T)))
+  }
+  return (
+    <div className="grid gap-3">
+      <SkillPicker hideChosen label="Add a skill" value={names} onChange={setNames} field={field} suggestions={suggestions} max={max} />
+      {names.length ? (
+        <ul className="divide-y divide-border rounded-lg border border-border" aria-label="Your skills">
+          {value.filter((skill) => skill.name).map((skill) => (
+            <li key={skill.name} className="flex min-h-12 items-center gap-2 px-3 py-1.5">
+              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{skill.name}</span>
+              {showLevel ? (
+                <CompactLevelSelect name={skill.name} value={skill.level}
+                  onChange={(level) => onChange(value.map((item) => (item === skill ? { ...item, level } : item)))} />
+              ) : null}
+              <button type="button" aria-label={`Remove ${skill.name}`}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded text-muted hover:bg-danger/5 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+                onClick={() => onChange(value.filter((item) => item !== skill))}>
+                <X className="h-4 w-4" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="rounded-lg border border-dashed border-border p-3 text-sm text-muted">No skills yet. Search above to add your first one.</p>
+      )}
+    </div>
+  )
+}
+
+function CompactLevelSelect({ name, value, onChange }: { name: string; value?: string | null; onChange: (level: string) => void }) {
+  const listed = skillLevels.find((level) => level.toLowerCase() === (value ?? '').toLowerCase())
+  return (
+    <select aria-label={`Level for ${name}`} value={listed ?? value ?? ''} onChange={(event) => onChange(event.target.value)}
+      className={cn('h-8 w-32 shrink-0 rounded-md border border-border bg-surface px-2 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-bright/20 sm:w-36',
+        listed ? 'text-foreground' : 'text-muted')}>
+      <option value="">Level</option>
+      {value && !listed ? <option value={value}>{value}</option> : null}
+      {skillLevels.map((level) => <option key={level} value={level}>{level}</option>)}
+    </select>
+  )
+}
 
 /** Skill level from a fixed list, so levels are comparable across profiles. */
 export function SkillLevelSelect({

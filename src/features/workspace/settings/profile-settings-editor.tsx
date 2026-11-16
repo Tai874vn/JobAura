@@ -1,34 +1,30 @@
 'use client'
 
-import { Eye, ImageUp, Info, Save, Upload } from 'lucide-react'
+import { Eye, ImageUp, Info, Upload } from 'lucide-react'
 import type { UserProfile } from '@/shared/schemas'
-import { Avatar, Button, Card, CardContent, ConfirmationDialog, Textarea } from '@/shared/ui'
+import { Avatar, Button, Card, CardContent, ConfirmationDialog, Textarea, UnsavedChangesBar } from '@/shared/ui'
 import { removeListItem, updateList } from '@/features/users/profile-form-utils'
-import { EditorSection, Field, IconButton, PortfolioFields, UploadField } from './settings-form-controls'
-import { emptyCertification, emptySkill, useProfileSettings } from './use-profile-settings'
-import { SkillLevelSelect, SkillPicker } from '@/features/users/skill-picker'
+import { EditorSection, Field, PortfolioFields, UploadField } from './settings-form-controls'
+import { emptyCertification, useProfileSettings } from './use-profile-settings'
+import { SkillListEditor } from '@/features/users/skill-picker'
 import { CertificationFields } from '@/features/users/certification-fields'
 import { certificationProblems } from '@/features/users/certifications'
 
 export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
   const {
     basic, setBasic, skills, setSkills, certifications, setCertifications, portfolio, setPortfolio, newPortfolio, setNewPortfolio,
-    pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, createPortfolio, updatePortfolio,
+    pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, resetChanges, createPortfolio, updatePortfolio,
     deletePortfolio, uploadAvatar, uploadCover, isSaving,
   } = useProfileSettings(profile)
 
   return (
     <>
       <fieldset disabled={isSaving} className="min-w-0">
-        {/* pb-24 keeps the last card clear of the floating buttons once scrolled to the end. */}
-        <div className="grid gap-4 pb-24">
-          {/* Floats above the Chat button (bottom-5, 48px tall) so it stays in reach while editing a long profile.
-              The open chat panel (z-50) covers it, and it hides with this section. */}
-          <Button className="fixed bottom-[84px] right-5 z-40 h-12 rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
-            loading={saveAll.isPending} disabled={isSaving || !hasChanges} onClick={() => saveAll.mutate()}>
-            <Save className="h-4 w-4" />
-            {hasChanges ? 'Save profile' : 'All saved'}
-          </Button>
+        {/* pb-28 keeps the last card clear of the save bar once scrolled to the end. */}
+        <div className="grid gap-4 pb-28">
+          {/* One save for the profile; it hides with this section. */}
+          <UnsavedChangesBar dirty={hasChanges} saving={saveAll.isPending} saveLabel="Save profile"
+            onSave={() => saveAll.mutate()} onReset={resetChanges} />
 
           <Card data-focus="photo">
             <CardContent className="p-5">
@@ -66,15 +62,8 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
             </CardContent>
           </Card>
 
-          <EditorSection title="Skills" focusId="skills" onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])}>
-            {skills.map((skill, index) => (
-              <div key={index} className="grid items-end gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
-                <SkillPicker label="Skill" max={1} value={skill.name ? [skill.name] : []}
-                  onChange={(names) => updateList(setSkills, index, { name: names[0] ?? '' })} />
-                <SkillLevelSelect value={skill.level} onChange={(level) => updateList(setSkills, index, { level })} />
-                <IconButton label="Remove skill" onClick={() => removeListItem(setSkills, index)} />
-              </div>
-            ))}
+          <EditorSection title="Skills" focusId="skills">
+            <SkillListEditor value={skills} onChange={setSkills} />
           </EditorSection>
 
           <EditorSection title="Certifications" focusId="certifications" onAdd={() => setCertifications((items) => [...items, { ...emptyCertification }])}>

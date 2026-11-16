@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints/users'
@@ -80,12 +80,12 @@ export function useProfileSettings(profile: UserProfile) {
       toast.error(getErrorMessage(error, 'Unable to save your profile'))
     },
   })
-  useEffect(() => {
-    if (!hasChanges) return
-    const warn = (event: BeforeUnloadEvent) => { event.preventDefault() }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [hasChanges])
+  // Back to what was last saved (the save bar's Reset).
+  function resetChanges() {
+    setBasic(JSON.parse(basicBase))
+    setSkills(JSON.parse(skillsBase))
+    setCertifications(JSON.parse(certificationsBase))
+  }
   const createPortfolio = useMutation({
     scope, mutationFn: () => usersApi.createPortfolioItem(cleanObject(newPortfolio)),
     onSuccess: (response) => {
@@ -117,7 +117,7 @@ export function useProfileSettings(profile: UserProfile) {
 
   return {
     basic, setBasic, skills, setSkills, certifications, setCertifications, portfolio, setPortfolio, newPortfolio, setNewPortfolio,
-    pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, createPortfolio, updatePortfolio,
+    pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, resetChanges, createPortfolio, updatePortfolio,
     deletePortfolio, uploadAvatar, uploadCover, isSaving,
   }
 }

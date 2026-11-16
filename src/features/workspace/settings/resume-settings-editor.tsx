@@ -101,7 +101,9 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
         <ResumeSettingsSection resume={resume} draft={currentDraft} attachedFile={attachedFile} isLoading={false}
           isImporting={save.isPending} isPredicting={predict.isPending} onFieldChange={updateField}
           onClearAttachedFile={() => setAttachedFile(null)} onImport={() => save.mutate({ data: currentDraft, file: attachedFile })}
-          onPredictSeniority={() => predict.mutate()} onResumeFile={loadFile} foundSkills={suggestedSkills(resume)} />
+          onPredictSeniority={() => predict.mutate()} onResumeFile={loadFile} foundSkills={suggestedSkills(resume)}
+          hasChanges={Object.keys(draft).length > 0 || Boolean(attachedFile)}
+          onReset={() => { setDraft({}); setAttachedFile(null) }} />
       </fieldset>
     </div>
   )

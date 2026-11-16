@@ -18,9 +18,9 @@ describe('Profile settings editor initialization', () => {
     expect(html).toContain('value="Ava"')
     expect(html).toContain('value="Engineer"')
     expect(html).toContain('Builds apps</textarea>')
-    // Skills are chosen from the dictionary, so the saved name shows as a chip; the old "advanced" level maps
-    // onto the fixed level list.
-    expect(html).toContain('TypeScript<button')
+    // Each skill is one row with its level; the old "advanced" level maps onto the fixed level list.
+    expect(html).toContain('TypeScript</span>')
+    expect(html).toContain('aria-label="Level for TypeScript"')
     expect(html).toContain('value="Advanced" selected=""')
     // Certifications are edited by month.
     expect(html).toContain('value="2026-01"')
