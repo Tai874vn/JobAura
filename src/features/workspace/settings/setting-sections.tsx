@@ -13,7 +13,6 @@ import {
   UserRound,
 } from 'lucide-react'
 import Link from 'next/link'
-import { hiddenFromRecruitersReason, isHiddenFromRecruiters } from '@/features/users/profile-strength'
 import type { UserProfile, UserResume } from '@/shared/schemas'
 import { canAccessCandidateTools } from '@/shared/lib/roles'
 import { Avatar, Button, Card, CardContent } from '@/shared/ui'
@@ -102,7 +101,7 @@ export function SettingsOverview({
             <UserRound className="h-5 w-5 text-primary" />
             <h3 className="mt-3 font-display text-lg font-bold">Public profile</h3>
             <p className="mt-1 flex-1 text-sm leading-6 text-muted">Edit your introduction, skills, certifications, and portfolio.</p>
-            {profile.role === 'user' ? <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted"><Eye className="h-3.5 w-3.5" />{!profile.candidateDiscoverable ? 'Hidden from recruiters' : isHiddenFromRecruiters(profile) ? `Not shown to recruiters yet: ${hiddenFromRecruitersReason(profile)}` : 'Visible to recruiters'}</p> : null}
+            {profile.role === 'user' ? <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted"><Eye className="h-3.5 w-3.5" />{profile.candidateDiscoverable ? 'Visible to recruiters' : 'Hidden from recruiters'}</p> : null}
             <Button className="mt-4 w-full" variant="secondary" onClick={() => onSelect('profile')}>Manage profile <ArrowRight className="h-4 w-4" /></Button>
           </CardContent>
         </Card>

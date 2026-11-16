@@ -14,8 +14,6 @@ export const userSchema = z.object({
   skill: z.string().optional().nullable(),
   certification: z.string().optional().nullable(),
   googleId: z.string().optional().nullable(),
-  /** Backend flag: candidates appear in search and AI matching only when true (see recruiterVisibilityGaps). */
-  profileCompleted: z.boolean().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

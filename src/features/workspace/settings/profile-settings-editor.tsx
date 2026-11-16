@@ -9,7 +9,6 @@ import { emptyCertification, emptySkill, useProfileSettings } from './use-profil
 import { SkillLevelSelect, SkillPicker } from '@/features/users/skill-picker'
 import { CertificationFields } from '@/features/users/certification-fields'
 import { certificationProblems } from '@/features/users/certifications'
-import { hiddenFromRecruitersReason, isHiddenFromRecruiters } from '@/features/users/profile-strength'
 
 export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
   const {
@@ -17,8 +16,6 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
     pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, createPortfolio, updatePortfolio,
     deletePortfolio, uploadAvatar, uploadCover, isSaving,
   } = useProfileSettings(profile)
-  // Judged on the saved profile and the backend's flag, which is what recruiters' search uses.
-  const hiddenReason = isHiddenFromRecruiters(profile) ? hiddenFromRecruitersReason(profile) : null
 
   return (
     <>
@@ -128,13 +125,13 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">Visible to recruiters</span>
                     <span className="mt-1 block text-xs leading-5 text-muted">
-                      Allow recruiters to find this completed profile in candidate search and AI matching.
+                      Show your profile to recruiters in candidate search and AI matching.
                     </span>
                   </span>
                 </label>
-                {basic.candidateDiscoverable && hiddenReason ? (
+                {!basic.candidateDiscoverable ? (
                   <p role="status" className="mt-3 rounded-lg border border-rating/40 bg-rating/10 p-3 text-xs leading-5">
-                    Recruiters can&apos;t find you yet: {hiddenReason}.
+                    Recruiters can&apos;t find you in candidate search or AI matching until you turn this on and save.
                   </p>
                 ) : null}
               </CardContent>
