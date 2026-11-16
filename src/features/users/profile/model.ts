@@ -31,7 +31,6 @@ export type PortfolioItem = {
 
 export type SkillDraft = Omit<ProfileSkill, 'id'>
 export type { CertificationDraft } from '../certifications'
-export type ProfileEditPanel = 'profile' | 'skills' | 'certifications' | 'resume' | null
 
 export type MarketplaceProfile = User & {
   headline?: string | null

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints/users'
@@ -44,30 +44,48 @@ export function useProfileSettings(profile: UserProfile) {
     if (next) setCachedSession(next, client)
     void client.invalidateQueries({ queryKey: queryKeys.me })
   }
-  const saveBasic = useMutation({
-    scope, mutationFn: () => usersApi.updateMyProfile(cleanObject(basic)),
-    onSuccess: (response) => { refreshProfile(response.content); toast.success('Profile updated') },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to update profile')),
-  })
-  const saveSkills = useMutation({
-    scope, mutationFn: () => usersApi.replaceSkills(skills.map((skill, index) => cleanObject({ ...skill, sortOrder: index })).filter((skill) => skill.name)),
-    onSuccess: (response) => {
-      refreshProfile(response.content)
-      // The resume shows the same list and is evaluated again.
-      void client.invalidateQueries({ queryKey: queryKeys.myResume })
-      toast.success('Skills saved')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to save skills')),
-  })
-  const saveCertifications = useMutation({
-    scope, mutationFn: () => {
-      const problems = allCertificationProblems(certifications)
+  // One Save for the whole profile: it sends only the parts that changed since they were last saved.
+  const [basicBase, setBasicBase] = useState(() => JSON.stringify(basic))
+  const [certificationsBase, setCertificationsBase] = useState(() => JSON.stringify(certifications))
+  const changed = {
+    basic: JSON.stringify(basic) !== basicBase,
+    skills: JSON.stringify(skills) !== skillsBase,
+    certifications: JSON.stringify(certifications) !== certificationsBase,
+  }
+  const hasChanges = changed.basic || changed.skills || changed.certifications
+  const saveAll = useMutation({
+    scope,
+    mutationFn: async () => {
+      const parts = { ...changed }
+      const snapshot = { basic: JSON.stringify(basic), skills: JSON.stringify(skills), certifications: JSON.stringify(certifications) }
+      const problems = parts.certifications ? allCertificationProblems(certifications) : []
       if (problems.length) throw new Error(problems[0])
-      return usersApi.replaceCertifications(certificationPayload(certifications))
+      if (parts.basic) await usersApi.updateMyProfile(cleanObject(basic))
+      if (parts.skills) await usersApi.replaceSkills(skills.map((skill, index) => cleanObject({ ...skill, sortOrder: index })).filter((skill) => skill.name))
+      if (parts.certifications) await usersApi.replaceCertifications(certificationPayload(certifications))
+      return { parts, snapshot }
     },
-    onSuccess: (response) => { refreshProfile(response.content); toast.success('Certifications saved') },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to save certifications')),
+    onSuccess: ({ parts, snapshot }) => {
+      if (parts.basic) setBasicBase(snapshot.basic)
+      if (parts.skills) setSkillsBase(snapshot.skills)
+      if (parts.certifications) setCertificationsBase(snapshot.certifications)
+      refreshProfile()
+      // The resume shows the same skill list and is evaluated again.
+      if (parts.skills) void client.invalidateQueries({ queryKey: queryKeys.myResume })
+      toast.success('Profile saved')
+    },
+    onError: (error) => {
+      // A part that saved before the failure is saved again next time; each save replaces the whole part.
+      refreshProfile()
+      toast.error(getErrorMessage(error, 'Unable to save your profile'))
+    },
   })
+  useEffect(() => {
+    if (!hasChanges) return
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault() }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [hasChanges])
   const createPortfolio = useMutation({
     scope, mutationFn: () => usersApi.createPortfolioItem(cleanObject(newPortfolio)),
     onSuccess: (response) => {
@@ -94,12 +112,12 @@ export function useProfileSettings(profile: UserProfile) {
   })
   const uploadAvatar = useProfileUpload(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
   const uploadCover = useProfileUpload(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
-  const isSaving = saveBasic.isPending || saveSkills.isPending || saveCertifications.isPending || createPortfolio.isPending
+  const isSaving = saveAll.isPending || createPortfolio.isPending
     || updatePortfolio.isPending || deletePortfolio.isPending || uploadAvatar.isPending || uploadCover.isPending
 
   return {
     basic, setBasic, skills, setSkills, certifications, setCertifications, portfolio, setPortfolio, newPortfolio, setNewPortfolio,
-    pendingPortfolioDelete, setPendingPortfolioDelete, saveBasic, saveSkills, saveCertifications, createPortfolio, updatePortfolio,
+    pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, createPortfolio, updatePortfolio,
     deletePortfolio, uploadAvatar, uploadCover, isSaving,
   }
 }

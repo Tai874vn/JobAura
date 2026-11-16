@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { profileStrength } from './profile-strength'
+import { hiddenFromRecruitersReason, isHiddenFromRecruiters, joinWords, profileStrength, recruiterVisibilityGaps } from './profile-strength'
 import type { UserResume } from '@/shared/schemas'
 
 const resume = (data: Record<string, unknown>) => ({ data }) as unknown as UserResume
@@ -83,5 +83,25 @@ describe('profileStrength career years', () => {
     expect(career(profileStrength({ profile, resume: resume({ Industry: 'Rocket surgery', YearsExperience: '3' }) }))).toBe(true)
     expect(career(profileStrength({ profile, resume: resume({ Industry: 'Software development', YearsExperience: 'many' }) }))).toBe(true)
     expect(career(profileStrength({ profile, resume: resume({ Industry: 'Software development', YearsExperience: '3' }) }))).toBe(false)
+  })
+})
+
+describe('recruiterVisibilityGaps', () => {
+  it('lists what the backend requires before recruiters can find a candidate', () => {
+    expect(recruiterVisibilityGaps({ name: 'Ava' })).toEqual(['a profile photo', 'a headline', 'an About', 'a skill'])
+    expect(recruiterVisibilityGaps({ name: 'Ava', avatar: '/a.png', headline: 'Dev', bio: 'Builds', profileSkills: [{ name: 'SQL' }] })).toEqual([])
+    expect(joinWords(['a photo', 'a headline', 'a skill'])).toBe('a photo, a headline, and a skill')
+    expect(joinWords(['a photo', 'a skill'])).toBe('a photo and a skill')
+  })
+})
+
+describe('isHiddenFromRecruiters', () => {
+  it('follows the backend flag, not the rule alone', () => {
+    expect(isHiddenFromRecruiters({ role: 'user', candidateDiscoverable: true, profileCompleted: true })).toBe(false)
+    expect(isHiddenFromRecruiters({ role: 'user', candidateDiscoverable: true, profileCompleted: false })).toBe(true)
+    expect(isHiddenFromRecruiters({ role: 'user', candidateDiscoverable: false, profileCompleted: false })).toBe(false)
+    expect(hiddenFromRecruitersReason({ name: 'Ava', avatar: '/a.png', headline: 'Dev', bio: 'x', profileSkills: [] })).toBe('add a skill')
+    expect(hiddenFromRecruitersReason({ name: 'Ava', avatar: '/a.png', headline: 'Dev', bio: 'x', profileSkills: [{ name: 'SQL' }] }))
+      .toBe('save your profile once more')
   })
 })

@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowUpRight,
   Award,
@@ -22,30 +22,21 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
-import type { Job, UpdateProfile, UserProfile } from '@/shared/schemas'
+import type { Job, UserProfile } from '@/shared/schemas'
 import { Button, Card, CardContent, CardHeader } from '@/shared/ui'
-import { getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { safeExternalUrl } from '@/shared/lib/urls'
 import { useSession } from '@/features/auth/use-session'
-import {
-  hasResumeDraftInput,
-  resumeDraftFromData,
-  resumeDraftToImportPayload,
-  type ResumeDraft,
-} from '@/features/users/resume'
-import { resumeCareerProblems } from '@/features/users/resume-career'
-import { suggestedSkills } from '@/features/users/resume-ai'
+import { resumeDraftFromData } from '@/features/users/resume'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { useProfileStrength } from './profile-strength'
-import { cleanObject } from './profile-form-utils'
 import { ProfileEducation, resumeEducation } from './profile/profile-education'
-import { allCertificationProblems, certificationDraft, certificationPayload, formatCertificationMonth, isCertificationExpired } from './certifications'
+import { formatCertificationMonth, isCertificationExpired } from './certifications'
 import { useProfileUpload } from './use-profile-upload'
-import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer } from './profile/profile-editor'
+import { InlineEditButton, OwnerUploadButton } from './profile/profile-editor'
 import {
   ContactRow,
   EmptyState,
@@ -60,11 +51,8 @@ import {
   getProfileSkills,
   humanize,
   sortByOrder,
-  type CertificationDraft,
   type MarketplaceProfile,
   type PortfolioItem,
-  type ProfileEditPanel,
-  type SkillDraft,
 } from './profile/model'
 
 export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; posts?: Job[] }) {
@@ -88,40 +76,17 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
     'This JobAura member is building out their profile. Browse their skills, credentials, and portfolio to understand how they can help.'
   // Strength needs the owner's resume, so only the owner sees the badge.
   const completion = useProfileStrength(profile, isOwner).score
-  const [editableProfile, setEditableProfile] = useState<UpdateProfile>({})
-  const [editableSkills, setEditableSkills] = useState<SkillDraft[]>([])
-  const [editableCertifications, setEditableCertifications] = useState<CertificationDraft[]>([])
-  const [resumeDraft, setResumeDraft] = useState<Partial<ResumeDraft>>({})
-  const [activePanel, setActivePanel] = useState<ProfileEditPanel>(null)
-  const [attachedResumeFile, setAttachedResumeFile] = useState<File | null>(null)
-
   const resumeQuery = useQuery({
     queryKey: queryKeys.myResume,
     queryFn: usersApi.myResume,
     enabled: isOwner,
   })
   const resume = resumeQuery.data?.content ?? null
-  const currentResumeDraft = { ...resumeDraftFromData(resume?.data), ...resumeDraft }
+  const currentResumeDraft = resumeDraftFromData(resume?.data)
+  // Editing happens in Settings (one form per thing); the profile page links to the field.
+  const editIn = (href: string) => router.push(href)
 
 
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setEditableProfile({
-        name: profile.name ?? '',
-        phone: profile.phone ?? '',
-        birthDay: profile.birthDay ?? '',
-        gender: profile.gender ?? '',
-        headline: profile.headline ?? '',
-        bio: profile.bio ?? '',
-        location: profile.location ?? '',
-        website: profile.website ?? '',
-      })
-      setEditableSkills(skills.map((skill, index) => ({ name: skill.name, level: skill.level ?? '', sortOrder: skill.sortOrder ?? index })))
-      setEditableCertifications(certifications.map(certificationDraft))
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [profile, skills, certifications])
 
   function refreshProfile(next?: UserProfile) {
     if (next) {
@@ -132,66 +97,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
     router.refresh()
   }
 
-  const saveProfile = useMutation({
-    mutationFn: () => usersApi.updateMyProfile(cleanObject(editableProfile)),
-    onSuccess: (response) => {
-      refreshProfile(response.content)
-      setActivePanel(null)
-      toast.success('Profile updated')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to update profile')),
-  })
-
-  const saveSkills = useMutation({
-    mutationFn: () =>
-      usersApi.replaceSkills(editableSkills.map((skill, index) => cleanObject({ ...skill, sortOrder: index })).filter((skill) => skill.name)),
-    onSuccess: (response) => {
-      refreshProfile(response.content)
-      queryClient.invalidateQueries({ queryKey: queryKeys.myResume })
-      setActivePanel(null)
-      toast.success('Skills saved')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to save skills')),
-  })
-
-  const saveCertifications = useMutation({
-    mutationFn: () => {
-      const problems = allCertificationProblems(editableCertifications)
-      if (problems.length) throw new Error(problems[0])
-      return usersApi.replaceCertifications(certificationPayload(editableCertifications))
-    },
-    onSuccess: (response) => {
-      refreshProfile(response.content)
-      setActivePanel(null)
-      toast.success('Certifications saved')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to save certifications')),
-  })
-
   const uploadAvatar = useProfileUpload(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
   const uploadCover = useProfileUpload(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
-  const saveResume = useMutation({
-    mutationFn: async () => {
-      if (!hasResumeDraftInput(currentResumeDraft)) throw new Error('Fill at least one resume field before saving.')
-      const careerProblems = resumeCareerProblems(currentResumeDraft)
-      if (careerProblems.length) throw new Error(careerProblems[0])
-      const response = await usersApi.importResume(resumeDraftToImportPayload(currentResumeDraft))
-      if (attachedResumeFile) return usersApi.uploadResumeFile(attachedResumeFile)
-      return response
-    },
-    onSuccess: (response) => {
-      queryClient.setQueryData(queryKeys.myResume, { content: response.content ?? null })
-      queryClient.invalidateQueries({ queryKey: queryKeys.myResume })
-      // Resume skills are the profile's skill list.
-      queryClient.invalidateQueries({ queryKey: queryKeys.me })
-      setAttachedResumeFile(null)
-      setResumeDraft({})
-      setActivePanel(null)
-      toast.success(attachedResumeFile ? 'Resume file and details saved' : 'Resume saved')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to save resume')),
-  })
-
   return (
     <main className="pb-16">
       <div className="container-page pt-8">
@@ -270,7 +177,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
             </div>
             <div className="grid w-full shrink-0 gap-2.5 sm:w-auto sm:min-w-52">
               {isOwner ? (
-                <Button className="w-full" onClick={() => setActivePanel('profile')}>
+                <Button className="w-full" onClick={() => editIn('/settings?section=profile')}>
                   <Edit3 className="h-4 w-4" />
                   Edit profile
                 </Button>
@@ -290,7 +197,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
         <div className="grid gap-5">
           <Card>
             <CardContent className="p-5 md:p-6">
-              <SectionTitle title="About" action={isOwner ? <InlineEditButton label="Edit" onClick={() => setActivePanel('profile')} /> : null} />
+              <SectionTitle title="About" action={isOwner ? <InlineEditButton label="Edit" onClick={() => editIn('/settings?section=profile&focus=bio')} /> : null} />
               <p className="mt-3 max-w-4xl text-sm leading-6 text-muted md:text-base">{bio}</p>
             </CardContent>
           </Card>
@@ -304,7 +211,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               draft={currentResumeDraft}
               isOwner={isOwner}
               isLoading={resumeQuery.isPending}
-              onEdit={() => setActivePanel('resume')}
+              onEdit={() => editIn('/settings?section=resume')}
             />
           ) : null}
 
@@ -384,7 +291,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               <SectionTitle
                 title="Certifications"
                 meta={`${certifications.length}`}
-                action={isOwner ? <InlineEditButton label="Edit" onClick={() => setActivePanel('certifications')} /> : null}
+                action={isOwner ? <InlineEditButton label="Edit" onClick={() => editIn('/settings?section=profile&focus=certifications')} /> : null}
               />
               {certifications.length ? (
                 <div className="mt-4 grid gap-3">
@@ -464,32 +371,6 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
           )}
         </aside>
       </div>
-
-      {isOwner ? (
-        <ProfileEditDrawer
-          foundSkills={suggestedSkills(resume)}
-          activePanel={activePanel}
-          profile={editableProfile}
-          skills={editableSkills}
-          certifications={editableCertifications}
-          resume={resume}
-          resumeDraft={currentResumeDraft}
-          attachedResumeFile={attachedResumeFile}
-          isSaving={saveProfile.isPending || saveSkills.isPending || saveCertifications.isPending || saveResume.isPending}
-          onClose={() => setActivePanel(null)}
-          onProfileChange={(patch) => setEditableProfile((state) => ({ ...state, ...patch }))}
-          onSkillsChange={setEditableSkills}
-          onCertificationsChange={setEditableCertifications}
-          onResumeFieldChange={(field, value) => setResumeDraft((draft) => ({ ...draft, [field]: value }))}
-          onResumeFileChange={setAttachedResumeFile}
-          onResumeFileClear={() => setAttachedResumeFile(null)}
-          onSaveProfile={() => saveProfile.mutate()}
-          onSaveSkills={() => saveSkills.mutate()}
-          onSaveCertifications={() => saveCertifications.mutate()}
-          showCertificationProblems={saveCertifications.isError}
-          onSaveResume={() => saveResume.mutate()}
-        />
-      ) : null}
     </main>
   )
 }

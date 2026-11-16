@@ -101,3 +101,34 @@ export function useProfileStrength(profile: StrengthInput['profile'] & { id: num
     hiringPosts: count(hiring.data?.content),
   })
 }
+
+/**
+ * What a candidate still lacks before recruiters can find them (candidate search and AI matching). Mirrors the
+ * backend's `profileCompleted` rule: name, photo, headline, About, and at least one skill. The backend stores the
+ * flag and recomputes it when the profile is saved, so callers ask `isHiddenFromRecruiters` first.
+ */
+export function recruiterVisibilityGaps(profile: Pick<UserProfile, 'name' | 'avatar' | 'headline' | 'bio' | 'skills' | 'profileSkills'>) {
+  const gaps: string[] = []
+  if (!filled(profile.name)) gaps.push('a name')
+  if (!filled(profile.avatar)) gaps.push('a profile photo')
+  if (!filled(profile.headline)) gaps.push('a headline')
+  if (!filled(profile.bio)) gaps.push('an About')
+  if (!(profile.profileSkills ?? profile.skills ?? []).length) gaps.push('a skill')
+  return gaps
+}
+
+/** "a, b, and c" */
+export function joinWords(words: string[]) {
+  return words.length < 3 ? words.join(' and ') : `${words.slice(0, -1).join(', ')}, and ${words.at(-1)}`
+}
+
+/** Recruiters can't find this candidate: they opted in, but the backend has not marked the profile complete. */
+export function isHiddenFromRecruiters(profile: Pick<UserProfile, 'role' | 'candidateDiscoverable' | 'profileCompleted'>) {
+  return profile.role === 'user' && Boolean(profile.candidateDiscoverable) && profile.profileCompleted === false
+}
+
+/** The sentence that says why, or a nudge to save when the stored flag is simply out of date. */
+export function hiddenFromRecruitersReason(profile: Parameters<typeof recruiterVisibilityGaps>[0]) {
+  const gaps = recruiterVisibilityGaps(profile)
+  return gaps.length ? `add ${joinWords(gaps)}` : 'save your profile once more'
+}

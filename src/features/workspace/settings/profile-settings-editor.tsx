@@ -9,13 +9,16 @@ import { emptyCertification, emptySkill, useProfileSettings } from './use-profil
 import { SkillLevelSelect, SkillPicker } from '@/features/users/skill-picker'
 import { CertificationFields } from '@/features/users/certification-fields'
 import { certificationProblems } from '@/features/users/certifications'
+import { hiddenFromRecruitersReason, isHiddenFromRecruiters } from '@/features/users/profile-strength'
 
 export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
   const {
     basic, setBasic, skills, setSkills, certifications, setCertifications, portfolio, setPortfolio, newPortfolio, setNewPortfolio,
-    pendingPortfolioDelete, setPendingPortfolioDelete, saveBasic, saveSkills, saveCertifications, createPortfolio, updatePortfolio,
+    pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, createPortfolio, updatePortfolio,
     deletePortfolio, uploadAvatar, uploadCover, isSaving,
   } = useProfileSettings(profile)
+  // Judged on the saved profile and the backend's flag, which is what recruiters' search uses.
+  const hiddenReason = isHiddenFromRecruiters(profile) ? hiddenFromRecruitersReason(profile) : null
 
   return (
     <>
@@ -25,9 +28,9 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
           {/* Floats above the Chat button (bottom-5, 48px tall) so it stays in reach while editing a long profile.
               The open chat panel (z-50) covers it, and it hides with this section. */}
           <Button className="fixed bottom-[84px] right-5 z-40 h-12 rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
-            loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
+            loading={saveAll.isPending} disabled={isSaving || !hasChanges} onClick={() => saveAll.mutate()}>
             <Save className="h-4 w-4" />
-            Save profile
+            {hasChanges ? 'Save profile' : 'All saved'}
           </Button>
 
           <Card data-focus="photo">
@@ -66,7 +69,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
             </CardContent>
           </Card>
 
-          <EditorSection title="Skills" focusId="skills" saving={saveSkills.isPending} onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])} onSave={() => saveSkills.mutate()}>
+          <EditorSection title="Skills" focusId="skills" onAdd={() => setSkills((items) => [...items, { ...emptySkill, sortOrder: items.length }])}>
             {skills.map((skill, index) => (
               <div key={index} className="grid items-end gap-3 rounded-lg border border-border p-3 md:grid-cols-[1fr_180px_40px]">
                 <SkillPicker label="Skill" max={1} value={skill.name ? [skill.name] : []}
@@ -77,10 +80,10 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
             ))}
           </EditorSection>
 
-          <EditorSection title="Certifications" saving={saveCertifications.isPending} onAdd={() => setCertifications((items) => [...items, { ...emptyCertification }])} onSave={() => saveCertifications.mutate()}>
+          <EditorSection title="Certifications" focusId="certifications" onAdd={() => setCertifications((items) => [...items, { ...emptyCertification }])}>
             {certifications.map((cert, index) => (
               <CertificationFields key={index} value={cert}
-                problems={saveCertifications.isError ? certificationProblems(cert, index + 1) : []}
+                problems={saveAll.isError && changed.certifications ? certificationProblems(cert, index + 1) : []}
                 onChange={(patch) => updateList(setCertifications, index, patch)}
                 onRemove={() => removeListItem(setCertifications, index)} />
             ))}
@@ -129,12 +132,11 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
                     </span>
                   </span>
                 </label>
-                <div className="mt-3 flex justify-end">
-                  <Button size="sm" loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
-                    <Save className="h-4 w-4" />
-                    Save visibility
-                  </Button>
-                </div>
+                {basic.candidateDiscoverable && hiddenReason ? (
+                  <p role="status" className="mt-3 rounded-lg border border-rating/40 bg-rating/10 p-3 text-xs leading-5">
+                    Recruiters can&apos;t find you yet: {hiddenReason}.
+                  </p>
+                ) : null}
               </CardContent>
             </Card>
           ) : null}
