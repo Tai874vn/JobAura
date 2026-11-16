@@ -318,12 +318,14 @@ describe("normalizers", () => {
               locationScore: 1,
               qualityScore: 0.76,
             },
+            profileStrength: 85,
           },
         ],
       },
     } as never);
 
     expect(response.content?.pageIndex).toBe(2);
+    expect(response.content?.data[0].profileStrength).toBe(85);
     expect(response.content?.totalRow).toBe(13);
     expect(response.content?.totalPages).toBe(2);
     expect(response.content?.data[0]).toMatchObject({

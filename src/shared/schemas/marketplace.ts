@@ -197,6 +197,8 @@ export const candidateProfileSchema = z.object({
     })
     .nullable()
     .optional(),
+  /** Profile strength, 0-100: the same number the candidate sees in Settings. */
+  profileStrength: z.number().nullable().optional(),
   match: candidateDirectoryMatchSchema,
 });
 

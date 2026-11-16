@@ -11,6 +11,8 @@ import { isCareerField, parseResumeJobs } from './resume-career'
  * Profile strength: weighted checks that add up to 100. Only what changes how the profile works counts:
  * candidates are weighted toward the resume (the AI needs its field and years to place them), recruiters toward
  * who they are and having a hiring post. Website, certifications, and a cover image are extras and don't count.
+ * The backend computes the same table for candidate cards (NestjsBE users/services/profile-strength.ts); keep the
+ * two in step.
  */
 /** `href` opens the place to fill the item in; settings links carry `focus`, the field to scroll to. */
 export type StrengthCheck = { label: string; weight: number; earned: number; hint: string; href: string }

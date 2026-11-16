@@ -361,6 +361,8 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
   const skills = getCandidateSkillNames(candidate)
   const summary = getCandidateSummary(candidate)
   const career = formatCandidateCareer(candidate)
+  // The backend's Profile strength; older responses only carry the match quality.
+  const strength = candidate.profileStrength ?? Math.round(candidate.match.qualityScore * 100)
 
   return (
     <Card className="transition hover:shadow-[0_12px_28px_rgba(27,28,28,0.09)]">
@@ -403,21 +405,21 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
         </div>
 
         <div className="flex items-center gap-2 text-[11.5px] font-semibold text-muted">
-          Profile quality
+          Profile strength
           <span
             className="h-1.5 max-w-32 flex-1 overflow-hidden rounded-full bg-surface-muted"
             role="progressbar"
-            aria-label="Profile quality"
-            aria-valuenow={Math.round(candidate.match.qualityScore * 100)}
+            aria-label="Profile strength"
+            aria-valuenow={strength}
             aria-valuemin={0}
             aria-valuemax={100}
           >
             <span
               className="block h-full rounded-full bg-gradient-to-r from-primary to-primary-bright"
-              style={{ width: `${Math.round(candidate.match.qualityScore * 100)}%` }}
+              style={{ width: `${strength}%` }}
             />
           </span>
-          {Math.round(candidate.match.qualityScore * 100)}%
+          {strength}%
         </div>
 
         <div className="flex flex-wrap gap-2">

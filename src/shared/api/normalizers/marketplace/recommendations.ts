@@ -161,6 +161,7 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
           yearsInField: pickNumber(careerRecord, "yearsInField") ?? null,
         }
       : null,
+    profileStrength: pickNumber(record, "profileStrength") ?? null,
     match: {
       score: pickNumber(matchRecord, "score") ?? 0,
       label: validLabel,
