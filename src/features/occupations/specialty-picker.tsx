@@ -4,7 +4,7 @@ import { useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
-import { Input } from '@/shared/ui'
+import { Input, LiveStatus } from '@/shared/ui'
 import { occupationQuery } from './api'
 
 const SHOWN = 30
@@ -45,6 +45,10 @@ export function SpecialtyPicker({
   const listed = !value || !detail.data || specialties.includes(value)
   const none = Boolean(detail.data) && specialties.length === 0
   const listShown = open && Boolean(occupation)
+  const status = detail.isPending ? 'Loading specialties…'
+    : detail.isError ? 'Specialties are unavailable. Try again.'
+    : !options.length ? 'No matching specialty.'
+    : `${options.length} ${options.length === 1 ? 'specialty' : 'specialties'} shown`
 
   function choose(name: string) {
     onChange(name)
@@ -100,13 +104,11 @@ export function SpecialtyPicker({
           />
           {listShown ? (
             <ul id={listId} role="listbox" aria-label="Specialties" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
-              {/* Status rows are not options; the live region announces them and the result count. */}
-              <li role="presentation" aria-live="polite"
+              {/* Status rows are not options. The live region inside announces the status and the result count. */}
+              <li role="presentation"
                 className={cn('px-3 py-2 text-sm', options.length ? 'sr-only' : detail.isError ? 'text-danger' : 'text-muted')}>
-                {detail.isPending ? 'Loading specialties…'
-                  : detail.isError ? 'Specialties are unavailable. Try again.'
-                  : !options.length ? 'No matching specialty.'
-                  : `${options.length} ${options.length === 1 ? 'specialty' : 'specialties'} shown`}
+                {options.length ? null : <span aria-hidden="true">{status}</span>}
+                <LiveStatus text={status} />
               </li>
               {options.map((name, index) => (
                 <li key={name} id={`${listId}-${index}`} role="option" aria-selected={index === active}

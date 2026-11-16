@@ -249,9 +249,10 @@ describe('picker details', () => {
   it('keeps status rows out of the options and announces the count', () => {
     const html = render(<OccupationResults listId="r" active={0} onChoose={() => undefined}
       hits={[{ code: '2513.5', isco: '2513', title: 'web developer', matchedLabel: 'Full Stack Developer' }]} />)
-    expect(html).toMatch(/<li role="presentation" aria-live="polite"[^>]*>1 occupation found<\/li>/)
+    // The live region mounts empty, so the count that fills it next is announced.
+    expect(html).toMatch(/<li role="presentation"[^>]*><span role="status" aria-live="polite" class="sr-only"><\/span><\/li>/)
     expect(html.match(/role="option"/g)).toHaveLength(1)
     const none = render(<OccupationResults listId="r" active={0} onChoose={() => undefined} hits={[]} />)
-    expect(none).toMatch(/role="presentation"[^>]*>No matching occupation/)
+    expect(none).toMatch(/role="presentation"[^>]*><span aria-hidden="true">No matching occupation/)
   })
 })

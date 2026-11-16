@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
-import { Input } from '@/shared/ui'
+import { Input, LiveStatus } from '@/shared/ui'
 import { occupationKeys, occupationLabel, occupationQuery, occupationsApi, type OccupationHit } from './api'
 
 function useDebounced(value: string, delayMs: number) {
@@ -156,9 +156,10 @@ export function OccupationResults({
     : `${hits.length} ${hits.length === 1 ? 'occupation' : 'occupations'} found`
   return (
     <ul id={listId} role="listbox" aria-label="Occupations" className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
-      {/* Status rows are not options; the live region announces them and the result count. */}
-      <li role="presentation" aria-live="polite" className={cn('px-3 py-2 text-sm', hits.length ? 'sr-only' : failed ? 'text-danger' : 'text-muted')}>
-        {status}
+      {/* Status rows are not options. The live region inside announces the status and the result count. */}
+      <li role="presentation" className={cn('px-3 py-2 text-sm', hits.length ? 'sr-only' : failed ? 'text-danger' : 'text-muted')}>
+        {hits.length ? null : <span aria-hidden="true">{status}</span>}
+        <LiveStatus text={status} />
       </li>
       {hits.map((hit, index) => (
         <li key={hit.code} id={`${listId}-${index}`} role="option" aria-selected={index === active}
