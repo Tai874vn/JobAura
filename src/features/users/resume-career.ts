@@ -157,3 +157,19 @@ export function formatMonths(months: number) {
   const parts = [years ? `${years} yr` : '', rest ? `${rest} mo` : ''].filter(Boolean)
   return parts.join(' ') || 'under 1 mo'
 }
+
+/**
+ * Months in the chosen field, counted from the jobs' start and end months: the only source of years of experience
+ * (the backend's yearsInField counts the same way). Null until a field from the list is chosen.
+ */
+export function experienceMonths(draft: { Industry?: string | null; Jobs?: unknown }, today = new Date()): number | null {
+  if (!isCareerField(draft.Industry)) return null
+  return monthsInField(parseResumeJobs(draft.Jobs), draft.Industry as string, today)
+}
+
+/** "2 yr 3 mo", "No experience yet", or null without a field. */
+export function experienceLabel(draft: { Industry?: string | null; Jobs?: unknown }, today = new Date()) {
+  const months = experienceMonths(draft, today)
+  if (months === null) return null
+  return months ? formatMonths(months) : 'No experience yet'
+}

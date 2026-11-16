@@ -115,8 +115,12 @@ export function ResumeCareerFields({
             </div>
           </fieldset>
         ))}
-        {isCareerField(field) && jobs.length ? (
-          <p className="text-sm text-muted">Time in {field} from your jobs: <span className="font-semibold text-foreground">{months ? formatMonths(months) : 'none yet'}</span></p>
+        {isCareerField(field) ? (
+          // Years of experience are counted from these jobs only; there is no separate box to type them in.
+          <p data-focus="years" className="rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted">
+            Experience in {field}: <span className="font-semibold text-foreground">{months ? formatMonths(months) : 'none yet'}</span>
+            <span className="block text-xs">Counted from the start and end months of your jobs in this field.</span>
+          </p>
         ) : null}
       </div>
 

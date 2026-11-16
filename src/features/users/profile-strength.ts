@@ -54,15 +54,11 @@ export function profileStrength({ profile, resume, portfolioPosts = 0, hiringPos
     const portfolio = (profile.portfolioItems ?? profile.portfolio ?? []).length + portfolioPosts
     const jobs = parseResumeJobs(data?.Jobs)
     const datedJob = jobs.some((job) => filled(job.title) && filled(job.start))
+    // Years are counted from the jobs (the backend's yearsInField), so a chosen field is all this needs.
     const hasField = isCareerField(data?.Industry)
-    // Same rule as the backend's yearsInField: dated jobs in the main field, else the Years experience box.
-    const declaredYears = Number((data?.YearsExperience ?? '').trim().replace(',', '.'))
-    const hasYears = jobs.some((job) => job.field === data?.Industry && filled(job.start))
-      || (filled(data?.YearsExperience) && Number.isFinite(declaredYears) && declaredYears >= 0)
     const missingSkills = SKILLS_FOR_FULL_CREDIT - skills
     checks = [
-      check('Career field and years', 25, hasField && hasYears,
-        'Add your main field and years of experience to your resume', resumeField(hasField ? 'years' : 'career')),
+      check('Career field', 25, hasField, 'Choose your main field in your resume', resumeField('career')),
       check('Work history', 10, datedJob, 'Add a job with dates to your resume', resumeField('jobs')),
       check('Skills', 15, skills >= SKILLS_FOR_FULL_CREDIT ? 1 : skills > 0 ? 0.5 : 0,
         skills > 0 ? `Add ${missingSkills} more ${missingSkills === 1 ? 'skill' : 'skills'}` : `Add at least ${SKILLS_FOR_FULL_CREDIT} skills`,

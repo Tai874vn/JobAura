@@ -1,3 +1,4 @@
+import { experienceLabel } from '@/features/users/resume-career'
 import {
   BriefcaseBusiness,
   Building2,
@@ -117,7 +118,7 @@ export function ResumeShowcase({
                       {draft.Location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={draft.Location} /> : null}
                       {draft.Role ? <InlineInfo icon={<BriefcaseBusiness className="h-4 w-4" />} value={draft.Role} /> : null}
                       {draft.Industry ? <InlineInfo icon={<Building2 className="h-4 w-4" />} value={draft.Industry} /> : null}
-                      {draft.YearsExperience ? <InlineInfo icon={<Clock3 className="h-4 w-4" />} value={`${draft.YearsExperience} years`} /> : null}
+                      {experienceLabel(draft) ? <InlineInfo icon={<Clock3 className="h-4 w-4" />} value={`${experienceLabel(draft)} in field`} /> : null}
                     </div>
                   </div>
                   {fileUrl ? (

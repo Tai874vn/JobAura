@@ -1,5 +1,6 @@
 'use client'
 
+import { experienceLabel } from '@/features/users/resume-career'
 import { CheckCircle2, FileJson, FileText, Sparkles } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea } from '@/shared/ui'
@@ -71,7 +72,6 @@ export function ResumeSettingsSection({
               <ResumeField label="Phone" value={draft.Phone} onChange={(value) => onFieldChange('Phone', value)} />
               <ResumeField label="Location" value={draft.Location} onChange={(value) => onFieldChange('Location', value)} />
               <ResumeField label="Current job title" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
-              <ResumeField label="Years experience" focusId="years" value={draft.YearsExperience} onChange={(value) => onFieldChange('YearsExperience', value)} />
             </div>
 
             <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} />
@@ -238,7 +238,7 @@ function ResumePreview({
               <ResumeMeta label="Job title" value={data.Role} />
               <ResumeMeta label="Field" value={data.Industry} />
               <ResumeMeta label="Specialty" value={data.Specialty} />
-              <ResumeMeta label="Years experience" value={data.YearsExperience} />
+              <ResumeMeta label="Experience in field" value={experienceLabel({ Industry: data.Industry, Jobs: data.Jobs }) ?? undefined} />
             </div>
             {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
             {skills.length ? (

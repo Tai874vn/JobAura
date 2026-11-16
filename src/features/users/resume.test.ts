@@ -50,6 +50,7 @@ describe('resume helpers', () => {
       Name: 'Chad Griffin',
       Role: 'Frontend Engineer',
       Industry: 'Software',
+      // An old typed-in years number is not carried over; years come from the jobs.
       YearsExperience: '1',
       Skills: 'Python, SQL',
       Summary: '',
@@ -63,7 +64,6 @@ describe('resume helpers', () => {
         Name: 'Chad Griffin',
         Role: 'Frontend Engineer',
         Industry: 'Software',
-        YearsExperience: '1',
         Skills: 'Python, SQL',
       },
       schemaVersion: resumeSchemaVersion,
@@ -102,7 +102,6 @@ describe('resume helpers', () => {
         Phone: '94105 555 4321000',
         Location: 'City, State',
         Role: 'Java Developer',
-        YearsExperience: '10',
         Summary: 'Highly skilled software development professional bringing 10 years software design development integration.',
         Skills: '',
         Experience: 'Senior Java Developer / Tech Lead Built customer facing internal web applications.',

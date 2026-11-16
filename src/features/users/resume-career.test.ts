@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { emptyResumeDraft, resumeDraftFromData, resumeDraftToImportPayload } from './resume'
 import {
+  experienceLabel,
+  experienceMonths,
   emptyResumeJob,
   monthsInField,
   parseResumeJobs,
@@ -58,5 +60,23 @@ describe('career fields', () => {
     expect(parseResumeJobs('not json')).toEqual([])
     expect(parseResumeJobs({ title: 'x' })).toEqual([])
     expect(parseResumeJobs([null, { title: 'Cook', current: 'yes' }])).toEqual([{ ...emptyResumeJob, title: 'Cook' }])
+  })
+})
+
+describe('experience from jobs', () => {
+  const today = new Date('2026-11-16T00:00:00Z')
+  it('counts the months of jobs in the chosen field only', () => {
+    const Jobs = JSON.stringify([
+      { title: 'Dev', field: 'Software development', start: '2020-01', end: '2022-01', current: false, description: '' },
+      { title: 'Lead', field: 'Software development', start: '2021-06', end: '', current: true, description: '' },
+      { title: 'Accountant', field: 'Finance', start: '2015-01', end: '2019-12', current: false, description: '' },
+    ])
+    expect(experienceMonths({ Industry: 'Software development', Jobs }, today)).toBe(82)
+    expect(experienceLabel({ Industry: 'Software development', Jobs }, today)).toBe('6 yr 10 mo')
+  })
+
+  it('says when there is no experience yet, and nothing without a field', () => {
+    expect(experienceLabel({ Industry: 'QA', Jobs: [] }, today)).toBe('No experience yet')
+    expect(experienceLabel({ Industry: '' }, today)).toBeNull()
   })
 })

@@ -14,7 +14,6 @@ export const resumeFieldKeys = [
   'Specialty',
   'Degree',
   'FieldOfStudy',
-  'YearsExperience',
   'Summary',
   'Skills',
   'Experience',
@@ -33,7 +32,6 @@ export const userResumeFieldKeys = [
   'Specialty',
   'Degree',
   'FieldOfStudy',
-  'YearsExperience',
   'Summary',
   'Skills',
   'Experience',
@@ -97,7 +95,6 @@ export const emptyResumeDraft: ResumeDraft = {
   Specialty: '',
   Degree: '',
   FieldOfStudy: '',
-  YearsExperience: '',
   Summary: '',
   Skills: '',
   Experience: '',
@@ -213,7 +210,6 @@ export function extractResumeFromText(text: string, sourceFileName?: string): Im
       Location: findLabeledValue(normalizedText, 'Location') ?? inferLocation(lines),
       Role: findLabeledValue(normalizedText, 'Role') ?? findLabeledValue(normalizedText, 'Title') ?? inferResumeRole(lines),
       Industry: findLabeledValue(normalizedText, 'Industry') ?? '',
-      YearsExperience: findLabeledValue(normalizedText, 'Years Experience') ?? inferYearsExperience(normalizedText),
       Summary: summary,
       // Skills are not copied from the text: the dictionary scan suggests them and the user confirms.
       Skills: '',
@@ -396,11 +392,6 @@ function inferResumeRole(lines: string[]) {
         )
       }) ?? ''
   )
-}
-
-function inferYearsExperience(text: string) {
-  const match = text.match(/\b(\d{1,2})\+?\s*(?:years?|yrs?)\b/i)
-  return match?.[1] ?? ''
 }
 
 function inferResumeName(lines: string[]) {
