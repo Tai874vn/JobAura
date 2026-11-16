@@ -19,11 +19,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
     <>
       <fieldset disabled={isSaving} className="min-w-0">
         <div className="grid gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-2xl font-bold">Profile settings</h2>
-              <p className="mt-0.5 text-sm text-muted">Your public marketplace identity, skills, and portfolio.</p>
-            </div>
+          <div className="flex justify-end">
             <Button loading={saveBasic.isPending} disabled={isSaving} onClick={() => saveBasic.mutate()}>
               <Save className="h-4 w-4" />
               Save profile

@@ -51,13 +51,6 @@ export function ResumeSettingsSection({
 
   return (
     <div className="grid gap-4">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Resume details</h2>
-        <p className="mt-1 max-w-3xl text-sm leading-6 text-muted">
-          Review your experience, attach a CV, and save the details used for job matching.
-        </p>
-      </div>
-
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_288px] xl:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
           <CardContent className="grid gap-3 p-4 sm:p-5">
