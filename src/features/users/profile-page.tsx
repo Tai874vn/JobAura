@@ -40,7 +40,7 @@ import {
 import { resumeCareerProblems } from '@/features/users/resume-career'
 import { suggestedSkills } from '@/features/users/resume-ai'
 import { ConnectionActions } from '@/features/connections/connect-button'
-import { calculateProfileCompletion } from './profile-posts'
+import { useProfileStrength } from './profile-strength'
 import { cleanObject, toDateInput } from './profile-form-utils'
 import { useProfileUpload } from './use-profile-upload'
 import { InlineEditButton, OwnerUploadButton, ProfileEditDrawer } from './profile/profile-editor'
@@ -84,7 +84,8 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const bio =
     profile.bio ??
     'This JobAura member is building out their profile. Browse their skills, credentials, and portfolio to understand how they can help.'
-  const completion = calculateProfileCompletion(profile)
+  // Strength needs the owner's resume, so only the owner sees the badge.
+  const completion = useProfileStrength(profile, isOwner).score
   const [editableProfile, setEditableProfile] = useState<UpdateProfile>({})
   const [editableSkills, setEditableSkills] = useState<SkillDraft[]>([])
   const [editableCertifications, setEditableCertifications] = useState<CertificationDraft[]>([])
@@ -236,7 +237,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="font-display text-3xl font-bold leading-tight tracking-tight">{profile.name}</h1>
-                {completion === 100 ? (
+                {isOwner && completion === 100 ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
                     <BadgeCheck className="h-3.5 w-3.5" />
                     Complete profile

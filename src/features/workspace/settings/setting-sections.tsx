@@ -47,11 +47,12 @@ export function hasResumeSection(role?: string | null) {
 
 
 export function SettingsOverview({
-  profile, completion, resume, resumeLoading = false, resumeError = false,
+  profile, completion, missing = [], resume, resumeLoading = false, resumeError = false,
   resumeRetrying = false, onRetryResume, onSelect,
 }: {
   profile: UserProfile
   completion: number
+  missing?: string[]
   resume: UserResume | null
   resumeLoading?: boolean
   resumeError?: boolean
@@ -61,10 +62,6 @@ export function SettingsOverview({
 }) {
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="font-display text-2xl font-bold">Your workspace, at a glance</h2>
-        <p className="mt-1 text-sm leading-6 text-muted">Keep your public profile and career details up to date.</p>
-      </div>
       <Card className="overflow-hidden border-l-4 border-l-primary">
         <CardContent className="p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-4">
@@ -77,13 +74,17 @@ export function SettingsOverview({
           </div>
           <div className="mt-6 border-t border-border pt-5">
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="font-semibold">Profile readiness</span><span className="font-bold text-primary">{completion}%</span>
+              <span className="font-semibold">Profile strength</span><span className="font-bold text-primary">{completion}%</span>
             </div>
             <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-muted" role="progressbar"
-              aria-label="Profile readiness" aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100}>
+              aria-label="Profile strength" aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100}>
               <div className="h-full rounded-full bg-primary transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${completion}%` }} />
             </div>
-            <p className="mt-2.5 text-xs leading-5 text-muted">Your photo, skills, and work samples help people understand what you offer.</p>
+            {missing.length ? (
+              <ul className="mt-3 grid gap-1 text-xs leading-5 text-muted">
+                {missing.map((hint) => <li key={hint} className="flex items-center gap-1.5"><AlertCircle className="h-3.5 w-3.5 shrink-0" />{hint}</li>)}
+              </ul>
+            ) : <p className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-primary"><CheckCircle2 className="h-3.5 w-3.5" />Your profile is complete.</p>}
           </div>
         </CardContent>
       </Card>

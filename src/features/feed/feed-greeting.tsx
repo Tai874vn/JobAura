@@ -6,7 +6,7 @@ import { Sparkles, Users } from 'lucide-react'
 import { connectionsApi, recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { UserProfile } from '@/shared/schemas'
-import { getProfileCompleteness } from './feed-data'
+import { useProfileStrength } from '@/features/users/profile-strength'
 
 function greetingForHour(hour: number) {
   if (hour < 12) return 'Good morning'
@@ -17,7 +17,7 @@ function greetingForHour(hour: number) {
 export function FeedGreeting({ user }: { user: UserProfile }) {
   // Rendered per load; suppressHydrationWarning covers the server/client hour difference.
   const greeting = greetingForHour(new Date().getHours())
-  const completeness = getProfileCompleteness(user)
+  const completeness = useProfileStrength(user).score
 
   const connectionsQuery = useQuery({
     queryKey: queryKeys.connections({ page: 1, pageSize: 1 }),

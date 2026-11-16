@@ -1,6 +1,5 @@
 import type { InfiniteData } from '@tanstack/react-query'
-import type { FeedPage, FeedPost, PostComment, UserProfile } from '@/shared/schemas'
-import { calculateProfileCompletion } from '@/features/users/profile-posts'
+import type { FeedPage, FeedPost, PostComment } from '@/shared/schemas'
 
 export type CommentPage = { data: PostComment[]; nextCursor: number | null }
 export type CommentCache = InfiniteData<CommentPage, number | null>
@@ -122,10 +121,6 @@ export function removeCommentFromPages(
       data: page.data.filter((comment) => comment.id !== commentId),
     })),
   }
-}
-
-export function getProfileCompleteness(user: UserProfile) {
-  return calculateProfileCompletion(user)
 }
 
 function dedupeComments(comments: PostComment[]) {

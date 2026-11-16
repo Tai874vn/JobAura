@@ -3,7 +3,6 @@ import type { FeedPage, FeedPost, PostComment } from '@/shared/schemas'
 import {
   addCommentToPost,
   appendCommentToPages,
-  getProfileCompleteness,
   mergeComments,
   mergeFeedPages,
   mergeReplies,
@@ -171,36 +170,4 @@ describe('feed data helpers', () => {
       .toEqual([[5], [3, 2]])
   })
 
-  it('calculates profile completeness from meaningful profile fields', () => {
-    expect(getProfileCompleteness({
-      id: 6,
-      name: 'Tai',
-      email: 'tai@example.com',
-      avatar: '/avatar.png',
-      headline: 'Backend developer',
-      bio: 'Builds reliable services.',
-      location: 'Phnom Penh',
-      website: 'https://example.com',
-      coverImage: '/cover.png',
-      profileSkills: [{ name: 'NestJS' }],
-      profileCertifications: [{ name: 'AWS' }],
-      portfolioItems: [{ title: 'JobAura' }],
-    })).toBe(100)
-
-    expect(getProfileCompleteness({
-      id: 7,
-      name: 'New user',
-      email: 'new@example.com',
-    })).toBe(10)
-
-    expect(getProfileCompleteness({
-      id: 8,
-      name: 'Five fields',
-      email: 'five@example.com',
-      headline: 'Developer',
-      bio: 'Builds reliable products.',
-      location: 'Bangkok',
-      profileSkills: [{ name: 'TypeScript' }],
-    })).toBe(50)
-  })
 })

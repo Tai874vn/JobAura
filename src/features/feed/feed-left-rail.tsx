@@ -11,12 +11,12 @@ import type { UserProfile } from '@/shared/schemas'
 import { Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 import { selectFeedCover } from './feed-cover'
-import { getProfileCompleteness } from './feed-data'
+import { useProfileStrength } from '@/features/users/profile-strength'
 
 export function LeftFeedRail({ user }: { user: UserProfile }) {
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests, queryFn: connectionsApi.requests, staleTime: 30_000 })
   const pending = requestsQuery.data?.content?.incomingCount ?? 0
-  const completeness = getProfileCompleteness(user)
+  const completeness = useProfileStrength(user).score
   const coverSource = selectFeedCover(user)
   const coverUrl = resolveAssetUrl(coverSource)
 
