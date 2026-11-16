@@ -61,6 +61,7 @@ export function SiteHeader() {
               aria-current={isCurrent(link.href) ? "page" : undefined}
               className={cn(
                 "whitespace-nowrap rounded px-2 py-1 text-sm font-semibold hover:text-foreground",
+                link.wide && "hidden xl:inline",
                 isCurrent(link.href) ? "text-primary" : "text-muted",
               )}
             >

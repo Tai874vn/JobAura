@@ -3,7 +3,8 @@
  * candidates find hiring posts and post a portfolio; recruiters manage their posts and find candidates;
  * visitors browse both before signing up.
  */
-export type NavLink = { href: string; label: string }
+// `wide` links show in the header bar only from 1280px; below that they stay in the account menu.
+export type NavLink = { href: string; label: string; wide?: boolean }
 
 export type SiteNav = {
   home: string
@@ -17,11 +18,13 @@ export function siteNav(role?: string | null): SiteNav {
   // tools in the header, and the candidate tools in the account menu.
   if (role === 'admin') {
     return {
-      home: '/admin',
+      home: '/',
       main: [
         { href: '/admin', label: 'Admin' },
+        { href: '/', label: 'Home', wide: true },
         { href: '/hiring-posts', label: 'Hiring posts' },
         { href: '/jobs', label: 'Portfolios' },
+        { href: '/jobs/new', label: 'Post portfolio', wide: true },
         { href: '/candidates', label: 'Find candidates' },
         { href: '/recommendations/candidates', label: 'AI matching' },
         { href: '/connections', label: 'Connections' },
