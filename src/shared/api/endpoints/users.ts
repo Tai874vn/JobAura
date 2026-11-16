@@ -108,7 +108,6 @@ export type DictionarySkill = {
   name: string
   kind: string
   reuse: string | null
-  fields: Record<string, number>
   hot: boolean
 }
 

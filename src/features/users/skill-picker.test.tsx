@@ -9,7 +9,7 @@ const render = (element: ReactElement) =>
   renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}>{element}</QueryClientProvider>)
 
 const found = (name: string, matched: string[]): FoundSkill => ({
-  id: `onet:${name.toLowerCase()}`, name, kind: 'software', reuse: null, fields: {}, hot: true, matched, count: 1,
+  id: `onet:${name.toLowerCase()}`, name, kind: 'software', reuse: null, hot: true, matched, count: 1,
 })
 
 describe('SkillPicker', () => {
