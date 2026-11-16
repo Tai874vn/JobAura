@@ -7,6 +7,7 @@ import { apiClient } from '@/shared/api/client'
 import type { ResumeOccupationYears } from '@/shared/schemas'
 import { resumeDraftFromData } from '@/features/users/resume'
 import {
+  isStillChoice,
   jobOccupationChange,
   mainOccupationChange,
   matchedSpecialty,
@@ -15,17 +16,17 @@ import {
 } from '@/features/users/resume-career-fields'
 import { parseResumeJobs, type ResumeJob } from '@/features/users/resume-career'
 import { occupationKeys, occupationsApi, type Occupation, type OccupationHit } from './api'
-import { OccupationResults } from './occupation-picker'
+import { OccupationPicker, OccupationResults } from './occupation-picker'
 import { filterSpecialties, SpecialtyPicker } from './specialty-picker'
 
-// Catalogue rows as the backend serves them (src/common/data/occupations.json, synced from the AI service).
+// Real catalogue rows (NestjsBE src/common/data/occupations.json), cut to a few of their specialties.
 const webDeveloper: Occupation = {
   code: '2513.5', isco: '2513', title: 'web developer', related: [],
   specialties: ['Back End Developer', 'Front End Developer', 'Full Stack Developer', 'Full Stack Web Developer'],
 }
 const uiDeveloper: Occupation = {
   code: '2512.4', isco: '2512', title: 'user interface developer', related: [],
-  specialties: ['Front End Developer', 'UI Developer'],
+  specialties: ['Front End Developer', 'UI Developer (User Interface Developer)'],
 }
 
 function render(element: ReactElement, occupations: Occupation[] = []) {
@@ -152,42 +153,105 @@ describe('the resume career form', () => {
 })
 
 describe('years shown separately', () => {
+  // The backend's breakdown for web developer since 2023-11, ICT business analyst 2022-11 to 2024-11, and accountant
+  // 2010-11 to 2020-11, counted on 2026-11-16 with the real overlaps (accountant to web developer is 0.0811).
   const breakdown: ResumeOccupationYears = {
     occupation: { code: '2513.5', title: 'web developer' },
     years: 3,
-    related: 0.2,
+    related: 0.4,
+    otherCredit: 0.2,
+    capped: false,
     others: [
-      { code: '2511.8', title: 'ICT business analyst', years: 2, overlap: 0.34, credit: 0.204 },
-      // Ten years as an accountant add 0.02: no line for an unrelated job.
-      { code: '2411.1', title: 'accountant', years: 10, overlap: 0.0081, credit: 0.0243 },
+      { code: '2411.1', title: 'accountant', years: 10, overlap: 0.0811, closelyRelated: false, credit: 0.2432, shownCredit: 0 },
+      { code: '2511.8', title: 'ICT business analyst', years: 2, overlap: 0.2813, closelyRelated: true, credit: 0.1687, shownCredit: 0.2 },
     ],
   }
 
-  it('shows the main years, then each related occupation on its own line with how its credit was counted', () => {
+  it('shows the main years, a line per closely related occupation, and one line for the rest', () => {
     const html = render(<OccupationYears occupation="2513.5" years={breakdown} />)
     expect(text(html)).toContain('Experience as Web developer: 3 yr')
     expect(text(html)).toContain('Related experience: ICT business analyst 2 yr → +0.2 yr')
-    expect(html).toContain('title="34% of ESCO skill groups shared × 0.3"')
+    expect(html).toContain('title="28% of ESCO skill groups shared × 0.3"')
+    // Ten years as an accountant share few skills with web development: no line of their own.
     expect(text(html)).not.toContain('Accountant')
-    // One related line that matches the total: no separate total line.
-    expect(text(html)).not.toContain('Related credit in total')
+    expect(text(html)).toContain('Other experience: +0.2 yr')
+    expect(html).toContain('title="These jobs share few skills with Web developer, so they count a little (overlap × 0.3)."')
+    expect(text(html)).not.toContain('capped')
   })
 
-  it('shows the capped total when the credit reaches the main years', () => {
+  it('adds up to the related years the AI reads', () => {
+    const shown = breakdown.others.filter((other) => other.closelyRelated).reduce((sum, other) => sum + other.shownCredit, 0)
+    expect(Math.round((shown + breakdown.otherCredit) * 10)).toBe(Math.round(breakdown.related * 10))
+  })
+
+  it('opens each explanation from a focusable button, for keyboard and touch', () => {
+    const html = render(<OccupationYears occupation="2513.5" years={breakdown} />)
+    expect(html).toMatch(/<button type="button" aria-label="How \+0\.2 yr is counted" title="28% of ESCO skill groups shared × 0\.3" aria-expanded="false"/)
+  })
+
+  it('hides the other line when its credit rounds to nothing', () => {
+    const html = text(render(<OccupationYears occupation="2513.5" years={{ ...breakdown, related: 0.2, otherCredit: 0 }} />))
+    expect(html).toContain('Related experience: ICT business analyst 2 yr → +0.2 yr')
+    expect(html).not.toContain('Other experience')
+  })
+
+  it('says when the credit is capped at the main years', () => {
     const capped: ResumeOccupationYears = {
       occupation: { code: '2511.3', title: 'data scientist' },
       years: 1,
       related: 1,
-      others: [{ code: '2511.2', title: 'data analyst', years: 6, overlap: 0.84, credit: 1.512 }],
+      otherCredit: 0.2,
+      capped: true,
+      others: [
+        { code: '2511.2', title: 'data analyst', years: 6, overlap: 0.8421, closelyRelated: true, credit: 1.5158, shownCredit: 0.8 },
+        { code: '2411.1', title: 'accountant', years: 10, overlap: 0.1081, closelyRelated: false, credit: 0.3243, shownCredit: 0 },
+      ],
     }
     const html = text(render(<OccupationYears occupation="2511.3" years={capped} />))
     expect(html).toContain('Experience as Data scientist: 1 yr')
-    expect(html).toContain('Related experience: Data analyst 6 yr → +1.5 yr')
-    expect(html).toContain('Related credit in total: +1.0 yr (at most your years as Data scientist)')
+    expect(html).toContain('Related experience: Data analyst 6 yr → +0.8 yr')
+    expect(html).toContain('Other experience: +0.2 yr')
+    expect(html).toContain('The credit is capped at your years as Data scientist.')
   })
 
   it('waits for a save after the occupation or job dates change', () => {
     const html = text(render(<OccupationYears occupation="2513.5" years={null} />, [webDeveloper]))
     expect(html).toContain('Experience as Web developer: counted when you save')
+  })
+})
+
+describe('picker details', () => {
+  it('ignores a slow specialty lookup once the main choice has changed', () => {
+    const picked = { Occupation: '2513.5', Specialty: '' }
+    expect(isStillChoice({ ...picked }, picked)).toBe(true)
+    expect(isStillChoice({ Occupation: '2512.4', Specialty: '' }, picked)).toBe(false)
+    expect(isStillChoice({ Occupation: '2513.5', Specialty: 'Back End Developer' }, picked)).toBe(false)
+  })
+
+  it('describes the combobox by its hint and points at no list while none is shown', () => {
+    const empty = render(<OccupationPicker label="Occupation" value="" previously="QA" onPick={() => undefined} />)
+    const hint = empty.match(/<p id="([^"]+)"[^>]*>Choose your occupation/)![1]
+    expect(empty).toContain(`aria-describedby="${hint}"`)
+    expect(empty).not.toContain('aria-controls')
+    const chosen = render(<OccupationPicker label="Occupation" value="2513.5" onPick={() => undefined} />, [webDeveloper])
+    expect(text(chosen)).toContain('Chosen: Web developer')
+    const chip = chosen.match(/<span id="([^"]+)"[^>]*><span class="sr-only">Chosen: /)![1]
+    expect(chosen).toContain(`aria-describedby="${chip}"`)
+  })
+
+  it('links an unlisted specialty error to its combobox', () => {
+    const html = render(<SpecialtyPicker occupation="2512.4" value="Full Stack Developer" onChange={() => undefined} />, [uiDeveloper])
+    const error = html.match(/<p id="([^"]+)"[^>]*>Not listed under this occupation/)![1]
+    expect(html).toMatch(new RegExp(`aria-describedby="[^"]*${error}"`))
+    expect(html).toContain('aria-invalid="true"')
+  })
+
+  it('keeps status rows out of the options and announces the count', () => {
+    const html = render(<OccupationResults listId="r" active={0} onChoose={() => undefined}
+      hits={[{ code: '2513.5', isco: '2513', title: 'web developer', matchedLabel: 'Full Stack Developer' }]} />)
+    expect(html).toMatch(/<li role="presentation" aria-live="polite"[^>]*>1 occupation found<\/li>/)
+    expect(html.match(/role="option"/g)).toHaveLength(1)
+    const none = render(<OccupationResults listId="r" active={0} onChoose={() => undefined} hits={[]} />)
+    expect(none).toMatch(/role="presentation"[^>]*>No matching occupation/)
   })
 })

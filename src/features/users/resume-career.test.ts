@@ -103,13 +103,16 @@ describe('a resume saved before occupations (Review Focus 1)', () => {
 })
 
 describe('years counted by the backend', () => {
+  // The backend's breakdown for these jobs (real overlaps: accountant to software developer is 0.0455).
   const breakdown: ResumeOccupationYears = {
     occupation: { code: '2512.3', title: 'software developer' },
     years: 2,
-    related: 0.2,
+    related: 0.3,
+    otherCredit: 0.1,
+    capped: false,
     others: [
-      { code: '2511.8', title: 'ICT business analyst', years: 2, overlap: 0.34, credit: 0.204 },
-      { code: '2411.1', title: 'accountant', years: 10, overlap: 0.0081, credit: 0.0243 },
+      { code: '2511.8', title: 'ICT business analyst', years: 2, overlap: 0.3404, closelyRelated: true, credit: 0.2042, shownCredit: 0.2 },
+      { code: '2411.1', title: 'accountant', years: 10, overlap: 0.0455, closelyRelated: false, credit: 0.1364, shownCredit: 0 },
     ],
   }
   const jobs = [
@@ -134,7 +137,7 @@ describe('years counted by the backend', () => {
     expect(savedOccupationYears(null, draft)).toBeNull()
   })
 
-  it('lists related occupations that add at least 0.1 yr, and none for unrelated jobs', () => {
+  it('gives closely related occupations their own line, and none for jobs that share few skills', () => {
     expect(relatedLines(breakdown).map((other) => other.title)).toEqual(['ICT business analyst'])
     expect(formatYears(3)).toBe('3 yr')
     expect(formatYears(1.5)).toBe('1.5 yr')

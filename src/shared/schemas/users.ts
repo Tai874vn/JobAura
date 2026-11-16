@@ -126,8 +126,12 @@ export const relatedOccupationYearsSchema = z.object({
   years: z.number(),
   /** Share of ESCO skill groups shared with the main occupation, 0 to 1. */
   overlap: z.number(),
+  /** overlap >= 0.25 (RELATED_FROM): shown on its own "Related experience" line. */
+  closelyRelated: z.boolean(),
   /** overlap × 0.3 × years, before the total is rounded and capped. */
   credit: z.number(),
+  /** Its share of the total in tenths, after the cap; 0 below RELATED_FROM. */
+  shownCredit: z.number(),
 });
 
 /** Read-only, counted by the backend from the saved jobs as the AI counts them. */
@@ -137,6 +141,10 @@ export const resumeOccupationYearsSchema = z.object({
   years: z.number(),
   /** Total related credit, rounded to 0.1 and at most the main years. */
   related: z.number(),
+  /** The share of the total from occupations below RELATED_FROM, in tenths. The shown parts add up to `related`. */
+  otherCredit: z.number(),
+  /** The credit was cut to the main years. */
+  capped: z.boolean(),
   others: z.array(relatedOccupationYearsSchema),
 });
 

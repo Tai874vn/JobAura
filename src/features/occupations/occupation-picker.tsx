@@ -61,6 +61,7 @@ export function OccupationPicker({
   const search = useDebounced(query.trim(), 250)
   const listId = useId()
   const inputId = useId()
+  const hintId = useId()
   const title = useOccupationTitle(value)
   const results = useQuery({
     queryKey: occupationKeys.search(search),
@@ -69,6 +70,7 @@ export function OccupationPicker({
     staleTime: 300_000,
   })
   const hits = results.data ?? []
+  const listShown = open && search.length > 0
 
   function choose(hit: OccupationHit) {
     onPick(hit)
@@ -84,7 +86,7 @@ export function OccupationPicker({
       </label>
       {value ? (
         <div className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm">
-          <span className="min-w-0 truncate font-semibold">{title ?? 'Loading…'}</span>
+          <span id={hintId} className="min-w-0 truncate font-semibold"><span className="sr-only">Chosen: </span>{title ?? 'Loading…'}</span>
           {onClear ? (
             <button type="button" className="rounded p-0.5 text-muted hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
               aria-label={`Clear ${label.toLowerCase()}`} onClick={onClear}>
@@ -93,7 +95,7 @@ export function OccupationPicker({
           ) : null}
         </div>
       ) : (
-        <p className={cn('text-xs', invalid ? 'text-danger' : 'text-muted')}>
+        <p id={hintId} className={cn('text-xs', invalid ? 'text-danger' : 'text-muted')}>
           {emptyLabel}
           {previously ? <span className="text-muted"> (previously: {previously})</span> : null}
         </p>
@@ -102,8 +104,9 @@ export function OccupationPicker({
         <Input
           id={inputId}
           role="combobox"
-          aria-expanded={open && hits.length > 0}
-          aria-controls={listId}
+          aria-expanded={listShown && hits.length > 0}
+          aria-controls={listShown ? listId : undefined}
+          aria-describedby={hintId}
           aria-autocomplete="list"
           aria-invalid={invalid || undefined}
           aria-activedescendant={open && hits[active] ? `${listId}-${active}` : undefined}
@@ -114,13 +117,13 @@ export function OccupationPicker({
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 120)}
           onKeyDown={(event) => {
-            if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.min(i + 1, hits.length - 1)) }
+            if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, hits.length - 1))) }
             else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
             else if (event.key === 'Enter' && open && hits[active]) { event.preventDefault(); choose(hits[active]) }
             else if (event.key === 'Escape') setOpen(false)
           }}
         />
-        {open && search ? (
+        {listShown ? (
           <OccupationResults listId={listId} hits={hits} active={active} searching={results.isFetching}
             failed={results.isError} onActive={setActive} onChoose={choose} />
         ) : null}
@@ -147,13 +150,16 @@ export function OccupationResults({
   onActive?: (index: number) => void
   onChoose: (hit: OccupationHit) => void
 }) {
+  const status = searching && !hits.length ? 'Searching…'
+    : failed ? 'Occupation search is unavailable. Try again.'
+    : !hits.length ? 'No matching occupation. Try another job title.'
+    : `${hits.length} ${hits.length === 1 ? 'occupation' : 'occupations'} found`
   return (
-    <ul id={listId} role="listbox" className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
-      {searching && !hits.length ? <li className="px-3 py-2 text-sm text-muted">Searching…</li> : null}
-      {failed ? <li className="px-3 py-2 text-sm text-danger">Occupation search is unavailable. Try again.</li> : null}
-      {!searching && !failed && !hits.length ? (
-        <li className="px-3 py-2 text-sm text-muted">No matching occupation. Try another job title.</li>
-      ) : null}
+    <ul id={listId} role="listbox" aria-label="Occupations" className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
+      {/* Status rows are not options; the live region announces them and the result count. */}
+      <li role="presentation" aria-live="polite" className={cn('px-3 py-2 text-sm', hits.length ? 'sr-only' : failed ? 'text-danger' : 'text-muted')}>
+        {status}
+      </li>
       {hits.map((hit, index) => (
         <li key={hit.code} id={`${listId}-${index}`} role="option" aria-selected={index === active}
           className={cn('cursor-pointer px-3 py-2 text-sm', index === active && 'bg-primary/10')}

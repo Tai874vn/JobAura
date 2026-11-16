@@ -37,11 +37,14 @@ export function SpecialtyPicker({
   const [active, setActive] = useState(0)
   const listId = useId()
   const inputId = useId()
+  const hintId = useId()
+  const errorId = useId()
   const detail = useQuery(occupationQuery(occupation))
   const specialties = detail.data?.specialties ?? []
   const options = filterSpecialties(specialties, query)
   const listed = !value || !detail.data || specialties.includes(value)
   const none = Boolean(detail.data) && specialties.length === 0
+  const listShown = open && Boolean(occupation)
 
   function choose(name: string) {
     onChange(name)
@@ -58,25 +61,27 @@ export function SpecialtyPicker({
       {value ? (
         <div className={cn('flex min-w-0 items-center justify-between gap-2 rounded-lg border bg-surface px-3 py-1.5 text-sm',
           listed ? 'border-border' : 'border-danger/40')}>
-          <span className="min-w-0 truncate font-semibold">{value}</span>
+          <span id={hintId} className="min-w-0 truncate font-semibold"><span className="sr-only">Chosen: </span>{value}</span>
           <button type="button" className="rounded p-0.5 text-muted hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
             aria-label="Clear specialty" onClick={() => onChange('')}>
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
       ) : (
-        <p className="text-xs text-muted">
+        <p id={hintId} className="text-xs text-muted">
           {!occupation ? 'Choose your occupation first' : none ? 'No specialties are listed for this occupation' : 'None chosen'}
         </p>
       )}
-      {!listed ? <p className="text-xs text-danger">Not listed under this occupation. Choose a specialty from the list, or clear it.</p> : null}
+      {!listed ? <p id={errorId} className="text-xs text-danger">Not listed under this occupation. Choose a specialty from the list, or clear it.</p> : null}
       {none ? null : (
         <div className="relative">
           <Input
             id={inputId}
             role="combobox"
-            aria-expanded={open && options.length > 0}
-            aria-controls={listId}
+            aria-expanded={listShown && options.length > 0}
+            aria-controls={listShown ? listId : undefined}
+            aria-describedby={listed ? hintId : `${hintId} ${errorId}`}
+            aria-invalid={!listed || undefined}
             aria-autocomplete="list"
             aria-activedescendant={open && options[active] ? `${listId}-${active}` : undefined}
             autoComplete="off"
@@ -87,17 +92,22 @@ export function SpecialtyPicker({
             onFocus={() => setOpen(true)}
             onBlur={() => setTimeout(() => setOpen(false), 120)}
             onKeyDown={(event) => {
-              if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.min(i + 1, options.length - 1)) }
+              if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, options.length - 1))) }
               else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
               else if (event.key === 'Enter' && open && options[active]) { event.preventDefault(); choose(options[active]) }
               else if (event.key === 'Escape') setOpen(false)
             }}
           />
-          {open && occupation ? (
-            <ul id={listId} role="listbox" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
-              {detail.isPending ? <li className="px-3 py-2 text-sm text-muted">Loading specialties…</li> : null}
-              {detail.isError ? <li className="px-3 py-2 text-sm text-danger">Specialties are unavailable. Try again.</li> : null}
-              {detail.data && !options.length ? <li className="px-3 py-2 text-sm text-muted">No matching specialty.</li> : null}
+          {listShown ? (
+            <ul id={listId} role="listbox" aria-label="Specialties" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
+              {/* Status rows are not options; the live region announces them and the result count. */}
+              <li role="presentation" aria-live="polite"
+                className={cn('px-3 py-2 text-sm', options.length ? 'sr-only' : detail.isError ? 'text-danger' : 'text-muted')}>
+                {detail.isPending ? 'Loading specialties…'
+                  : detail.isError ? 'Specialties are unavailable. Try again.'
+                  : !options.length ? 'No matching specialty.'
+                  : `${options.length} ${options.length === 1 ? 'specialty' : 'specialties'} shown`}
+              </li>
               {options.map((name, index) => (
                 <li key={name} id={`${listId}-${index}`} role="option" aria-selected={index === active}
                   className={cn('cursor-pointer px-3 py-2 text-sm', index === active && 'bg-primary/10')}

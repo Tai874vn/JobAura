@@ -1,10 +1,11 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { skillsApi, type FieldOfStudy } from '@/shared/api/endpoints/users'
 import type { ResumeOccupationYears } from '@/shared/schemas'
-import { Button, Input, Select, Textarea } from '@/shared/ui'
+import { Button, InfoTip, Input, Select, Textarea } from '@/shared/ui'
 import { occupationLabel, occupationQuery, type OccupationHit } from '@/features/occupations/api'
 import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
 import { SpecialtyPicker } from '@/features/occupations/specialty-picker'
@@ -36,6 +37,11 @@ export function matchedSpecialty(hit: OccupationHit, specialties: string[] | und
   return hit.matchedLabel && specialties?.includes(hit.matchedLabel) ? hit.matchedLabel : null
 }
 
+/** True while the main choice is still the one a pick made: a slow specialty lookup must not overwrite a newer one. */
+export function isStillChoice(current: MainChoice, picked: MainChoice) {
+  return current.Occupation === picked.Occupation && current.Specialty === picked.Specialty
+}
+
 /** A job's occupation pick changes that job only: never the main occupation or specialty. */
 export function jobOccupationChange(jobs: ResumeJob[], index: number, code: string): { Jobs: string } {
   return { Jobs: serializeResumeJobs(jobs.map((job, position) => (position === index ? { ...job, occupation: code } : job))) }
@@ -65,14 +71,19 @@ export function ResumeCareerFields({
   function updateJob(index: number, change: Partial<ResumeJob>) {
     setJobs(jobs.map((job, position) => (position === index ? { ...job, ...change } : job)))
   }
+  // The latest main choice, read after the specialty list loads: a later pick or edit wins over a slow response.
+  const latest = useRef<MainChoice>({ Occupation: occupation, Specialty: specialty })
+  useEffect(() => { latest.current = { Occupation: occupation, Specialty: specialty } })
+
   async function pickMain(hit: OccupationHit) {
     const next = mainOccupationChange(hit, { Occupation: occupation, Specialty: specialty })
+    latest.current = next
     onFieldChange('Occupation', next.Occupation)
     if (next.Specialty !== specialty) onFieldChange('Specialty', next.Specialty)
     if (!hit.matchedLabel) return
     try {
       const found = matchedSpecialty(hit, (await client.fetchQuery(occupationQuery(hit.code))).specialties)
-      if (found) onFieldChange('Specialty', found)
+      if (found && isStillChoice(latest.current, next)) onFieldChange('Specialty', found)
     } catch {
       // The specialty stays empty; the user can pick it from the list.
     }
@@ -159,9 +170,10 @@ export function ResumeCareerFields({
 }
 
 /**
- * Years in the main occupation, and on separate lines the small credit from related occupations' jobs (ESCO skill
- * groups shared x 0.3). Jobs in unrelated occupations, or with none, add no line. Counted by the backend from the
- * saved jobs, so a changed occupation or job date shows its years after saving.
+ * Years in the main occupation, then the related credit on separate lines that add up to the AI's related_years:
+ * one line for each closely related occupation (ESCO skill-group overlap of at least 0.25), and one "Other
+ * experience" line for the small credit from jobs that share few skills. Jobs with no occupation add nothing.
+ * Counted by the backend from the saved jobs, so a changed occupation or job date shows its years after saving.
  */
 export function OccupationYears({ occupation, years }: { occupation: string; years: ResumeOccupationYears | null }) {
   const loadedTitle = useOccupationTitle(occupation)
@@ -175,31 +187,29 @@ export function OccupationYears({ occupation, years }: { occupation: string; yea
     )
   }
   const lines = relatedLines(years)
-  const shownTotal = lines.reduce((sum, other) => sum + Number(formatCredit(other.credit)), 0)
-  const capped = years.others.reduce((sum, other) => sum + other.credit, 0) > years.years
   return (
     <div data-focus="years" className="grid gap-1 rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted">
       <p>Experience as {title}: <span className="font-semibold text-foreground">{formatYears(years.years)}</span></p>
-      {lines.length ? (
+      {lines.length || years.otherCredit > 0 ? (
         <ul className="grid gap-0.5" aria-label="Related experience">
-          {lines.map((other) => {
-            const why = `${Math.round(other.overlap * 100)}% of ESCO skill groups shared × 0.3`
-            return (
-              <li key={other.code} title={why}>
-                Related experience: {occupationLabel(other.title)} {formatYears(other.years)} →{' '}
-                <span className="font-semibold text-foreground">+{formatCredit(other.credit)} yr</span>
-                <span className="sr-only"> ({why})</span>
-              </li>
-            )
-          })}
+          {lines.map((other) => (
+            <li key={other.code}>
+              Related experience: {occupationLabel(other.title)} {formatYears(other.years)} →{' '}
+              <span className="font-semibold text-foreground">+{formatCredit(other.shownCredit)} yr</span>{' '}
+              <InfoTip label={`How +${formatCredit(other.shownCredit)} yr is counted`}
+                text={`${Math.round(other.overlap * 100)}% of ESCO skill groups shared × 0.3`} />
+            </li>
+          ))}
+          {years.otherCredit > 0 ? (
+            <li>
+              Other experience: <span className="font-semibold text-foreground">+{formatCredit(years.otherCredit)} yr</span>{' '}
+              <InfoTip label={`How +${formatCredit(years.otherCredit)} yr is counted`}
+                text={`These jobs share few skills with ${title}, so they count a little (overlap × 0.3).`} />
+            </li>
+          ) : null}
         </ul>
       ) : null}
-      {lines.length > 1 || capped || Math.abs(shownTotal - years.related) >= 0.05 ? (
-        <p>
-          Related credit in total: <span className="font-semibold text-foreground">+{formatCredit(years.related)} yr</span>
-          {capped ? <span> (at most your years as {title})</span> : null}
-        </p>
-      ) : null}
+      {years.capped ? <p className="text-xs">The credit is capped at your years as {title}.</p> : null}
       <p className="text-xs">Counted from the start and end months of your jobs. Related experience is a small separate credit, never added to your years in this occupation.</p>
     </div>
   )

@@ -140,12 +140,15 @@ export function formatYears(years: number) {
   return `${Number.isInteger(years) ? years : years.toFixed(1)} yr`
 }
 
-/** A related occupation's credit to one decimal, as the AI's total is rounded. */
+/** A credit to one decimal: "0.2". */
 export function formatCredit(credit: number) {
   return credit.toFixed(1)
 }
 
-/** Related occupations worth a line: those whose credit shows as at least +0.1 yr. Unrelated jobs get none. */
+/**
+ * Occupations that get their own "Related experience" line: closely related ones (ESCO skill-group overlap of at
+ * least 0.25) whose share of the credit shows. The rest of the credit is one "Other experience" line.
+ */
 export function relatedLines(years: ResumeOccupationYears) {
-  return years.others.filter((other) => Number(formatCredit(other.credit)) > 0)
+  return years.others.filter((other) => other.closelyRelated && other.shownCredit > 0)
 }
