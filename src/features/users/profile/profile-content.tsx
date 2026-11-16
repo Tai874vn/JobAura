@@ -1,4 +1,5 @@
-import { experienceLabel } from '@/features/users/resume-career'
+import { formatCredit, formatYears } from '@/features/users/resume-career'
+import { occupationLabel } from '@/features/occupations/api'
 import {
   BriefcaseBusiness,
   Building2,
@@ -92,6 +93,8 @@ export function ResumeShowcase({
   onEdit: () => void
 }) {
   const skills = resumeSkills(draft.Skills)
+  // Counted by the backend from the saved jobs; the profile shows the saved resume, so it is always current.
+  const years = resume?.occupationYears ?? null
   const fileUrl = resolveAssetUrl(resume?.sourceFileUrl)
 
   return (
@@ -117,8 +120,9 @@ export function ResumeShowcase({
                       {draft.Phone ? <InlineInfo icon={<Phone className="h-4 w-4" />} value={draft.Phone} /> : null}
                       {draft.Location ? <InlineInfo icon={<MapPin className="h-4 w-4" />} value={draft.Location} /> : null}
                       {draft.Role ? <InlineInfo icon={<BriefcaseBusiness className="h-4 w-4" />} value={draft.Role} /> : null}
-                      {draft.Industry ? <InlineInfo icon={<Building2 className="h-4 w-4" />} value={draft.Industry} /> : null}
-                      {experienceLabel(draft) ? <InlineInfo icon={<Clock3 className="h-4 w-4" />} value={`${experienceLabel(draft)} in field`} /> : null}
+                      {years ? <InlineInfo icon={<Building2 className="h-4 w-4" />} value={occupationLabel(years.occupation.title)} /> : null}
+                      {years ? <InlineInfo icon={<Clock3 className="h-4 w-4" />}
+                        value={`${formatYears(years.years)} in occupation${years.related ? `, +${formatCredit(years.related)} yr related` : ''}`} /> : null}
                     </div>
                   </div>
                   {fileUrl ? (

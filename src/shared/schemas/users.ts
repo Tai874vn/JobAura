@@ -78,8 +78,12 @@ export const resumeDataSchema = z
     Phone: z.string().optional().nullable(),
     Location: z.string().optional().nullable(),
     Role: z.string().optional().nullable(),
-    Industry: z.string().optional().nullable(),
+    /** ESCO occupation code, e.g. "2513.5" (ISCO-08 unit group 2513). */
+    Occupation: z.string().optional().nullable(),
+    /** An O*NET job title listed under the occupation, or empty. */
     Specialty: z.string().optional().nullable(),
+    /** Read-only: the career field of a resume saved before occupations, shown as "previously: X". */
+    LegacyField: z.string().optional().nullable(),
     Degree: z.string().optional().nullable(),
     /** ISCED-F 2013 detailed field code, e.g. "0613". */
     FieldOfStudy: z.string().optional().nullable(),
@@ -92,7 +96,10 @@ export const resumeDataSchema = z
       .array(
         z.object({
           title: z.string(),
-          field: z.string(),
+          /** ESCO occupation code, or empty when no occupation fits the title (the months count toward nothing). */
+          occupation: z.string().optional(),
+          /** Read-only: the job's career field from before occupations. */
+          legacyField: z.string().optional(),
           start: z.string(),
           end: z.string(),
           current: z.boolean(),
@@ -110,6 +117,27 @@ export const importResumeSchema = z.object({
   data: resumeDataSchema,
   sourceFileName: z.string().optional().nullable(),
   schemaVersion: z.string().optional().nullable(),
+});
+
+/** One other occupation in the resume's jobs and the related credit it gives the main one. */
+export const relatedOccupationYearsSchema = z.object({
+  code: z.string(),
+  title: z.string(),
+  years: z.number(),
+  /** Share of ESCO skill groups shared with the main occupation, 0 to 1. */
+  overlap: z.number(),
+  /** overlap × 0.3 × years, before the total is rounded and capped. */
+  credit: z.number(),
+});
+
+/** Read-only, counted by the backend from the saved jobs as the AI counts them. */
+export const resumeOccupationYearsSchema = z.object({
+  occupation: z.object({ code: z.string(), title: z.string() }),
+  /** Years in the main occupation, in half years. */
+  years: z.number(),
+  /** Total related credit, rounded to 0.1 and at most the main years. */
+  related: z.number(),
+  others: z.array(relatedOccupationYearsSchema),
 });
 
 export const userResumeSchema = importResumeSchema.extend({
@@ -130,6 +158,7 @@ export const userResumeSchema = importResumeSchema.extend({
   aiQueuedAt: z.string().optional().nullable(),
   aiAttempts: z.number().optional().nullable(),
   aiInsights: z.record(z.string(), z.unknown()).optional().nullable(),
+  occupationYears: resumeOccupationYearsSchema.optional().nullable(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 });

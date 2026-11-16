@@ -1,4 +1,4 @@
-import { careerFields, isCareerField } from '@/features/users/resume-career'
+import { careerFields, isCareerField } from './career-fields'
 import { createHiringPostSchema, type CreateHiringPost, type HiringPost } from '@/shared/schemas'
 
 export const employmentTypes = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'] as const

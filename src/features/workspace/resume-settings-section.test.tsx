@@ -24,7 +24,7 @@ describe('Compact resume details', () => {
     expect(html).toContain('Save resume')
   })
 
-  it('requires the field and specialty before saving', () => {
+  it('requires the occupation before saving; the specialty is optional', () => {
     const render = (data: Record<string, string>) => renderWithQuery(<ResumeSettingsSection resume={null}
       draft={resumeDraftFromData(data)} attachedFile={null} isLoading={false} isImporting={false} isPredicting={false}
       onFieldChange={() => undefined} onClearAttachedFile={() => undefined}
@@ -32,12 +32,17 @@ describe('Compact resume details', () => {
     const saveButton = (html: string) => html.match(/<button(?:(?!<button)[\s\S])*?Save resume/)![0]
 
     const missing = render({ Name: 'Ava' })
-    expect(missing).toContain('Choose your field.')
-    expect(missing).toContain('Add your specialty, for example Fullstack.')
+    expect(missing).toContain('Choose your occupation.')
     expect(saveButton(missing)).toMatch(/\sdisabled=""/)
 
-    const complete = render({ Name: 'Ava', Industry: 'Software development', Specialty: 'Fullstack' })
-    expect(complete).not.toContain('Choose your field.')
+    // A resume saved before occupations opens with its old field shown, and waits for an occupation.
+    const legacy = render({ Name: 'Ava', LegacyField: 'Software development', Specialty: 'Fullstack' })
+    expect(legacy).toContain('(previously: Software development)')
+    expect(legacy).toContain('Choose your occupation.')
+    expect(saveButton(legacy)).toMatch(/\sdisabled=""/)
+
+    const complete = render({ Name: 'Ava', Occupation: '2513.5' })
+    expect(complete).not.toContain('Choose your occupation.')
     expect(saveButton(complete)).not.toMatch(/\sdisabled=""/)
   })
 })

@@ -2,7 +2,8 @@ import { z } from 'zod'
 import { paginatedContentSchema, paginationParamsSchema } from './common'
 import {
   importResumeSchema, profileCertificationSchema, profilePortfolioItemSchema, profileSkillSchema,
-  resumeDataSchema, signInSchema, signUpSchema, updateProfileSchema, userProfileSchema, userResumeSchema, userSchema,
+  resumeDataSchema, resumeOccupationYearsSchema, signInSchema, signUpSchema, updateProfileSchema, userProfileSchema,
+  userResumeSchema, userSchema,
 } from './users'
 import {
   applyHiringPostSchema, candidateProfileSchema, commentSchema, createCommentSchema, createHiringPostSchema,
@@ -35,6 +36,7 @@ export type CandidateProfile = z.infer<typeof candidateProfileSchema>;
 export type ResumeData = z.infer<typeof resumeDataSchema>;
 export type ImportResume = z.infer<typeof importResumeSchema>;
 export type UserResume = z.infer<typeof userResumeSchema>;
+export type ResumeOccupationYears = z.infer<typeof resumeOccupationYearsSchema>;
 export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type SignIn = z.infer<typeof signInSchema>;
 export type SignUp = z.infer<typeof signUpSchema>;

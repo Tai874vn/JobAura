@@ -49,7 +49,7 @@ describe('resume helpers', () => {
       Category: 'Java Developer',
       Name: 'Chad Griffin',
       Role: 'Frontend Engineer',
-      Industry: 'Software',
+      Occupation: '2512.3',
       // An old typed-in years number is not carried over; years come from the jobs.
       YearsExperience: '1',
       Skills: 'Python, SQL',
@@ -63,7 +63,7 @@ describe('resume helpers', () => {
       data: {
         Name: 'Chad Griffin',
         Role: 'Frontend Engineer',
-        Industry: 'Software',
+        Occupation: '2512.3',
         Skills: 'Python, SQL',
       },
       schemaVersion: resumeSchemaVersion,

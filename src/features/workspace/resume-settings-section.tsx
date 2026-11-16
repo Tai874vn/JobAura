@@ -1,6 +1,6 @@
 'use client'
 
-import { experienceLabel } from '@/features/users/resume-career'
+import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, FileText, Sparkles } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea, UnsavedChangesBar } from '@/shared/ui'
@@ -17,7 +17,9 @@ import { ResumeCareerFields } from '@/features/users/resume-career-fields'
 import { SkillListEditor } from '@/features/users/skill-picker'
 import { canRetryResumeAi, isResumeAiPending, resumeAiStatus, unrecognisedSkills } from '@/features/users/resume-ai'
 import type { FoundSkill } from '@/shared/api/endpoints/users'
-import { resumeCareerProblems } from '@/features/users/resume-career'
+import { formatCredit, formatYears, resumeCareerProblems, savedOccupationYears } from '@/features/users/resume-career'
+import { occupationQuery } from '@/features/occupations/api'
+import { useOccupationTitle } from '@/features/occupations/occupation-picker'
 
 export function ResumeSettingsSection({
   resume,
@@ -52,7 +54,9 @@ export function ResumeSettingsSection({
   /** Dictionary skills found in the attached CV, offered for the user to add. */
   foundSkills?: FoundSkill[]
 }) {
-  const careerProblems = resumeCareerProblems(draft)
+  const occupation = useQuery(occupationQuery(draft.Occupation))
+  const careerProblems = resumeCareerProblems(draft, occupation.data?.specialties)
+  const years = savedOccupationYears(resume, draft)
   const canImport = hasResumeDraftInput(draft) && careerProblems.length === 0
 
   return (
@@ -80,12 +84,12 @@ export function ResumeSettingsSection({
               <ResumeField label="Current job title" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
             </div>
 
-            <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} />
+            <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} years={years} />
 
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
             <div className="grid gap-1">
               <span className="text-sm font-semibold">Skills</span>
-              <SkillListEditor showLevel={false} value={resumeSkills(draft.Skills).map((name) => ({ name }))} field={draft.Industry}
+              <SkillListEditor showLevel={false} value={resumeSkills(draft.Skills).map((name) => ({ name }))} field={draft.Occupation}
                 suggestions={foundSkills} onChange={(skills) => onFieldChange('Skills', skills.map((skill) => skill.name).join(', '))} />
               <p className="text-xs text-muted">One list with your profile: saving here updates the skills on your profile, where you set their levels.</p>
             </div>
@@ -135,7 +139,7 @@ export function ResumeSettingsSection({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs leading-5 text-muted">
-                {careerProblems.length ? 'Fill the required field and specialty, and complete each job, before saving. ' : null}
+                {careerProblems.length ? 'Choose your occupation, and complete each job, before saving. ' : null}
                 If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
               </p>
             </div>
@@ -149,6 +153,7 @@ export function ResumeSettingsSection({
           <ResumePreview
             resume={resume}
             data={draft}
+            years={years}
             isLoading={isLoading}
             isPredicting={isPredicting}
             onPredictSeniority={onPredictSeniority}
@@ -162,12 +167,14 @@ export function ResumeSettingsSection({
 function ResumePreview({
   resume,
   data,
+  years,
   isLoading,
   isPredicting,
   onPredictSeniority,
 }: {
   resume: UserResume | null
   data: ResumeDraft
+  years: ReturnType<typeof savedOccupationYears>
   isLoading: boolean
   isPredicting: boolean
   onPredictSeniority: () => void
@@ -178,6 +185,7 @@ function ResumePreview({
   const pending = isResumeAiPending(resume)
   const retry = canRetryResumeAi(resume)
   const unknownSkills = unrecognisedSkills(resume)
+  const occupationTitle = useOccupationTitle(data.Occupation)
 
   return (
     <Card>
@@ -199,7 +207,7 @@ function ResumePreview({
               <p className="mt-1 text-xs leading-5 text-muted">
                 {resume?.predictedSeniorityAt
                   // No percentage: the model applies fixed rules, so it is near 100% and would read as certainty.
-                  ? `Evaluated ${formatDate(resume.predictedSeniorityAt)}. A preview from years in your field and the skills and work you describe, not a test result.`
+                  ? `Evaluated ${formatDate(resume.predictedSeniorityAt)}. A preview from years in your occupation and the skills and work you describe, not a test result.`
                   : 'Save your resume, then run AI evaluation when you need it.'}
               </p>
               {prediction.reasons.length ? (
@@ -242,9 +250,11 @@ function ResumePreview({
               <ResumeMeta label="Phone" value={data.Phone} />
               <ResumeMeta label="Location" value={data.Location} />
               <ResumeMeta label="Job title" value={data.Role} />
-              <ResumeMeta label="Field" value={data.Industry} />
+              <ResumeMeta label="Occupation" value={data.Occupation ? occupationTitle : null} />
+              {!data.Occupation ? <ResumeMeta label="Previously" value={data.LegacyField} /> : null}
               <ResumeMeta label="Specialty" value={data.Specialty} />
-              <ResumeMeta label="Experience in field" value={experienceLabel({ Industry: data.Industry, Jobs: data.Jobs }) ?? undefined} />
+              <ResumeMeta label="Experience" value={years
+                ? `${formatYears(years.years)}${years.related ? `, +${formatCredit(years.related)} yr related` : ''}` : null} />
             </div>
             {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
             {skills.length ? (

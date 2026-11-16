@@ -26,7 +26,7 @@ import {
   getCandidateSkillNames,
   getCandidateSummary,
 } from './candidate-directory'
-import { careerFields } from '@/features/users/resume-career'
+import { careerFields } from '@/features/hiring/career-fields'
 import { ConnectionActions } from '@/features/connections/connect-button'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { skillsApi, usersApi } from '@/shared/api/endpoints'

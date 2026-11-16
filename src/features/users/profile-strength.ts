@@ -5,11 +5,11 @@ import { hiringPostsApi, jobsApi } from '@/shared/api/endpoints'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { UserProfile, UserResume } from '@/shared/schemas'
-import { isCareerField, parseResumeJobs } from './resume-career'
+import { isOccupationCode, parseResumeJobs } from './resume-career'
 
 /**
  * Profile strength: weighted checks that add up to 100. Only what changes how the profile works counts:
- * candidates are weighted toward the resume (the AI needs its field and years to place them), recruiters toward
+ * candidates are weighted toward the resume (the AI needs its occupation and years to place them), recruiters toward
  * who they are and having a hiring post. Website, certifications, and a cover image are extras and don't count.
  * The backend computes the same table for candidate cards (NestjsBE users/services/profile-strength.ts); keep the
  * two in step.
@@ -54,11 +54,12 @@ export function profileStrength({ profile, resume, portfolioPosts = 0, hiringPos
     const portfolio = (profile.portfolioItems ?? profile.portfolio ?? []).length + portfolioPosts
     const jobs = parseResumeJobs(data?.Jobs)
     const datedJob = jobs.some((job) => filled(job.title) && filled(job.start))
-    // Years are counted from the jobs (the backend's yearsInField), so a chosen field is all this needs.
-    const hasField = isCareerField(data?.Industry)
+    // Years are counted from the jobs (the backend's yearsInOccupation), so a chosen occupation is all this needs.
+    // A resume saved before occupations (only a LegacyField) does not count until an occupation is chosen.
+    const hasOccupation = isOccupationCode(data?.Occupation)
     const missingSkills = SKILLS_FOR_FULL_CREDIT - skills
     checks = [
-      check('Career field', 25, hasField, 'Choose your main field in your resume', resumeField('career')),
+      check('Occupation', 25, hasOccupation, 'Choose your occupation in your resume', resumeField('career')),
       check('Work history', 10, datedJob, 'Add a job with dates to your resume', resumeField('jobs')),
       check('Skills', 15, skills >= SKILLS_FOR_FULL_CREDIT ? 1 : skills > 0 ? 0.5 : 0,
         skills > 0 ? `Add ${missingSkills} more ${missingSkills === 1 ? 'skill' : 'skills'}` : `Add at least ${SKILLS_FOR_FULL_CREDIT} skills`,

@@ -10,7 +10,7 @@ export const resumeFieldKeys = [
   'Phone',
   'Location',
   'Role',
-  'Industry',
+  'Occupation',
   'Specialty',
   'Degree',
   'FieldOfStudy',
@@ -21,6 +21,8 @@ export const resumeFieldKeys = [
   'Jobs',
   'Text',
   'Source',
+  // Read-only: shown as "previously: X", never sent (the backend keeps the stored value).
+  'LegacyField',
 ] as const
 export const userResumeFieldKeys = [
   'Name',
@@ -28,7 +30,7 @@ export const userResumeFieldKeys = [
   'Phone',
   'Location',
   'Role',
-  'Industry',
+  'Occupation',
   'Specialty',
   'Degree',
   'FieldOfStudy',
@@ -91,7 +93,7 @@ export const emptyResumeDraft: ResumeDraft = {
   Phone: '',
   Location: '',
   Role: '',
-  Industry: '',
+  Occupation: '',
   Specialty: '',
   Degree: '',
   FieldOfStudy: '',
@@ -102,6 +104,7 @@ export const emptyResumeDraft: ResumeDraft = {
   Jobs: '',
   Text: '',
   Source: '',
+  LegacyField: '',
 }
 
 export function parseResumeJson(value: string): ImportResume {
@@ -209,7 +212,6 @@ export function extractResumeFromText(text: string, sourceFileName?: string): Im
       Phone: extractPhone(normalizedText),
       Location: findLabeledValue(normalizedText, 'Location') ?? inferLocation(lines),
       Role: findLabeledValue(normalizedText, 'Role') ?? findLabeledValue(normalizedText, 'Title') ?? inferResumeRole(lines),
-      Industry: findLabeledValue(normalizedText, 'Industry') ?? '',
       Summary: summary,
       // Skills are not copied from the text: the dictionary scan suggests them and the user confirms.
       Skills: '',
@@ -257,7 +259,8 @@ export function getResumeData(resume?: UserResume | null) {
 
 export function resumeDraftFromData(data?: ResumeData | null): ResumeDraft {
   return resumeFieldKeys.reduce<ResumeDraft>((draft, key) => {
-    const value = data?.[key]
+    // A resume saved before occupations and not yet migrated still has its old field as Industry.
+    const value = key === 'LegacyField' ? data?.LegacyField || data?.Industry : data?.[key]
     // The draft holds strings only, so the job list travels inside it as JSON.
     draft[key] = key === 'Jobs' ? (parseResumeJobs(value).length ? serializeResumeJobs(parseResumeJobs(value)) : '')
       : typeof value === 'string' ? value : ''
