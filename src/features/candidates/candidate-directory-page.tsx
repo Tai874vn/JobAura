@@ -303,11 +303,11 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
 
       <section className="mt-6" aria-busy={query.isPending} aria-live="polite">
         {query.isPending ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Array.from({ length: 4 }).map((_, index) => <CardSkeleton key={index} />)}
           </div>
         ) : candidates.length ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {candidates.map((candidate) => <CandidateCard key={candidate.id} candidate={candidate} />)}
           </div>
         ) : query.isError ? (
