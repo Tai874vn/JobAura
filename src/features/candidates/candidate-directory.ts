@@ -41,6 +41,20 @@ export function formatCandidateCareer(candidate: CandidateProfile) {
   }
 }
 
+/**
+ * The minimum-years filter's label. It reads main-occupation years only (the card's "N yr as <occupation>"), not
+ * related years, so it names the occupation: "Years as Web developer", or "Years in the occupation" before one is
+ * chosen (or while its title loads).
+ */
+export function minYearsLabel(occupationTitle: string | null | undefined) {
+  return occupationTitle ? `Years as ${occupationTitle}` : 'Years in the occupation'
+}
+
+/** The active-filter chip for the minimum years, worded like the card: "3+ yr as Web developer". */
+export function minYearsChip(minYears: string, occupationTitle: string | null | undefined) {
+  return occupationTitle ? `${minYears}+ yr as ${occupationTitle}` : `${minYears}+ yr in the occupation`
+}
+
 /** The occupation part of the candidate search: the code, and its related occupations only when one is chosen. */
 export function occupationParams(occupation: string, includeRelated: boolean): Pick<CandidateDirectoryParams, 'occupation' | 'includeRelated'> {
   if (!occupation) return {}

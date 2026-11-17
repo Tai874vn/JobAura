@@ -11,6 +11,7 @@ import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occ
 import { SpecialtyPicker } from '@/features/occupations/specialty-picker'
 import type { ResumeDraft, ResumeFieldKey } from './resume'
 import {
+  currentJobOccupation,
   degreeLevels,
   emptyResumeJob,
   formatCredit,
@@ -47,6 +48,16 @@ export function jobOccupationChange(jobs: ResumeJob[], index: number, code: stri
   return { Jobs: serializeResumeJobs(jobs.map((job, position) => (position === index ? { ...job, occupation: code } : job))) }
 }
 
+/**
+ * The main occupation to fill in when none is chosen: the current job's (Decision 4). It is applied only when the
+ * jobs have changed since `seenJobs` (a load, a job edit, a CV extraction), and never over a chosen occupation, so
+ * clearing the main occupation does not fill it straight back and the user can still pick another. Empty: no change.
+ */
+export function defaultMainOccupation(draft: { Occupation?: string; Jobs?: string }, seenJobs: string | undefined) {
+  if (draft.Occupation || draft.Jobs === seenJobs) return ''
+  return currentJobOccupation(parseResumeJobs(draft.Jobs))
+}
+
 /** Occupation, specialty, and dated jobs: the structured inputs the seniority preview reads. */
 export function ResumeCareerFields({
   draft,
@@ -71,6 +82,15 @@ export function ResumeCareerFields({
   function updateJob(index: number, change: Partial<ResumeJob>) {
     setJobs(jobs.map((job, position) => (position === index ? { ...job, ...change } : job)))
   }
+  // Decision 4: while no main occupation is chosen, it defaults to the current job's. Applied when the jobs change
+  // (load, edit, CV extraction), not when the user clears the main occupation, so the user can still change it.
+  const seenJobs = useRef<string | undefined>(undefined)
+  useEffect(() => {
+    const fallback = defaultMainOccupation({ Occupation: occupation, Jobs: draft.Jobs }, seenJobs.current)
+    seenJobs.current = draft.Jobs
+    if (fallback) onFieldChange('Occupation', fallback)
+  }, [draft.Jobs, occupation, onFieldChange])
+
   // The latest main choice, read after the specialty list loads: a later pick or edit wins over a slow response.
   const latest = useRef<MainChoice>({ Occupation: occupation, Specialty: specialty })
   useEffect(() => { latest.current = { Occupation: occupation, Specialty: specialty } })

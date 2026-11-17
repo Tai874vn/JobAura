@@ -82,6 +82,21 @@ export function savedResumeJobs(jobs: ResumeJob[]) {
     }))
 }
 
+/**
+ * The current job's occupation, the default main occupation while none is chosen (Decision 4). The current job is
+ * the one marked "I work here now" (the latest start among several), else the one with the latest end month.
+ * Empty when that job has no occupation, or when jobs tied for current name different occupations (no arbitrary pick).
+ */
+export function currentJobOccupation(jobs: ResumeJob[]): string {
+  const working = jobs.filter((job) => job.current)
+  const pool = working.length ? working : jobs.filter((job) => monthPattern.test(job.end))
+  const month = (job: ResumeJob) => (job.current ? job.start : job.end)
+  const latest = pool.reduce((best, job) => (month(job) > best ? month(job) : best), '')
+  const occupations = new Set(pool.filter((job) => month(job) === latest).map((job) => job.occupation))
+  const [only] = occupations
+  return occupations.size === 1 && isOccupationCode(only) ? only : ''
+}
+
 /** A job's occupation is optional: a title that matches no occupation keeps the job, and its months count toward nothing. */
 export function resumeJobProblems(job: ResumeJob, position: number): string[] {
   if (isBlankJob(job)) return []

@@ -2,7 +2,9 @@ import type { InternalAxiosRequestConfig } from 'axios'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apiClient } from '@/shared/api/client'
 import { usersApi } from '@/shared/api/endpoints/users'
-import { formatCandidateCareer, getCandidateSummary, getCandidateSkillNames, occupationParams } from './candidate-directory'
+import {
+  formatCandidateCareer, getCandidateSummary, getCandidateSkillNames, minYearsChip, minYearsLabel, occupationParams,
+} from './candidate-directory'
 import type { CandidateProfile } from '@/shared/schemas'
 
 describe('candidate directory data', () => {
@@ -59,6 +61,15 @@ describe('formatCandidateCareer', () => {
     expect(formatCandidateCareer(candidate(career({ yearsInOccupation: 2.5, relatedYears: 0 })))).toMatchObject({
       years: '2.5 yr as Web developer', related: null,
     })
+  })
+
+  it('words the minimum-years filter like the card: years as the chosen occupation', () => {
+    const card = formatCandidateCareer(candidate(career({ yearsInOccupation: 3 })))
+    expect(card?.years).toBe('3 yr as Web developer')
+    expect(minYearsLabel('Web developer')).toBe('Years as Web developer')
+    expect(minYearsChip('3', 'Web developer')).toBe('3+ yr as Web developer')
+    expect(minYearsLabel(null)).toBe('Years in the occupation')
+    expect(minYearsChip('2', null)).toBe('2+ yr in the occupation')
   })
 
   it('shows no years for a resume with no saved prediction', () => {

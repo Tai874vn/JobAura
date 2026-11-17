@@ -26,6 +26,8 @@ import {
   getCandidateLocation,
   getCandidateSkillNames,
   getCandidateSummary,
+  minYearsChip,
+  minYearsLabel,
   occupationParams,
 } from './candidate-directory'
 import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
@@ -145,7 +147,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
       onRemove: () => { setOccupation(''); setIncludeRelated(false); setPage(1) },
     } : null,
     level ? { key: 'level' as const, label: level, onRemove: () => { setLevel(''); setPage(1) } } : null,
-    Number(minYears) > 0 ? { key: 'minYears' as const, label: `${minYears}+ years`, onRemove: () => { setMinYears(''); setPage(1) } } : null,
+    Number(minYears) > 0 ? { key: 'minYears' as const, label: minYearsChip(minYears, occupation ? occupationTitle : null), onRemove: () => { setMinYears(''); setPage(1) } } : null,
   ].filter((filter): filter is NonNullable<typeof filter> => Boolean(filter))
 
   return (
@@ -266,7 +268,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
                 </Select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Years in occupation, at least</span>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">{minYearsLabel(occupation ? occupationTitle : null)}, at least</span>
                 <Input type="number" min={0} max={40} inputMode="numeric" value={minYears} placeholder="0"
                   onChange={(event) => { setMinYears(event.target.value); setPage(1) }} />
               </label>

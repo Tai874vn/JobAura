@@ -7,6 +7,7 @@ import { apiClient } from '@/shared/api/client'
 import type { ResumeOccupationYears } from '@/shared/schemas'
 import { resumeDraftFromData } from '@/features/users/resume'
 import {
+  defaultMainOccupation,
   isStillChoice,
   jobOccupationChange,
   mainOccupationChange,
@@ -149,6 +150,53 @@ describe('the resume career form', () => {
     expect(html).toContain('Choose your occupation (previously: Software development)')
     expect(html).toContain("count toward no occupation (previously: Software development)")
     expect(html).toContain('Choose your occupation.')
+  })
+})
+
+describe('the main occupation defaults to the current job (Decision 4)', () => {
+  const jobsOf = (jobs: Array<Partial<ResumeJob>>) => resumeDraftFromData({
+    Jobs: jobs.map((job) => ({ title: 'Job', occupation: '', start: '2018-01', end: '', current: false, description: '', ...job })),
+  }).Jobs
+
+  it("fills an empty main occupation with the current job's", () => {
+    const Jobs = jobsOf([
+      { occupation: '2511.8', end: '2021-06' },
+      { occupation: '2513.5', start: '2021-07', current: true },
+    ])
+    expect(defaultMainOccupation({ Occupation: '', Jobs }, undefined)).toBe('2513.5')
+  })
+
+  it('takes the job with the latest end month when none is current', () => {
+    const Jobs = jobsOf([
+      { occupation: '2513.5', end: '2024-03' },
+      { occupation: '2511.8', end: '2020-01' },
+    ])
+    expect(defaultMainOccupation({ Occupation: '', Jobs }, undefined)).toBe('2513.5')
+  })
+
+  it('never replaces an occupation the user chose', () => {
+    const Jobs = jobsOf([{ occupation: '2513.5', current: true }])
+    expect(defaultMainOccupation({ Occupation: '2511.8', Jobs }, undefined)).toBe('')
+  })
+
+  it('lets the user clear it: no refill until the jobs change', () => {
+    const Jobs = jobsOf([{ occupation: '2513.5', current: true }])
+    expect(defaultMainOccupation({ Occupation: '', Jobs }, Jobs)).toBe('')
+    const edited = jobsOf([{ occupation: '2512.3', current: true }])
+    expect(defaultMainOccupation({ Occupation: '', Jobs: edited }, Jobs)).toBe('2512.3')
+  })
+
+  it('gives no default when the current job has no occupation, or tied current jobs disagree', () => {
+    expect(defaultMainOccupation({ Occupation: '', Jobs: jobsOf([{ occupation: '', current: true }, { occupation: '2513.5', end: '2024-01' }]) }, undefined)).toBe('')
+    expect(defaultMainOccupation({ Occupation: '', Jobs: jobsOf([
+      { occupation: '2513.5', start: '2022-01', current: true },
+      { occupation: '2511.8', start: '2022-01', current: true },
+    ]) }, undefined)).toBe('')
+    expect(defaultMainOccupation({ Occupation: '', Jobs: jobsOf([
+      { occupation: '2513.5', start: '2020-01', current: true },
+      { occupation: '2511.8', start: '2022-01', current: true },
+    ]) }, undefined)).toBe('2511.8')
+    expect(defaultMainOccupation({ Occupation: '', Jobs: '' }, undefined)).toBe('')
   })
 })
 
