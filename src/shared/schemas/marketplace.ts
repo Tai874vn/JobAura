@@ -54,6 +54,10 @@ export const hiringPostSchema = z.object({
   employmentType: z.string().optional().nullable(),
   salaryMin: z.number().optional().nullable(),
   salaryMax: z.number().optional().nullable(),
+  /** ISO 4217; posts saved before units were added are USD. */
+  salaryCurrency: z.string().optional().nullable(),
+  /** What the salary range is per; month for posts saved before units were added. */
+  salaryPeriod: z.enum(['month', 'year', 'hour']).optional().nullable(),
   companyName: z.string().optional().nullable(),
   /** ESCO occupation code the recruiter chose; null on a post saved before occupations. */
   occupationCode: z.string().optional().nullable(),

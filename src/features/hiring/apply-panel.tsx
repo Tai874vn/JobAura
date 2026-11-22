@@ -47,7 +47,7 @@ export function ApplyPanel({ postId, onApplied, onCancel }: {
           <ButtonLink href="/settings?section=resume" size="sm" variant="secondary">Add resume</ButtonLink>
         </div>
       ) : null}
-      <label htmlFor={messageId} className="text-sm font-semibold">Message to the recruiter <span className="font-normal text-muted">(optional)</span></label>
+      <label htmlFor={messageId} className="text-sm font-medium">Message to the recruiter <span className="font-normal text-muted">(optional)</span></label>
       <Textarea
         id={messageId}
         className="min-h-28 bg-surface"

@@ -11,13 +11,14 @@ const webDeveloper: Occupation = {
 }
 const text = (html: string) => html.replace(/<[^>]+>/g, '').replace(/&#x27;/g, "'").replace(/&amp;/g, '&')
 
-function render(post: HiringPost | null) {
+function markup(post: HiringPost | null) {
   const client = new QueryClient()
   client.setQueryData(occupationKeys.one(webDeveloper.code), webDeveloper)
-  return text(renderToStaticMarkup(
+  return renderToStaticMarkup(
     <QueryClientProvider client={client}><HiringPostFormDialog open post={post} onClose={() => undefined} /></QueryClientProvider>,
-  ))
+  )
 }
+const render = (post: HiringPost | null) => text(markup(post))
 
 const base: Omit<HiringPost, 'id'> = {
   recruiterId: 2, title: 'Backend Engineer', description: 'Build and run the APIs.', yearsRequired: 3, skills: [],
@@ -32,9 +33,9 @@ describe('HiringPostFormDialog', () => {
   })
 
   it('shows a saved post with its occupation and specialty', () => {
-    const html = render({ ...base, id: 2, occupationCode: '2513.5', specialty: 'Back End Developer' })
-    expect(html).toContain('Chosen: Web developer')
-    expect(html).toContain('Chosen: Back End Developer')
+    const html = markup({ ...base, id: 2, occupationCode: '2513.5', specialty: 'Back End Developer' })
+    expect(html).toMatch(/role="combobox"[^>]*value="Web developer"/)
+    expect(html).toMatch(/role="combobox"[^>]*value="Back End Developer"/)
     expect(html).not.toContain('previously')
   })
 })

@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
-import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, Sparkles, Zap } from 'lucide-react'
+import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, ListOrdered, Zap } from 'lucide-react'
 import { useMemo, useState, type FocusEvent as ReactFocusEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { toast } from 'sonner'
 import { recommendationsApi } from '@/shared/api/endpoints'
@@ -69,12 +69,11 @@ export function RecommendedJobsPage() {
 
   return (
     <div className="container-page pt-10 pb-16">
-      <Link href="/hiring-posts" className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary">
+      <Link href="/hiring-posts" className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-primary">
         <ArrowLeft className="h-4 w-4" />
         All hiring posts
       </Link>
       <PageHeader
-        eyebrow={<><Sparkles className="h-4 w-4" /> AI recommendations</>}
         title="Hiring posts for you"
         description="Open roles ranked for your resume and skills. Hover a role to see which skills match and which are missing."
       />
@@ -83,7 +82,7 @@ export function RecommendedJobsPage() {
         <section className="grid gap-5">
           {!content && cachedQuery.isPending ? (
             <Card>
-              <CardContent className="flex min-h-64 items-center justify-center gap-3 p-8 text-sm font-semibold text-muted">
+              <CardContent className="flex min-h-64 items-center justify-center gap-3 p-8 text-sm font-medium text-muted">
                 <Spinner className="h-5 w-5" />
                 Loading your previous matches...
               </CardContent>
@@ -136,7 +135,7 @@ export function RecommendedJobsPage() {
                 </div>
               ) : (
                 <EmptyState
-                  icon={<Sparkles />}
+                  icon={<ListOrdered />}
                   title="No matching roles yet"
                   description="Add your resume and skills so roles can be ranked for you, or browse all hiring posts."
                   action={
@@ -179,10 +178,10 @@ function SkillGapTooltip({
 
   return (
     <div
-      className="pointer-events-none fixed z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 opacity-100 shadow-[0_18px_48px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+      className="pointer-events-none fixed z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 opacity-100 shadow-overlay backdrop-blur-sm"
       style={{ left: x, top: y }}
     >
-      <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
+      <div className="flex items-center gap-2 text-xs font-medium text-primary">
         <Lightbulb className="h-3.5 w-3.5" />
         Profile improvement
       </div>
@@ -202,15 +201,15 @@ function SkillGapTooltip({
 }
 
 function SkillList({ label, empty, skills, tone }: { label: string; empty: string; skills: string[]; tone: 'matched' | 'missing' }) {
-  const chipClass = tone === 'matched' ? 'bg-primary/10 text-primary' : 'bg-rating/15 text-[#5c4300]'
+  const chipClass = tone === 'matched' ? 'bg-primary/10 text-primary' : 'bg-rating/15 text-rating-ink'
 
   return (
     <div>
-      <p className="text-xs font-semibold text-muted">{label}</p>
+      <p className="text-xs font-medium text-muted">{label}</p>
       {skills.length ? (
         <div className="mt-1 flex flex-wrap gap-1.5">
           {skills.slice(0, 5).map((skill) => (
-            <span key={skill} className={`rounded px-2 py-1 text-xs font-semibold ${chipClass}`}>{skill}</span>
+            <span key={skill} className={`rounded px-2 py-1 text-xs font-medium ${chipClass}`}>{skill}</span>
           ))}
         </div>
       ) : (
@@ -243,10 +242,10 @@ function StartRecommendationCard({
     <Card>
       <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_260px]">
         <div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-muted text-muted">
             <BrainCircuit className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 font-display text-3xl font-bold">
+          <h2 className="mt-4 font-display text-3xl font-medium">
             {hasResults ? 'Update your job matches when you are ready' : 'Run job matching when you are ready'}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
@@ -261,17 +260,17 @@ function StartRecommendationCard({
           </div>
         </div>
         <div className="rounded-lg border border-border bg-surface-muted p-4">
-          <p className="text-xs font-bold uppercase text-primary">Available today</p>
+          <p className="text-xs font-medium text-primary">Available today</p>
           {isLoadingQuota ? (
             <div className="mt-4 h-10 w-28 animate-pulse rounded bg-surface" />
           ) : (
-            <p className="mt-2 font-display text-4xl font-bold">{remaining}<span className="text-lg text-muted">/{limit}</span></p>
+            <p className="mt-2 font-display text-4xl font-medium tabular-nums">{remaining}<span className="text-lg text-muted">/{limit}</span></p>
           )}
           <p className="mt-2 text-xs leading-5 text-muted">
             {resetAt ? `Resets ${formatReset(resetAt)}` : 'Daily AI recommendation allowance.'}
           </p>
           <Button className="mt-5 w-full" size="lg" type="button" onClick={onRun} loading={isRunning} disabled={isLoadingQuota || !canRun}>
-            <Sparkles className="h-4 w-4" />
+            <ListOrdered className="h-4 w-4" />
             {canRun ? (hasResults ? 'Run again' : 'Proceed to match') : 'No uses left'}
           </Button>
         </div>
@@ -286,17 +285,17 @@ function QuotaCard({ quota, loading }: { quota?: { limit: number; used: number; 
   return (
     <Card>
       <CardContent className="p-4">
-        <p className="text-xs font-bold uppercase text-primary">AI usage</p>
-        <h2 className="mt-1 font-display text-xl font-bold">Daily recommendation runs</h2>
+        <p className="text-xs font-medium text-primary">AI usage</p>
+        <h2 className="mt-1 font-display text-xl font-medium">Daily recommendation runs</h2>
         {loading ? (
           <div className="mt-4 h-20 animate-pulse rounded bg-surface-muted" />
         ) : (
           <>
             <div className="mt-4 flex items-end justify-between gap-3">
-              <p className="font-display text-3xl font-bold">{quota?.remaining ?? 0}</p>
-              <p className="text-sm font-semibold text-muted">left of {quota?.limit ?? 0}</p>
+              <p className="font-display text-3xl font-medium tabular-nums">{quota?.remaining ?? 0}</p>
+              <p className="text-sm font-medium text-muted">left of {quota?.limit ?? 0}</p>
             </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-muted">
+            <div className="mt-3 h-1 overflow-hidden rounded-full bg-foreground/10">
               <div className="h-full rounded-full bg-primary" style={{ width: `${percent}%` }} />
             </div>
             <p className="mt-3 text-xs leading-5 text-muted">
@@ -312,7 +311,7 @@ function QuotaCard({ quota, loading }: { quota?: { limit: number; used: number; 
 function ProcessItem({ icon, label, text }: { icon: React.ReactNode; label: string; text: string }) {
   return (
     <div className="rounded-lg border border-border p-3">
-      <div className="flex items-center gap-2 font-bold text-foreground">
+      <div className="flex items-center gap-2 font-medium text-foreground">
         <span className="text-primary">{icon}</span>
         {label}
       </div>

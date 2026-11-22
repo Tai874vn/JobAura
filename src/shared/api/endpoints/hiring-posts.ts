@@ -3,16 +3,39 @@ import type { ApiResponse, ApplyHiringPost, CreateHiringPost, HiringApplication,
 import { normalizeHiringApplication, normalizeHiringPost, normalizePaginatedHiringApplicationsResponse, normalizePaginatedHiringPostsResponse } from '../normalizers'
 import { definedParams } from './params'
 
-/** Filters a candidate uses on the hiring post list; the backend ignores empty ones. */
+export const hiringPostSorts = ['newest', 'closing_soon', 'salary_high'] as const
+export type HiringPostSort = (typeof hiringPostSorts)[number]
+
+/**
+ * Filters a candidate uses on the hiring post list; the backend ignores empty ones. occupation, level and
+ * employmentType take several values as "a,b" (any of them matches); different filters must all match.
+ */
 export type HiringPostFilters = PaginationParams & {
-  /** ESCO occupation code. */
+  /** ESCO occupation codes, comma-separated. */
   occupation?: string
   level?: string
   employmentType?: string
   location?: string
+  /** Newest first when left out. */
+  sort?: HiringPostSort
+}
+
+/** How many open posts a value finds. */
+export type FacetCount = { value: string; count: number }
+/** What each filter choice would find, given the other filters. */
+export type HiringPostFacets = {
+  occupations: { code: string; title: string; count: number }[]
+  levels: FacetCount[]
+  employmentTypes: FacetCount[]
+  locations: FacetCount[]
 }
 
 export const hiringPostsApi = {
+  /** Locations of open posts with how many each finds; counts can overlap ("Da Nang" also finds "Da Nang, Vietnam"). */
+  locations: async () =>
+    (await apiClient.get<ApiResponse<FacetCount[]>>("/api/hiring-posts/locations")).data,
+  facets: async (params: Omit<HiringPostFilters, 'page' | 'pageSize' | 'sort'>) =>
+    (await apiClient.get<ApiResponse<HiringPostFacets>>("/api/hiring-posts/facets", { params: definedParams(params) })).data,
   open: async (params: HiringPostFilters) =>
     normalizePaginatedHiringPostsResponse(
       (

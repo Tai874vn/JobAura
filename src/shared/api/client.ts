@@ -11,6 +11,25 @@ import { getQueryClient } from './query-client'
 import { queryKeys } from './query-keys'
 import { resetClientSession, setCachedSession } from './session-cache'
 
+/*
+ * THE FRONTEND'S CONNECTION TO THE BACKEND.
+ *
+ * axios is a library for sending HTTP requests. Every page talks to the
+ * backend through apiClient (JSON) or uploadClient (files).
+ *
+ * Two interceptors (functions that run on every request or response, like a
+ * checkpoint) are installed here:
+ *  1. Before each request → add the X-CSRF-Token header (copied from the
+ *     csrf_token cookie). The backend rejects changes without it, so another
+ *     website cannot act as the user.
+ *  2. After each response → if the backend says 401 because the access token
+ *     expired, call /api/auth/refresh ONCE, then repeat the original request.
+ *     The user never notices the 10-minute token expiring.
+ *     If the refresh itself fails (session cancelled, refresh token reused…),
+ *     clear the saved user data and send the user to the login page.
+ *
+ * withCredentials: true = send the login cookies with every request.
+ */
 type RefreshFlight = { promise: Promise<void> | null }
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean; _refreshFlight?: RefreshFlight }
 
@@ -77,6 +96,12 @@ function isTerminalAuthError(error: unknown): boolean {
     && TERMINAL_AUTH_ERRORS.has(authErrorCode(error) ?? '')
 }
 
+/**
+ * Ask the backend for new tokens. If 5 requests fail with 401 at the same
+ * moment, they all wait for the SAME refresh call (one shared promise — a
+ * promise is a value that arrives later). Calling refresh 5 times would use
+ * the same refresh token twice, and the backend treats that as theft.
+ */
 function refreshSession(flight: RefreshFlight): Promise<void> {
   if (!flight.promise) {
     const csrfToken = csrfTokenForMethod('post')
@@ -134,6 +159,7 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
         return Promise.reject(error)
       }
 
+      // Mark the request so it is retried only once (no endless loop), refresh, then send it again.
       originalRequest._retry = true
 
       await refreshSession(originalRequest._refreshFlight ?? refreshFlight)

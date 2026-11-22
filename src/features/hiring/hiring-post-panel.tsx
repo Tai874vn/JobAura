@@ -1,0 +1,95 @@
+"use client";
+
+import { ExternalLink, Pencil } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import type { HiringPost } from "@/shared/schemas";
+import { ButtonLink } from "@/shared/ui";
+import { ApplyPanel } from "./apply-panel";
+import {
+  formatPostedAgo,
+  HiringPostAction,
+  HiringPostAvatar,
+  HiringPostBadges,
+  HiringPostFacts,
+  HiringPostSkills,
+  type HiringPostViewer,
+} from "./hiring-post-card";
+
+/** The role's text: description, required skills, and other requirements. Shared by the panel and the post page. */
+export function HiringPostBody({ post }: { post: HiringPost }) {
+  return (
+    <>
+      <section className="mt-6" aria-labelledby={`about-${post.id}`}>
+        <h3 id={`about-${post.id}`} className="font-display text-lg font-medium">About the role</h3>
+        <p className="mt-2 whitespace-pre-line text-sm leading-7">{post.description}</p>
+      </section>
+      {post.skills.length ? (
+        <section className="mt-6" aria-labelledby={`skills-${post.id}`}>
+          <h3 id={`skills-${post.id}`} className="font-display text-lg font-medium">Required skills</h3>
+          <HiringPostSkills skills={post.skills} />
+        </section>
+      ) : null}
+      {post.requirements ? (
+        <section className="mt-6" aria-labelledby={`requirements-${post.id}`}>
+          <h3 id={`requirements-${post.id}`} className="font-display text-lg font-medium">Other requirements</h3>
+          <p className="mt-2 whitespace-pre-line text-sm leading-7">{post.requirements}</p>
+        </section>
+      ) : null}
+    </>
+  );
+}
+
+/** The selected post beside the list (wide screens): everything needed to decide and apply without leaving. */
+export function HiringPostPanel({
+  post,
+  viewer,
+  viewerId,
+  onApplied,
+}: {
+  post: HiringPost;
+  viewer: HiringPostViewer;
+  viewerId: number | null;
+  onApplied: () => void;
+}) {
+  const [applying, setApplying] = useState(false);
+  const isOwner = viewerId !== null && viewerId === post.recruiterId;
+  const employer = post.companyName || post.recruiter?.name;
+
+  return (
+    <article className="rounded-lg border border-border bg-surface p-6" aria-labelledby={`panel-title-${post.id}`}>
+      <div className="flex items-center gap-3">
+        <HiringPostAvatar post={post} size="lg" />
+        <div className="min-w-0 text-sm">
+          {employer ? <p className="truncate font-medium">{employer}</p> : null}
+          <p className="truncate text-muted">
+            {post.recruiter ? (
+              <>Posted by <Link href={`/profile/${post.recruiter.id}`} className="font-medium text-foreground hover:text-primary hover:underline">{post.recruiter.name}</Link></>
+            ) : "Posted"}
+            {post.createdAt ? ` · ${formatPostedAgo(post.createdAt).toLowerCase()}` : null}
+          </p>
+        </div>
+      </div>
+
+      <h2 id={`panel-title-${post.id}`} className="mt-5 font-display text-2xl font-medium leading-tight">{post.title}</h2>
+      <div className="mt-3"><HiringPostBadges post={post} /></div>
+      <HiringPostFacts post={post} showEmployer={false} />
+
+      <div className="mt-5 flex flex-wrap gap-2">
+        {isOwner ? (
+          <ButtonLink href={`/my-hiring-posts?edit=${post.id}`}><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
+        ) : post.status === "CLOSED" ? (
+          <p className="text-sm font-medium">This role is no longer taking applications.</p>
+        ) : (
+          <div className="w-44"><HiringPostAction post={post} viewer={viewer} active={applying} onToggleApply={() => setApplying((value) => !value)} /></div>
+        )}
+        <ButtonLink href={`/hiring-posts/${post.id}`} variant="secondary"><ExternalLink className="h-4 w-4" />Open full page</ButtonLink>
+      </div>
+      {applying && viewer === "candidate" && !post.viewerHasApplied ? (
+        <ApplyPanel postId={post.id} onApplied={() => { setApplying(false); onApplied(); }} onCancel={() => setApplying(false)} />
+      ) : null}
+
+      <HiringPostBody post={post} />
+    </article>
+  );
+}

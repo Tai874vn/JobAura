@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BriefcaseBusiness, Eye, Lock, LockOpen, Pencil, Plus, Sparkles, Users } from "lucide-react";
+import { BriefcaseBusiness, Eye, Lock, LockOpen, Pencil, Plus, ListOrdered, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -62,7 +62,6 @@ export function MyHiringPostsPage() {
   return (
     <div className="container-page py-8">
       <PageHeader
-        eyebrow={<><BriefcaseBusiness className="h-4 w-4" />Recruiter workspace</>}
         title="My hiring posts"
         description="Publish roles, keep them up to date, and match candidates to each one."
         actions={<Button type="button" onClick={() => setCreating(true)}><Plus className="h-4 w-4" />New hiring post</Button>}
@@ -92,11 +91,11 @@ export function MyHiringPostsPage() {
                     <OccupationBadge post={post} />
                     <LevelBadge post={post} />
                   </div>
-                  <h2 className="mt-2 font-display text-xl font-bold">
+                  <h2 className="mt-2 font-display text-xl font-medium">
                     <Link href={`/hiring-posts/${post.id}`} className="hover:text-primary">{post.title}</Link>
                   </h2>
                   <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-                    <span className="inline-flex items-center gap-1 font-semibold text-foreground"><Users className="h-4 w-4" aria-hidden="true" />{post.applicationCount === 1 ? "1 applicant" : `${post.applicationCount} applicants`}</span>
+                    <span className="inline-flex items-center gap-1 font-medium text-foreground"><Users className="h-4 w-4" aria-hidden="true" />{post.applicationCount === 1 ? "1 applicant" : `${post.applicationCount} applicants`}</span>
                     {post.yearsRequired != null ? <span>{formatYearsRequired(post.yearsRequired)}</span> : <span>Years required not set</span>}
                     <span>{post.location || "Location flexible"}</span>
                     {post.closesAt ? <span>Closes {formatDate(post.closesAt)}</span> : null}
@@ -104,7 +103,7 @@ export function MyHiringPostsPage() {
                   <AiLevelStatus post={post} />
                 </div>
                 <div className="flex flex-wrap gap-2 lg:w-72 lg:justify-end">
-                  <ButtonLink href={`/recommendations/candidates?hiringPostId=${post.id}`} size="sm"><Sparkles className="h-4 w-4" />Match candidates</ButtonLink>
+                  <ButtonLink href={`/recommendations/candidates?hiringPostId=${post.id}`} size="sm"><ListOrdered className="h-4 w-4" />Match candidates</ButtonLink>
                   <Button type="button" size="sm" variant="secondary" onClick={() => router.replace(`${pathname}?edit=${post.id}`, { scroll: false })}><Pencil className="h-4 w-4" />Edit</Button>
                   {hiringPostAiState(post).action ? (
                     <Button type="button" size="sm" variant="secondary" loading={predict.isPending && predict.variables === post.id} disabled={predict.isPending} onClick={() => predict.mutate(post.id)}>
@@ -137,8 +136,8 @@ function Stat({ label, value }: { label: string; value: number }) {
   return (
     <Card>
       <CardContent className="p-4">
-        <dt className="text-xs font-semibold uppercase text-muted">{label}</dt>
-        <dd className="mt-1 font-display text-2xl font-bold">{value}</dd>
+        <dt className="text-xs font-medium text-muted">{label}</dt>
+        <dd className="mt-1 font-display text-2xl font-medium">{value}</dd>
       </CardContent>
     </Card>
   );

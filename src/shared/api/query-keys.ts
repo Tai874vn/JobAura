@@ -5,6 +5,8 @@ export const queryKeys = {
   jobsByCreator: (creatorId: number, params?: object) => ['jobs', 'creator', creatorId, params ?? {}] as const,
   job: (id: number) => ['jobs', id] as const,
   hiringPosts: (params?: object) => ['hiring-posts', params ?? {}] as const,
+  hiringPostFacets: (params?: object) => ['hiring-posts', 'facets', params ?? {}] as const,
+  hiringPostLocations: ['hiring-posts', 'locations'] as const,
   myHiringPosts: (params?: object) => ['hiring-posts', 'mine', params ?? {}] as const,
   hiringApplications: (hiringPostId: number, params?: object) => ['hiring-posts', hiringPostId, 'applications', params ?? {}] as const,
   myHiringApplications: (params?: object) => ['hiring-posts', 'applications', 'me', params ?? {}] as const,

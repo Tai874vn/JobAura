@@ -100,11 +100,11 @@ function HiringPostForm({
 
   return (
     <div className="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <div className="motion-panel max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-surface shadow-xl">
+      <div className="motion-panel max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-surface shadow-overlay">
         <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-surface p-5">
           <div>
-            <p className="text-xs font-bold uppercase text-primary">Hiring post</p>
-            <h2 id={titleId} className="mt-1 font-display text-2xl font-bold">{post ? "Edit hiring post" : "New hiring post"}</h2>
+            <p className="text-xs font-medium text-primary">Hiring post</p>
+            <h2 id={titleId} className="mt-1 font-display text-2xl font-medium">{post ? "Edit hiring post" : "New hiring post"}</h2>
           </div>
           <Button type="button" size="icon" variant="ghost" aria-label="Close" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -196,7 +196,7 @@ function Field({ label, hint, required = false, children }: {
 }) {
   return (
     <label className="grid content-start gap-1.5">
-      <span className="text-sm font-semibold">
+      <span className="text-sm font-medium">
         {label}
         {required ? <span className="text-danger" aria-hidden="true"> *</span> : null}
       </span>
