@@ -15,7 +15,7 @@ import {
   Search,
   SearchX,
   SlidersHorizontal,
-  Sparkles,
+  ListOrdered,
   Star,
   Users,
   X,
@@ -152,14 +152,14 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
 
   return (
     <div className="container-page pt-10 pb-16">
-      <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-primary">
+      <p className="flex items-center gap-1.5 text-xs font-medium text-primary">
         <Users className="h-3.5 w-3.5" /> Employer workspace
       </p>
-      <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight">Find candidates</h1>
+      <h1 className="mt-1.5 font-display text-3xl font-medium tracking-tight">Find candidates</h1>
 
       <form
         onSubmit={submitKeyword}
-        className="mt-5 flex max-w-2xl items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition focus-within:border-primary"
+        className="mt-5 flex max-w-2xl items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm field-shell"
       >
         <div className="flex min-w-0 flex-1 items-center gap-2.5 px-4">
           <Search className="h-5 w-5 shrink-0 text-muted" />
@@ -171,7 +171,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
             onChange={(event) => updateKeyword(event.target.value)}
           />
         </div>
-        <button type="submit" className="flex shrink-0 items-center gap-2 bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary-bright">
+        <button type="submit" className="flex shrink-0 items-center gap-2 bg-primary px-5 text-sm font-medium text-white transition hover:bg-primary-strong">
           <Search className="h-4 w-4" />
           Search
         </button>
@@ -191,7 +191,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
 
       <div className="mt-5 flex flex-wrap items-center gap-2.5">
         <p className="text-sm text-muted" aria-live="polite">
-          <b className="font-bold text-foreground">{query.isPending && !content ? '…' : total}</b> discoverable candidates
+          <b className="font-medium text-foreground">{query.isPending && !content ? '…' : total}</b> discoverable candidates
         </p>
         <div className="flex flex-wrap gap-1.5">
           {activeFilters.map((filter) => (
@@ -200,7 +200,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
               type="button"
               onClick={filter.onRemove}
               title="Remove filter"
-              className="inline-flex h-7 items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-xs font-semibold text-foreground transition hover:border-danger hover:text-danger"
+              className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-foreground transition hover:border-danger hover:text-danger"
             >
               {filter.label}
               <X className="h-3 w-3 text-muted" />
@@ -214,21 +214,21 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
             aria-expanded={panelOpen}
             aria-controls="candidate-filter-panel"
             className={cn(
-              'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-semibold transition',
+              'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-medium transition',
               panelOpen ? 'border-primary text-primary' : 'text-foreground hover:border-primary hover:text-primary'
             )}
           >
             <SlidersHorizontal className="h-4 w-4" />
             Filters
             {activeFilters.length ? (
-              <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10.5px] font-bold text-white">
+              <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-xs font-medium text-white">
                 {activeFilters.length}
               </span>
             ) : null}
             <ChevronDown className={cn('h-4 w-4 transition-transform', panelOpen && 'rotate-180')} />
           </button>
           <ButtonLink href="/recommendations/candidates">
-            <Sparkles className="h-4 w-4" />
+            <ListOrdered className="h-4 w-4" />
             AI matching
           </ButtonLink>
         </div>
@@ -248,7 +248,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
                 onPick={(hit) => { setOccupation(hit.code); setPage(1) }}
                 onClear={() => { setOccupation(''); setIncludeRelated(false); setPage(1) }} />
               <div className="flex items-center gap-1.5">
-                <label className={cn('inline-flex items-center gap-2 text-sm font-semibold', !occupation && 'text-muted')}>
+                <label className={cn('inline-flex items-center gap-2 text-sm font-medium', !occupation && 'text-muted')}>
                   <input type="checkbox" className="h-4 w-4 accent-primary" checked={includeRelated} disabled={!occupation}
                     onChange={(event) => { setIncludeRelated(event.target.checked); setPage(1) }} />
                   Include related occupations
@@ -259,7 +259,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">AI level</span>
+                <span className="mb-1.5 block text-xs font-medium text-muted">AI level</span>
                 <Select value={level} onChange={(event) => { setLevel(event.target.value); setPage(1) }}>
                   <option value="">Any level</option>
                   <option value="Junior">Junior</option>
@@ -268,7 +268,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
                 </Select>
               </label>
               <label className="block">
-                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">{minYearsLabel(occupation ? occupationTitle : null)}, at least</span>
+                <span className="mb-1.5 block text-xs font-medium text-muted">{minYearsLabel(occupation ? occupationTitle : null)}, at least</span>
                 <Input type="number" min={0} max={40} inputMode="numeric" value={minYears} placeholder="0"
                   onChange={(event) => { setMinYears(event.target.value); setPage(1) }} />
               </label>
@@ -337,7 +337,7 @@ function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string 
           <Button type="button" variant="secondary" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => Math.max(1, current - 1))}>
             Previous
           </Button>
-          <span className="text-sm font-semibold text-muted">
+          <span className="text-sm font-medium text-muted">
             Page {page} of {Math.max(totalPages, 1)}
           </span>
           <Button type="button" variant="secondary" disabled={page >= totalPages || query.isFetching} onClick={() => setPage((current) => current + 1)}>
@@ -356,7 +356,7 @@ function SkillChip({ label, active, onClick }: { label: string; active: boolean;
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-semibold transition',
+        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-medium transition',
         active ? 'border-foreground bg-foreground text-white' : 'border-border bg-surface text-muted hover:border-primary hover:text-primary'
       )}
     >
@@ -368,8 +368,8 @@ function SkillChip({ label, active, onClick }: { label: string; active: boolean;
 function PanelField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">{label}</span>
-      <span className="flex h-10 items-center rounded-lg border border-border bg-surface px-3 transition focus-within:border-primary">
+      <span className="mb-1.5 block text-xs font-medium text-muted">{label}</span>
+      <span className="flex h-10 items-center rounded-lg border border-border bg-surface px-3 field-shell">
         {children}
       </span>
     </label>
@@ -384,25 +384,24 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
   const strength = candidate.profileStrength ?? Math.round(candidate.match.qualityScore * 100)
 
   return (
-    <Card className="transition hover:shadow-[0_12px_28px_rgba(27,28,28,0.09)]">
-      <CardContent className="flex flex-col gap-3 p-4.5">
+    <Card className="transition-colors hover:border-foreground/20">
+      <CardContent className="flex flex-col gap-3 p-5">
         <div className="flex items-start gap-3">
           <FeedAvatar user={candidate} size="lg" />
           <div className="min-w-0 flex-1">
-            <h2 className="truncate font-display text-lg font-bold">
+            <h2 className="truncate font-display text-lg font-medium">
               <Link href={`/profile/${candidate.id}`} className="block truncate hover:text-primary">{candidate.name}</Link>
             </h2>
-            <p className="mt-0.5 truncate text-sm font-semibold text-muted">{candidate.headline}</p>
+            <p className="mt-0.5 truncate text-sm font-medium text-muted">{candidate.headline}</p>
           </div>
           {candidate.career?.level ? (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[11.5px] font-bold text-primary" title="Level read by AI from the resume">
-              <Sparkles className="h-3 w-3" aria-hidden="true" />
+            <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-xs font-medium text-foreground" title="Level read by AI from the resume">
               {candidate.career.level}
             </span>
           ) : null}
         </div>
 
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold text-muted">
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-muted">
           <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
           <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-rating text-rating" /> {formatCandidateRating(candidate)}</span>
         </div>
@@ -424,10 +423,10 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
           <CardStat icon={<FolderOpen className="h-3.5 w-3.5" />} label="Portfolio" value={String(candidate.stats.portfolioItems + candidate.stats.listedServices)} />
         </div>
 
-        <div className="flex items-center gap-2 text-[11.5px] font-semibold text-muted">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted">
           Profile strength
           <span
-            className="h-1.5 max-w-32 flex-1 overflow-hidden rounded-full bg-surface-muted"
+            className="h-1 max-w-32 flex-1 overflow-hidden rounded-full bg-foreground/10"
             role="progressbar"
             aria-label="Profile strength"
             aria-valuenow={strength}
@@ -435,11 +434,11 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
             aria-valuemax={100}
           >
             <span
-              className="block h-full rounded-full bg-gradient-to-r from-primary to-primary-bright"
+              className="block h-full rounded-full bg-primary"
               style={{ width: `${strength}%` }}
             />
           </span>
-          {strength}%
+          <span className="font-mono tabular-nums text-foreground">{strength}%</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -457,27 +456,27 @@ function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
 function CardStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <div className="flex items-center gap-1.5 text-sm font-bold">
+      <div className="flex items-center gap-1.5 text-sm font-medium">
         <span className="text-primary">{icon}</span>
         {value}
       </div>
-      <p className="mt-0.5 truncate text-[11px] font-semibold text-muted">{label}</p>
+      <p className="mt-0.5 truncate text-xs font-medium text-muted">{label}</p>
     </div>
   )
 }
 
 /** Occupation and specialty, then years in the occupation and related years as separate facts. */
 function CareerLine({ career }: { career: ReturnType<typeof formatCandidateCareer> }) {
-  if (!career) return <p className="text-xs font-semibold text-muted">No resume yet</p>
+  if (!career) return <p className="text-xs font-medium text-muted">No resume yet</p>
   if (!career.occupation) {
     return (
-      <p className="text-xs font-semibold text-muted">
+      <p className="text-xs font-medium text-muted">
         {career.previously ? `Previously: ${career.previously} · no occupation chosen yet` : 'No occupation chosen yet'}
       </p>
     )
   }
   return (
-    <div className="grid gap-1 text-xs font-semibold text-muted">
+    <div className="grid gap-1 text-xs font-medium text-muted">
       <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
         <BriefcaseBusiness className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
         <span className="text-foreground">{career.occupation}</span>

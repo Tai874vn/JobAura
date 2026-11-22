@@ -32,7 +32,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
               <div className="flex flex-wrap items-center gap-4">
                 <Avatar name={profile.name} src={profile.avatar} size="lg" className="h-16 w-16 text-lg" />
                 <div className="min-w-48 flex-1">
-                  <b className="block text-base font-bold">{profile.name}</b>
+                  <b className="block text-base font-medium">{profile.name}</b>
                   <span className="mt-0.5 block truncate text-xs text-muted">{profile.email}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -55,7 +55,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
                 <Field label="Location" focusId="location" value={basic.location} onChange={(value) => setBasic((state) => ({ ...state, location: value }))} />
                 <Field label="Website" focusId="website" value={basic.website} onChange={(value) => setBasic((state) => ({ ...state, website: value }))} />
                 <label data-focus="bio" className="grid gap-1 md:col-span-2">
-                  <span className="text-sm font-semibold">Bio</span>
+                  <span className="text-sm font-medium">Bio</span>
                   <Textarea value={basic.bio ?? ''} onChange={(event) => setBasic((state) => ({ ...state, bio: event.target.value }))} />
                 </label>
               </div>
@@ -112,7 +112,7 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
                     }
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold">Visible to recruiters</span>
+                    <span className="block text-sm font-medium">Visible to recruiters</span>
                     <span className="mt-1 block text-xs leading-5 text-muted">
                       Show your profile to recruiters in candidate search and AI matching.
                     </span>
@@ -138,5 +138,5 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
 }
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-bold"><span className="text-primary">{icon}</span>{children}</h3>
+  return <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-medium"><span className="text-primary">{icon}</span>{children}</h3>
 }

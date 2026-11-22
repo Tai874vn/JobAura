@@ -34,7 +34,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
 
   return (
     <div className="relative min-w-0" aria-busy={!ready}>
-      <Card inert={!ready || undefined} aria-hidden={!ready || undefined} className={cn('group overflow-hidden transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(0,0,0,0.08)]', !ready && 'pointer-events-none opacity-0')}>
+      <Card inert={!ready || undefined} aria-hidden={!ready || undefined} className={cn('group overflow-hidden transition hover:shadow-float', !ready && 'pointer-events-none opacity-0')}>
         <div className="relative">
           <Link href={`/jobs/${job.id}`} className="block">
             <div className="relative aspect-[4/3] bg-surface-muted">
@@ -51,7 +51,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
                   onError={() => setCover('failed')}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center font-display text-4xl font-bold text-primary/30">
+                <div className="flex h-full items-center justify-center font-display text-4xl font-medium text-primary/30">
                   JA
                 </div>
               )}
@@ -63,16 +63,16 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
           {sellerHref ? (
             <Link href={sellerHref} className="mb-3 flex w-fit max-w-full items-center gap-2 rounded hover:text-primary">
               <SellerAvatar name={sellerName} src={sellerAvatarUrl} bypassOptimizer={bypassSellerAvatarOptimizer} onLoad={() => setAvatar('ready')} onError={() => setAvatar('failed')} />
-              <span className="min-w-0 truncate text-sm font-semibold">{sellerName}</span>
+              <span className="min-w-0 truncate text-sm font-medium">{sellerName}</span>
             </Link>
           ) : (
             <div className="mb-3 flex items-center gap-2">
               <SellerAvatar name={sellerName} src={sellerAvatarUrl} bypassOptimizer={bypassSellerAvatarOptimizer} onLoad={() => setAvatar('ready')} onError={() => setAvatar('failed')} />
-              <span className="min-w-0 truncate text-sm font-semibold">{sellerName}</span>
+              <span className="min-w-0 truncate text-sm font-medium">{sellerName}</span>
             </div>
           )}
           <Link href={`/jobs/${job.id}`} className="block">
-            <h3 className="line-clamp-2 min-h-11 text-sm font-semibold leading-5 hover:text-primary">{job.title}</h3>
+            <h3 className="line-clamp-2 min-h-11 text-sm font-medium leading-5 hover:text-primary">{job.title}</h3>
           </Link>
           <div className="mt-3 flex items-center justify-between">
             {/* A star only once someone has reviewed it; portfolio posts usually have no reviews. */}
@@ -82,7 +82,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
                 {(job.rating ?? 0).toFixed(1)}
               </Badge>
             ) : <span />}
-            <span className="text-sm font-semibold text-foreground">{servicePriceLabel(job.price) ?? 'Portfolio'}</span>
+            <span className="text-sm font-medium text-foreground">{servicePriceLabel(job.price) ?? 'Portfolio'}</span>
           </div>
         </div>
       </Card>
@@ -96,7 +96,7 @@ function ReadyJobCard({ job, imageUrl, avatarUrl, priority, initialSaved, waitFo
 
 function SellerAvatar({ name, src, bypassOptimizer, onLoad, onError }: { name: string; src?: string; bypassOptimizer: boolean; onLoad: () => void; onError: () => void }) {
   return (
-    <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-bold text-white">
+    <span className="relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-medium text-white">
       {src ? <Image src={src} alt={name} fill unoptimized={bypassOptimizer} className="object-cover" sizes="32px" onLoad={onLoad} onError={onError} /> : initials(name)}
     </span>
   )

@@ -68,14 +68,14 @@ export function SettingsOverview({
           <div className="flex flex-wrap items-center gap-4">
             <Avatar name={profile.name} src={profile.avatar} size="lg" className="h-14 w-14 text-lg" />
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-display text-xl font-bold">{profile.name}</h3>
+              <h3 className="truncate font-display text-xl font-medium">{profile.name}</h3>
               <p className="mt-0.5 break-words text-sm text-muted">{profile.headline || 'Add a headline that describes your work.'}</p>
             </div>
             <Button variant="secondary" size="sm" onClick={() => onSelect('profile')}>Edit profile <ArrowRight className="h-3.5 w-3.5" /></Button>
           </div>
           <div className="mt-6 border-t border-border pt-5">
             <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="font-semibold">Profile strength</span><span className="font-bold text-primary">{completion}%</span>
+              <span className="font-medium">Profile strength</span><span className="font-medium text-primary">{completion}%</span>
             </div>
             <div className="mt-2.5 h-2 overflow-hidden rounded-full bg-surface-muted" role="progressbar"
               aria-label="Profile strength" aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100}>
@@ -85,13 +85,13 @@ export function SettingsOverview({
               <ul className="mt-3 grid gap-1 text-xs leading-5 text-muted">
                 {missing.map((item) => (
                   <li key={item.hint}>
-                    <Link href={item.href} className="inline-flex items-center gap-1.5 rounded font-semibold hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">
+                    <Link href={item.href} className="inline-flex items-center gap-1.5 rounded font-medium hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">
                       <AlertCircle className="h-3.5 w-3.5 shrink-0" />{item.hint}<ArrowRight className="h-3 w-3" />
                     </Link>
                   </li>
                 ))}
               </ul>
-            ) : <p className="mt-2.5 flex items-center gap-1.5 text-xs font-semibold text-primary"><CheckCircle2 className="h-3.5 w-3.5" />Your profile is complete.</p>}
+            ) : <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-primary"><CheckCircle2 className="h-3.5 w-3.5" />Your profile is complete.</p>}
           </div>
         </CardContent>
       </Card>
@@ -99,26 +99,26 @@ export function SettingsOverview({
         <Card>
           <CardContent className="flex h-full flex-col p-5 sm:p-6">
             <UserRound className="h-5 w-5 text-primary" />
-            <h3 className="mt-3 font-display text-lg font-bold">Public profile</h3>
+            <h3 className="mt-3 font-display text-lg font-medium">Public profile</h3>
             <p className="mt-1 flex-1 text-sm leading-6 text-muted">Edit your introduction, skills, certifications, and portfolio.</p>
-            {profile.role === 'user' ? <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted"><Eye className="h-3.5 w-3.5" />{profile.candidateDiscoverable ? 'Visible to recruiters' : 'Hidden from recruiters'}</p> : null}
+            {profile.role === 'user' ? <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-muted"><Eye className="h-3.5 w-3.5" />{profile.candidateDiscoverable ? 'Visible to recruiters' : 'Hidden from recruiters'}</p> : null}
             <Button className="mt-4 w-full" variant="secondary" onClick={() => onSelect('profile')}>Manage profile <ArrowRight className="h-4 w-4" /></Button>
           </CardContent>
         </Card>
         {hasResumeSection(profile.role) ? <Card>
           <CardContent className="flex h-full flex-col p-5 sm:p-6">
             <FileJson className="h-5 w-5 text-primary" />
-            <h3 className="mt-3 font-display text-lg font-bold">Resume</h3>
+            <h3 className="mt-3 font-display text-lg font-medium">Resume</h3>
             <p className="mt-1 flex-1 text-sm leading-6 text-muted">Add career details and a CV to support your AI job matches.</p>
             {resumeLoading ? (
               <p role="status" className="mt-3 text-xs text-muted">Checking resume…</p>
             ) : resumeError ? (
               <div role="alert" className="mt-3">
-                <p className="text-xs font-semibold text-danger">Resume status unavailable</p>
+                <p className="text-xs font-medium text-danger">Resume status unavailable</p>
                 <Button className="mt-2" variant="secondary" size="sm" loading={resumeRetrying} onClick={onRetryResume}>Retry</Button>
               </div>
             ) : (
-              <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-muted">
+              <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-muted">
                 {resume ? <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> : <AlertCircle className="h-3.5 w-3.5" />}
                 {resume ? 'Resume imported' : 'Resume not imported'}
               </p>
@@ -138,9 +138,9 @@ export function SettingsPlaceholder({ section }: { section: SettingSection }) {
   return (
     <Card>
       <CardContent className="p-7 text-center">
-        <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary [&_svg]:h-5 [&_svg]:w-5">{current?.icon}</span>
-        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted">Coming soon</p>
-        <h2 className="mt-1 font-display text-xl font-bold">{current?.title}</h2>
+        <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-surface-muted text-muted [&_svg]:h-5 [&_svg]:w-5">{current?.icon}</span>
+        <p className="mt-4 text-xs font-medium text-muted">Coming soon</p>
+        <h2 className="mt-1 font-display text-xl font-medium">{current?.title}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">These controls are not available yet. You can manage your profile and resume in the other sections.</p>
       </CardContent>
     </Card>

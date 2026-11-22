@@ -113,7 +113,7 @@ export function ConnectionActions({
     <>
       <div className={cn('flex flex-wrap items-center gap-2', className)}>
         {controls.statusLabel ? (
-          <span className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface-muted px-3 text-xs font-semibold text-muted">
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-surface-muted px-3 text-xs font-medium text-muted">
             <Clock3 className="h-3.5 w-3.5" /> {controls.statusLabel}
           </span>
         ) : null}

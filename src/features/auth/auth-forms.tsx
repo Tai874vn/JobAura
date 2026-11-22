@@ -97,7 +97,7 @@ function LoginFormFields({
 
   return (
     <AuthCard
-      title="Welcome back"
+      title="Sign in to JobAura"
     >
       <form
         className="space-y-4"
@@ -107,7 +107,7 @@ function LoginFormFields({
           <Input placeholder="you@example.com" type="email" {...form.register("email")} />
         </FieldError>
         <FieldError label="Password" message={form.formState.errors.password?.message}>
-          <div className="flex items-center rounded-lg border border-border bg-surface transition focus-within:border-primary">
+          <div className="flex items-center rounded-lg border border-border bg-surface field-shell">
             <Input
               className="border-0 bg-transparent shadow-none focus:border-0 focus:ring-0"
               placeholder="Your password"
@@ -130,9 +130,7 @@ function LoginFormFields({
       </form>
       <div className="my-5 flex items-center gap-3">
         <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-          or
-        </span>
+        <span className="text-xs text-muted">or</span>
         <span className="h-px flex-1 bg-border" />
       </div>
       <Button
@@ -153,7 +151,7 @@ function LoginFormFields({
       />
       <p className="mt-5 text-center text-sm text-muted">
         New here?{" "}
-        <Link className="font-semibold text-primary" href="/auth/register">
+        <Link className="font-medium text-primary hover:text-primary-strong" href="/auth/register">
           Create an account
         </Link>
       </p>
@@ -164,21 +162,24 @@ function LoginFormFields({
 export function RegisterForm() {
   const searchParams = useSearchParams();
   const notice = searchParams.get("notice");
+  // ?role=employer comes from "Post a role" on the landing, so the account type is already picked.
+  const requestedRole = searchParams.get("role");
+  const role = requestedRole === "user" || requestedRole === "employer" ? requestedRole : undefined;
 
   return (
     <AuthPageGate>
-      <RegisterFormFields notice={notice} />
+      <RegisterFormFields notice={notice} role={role} />
     </AuthPageGate>
   );
 }
 
-function RegisterFormFields({ notice }: { notice?: string | null }) {
+function RegisterFormFields({ notice, role }: { notice?: string | null; role?: "user" | "employer" }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<SignUp>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", role },
   });
   const selectedRole = useWatch({ control: form.control, name: "role" });
   const roleRegistration = form.register("role", {
@@ -246,7 +247,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
           <Input placeholder="you@example.com" type="email" {...form.register("email")} />
         </FieldError>
         <FieldError label="Password" message={form.formState.errors.password?.message}>
-          <div className="flex items-center rounded-lg border border-border bg-surface transition focus-within:border-primary">
+          <div className="flex items-center rounded-lg border border-border bg-surface field-shell">
             <Input
               className="border-0 bg-transparent shadow-none focus:border-0 focus:ring-0"
               placeholder="At least 10 characters"
@@ -264,14 +265,12 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
           </div>
         </FieldError>
         <div className="grid gap-2">
-          <p className="text-xs font-semibold uppercase text-muted">
-            Account type
-          </p>
+          <p className="text-sm font-medium">Account type</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {signupRoleOptions.map((option) => (
               <label
                 key={option.value}
-                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
+                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                   selectedRole === option.value
                     ? "border-primary bg-primary/5 text-foreground"
                     : "border-border bg-surface text-muted hover:border-primary hover:text-foreground"
@@ -294,7 +293,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
                   ) : null}
                 </span>
                 <span className="min-w-0">
-                  <span className="block text-sm font-bold">{option.label}</span>
+                  <span className="block text-sm font-medium">{option.label}</span>
                   <span className="mt-1 block text-xs leading-5">
                     {option.description}
                   </span>
@@ -319,7 +318,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
         </Button>
         <div className="flex items-center gap-3">
           <span className="h-px flex-1 bg-border" />
-          <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+          <span className="text-xs font-medium text-muted">
             or
           </span>
           <span className="h-px flex-1 bg-border" />
@@ -330,7 +329,7 @@ function RegisterFormFields({ notice }: { notice?: string | null }) {
       </form>
       <p className="mt-5 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link className="font-semibold text-primary" href="/auth/login">
+        <Link className="font-medium text-primary hover:text-primary-strong" href="/auth/login">
           Sign in
         </Link>
       </p>

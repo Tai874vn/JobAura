@@ -112,7 +112,7 @@ export function ResumeCareerFields({
   return (
     <div data-focus="career" className="grid gap-3 rounded-lg border border-border p-3 sm:p-4">
       <div>
-        <h4 className="font-display text-base font-bold">Occupation and specialty</h4>
+        <h4 className="font-display text-base font-medium">Occupation and specialty</h4>
         <p className="mt-1 text-xs leading-5 text-muted">
           Required. The AI seniority preview judges your experience and skills in this occupation.
         </p>
@@ -128,7 +128,7 @@ export function ResumeCareerFields({
       <div data-focus="jobs" className="grid gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h4 className="font-display text-base font-bold">Jobs</h4>
+            <h4 className="font-display text-base font-medium">Jobs</h4>
             <p className="text-xs leading-5 text-muted">Add each job with its dates and occupation, so time in your occupation can be counted.</p>
           </div>
           <Button type="button" size="sm" variant="secondary" onClick={() => setJobs([...jobs, { ...emptyResumeJob, occupation }])}>
@@ -141,7 +141,7 @@ export function ResumeCareerFields({
             <legend className="sr-only">Job {index + 1}</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className="grid gap-1">
-                <span className="text-xs font-semibold">Job title</span>
+                <span className="text-xs font-medium">Job title</span>
                 <Input value={job.title} maxLength={120} onChange={(event) => updateJob(index, { title: event.target.value })} />
               </label>
               <OccupationPicker compact label="Occupation of this job" value={job.occupation} previously={job.legacyField}
@@ -150,11 +150,11 @@ export function ResumeCareerFields({
                 onPick={(hit) => onFieldChange('Jobs', jobOccupationChange(jobs, index, hit.code).Jobs)}
                 onClear={() => updateJob(index, { occupation: '' })} />
               <label className="grid gap-1">
-                <span className="text-xs font-semibold">Start month</span>
+                <span className="text-xs font-medium">Start month</span>
                 <Input type="month" value={job.start} onChange={(event) => updateJob(index, { start: event.target.value })} />
               </label>
               <label className="grid gap-1">
-                <span className="text-xs font-semibold">End month</span>
+                <span className="text-xs font-medium">End month</span>
                 <Input type="month" value={job.current ? '' : job.end} disabled={job.current}
                   onChange={(event) => updateJob(index, { end: event.target.value })} />
               </label>
@@ -164,7 +164,7 @@ export function ResumeCareerFields({
               I work here now
             </label>
             <label className="grid gap-1">
-              <span className="text-xs font-semibold">What you did <span className="font-normal text-muted">(optional)</span></span>
+              <span className="text-xs font-medium">What you did <span className="font-normal text-muted">(optional)</span></span>
               <Textarea className="min-h-16" value={job.description} maxLength={2000}
                 onChange={(event) => updateJob(index, { description: event.target.value })} />
             </label>
@@ -201,7 +201,7 @@ export function OccupationYears({ occupation, years }: { occupation: string; yea
   if (!years) {
     return (
       <p data-focus="years" className="rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted">
-        Experience as {title}: <span className="font-semibold text-foreground">counted when you save</span>
+        Experience as {title}: <span className="font-medium text-foreground">counted when you save</span>
         <span className="block text-xs">Counted from the start and end months of your jobs in this occupation.</span>
       </p>
     )
@@ -209,20 +209,20 @@ export function OccupationYears({ occupation, years }: { occupation: string; yea
   const lines = relatedLines(years)
   return (
     <div data-focus="years" className="grid gap-1 rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted">
-      <p>Experience as {title}: <span className="font-semibold text-foreground">{formatYears(years.years)}</span></p>
+      <p>Experience as {title}: <span className="font-medium text-foreground">{formatYears(years.years)}</span></p>
       {lines.length || years.otherCredit > 0 ? (
         <ul className="grid gap-0.5" aria-label="Related experience">
           {lines.map((other) => (
             <li key={other.code}>
               Related experience: {occupationLabel(other.title)} {formatYears(other.years)} →{' '}
-              <span className="font-semibold text-foreground">+{formatCredit(other.shownCredit)} yr</span>{' '}
+              <span className="font-medium text-foreground">+{formatCredit(other.shownCredit)} yr</span>{' '}
               <InfoTip label={`How +${formatCredit(other.shownCredit)} yr is counted`}
                 text={`${Math.round(other.overlap * 100)}% of ESCO skill groups shared × 0.3`} />
             </li>
           ))}
           {years.otherCredit > 0 ? (
             <li>
-              Other experience: <span className="font-semibold text-foreground">+{formatCredit(years.otherCredit)} yr</span>{' '}
+              Other experience: <span className="font-medium text-foreground">+{formatCredit(years.otherCredit)} yr</span>{' '}
               <InfoTip label={`How +${formatCredit(years.otherCredit)} yr is counted`}
                 text={`These jobs share few skills with ${title}, so they count a little (overlap × 0.3).`} />
             </li>
@@ -257,7 +257,7 @@ function EducationFields({
   return (
     <div data-focus="education" className="grid gap-3 sm:grid-cols-2">
       <label className="grid gap-1">
-        <span className="text-sm font-semibold">Highest degree</span>
+        <span className="text-sm font-medium">Highest degree</span>
         <Select value={degree} onChange={(event) => {
           onFieldChange('Degree', event.target.value)
           if (event.target.value === 'Not stated') onFieldChange('FieldOfStudy', '')
@@ -267,7 +267,7 @@ function EducationFields({
         </Select>
       </label>
       <label className="grid gap-1">
-        <span className="text-sm font-semibold">Field of study</span>
+        <span className="text-sm font-medium">Field of study</span>
         <Select value={fieldOfStudy} disabled={!hasDegree} onChange={(event) => onFieldChange('FieldOfStudy', event.target.value)}>
           <option value="">{fields.isError ? 'List unavailable, try again later' : hasDegree ? 'Choose' : 'Choose a degree first'}</option>
           {fieldOfStudy && !options.some((field) => field.code === fieldOfStudy) ? <option value={fieldOfStudy}>{fieldOfStudy}</option> : null}

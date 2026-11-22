@@ -25,7 +25,7 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
   return (
     <aside className="sticky top-20 hidden h-fit lg:block">
       <Card className="overflow-hidden">
-        <div className="relative h-20 overflow-hidden bg-gradient-to-br from-primary to-primary-bright">
+        <div className="relative h-20 overflow-hidden bg-surface-muted">
           {coverUrl ? (
             <Image
               src={coverUrl}
@@ -40,16 +40,16 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
         </div>
         <div className="px-4 pb-4">
           <div className="-mt-6"><FeedAvatar user={user} size="lg" /></div>
-          <Link href={`/profile/${user.id}`} className="mt-2 block truncate font-display text-base font-bold hover:text-primary">{user.name}</Link>
+          <Link href={`/profile/${user.id}`} className="mt-2 block truncate font-display text-base font-medium hover:text-primary">{user.name}</Link>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted">{user.headline || 'JobAura member'}</p>
           <div className="mt-3 border-t border-border pt-3">
-            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wide text-muted">
+            <div className="flex items-center justify-between text-xs text-muted">
               <span>Profile strength</span>
-              <span className="text-primary">{completeness}%</span>
+              <span className="font-mono tabular-nums text-foreground">{completeness}%</span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-muted">
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-foreground/10">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-primary-bright transition-[width]"
+                className="h-full rounded-full bg-primary"
                 style={{ width: `${completeness}%` }}
                 role="progressbar"
                 aria-label="Profile strength"
@@ -59,12 +59,12 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
               />
             </div>
             {next ? (
-              <Link href={next.href} className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+              <Link href={next.href} className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-strong">
                 {next.hint} <ArrowRight className="h-3 w-3 shrink-0" />
               </Link>
             ) : null}
             {strength.missing.length > 1 ? (
-              <Link href="/settings" className="mt-1 block text-[11px] font-semibold text-muted hover:text-primary">
+              <Link href="/settings" className="mt-1 block text-xs text-muted hover:text-primary">
                 {strength.missing.length - 1} more to complete
               </Link>
             ) : null}
@@ -82,5 +82,5 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
 }
 
 function UtilityLink({ href, icon, label, badge = 0 }: { href: string; icon: React.ReactNode; label: string; badge?: number }) {
-  return <Link href={href} className="flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-semibold hover:bg-surface-muted hover:text-primary">{icon}<span className="min-w-0 flex-1 truncate">{label}</span>{badge ? <span className="flex min-w-5 items-center justify-center rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold text-white">{badge}</span> : null}</Link>
+  return <Link href={href} className="flex h-9 items-center gap-2.5 rounded-lg px-3 text-sm font-medium text-muted transition-colors hover:bg-surface-muted hover:text-foreground">{icon}<span className="min-w-0 flex-1 truncate">{label}</span>{badge ? <span className="font-mono text-xs tabular-nums text-primary">{badge}</span> : null}</Link>
 }

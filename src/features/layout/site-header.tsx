@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Menu, Search, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,18 +13,11 @@ import { siteNav } from "./site-nav";
 export function SiteHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  const [query, setQuery] = useState("");
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isLoading: isSessionLoading } = useSession();
   const nav = siteNav(user?.role);
   const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
-
-  function submitSearch(event: React.SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const keyword = query.trim();
-    router.push(keyword ? `${nav.search.target}?keyword=${encodeURIComponent(keyword)}` : nav.search.target);
-  }
 
   function goToLogout() {
     setAccountMenuOpen(false);
@@ -33,36 +26,24 @@ export function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-surface backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-surface">
       <div className="container-page flex h-16 items-center gap-4">
-        <Link href={nav.home} className="shrink-0 font-display text-2xl font-bold tracking-tight text-primary">
+        <Link href={nav.home} className="shrink-0 font-display text-xl font-medium text-primary">
           JobAura
         </Link>
-        <form
-          onSubmit={submitSearch}
-          role="search"
-          className="hidden min-w-[160px] flex-1 items-center rounded-lg border border-border bg-surface px-3 md:flex"
-        >
-          <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-          {/* min-w-0 lets the input shrink with its box; without it the placeholder spills over the menu. */}
-          <input
-            className="h-10 min-w-0 flex-1 bg-transparent px-3 text-sm outline-none"
-            placeholder={nav.search.placeholder}
-            aria-label={nav.search.placeholder}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </form>
-        <nav className="hidden shrink-0 items-center gap-1 lg:flex" aria-label="Main">
+        {/* Every page searches in its own content (hiring posts, candidates, the landing hero), so the header has no
+            search box. Links fill the header's height so the current page can carry an underline on its bottom edge. */}
+        <nav className="hidden shrink-0 items-stretch gap-2 self-stretch lg:ml-6 lg:flex" aria-label="Main">
           {isSessionLoading ? null : nav.main.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               aria-current={isCurrent(link.href) ? "page" : undefined}
               className={cn(
-                "whitespace-nowrap rounded px-2 py-1 text-sm font-semibold hover:text-foreground",
-                link.wide && "hidden xl:inline",
-                isCurrent(link.href) ? "text-primary" : "text-muted",
+                "relative flex items-center whitespace-nowrap px-2 text-sm font-medium transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-bright",
+                "after:absolute after:inset-x-2 after:bottom-0 after:h-[3px] after:rounded-t-sm after:bg-primary after:opacity-0 after:transition-opacity",
+                link.wide && "hidden xl:flex",
+                isCurrent(link.href) ? "text-primary after:opacity-100 hover:text-primary" : "text-muted",
               )}
             >
               {link.label}
@@ -70,7 +51,7 @@ export function SiteHeader() {
           ))}
         </nav>
         {user ? (
-          <div className="ml-auto md:ml-0">
+          <div className="ml-auto">
             <NotificationBell />
           </div>
         ) : null}
@@ -78,7 +59,7 @@ export function SiteHeader() {
           <div className="relative hidden shrink-0 items-center gap-2 md:flex">
             <button
               type="button"
-              className="interaction relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2"
+              className="interaction relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2"
               onClick={() => setAccountMenuOpen((value) => !value)}
               aria-label={accountMenuOpen ? "Close account menu" : "Open account menu"}
               aria-controls="account-navigation"
@@ -87,13 +68,13 @@ export function SiteHeader() {
               <Avatar name={user.name} src={user.avatar} className="h-9 w-9" />
             </button>
             {accountMenuOpen ? (
-              <div id="account-navigation" className="motion-popover absolute right-0 top-11 w-60 rounded-lg border border-border bg-surface p-2 shadow-[0_12px_32px_rgba(0,0,0,0.08)]">
+              <div id="account-navigation" className="motion-popover absolute right-0 top-11 w-60 rounded-lg border border-border bg-surface p-2 shadow-float">
                 <MenuLink href={`/profile/${user.id}`} label="Profile" icon={<User className="h-4 w-4" />} onClick={() => setAccountMenuOpen(false)} />
                 {nav.account.map((link) => (
                   <MenuLink key={link.href} href={link.href} label={link.label} onClick={() => setAccountMenuOpen(false)} />
                 ))}
                 <button
-                  className="flex w-full items-center gap-2 rounded px-3 py-2 text-left text-sm font-semibold text-danger hover:bg-danger/5"
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger/5"
                   onClick={goToLogout}
                 >
                   <LogOut className="h-4 w-4" />
@@ -103,23 +84,21 @@ export function SiteHeader() {
             ) : null}
           </div>
         ) : (
-          <div className="hidden shrink-0 items-center gap-2 md:flex" aria-busy={isSessionLoading}>
-            <Button variant="secondary" disabled={isSessionLoading} onClick={() => router.push("/auth/login")}>Sign in</Button>
+          <div className="hidden shrink-0 items-center gap-2 md:ml-auto md:flex" aria-busy={isSessionLoading}>
+            <Button variant="ghost" className="text-muted hover:text-foreground" disabled={isSessionLoading} onClick={() => router.push("/auth/login")}>Sign in</Button>
             <Button disabled={isSessionLoading} onClick={() => router.push("/auth/register")}>Join</Button>
           </div>
         )}
 
         {!user ? (
-          <Button
-            className="ml-auto shrink-0 md:hidden"
-            variant="secondary"
-            size="sm"
-            disabled={isSessionLoading}
-            aria-busy={isSessionLoading}
-            onClick={() => router.push("/auth/login")}
-          >
-            Sign in
-          </Button>
+          <div className="ml-auto flex shrink-0 items-center gap-2 md:hidden" aria-busy={isSessionLoading}>
+            <Button variant="ghost" size="sm" disabled={isSessionLoading} onClick={() => router.push("/auth/login")}>
+              Sign in
+            </Button>
+            <Button size="sm" disabled={isSessionLoading} onClick={() => router.push("/auth/register")}>
+              Join
+            </Button>
+          </div>
         ) : null}
 
         <Button
@@ -136,12 +115,7 @@ export function SiteHeader() {
       </div>
       {mobileMenuOpen ? (
         <div id="mobile-navigation" className="motion-popover border-t border-border bg-surface p-4 lg:hidden">
-          <form onSubmit={(event) => { submitSearch(event); setMobileMenuOpen(false); }} role="search" className="mb-3 flex items-center rounded-lg border border-border px-3">
-            <Search className="h-4 w-4 text-muted" aria-hidden="true" />
-            <input className="h-10 flex-1 bg-transparent px-3 text-sm outline-none" placeholder={nav.search.placeholder}
-              aria-label={nav.search.placeholder} value={query} onChange={(event) => setQuery(event.target.value)} />
-          </form>
-          <div className="grid gap-1 text-sm font-semibold" onClick={() => setMobileMenuOpen(false)}>
+          <div className="grid gap-1 text-sm font-medium" onClick={() => setMobileMenuOpen(false)}>
             {[...nav.main, ...nav.account.filter((link) => !nav.main.some((main) => main.href === link.href))].map((link) => (
               <Link key={link.href} href={link.href} className="rounded px-2 py-2 hover:bg-surface-muted"
                 aria-current={isCurrent(link.href) ? "page" : undefined}>
@@ -176,7 +150,7 @@ function MenuLink({ href, icon, label, onClick }: {
 }) {
   return (
     <Link
-      className="interaction flex items-center gap-2 rounded px-3 py-2 text-sm font-semibold hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+      className="interaction flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
       href={href}
       onClick={onClick}
     >

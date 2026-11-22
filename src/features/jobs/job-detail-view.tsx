@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpRight, Calendar, MessageSquare, Send, Sparkles, Star, Trash2 } from 'lucide-react'
+import { ArrowUpRight, Calendar, MessageSquare, Send, ListOrdered, Star, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -90,7 +90,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const sellerCard = (
     <Card>
       <CardContent className="p-4">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted">Seller</p>
+        <p className="text-xs font-medium text-muted">Seller</p>
         <div className="mt-2.5 flex items-center gap-3">
           {sellerHref ? (
             <Link href={sellerHref} aria-label={`View ${sellerName} profile`} className="shrink-0">
@@ -101,16 +101,16 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           )}
           <div className="min-w-0 flex-1">
             {sellerHref ? (
-              <Link href={sellerHref} className="block truncate font-bold hover:text-primary">{sellerName}</Link>
+              <Link href={sellerHref} className="block truncate font-medium hover:text-primary">{sellerName}</Link>
             ) : (
-              <p className="truncate font-bold">{sellerName}</p>
+              <p className="truncate font-medium">{sellerName}</p>
             )}
             <p className="truncate text-xs text-muted">{job.subcategory?.name ?? 'Marketplace seller'}</p>
           </div>
           {sellerHref ? <ArrowUpRight className="h-4 w-4 shrink-0 text-muted" /> : null}
         </div>
         {listedDate ? (
-          <p className="mt-3 flex items-center gap-1.5 border-t border-border pt-3 text-xs font-semibold text-muted">
+          <p className="mt-3 flex items-center gap-1.5 border-t border-border pt-3 text-xs font-medium text-muted">
             <Calendar className="h-3.5 w-3.5" /> Listed {listedDate}
           </p>
         ) : null}
@@ -120,7 +120,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
 
   return (
     <div className="container-page pt-8 pb-28 lg:pb-16">
-      <nav className="flex flex-wrap items-center gap-1.5 text-[12.5px] font-semibold text-muted" aria-label="Breadcrumb">
+      <nav className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-muted" aria-label="Breadcrumb">
         <Link href="/jobs" className="hover:text-primary hover:underline">Marketplace</Link>
         <span aria-hidden="true" className="text-border">/</span>
         <span>{job.subcategory?.name ?? 'Service'}</span>
@@ -130,12 +130,12 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
         <main>
-          <h1 className="max-w-4xl font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">{job.title}</h1>
+          <h1 className="max-w-4xl font-display text-3xl font-medium leading-tight tracking-tight sm:text-4xl">{job.title}</h1>
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
             <Badge tone="rating"><Star className="mr-1 h-3 w-3 fill-rating text-rating" /> {(job.rating ?? 0).toFixed(1)}</Badge>
-            <span className="text-sm font-semibold text-muted">{comments.length} {comments.length === 1 ? 'review' : 'reviews'}</span>
+            <span className="text-sm font-medium text-muted">{comments.length} {comments.length === 1 ? 'review' : 'reviews'}</span>
             <Badge tone="accent">{job.subcategory?.name ?? 'Marketplace'}</Badge>
-            <span className="text-[12.5px] font-semibold text-muted">Service #{job.id}</span>
+            <span className="text-xs font-medium text-muted">Service #{job.id}</span>
           </div>
           <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-lg border border-border bg-surface-muted">
             {imageUrl ? (
@@ -149,26 +149,26 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full items-center justify-center font-display text-6xl font-bold text-primary/20">JobAura</div>
+              <div className="flex h-full items-center justify-center font-display text-6xl font-medium text-primary/20">JobAura</div>
             )}
           </div>
           <Card className="mt-5">
             <CardContent className="p-5">
-              <h2 className="font-display text-2xl font-bold">About this service</h2>
+              <h2 className="font-display text-2xl font-medium">About this service</h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-muted">{job.description || job.shortDescription || 'The seller has not added a long description yet.'}</p>
             </CardContent>
           </Card>
           <Card className="mt-5">
             <CardContent className="p-5">
-              <h2 className="font-display text-2xl font-bold">
-                Reviews <span className="text-sm font-semibold text-muted">({comments.length})</span>
+              <h2 className="font-display text-2xl font-medium">
+                Reviews <span className="text-sm font-medium text-muted">({comments.length})</span>
               </h2>
               <div className="mt-2">
                 {comments.length ? comments.map((comment) => (
                   <div key={comment.id} className="flex gap-3 border-b border-border py-4 last:border-0 last:pb-0">
                     <Avatar name={comment.user?.name ?? 'Buyer'} src={comment.user?.avatar} size="md" className="shrink-0" />
                     <div className="min-w-0">
-                      <p className="text-sm font-bold">{comment.user?.name ?? 'Buyer'}</p>
+                      <p className="text-sm font-medium">{comment.user?.name ?? 'Buyer'}</p>
                       <ReviewStars count={comment.rating} />
                       <p className="mt-1.5 text-sm leading-6 text-muted">{comment.content}</p>
                     </div>
@@ -176,7 +176,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                 )) : <p className="py-2 text-sm text-muted">No reviews yet. Be the first to share what it was like working with this seller.</p>}
               </div>
               <div className="mt-4 rounded-lg bg-surface-muted p-4">
-                <p className="mb-2 text-[13px] font-bold">Rate this service</p>
+                <p className="mb-2 text-[13px] font-medium">Rate this service</p>
                 <div className="mb-2.5 flex gap-1" role="radiogroup" aria-label="Your rating">
                   {[1, 2, 3, 4, 5].map((value) => (
                     <button
@@ -207,7 +207,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           {portfolio ? (
             <Card>
               <CardContent className="p-5">
-                <p className="text-xs font-bold uppercase tracking-wide text-primary">Portfolio post</p>
+                <p className="text-xs font-medium text-primary">Portfolio post</p>
                 <p className="mt-2 text-sm leading-6 text-muted">This shows the candidate&rsquo;s work. Message them to talk about a role, or open their profile and resume.</p>
                 <Button className="mt-4 w-full" onClick={() => requireLogin(() => contactSellerMutation.mutate())} loading={contactSellerMutation.isPending}>
                   <MessageSquare className="h-4 w-4" />
@@ -220,9 +220,9 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           <Card>
             <CardContent className="p-5">
               <p className="text-sm text-muted">Starting at</p>
-              <p className="mt-0.5 font-display text-4xl font-bold tracking-tight">{currency(job.price)}</p>
+              <p className="mt-0.5 font-display text-4xl font-medium tracking-tight">{currency(job.price)}</p>
               <div className="mt-4 border-t border-border pt-4">
-                <p className="text-[11px] font-bold uppercase tracking-wide text-muted">How it works</p>
+                <p className="text-xs font-medium text-muted">How it works</p>
                 <ol className="mt-3 grid gap-3">
                   <BuyStep number={1} title="Agree in chat" text="Scope, timeline, and price — free, before you commit." />
                   <BuyStep number={2} title="Hire the service" text="One click here confirms the work at this price." />
@@ -249,16 +249,16 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           {canViewCandidateMatches ? (
             <Card>
               <CardContent>
-                <p className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
-                  <Sparkles className="h-4 w-4" />
+                <p className="flex items-center gap-2 text-xs font-medium text-primary">
+                  <ListOrdered className="h-4 w-4" />
                   Recruiter AI
                 </p>
-                <h2 className="mt-1 font-display text-xl font-bold">Find matching candidates</h2>
+                <h2 className="mt-1 font-display text-xl font-medium">Find matching candidates</h2>
                 <p className="mt-2 text-sm leading-6 text-muted">
                   Run AI matching from the recruiter page when you are ready. This avoids spending daily AI uses while browsing job details.
                 </p>
                 <ButtonLink href="/recommendations/candidates" className="mt-4 w-full" variant="secondary">
-                  <Sparkles className="h-4 w-4" />
+                  <ListOrdered className="h-4 w-4" />
                   Open AI matching
                 </ButtonLink>
               </CardContent>
@@ -269,8 +269,8 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
 
       {portfolio ? null : <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden" aria-label="Purchase bar">
         <div className="leading-tight">
-          <b className="block font-display text-lg font-bold">{currency(job.price)}</b>
-          <span className="text-[11px] font-semibold text-muted">Starting at</span>
+          <b className="block font-display text-lg font-medium">{currency(job.price)}</b>
+          <span className="text-xs font-medium text-muted">Starting at</span>
         </div>
         <Button className="ml-auto flex-1" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>
           Continue
@@ -293,7 +293,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
 function BuyStep({ number, title, text }: { number: number; title: string; text: string }) {
   return (
     <li className="flex gap-2.5">
-      <span className="mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-primary/10 text-[11.5px] font-extrabold text-primary">
+      <span className="mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-medium text-primary">
         {number}
       </span>
       <span>

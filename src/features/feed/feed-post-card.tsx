@@ -43,7 +43,7 @@ export function FeedPostCard({
         <header className="flex items-start gap-3 p-4">
           <FeedAvatar user={post.author} />
           <div className="min-w-0 flex-1">
-            <Link href={`/profile/${post.author.id}`} className="block truncate text-sm font-bold hover:text-primary">
+            <Link href={`/profile/${post.author.id}`} className="block truncate text-sm font-medium hover:text-primary">
               {post.author.name}
             </Link>
             <p className="truncate text-xs text-muted">
@@ -59,7 +59,7 @@ export function FeedPostCard({
                 <div className="motion-popover absolute right-0 top-10 z-10 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
                   <button
                     type="button"
-                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-semibold text-danger hover:bg-danger/5"
+                    className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-medium text-danger hover:bg-danger/5"
                     onClick={() => onDelete(post.id)}
                   >
                     <Trash2 className="h-4 w-4" /> Delete post
@@ -108,7 +108,7 @@ export function FeedPostCard({
             aria-busy={liking}
             onClick={() => onLike(post)}
             className={cn(
-              'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
+              'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
               post.viewerHasLiked && 'text-danger'
             )}
           >
@@ -116,7 +116,7 @@ export function FeedPostCard({
           </button>
           <button
             type="button"
-            className="interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted"
+            className="interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted"
             onClick={() => onOpenComments(post)}
           >
             <MessageCircle className="h-5 w-5" /> Comment
@@ -129,7 +129,7 @@ export function FeedPostCard({
             aria-label={post.viewerHasSaved ? 'Remove saved post' : 'Save post'}
             onClick={() => onSave(post)}
             className={cn(
-              'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
+              'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
               post.viewerHasSaved && 'text-primary'
             )}
           >
@@ -155,8 +155,8 @@ export function CommentRow({ comment, actions }: { comment: PostComment; actions
       <FeedAvatar user={comment.author} size="sm" />
       <div className="min-w-0 rounded-xl bg-surface-muted px-3 py-2">
         <p className="flex items-baseline gap-1.5 text-xs">
-          <Link href={`/profile/${comment.author.id}`} className="truncate font-bold hover:text-primary">{comment.author.name}</Link>
-          <span className="shrink-0 text-[11px] font-medium text-muted">
+          <Link href={`/profile/${comment.author.id}`} className="truncate font-medium hover:text-primary">{comment.author.name}</Link>
+          <span className="shrink-0 text-xs text-muted">
             {timeAgo(comment.createdAt)}{edited ? ' · Edited' : ''}
           </span>
         </p>

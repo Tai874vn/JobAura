@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BriefcaseBusiness, CheckCircle2, Sparkles } from "lucide-react";
+import { BriefcaseBusiness, CheckCircle2, ListOrdered } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { hiringPostsApi } from "@/shared/api/endpoints";
@@ -59,11 +59,11 @@ export function HiringPostSelectionPanel({
       <CardContent className="p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase text-primary">
+            <div className="flex items-center gap-2 text-xs font-medium text-primary">
               <BriefcaseBusiness className="h-4 w-4" />
               Hiring context
             </div>
-            <h2 className="mt-1 font-display text-2xl font-bold">
+            <h2 className="mt-1 font-display text-2xl font-medium">
               Choose the hiring post to match
             </h2>
           </div>
@@ -114,14 +114,14 @@ export function HiringPostSelectionPanel({
                   onClick={() => onSelectHiringPost(post.id)}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="line-clamp-2 font-display text-lg font-bold leading-snug">
+                    <h3 className="line-clamp-2 font-display text-lg font-medium leading-snug">
                       {post.title}
                     </h3>
                     {selectedHiringPostId === post.id ? (
                       <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
                     ) : null}
                   </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-muted">
+                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted">
                     <Badge tone={post.status === "OPEN" ? "accent" : "neutral"}>
                       {post.status === "OPEN" ? "Open" : "Closed"}
                     </Badge>
@@ -140,7 +140,7 @@ export function HiringPostSelectionPanel({
                     loading={predictSeniority.isPending && predictSeniority.variables === post.id}
                     onClick={() => predictSeniority.mutate(post.id)}
                   >
-                    <Sparkles className="h-4 w-4" />
+                    <ListOrdered className="h-4 w-4" />
                     Predict level
                   </Button>
                 </div>
@@ -149,7 +149,7 @@ export function HiringPostSelectionPanel({
           </div>
         ) : (
           <div className="mt-4 rounded-lg border border-dashed border-border bg-surface-muted p-5">
-            <h3 className="font-display text-xl font-bold">
+            <h3 className="font-display text-xl font-medium">
               Create a hiring post first
             </h3>
             <p className="mt-1 text-sm leading-6 text-muted">
@@ -190,7 +190,7 @@ export function HiringPostSelectionPanel({
 function SeniorityBadge({ post }: { post: HiringPost }) {
   if (!post.predictedSeniority) {
     return (
-      <span className="text-xs font-semibold text-muted">
+      <span className="text-xs font-medium text-muted">
         AI level not predicted
       </span>
     );
@@ -198,7 +198,7 @@ function SeniorityBadge({ post }: { post: HiringPost }) {
 
   // No percentage: the model applies fixed rules, so its "confidence" is near 100% and reads as certainty.
   return (
-    <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary">
+    <span className="rounded bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
       {post.predictedSeniority}
     </span>
   );
@@ -219,9 +219,9 @@ function OptionSelect({
 }) {
   return (
     <label className="grid gap-1">
-      <span className="text-xs font-bold uppercase text-muted">{label}</span>
+      <span className="text-xs font-medium text-muted">{label}</span>
       <Select
-        className="text-sm font-semibold"
+        className="text-sm font-medium"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
       >

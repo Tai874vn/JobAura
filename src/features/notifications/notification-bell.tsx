@@ -162,18 +162,18 @@ export function NotificationBell() {
       >
         <Bell className="h-4 w-4" />
         {unreadCount ? (
-          <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-danger px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-danger px-1.5 py-0.5 text-xs font-medium leading-none text-white">
             {badge}
           </span>
         ) : null}
       </Button>
 
       {open ? (
-        <div id="notification-panel" className="motion-popover absolute right-0 top-11 z-50 w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-white shadow-[0_18px_50px_rgba(0,0,0,0.16)]">
+        <div id="notification-panel" className="motion-popover absolute right-0 top-11 z-50 w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-surface shadow-overlay">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
-              <h2 className="font-display text-lg font-bold">Notifications</h2>
-              <p className="text-xs font-semibold text-muted">
+              <h2 className="font-display text-lg font-medium">Notifications</h2>
+              <p className="text-xs font-medium text-muted">
                 {unreadCount
                   ? `${unreadCount} unread update${unreadCount === 1 ? "" : "s"}`
                   : "All caught up"}
@@ -217,7 +217,7 @@ export function NotificationBell() {
             ) : (
               <div className="p-8 text-center">
                 <Bell className="mx-auto h-7 w-7 text-primary" />
-                <p className="mt-3 text-sm font-semibold">
+                <p className="mt-3 text-sm font-medium">
                   No notifications yet
                 </p>
                 <p className="mt-1 text-xs text-muted">

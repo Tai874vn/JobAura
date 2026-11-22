@@ -99,9 +99,9 @@ describe('a specialty listed under several occupations (Review Focus 3)', () => 
     expect(html).toContain('Web developermatched: Front End Developer')
     for (const occupation of [uiDeveloper, webDeveloper]) {
       expect(filterSpecialties(occupation.specialties, 'front end')).toEqual(['Front End Developer'])
-      const picker = text(render(<SpecialtyPicker occupation={occupation.code} value="Front End Developer" onChange={() => undefined} />,
-        [occupation]))
-      expect(picker).toContain('Front End Developer')
+      const picker = render(<SpecialtyPicker occupation={occupation.code} value="Front End Developer" onChange={() => undefined} />,
+        [occupation])
+      expect(picker).toMatch(/role="combobox"[^>]*value="Front End Developer"/)
       expect(picker).not.toContain('Not listed under this occupation')
     }
   })
@@ -282,9 +282,16 @@ describe('picker details', () => {
     expect(empty).toContain(`aria-describedby="${hint}"`)
     expect(empty).not.toContain('aria-controls')
     const chosen = render(<OccupationPicker label="Occupation" value="2513.5" onPick={() => undefined} />, [webDeveloper])
-    expect(text(chosen)).toContain('Chosen: Web developer')
-    const chip = chosen.match(/<span id="([^"]+)"[^>]*><span class="sr-only">Chosen: /)![1]
-    expect(chosen).toContain(`aria-describedby="${chip}"`)
+    // One box: the chosen title is the combobox's own value, with the clear button beside it.
+    expect(chosen).toMatch(/role="combobox"[^>]*value="Web developer"/)
+    expect(chosen).not.toContain('aria-describedby')
+  })
+
+  it('shows the chosen specialty in its one search box, with a clear button', () => {
+    const html = render(<SpecialtyPicker occupation="2513.5" value="Back End Developer" onChange={() => undefined} />, [webDeveloper])
+    expect(html).toMatch(/role="combobox"[^>]*value="Back End Developer"/)
+    expect(html).toContain('aria-label="Clear specialty"')
+    expect(html).not.toContain('None chosen')
   })
 
   it('links an unlisted specialty error to its combobox', () => {

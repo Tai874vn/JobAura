@@ -86,7 +86,7 @@ export function PostComposer({
           <button
             type="button"
             onClick={openModal}
-            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-left text-sm font-semibold text-muted hover:border-primary hover:bg-surface hover:text-foreground"
+            className="h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface-muted px-4 text-left text-sm font-medium text-muted hover:border-primary hover:bg-surface hover:text-foreground"
           >
             Start a post
           </button>
@@ -95,13 +95,13 @@ export function PostComposer({
           <button
             type="button"
             onClick={openModal}
-            className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted transition hover:bg-surface-muted hover:text-primary"
+            className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted transition hover:bg-surface-muted hover:text-primary"
           >
             <ImagePlus className="h-4 w-4 text-primary" /> Photo
           </button>
           <Link
             href="/jobs/new"
-            className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted transition hover:bg-surface-muted hover:text-primary"
+            className="flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted transition hover:bg-surface-muted hover:text-primary"
           >
             <BriefcaseBusiness className="h-4 w-4 text-primary" /> Post portfolio
           </Link>
@@ -114,11 +114,11 @@ export function PostComposer({
         onCancel={(event) => {
           if (submitting) event.preventDefault()
         }}
-        className="motion-panel m-auto w-[min(640px,calc(100%-32px))] rounded-lg border border-border bg-surface p-0 text-foreground shadow-2xl backdrop:bg-black/45"
+        className="motion-panel m-auto w-[min(640px,calc(100%-32px))] rounded-lg border border-border bg-surface p-0 text-foreground shadow-overlay backdrop:bg-black/45"
       >
         <form onSubmit={submit}>
           <header className="flex items-center justify-between border-b border-border px-5 py-4">
-            <h2 id={`${inputId}-title`} className="font-display text-lg font-bold">Create post</h2>
+            <h2 id={`${inputId}-title`} className="font-display text-lg font-medium">Create post</h2>
             <Button type="button" variant="ghost" size="icon" onClick={closeModal} disabled={submitting} title="Close post composer">
               <X className="h-5 w-5" />
             </Button>
@@ -128,7 +128,7 @@ export function PostComposer({
             <div className="flex items-center gap-3">
               <FeedAvatar user={user} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold">{user.name}</p>
+                <p className="truncate text-sm font-medium">{user.name}</p>
                 <p className="truncate text-xs text-muted">{user.headline || 'JobAura member'}</p>
               </div>
             </div>

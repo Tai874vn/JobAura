@@ -90,9 +90,9 @@ function renderJobCells(row: ResourceRow) {
     <>
       <td className="px-4 py-3 font-mono text-xs">#{job.id}</td>
       <td className="px-4 py-3"><Thumb src={job.image ?? undefined} label={job.title} /></td>
-      <td className="max-w-xs px-4 py-3 font-semibold">{job.title}</td>
+      <td className="max-w-xs px-4 py-3 font-medium">{job.title}</td>
       <td className="px-4 py-3">{job.user?.name ?? job.creatorId ?? 'Unknown'}</td>
-      <td className="px-4 py-3 font-semibold">{currency(job.price)}</td>
+      <td className="px-4 py-3 font-medium">{currency(job.price)}</td>
       <td className="px-4 py-3 text-rating">{(job.rating ?? 0).toFixed(1)}</td>
       <td className="px-4 py-3"><Badge tone="primary">Active</Badge></td>
     </>
@@ -114,12 +114,12 @@ function renderUserCells(row: ResourceRow) {
 
 function renderCategoryCells(row: ResourceRow) {
   const type = row as Category
-  return <><td className="px-4 py-3 font-mono text-xs">#{type.id}</td><td className="px-4 py-3 font-semibold">{type.name}</td></>
+  return <><td className="px-4 py-3 font-mono text-xs">#{type.id}</td><td className="px-4 py-3 font-medium">{type.name}</td></>
 }
 
 function renderSubcategoryCells(row: ResourceRow) {
   const detail = row as Subcategory
-  return <><td className="px-4 py-3 font-mono text-xs">#{detail.id}</td><td className="px-4 py-3 font-semibold">{detail.name}</td><td className="px-4 py-3">{detail.categoryId ?? '-'}</td></>
+  return <><td className="px-4 py-3 font-mono text-xs">#{detail.id}</td><td className="px-4 py-3 font-medium">{detail.name}</td><td className="px-4 py-3">{detail.categoryId ?? '-'}</td></>
 }
 
 function renderHireCells(row: ResourceRow) {
@@ -134,7 +134,7 @@ function renderCommentCells(row: ResourceRow) {
     <>
       <td className="px-4 py-3 font-mono text-xs">#{comment.id}</td>
       <td className="px-4 py-3">{comment.jobId}</td>
-      <td className="px-4 py-3"><div className="flex items-center gap-2">{comment.user?.name ? <Avatar name={comment.user.name} /> : null}<div><p className="font-semibold">{comment.user?.name ?? 'Unknown user'}</p><p className="font-mono text-xs text-muted">{commenterId ? `#${commenterId}` : '-'}</p></div></div></td>
+      <td className="px-4 py-3"><div className="flex items-center gap-2">{comment.user?.name ? <Avatar name={comment.user.name} /> : null}<div><p className="font-medium">{comment.user?.name ?? 'Unknown user'}</p><p className="font-mono text-xs text-muted">{commenterId ? `#${commenterId}` : '-'}</p></div></div></td>
       <td className="px-4 py-3 text-rating">{comment.rating}</td>
       <td className="max-w-sm px-4 py-3">{comment.content}</td>
     </>
@@ -147,5 +147,5 @@ function Thumb({ src, label }: { src?: string; label: string }) {
 }
 
 function Avatar({ name }: { name: string }) {
-  return <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">{initials(name)}</span>
+  return <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">{initials(name)}</span>
 }

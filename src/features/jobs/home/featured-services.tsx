@@ -12,27 +12,32 @@ export async function FeaturedServices() {
     { includeCookies: false, next: { revalidate: 300 } }
   )
   const jobs = response.ok ? normalizePaginatedJobsResponse(response.data).content?.data ?? [] : []
-  if (!jobs.length) return null
-
   return (
-    <Section id="services" tone="surface">
+    <Section id="services" tone="default">
       <SectionHeading
-        title="Popular right now"
-        description="Top-rated services from JobAura specialists."
+        title="Top-rated portfolios"
+        description="Portfolio posts with the highest ratings"
         action={
           <Link
             href="/jobs?sort=rating_desc"
-            className="inline-flex items-center gap-2 text-sm font-bold text-primary transition hover:text-primary-bright"
+            className="inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary-strong"
           >
-            Browse all services <ArrowRight className="h-4 w-4" />
+            Browse all portfolios <ArrowRight className="h-4 w-4" />
           </Link>
         }
       />
-      <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {jobs.map((job) => (
-          <JobCard key={job.id} job={job} />
-        ))}
-      </div>
+      {jobs.length ? (
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {jobs.map((job) => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+      ) : (
+        // Keep the section when the API is down or has no rated posts, so the page keeps its shape and says why.
+        <p className="mt-8 rounded-2xl border border-dashed border-border px-6 py-10 text-center text-sm text-muted">
+          Top-rated portfolio posts appear here once posts have reviews.
+        </p>
+      )}
     </Section>
   )
 }

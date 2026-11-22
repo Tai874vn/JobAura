@@ -20,8 +20,8 @@ export function SettingsNavigation({ active, hrefFor, onSelect, showResume = tru
               event.preventDefault()
               onSelect(section.id)
             }}
-            className={cn('interaction group flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2 py-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright lg:justify-start lg:px-3',
-              active === section.id ? 'bg-primary/10 text-primary ring-1 ring-inset ring-primary/15 hover:bg-primary/15' : 'text-muted hover:bg-surface-muted hover:text-primary')}>
+            className={cn('interaction group flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg px-2 py-3 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright lg:justify-start lg:px-3',
+              active === section.id ? 'bg-surface-muted text-foreground' : 'text-muted hover:bg-surface-muted hover:text-foreground')}>
             <span className="shrink-0 [&_svg]:h-4 [&_svg]:w-4">{section.icon}</span>
             <span className="min-w-0">
               <span className="block">{section.title}</span>
@@ -32,7 +32,7 @@ export function SettingsNavigation({ active, hrefFor, onSelect, showResume = tru
         ))}
       </nav>
       <details className="mt-3 rounded-xl border border-dashed border-border px-3 py-3 text-xs text-muted">
-        <summary className="cursor-pointer rounded font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">Coming soon</summary>
+        <summary className="cursor-pointer rounded font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">Coming soon</summary>
         <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 lg:grid-cols-1">
           {settingSections.slice(3).map((section) => <li key={section.id} className="flex items-center gap-2"><span className="[&_svg]:h-3.5 [&_svg]:w-3.5">{section.icon}</span>{section.title}</li>)}
         </ul>

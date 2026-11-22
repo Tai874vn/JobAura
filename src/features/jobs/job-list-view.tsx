@@ -129,7 +129,7 @@ export function JobListView() {
   const heroSearch = (
     <form
       onSubmit={submitKeyword}
-      className="mt-5 flex w-full items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm transition focus-within:border-primary"
+      className="mt-5 flex w-full items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm field-shell"
     >
       <div className="flex min-w-0 flex-1 items-center gap-2.5 px-4">
         <Search className="h-5 w-5 shrink-0 text-muted" />
@@ -154,12 +154,12 @@ export function JobListView() {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <div className="container-page pt-10">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Candidate portfolios</h1>
+        <h1 className="font-display text-3xl font-medium tracking-tight">Candidate portfolios</h1>
         {heroSearch}
-        <div className="mt-3.5 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px]">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-muted">Popular</span>
+        <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
+          <span className="text-xs font-medium text-muted">Popular</span>
           {popularSearches.map((term) => (
-            <Link key={term} href={`/jobs?keyword=${encodeURIComponent(term)}`} onNavigate={(event) => { event.preventDefault(); navigate(`/jobs?keyword=${encodeURIComponent(term)}`) }} className="rounded font-medium text-muted transition hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary-bright">
+            <Link key={term} href={`/jobs?keyword=${encodeURIComponent(term)}`} onNavigate={(event) => { event.preventDefault(); navigate(`/jobs?keyword=${encodeURIComponent(term)}`) }} className="inline-flex min-h-6 items-center rounded font-medium text-muted transition-colors hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-primary-bright">
               {term}
             </Link>
           ))}
@@ -171,7 +171,7 @@ export function JobListView() {
       <div className="container-page mt-4 flex min-w-0 flex-1 flex-col pb-8">
         <div className="flex flex-wrap items-center gap-2.5">
           <p className="text-sm text-muted" aria-live="polite">
-            <b className="font-bold text-foreground">{isLoading ? '…' : content?.totalRow ?? 0}</b> portfolio posts
+            <b className="font-medium text-foreground">{isLoading ? '…' : content?.totalRow ?? 0}</b> portfolio posts
           </p>
           {query.isFetching && !isLoading ? <span role="status" className="inline-flex items-center gap-1.5 text-xs text-muted"><Spinner className="h-3.5 w-3.5" /> Updating</span> : null}
           <div className="flex min-w-0 max-w-full flex-wrap gap-1.5">
@@ -181,7 +181,7 @@ export function JobListView() {
                 type="button"
                 onClick={() => removeFilter(filter.key)}
                 title="Remove filter"
-                className="inline-flex min-h-7 max-w-full items-center gap-1 rounded-full border border-border bg-surface px-2.5 text-xs font-semibold text-foreground transition hover:border-danger hover:text-danger focus-visible:ring-2 focus-visible:ring-primary-bright"
+                className="inline-flex min-h-7 max-w-full items-center gap-1 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-foreground transition hover:border-danger hover:text-danger focus-visible:ring-2 focus-visible:ring-primary-bright"
               >
                 <span className="min-w-0 break-words [overflow-wrap:anywhere]">{filter.label}</span>
                 <X className="h-3 w-3 shrink-0 text-muted" />
@@ -189,13 +189,13 @@ export function JobListView() {
             ))}
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-2 text-sm font-semibold text-muted">
+            <label className="flex items-center gap-2 text-sm font-medium text-muted">
               Sort
               <select
                 value={sort ?? ''}
                 onChange={(event) => setSort(event.target.value)}
                 aria-label="Sort portfolio posts"
-                className="h-9 rounded-lg border border-border bg-surface px-2.5 text-[13px] font-semibold text-foreground focus-visible:ring-2 focus-visible:ring-primary-bright"
+                className="h-9 rounded-lg border border-border bg-surface px-2.5 text-[13px] font-medium text-foreground focus-visible:ring-2 focus-visible:ring-primary-bright"
               >
                 <option value="">Default</option>
                 <option value="newest">Newest</option>
@@ -208,14 +208,14 @@ export function JobListView() {
               aria-controls="job-filter-panel"
               disabled={isApplying}
               className={cn(
-                'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-semibold transition focus-visible:ring-2 focus-visible:ring-primary-bright disabled:opacity-50',
+                'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-medium transition focus-visible:ring-2 focus-visible:ring-primary-bright disabled:opacity-50',
                 panelOpen ? 'border-primary text-primary' : 'text-foreground hover:border-primary hover:text-primary'
               )}
             >
               <SlidersHorizontal className="h-4 w-4" />
               Filters
               {activeFilters.length ? (
-                <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[10.5px] font-bold text-white">
+                <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-xs font-medium text-white">
                   {activeFilters.length}
                 </span>
               ) : null}
@@ -318,7 +318,7 @@ function PaginationControls({
       </PageLink>
       {pages.map((page, index) => (
         <span key={page} className="flex items-center gap-2">
-          {index > 0 && page - pages[index - 1] > 1 ? <span className="px-1 text-sm font-semibold text-muted">...</span> : null}
+          {index > 0 && page - pages[index - 1] > 1 ? <span className="px-1 text-sm font-medium text-muted">...</span> : null}
           <PageLink href={pageHref(page)} active={page === currentPage} navigate={navigate}>
             {page}
           </PageLink>
@@ -345,7 +345,7 @@ function PageLink({
   navigate: (href: string) => void
 }) {
   const className = [
-    'inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:ring-primary-bright',
+    'inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-medium transition focus-visible:ring-2 focus-visible:ring-primary-bright',
     active ? 'border-primary bg-primary text-white' : 'border-border bg-surface text-foreground hover:border-primary hover:text-primary',
     disabled ? 'pointer-events-none opacity-50' : '',
   ].join(' ')

@@ -27,12 +27,12 @@ export function GoogleSignupRoleModal({ open, selectedRole, onSelect, onClose, o
     <div className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose()
     }}>
-      <section role="dialog" aria-modal="true" aria-labelledby="google-role-title" aria-describedby="google-role-description" className="motion-panel relative w-full max-w-lg rounded-lg bg-surface p-5 shadow-2xl">
+      <section role="dialog" aria-modal="true" aria-labelledby="google-role-title" aria-describedby="google-role-description" className="motion-panel relative w-full max-w-lg rounded-lg bg-surface p-5 shadow-overlay">
         <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} title="Close account type selection">
           <X className="h-5 w-5" />
         </Button>
         <div className="pr-9">
-          <h2 id="google-role-title" className="font-display text-xl font-bold">Choose your account type</h2>
+          <h2 id="google-role-title" className="font-display text-xl font-medium">Choose your account type</h2>
           <p id="google-role-description" className="mt-2 text-sm leading-6 text-muted">This Google account is not registered yet. Choose how you want to use JobAura before creating it.</p>
         </div>
         <div className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -44,7 +44,7 @@ export function GoogleSignupRoleModal({ open, selectedRole, onSelect, onClose, o
               aria-pressed={selectedRole === option.value}
               onClick={() => onSelect(option.value)}
             >
-              <span className="block text-sm font-bold">{option.label}</span>
+              <span className="block text-sm font-medium">{option.label}</span>
               <span className="mt-1 block text-xs leading-5">{option.description}</span>
             </button>
           ))}

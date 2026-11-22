@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/require-auth'
+import { Footer } from '@/features/layout/footer'
 import { SiteHeader } from '@/features/layout/site-header'
 
 export const metadata: Metadata = {
@@ -12,8 +13,11 @@ export const metadata: Metadata = {
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireAuth allowedRoles={['user', 'admin']} anonymousRedirect="/welcome">
-      <SiteHeader />
-      <main className="min-h-[calc(100vh-64px)]">{children}</main>
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+        <Footer />
+      </div>
     </RequireAuth>
   )
 }

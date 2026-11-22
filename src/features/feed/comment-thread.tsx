@@ -85,7 +85,7 @@ export function CommentThread({ onReply, replying, ...props }: DiscussionComment
           ) : null}
           {composing ? (
             <form onSubmit={submit} className="space-y-2 rounded-lg bg-surface-muted p-3">
-              <label htmlFor={`${panelId}-draft`} className="block text-xs font-semibold">Reply to {comment.author.name}</label>
+              <label htmlFor={`${panelId}-draft`} className="block text-xs font-medium">Reply to {comment.author.name}</label>
               <textarea id={`${panelId}-draft`} ref={inputRef} autoFocus maxLength={1000} rows={2}
                 placeholder="Write a reply…" value={draft} onChange={(event) => setDraft(event.target.value)}
                 className="w-full resize-y rounded-lg border border-border bg-surface p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary-bright" />

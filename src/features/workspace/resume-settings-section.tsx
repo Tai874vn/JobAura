@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { CheckCircle2, FileText, Sparkles } from 'lucide-react'
+import { CheckCircle2, FileText, ListOrdered } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea, UnsavedChangesBar } from '@/shared/ui'
 import { formatFileSize } from '@/features/users/profile-form-utils'
@@ -67,11 +67,11 @@ export function ResumeSettingsSection({
           <CardContent className="grid gap-3 p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-lg font-bold">Career fields</h3>
+                <h3 className="font-display text-lg font-medium">Career fields</h3>
                 <p className="mt-1 text-sm text-muted">Fill the resume fields directly, or upload a CV file to extract the fields.</p>
               </div>
-              <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
-                <Sparkles className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                <ListOrdered className="h-3.5 w-3.5" />
                 {resume ? 'Saved resume' : 'New resume'}
               </span>
             </div>
@@ -88,7 +88,7 @@ export function ResumeSettingsSection({
 
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
             <div className="grid gap-1">
-              <span className="text-sm font-semibold">Skills</span>
+              <span className="text-sm font-medium">Skills</span>
               <SkillListEditor showLevel={false} value={resumeSkills(draft.Skills).map((name) => ({ name }))} field={draft.Occupation}
                 suggestions={foundSkills} onChange={(skills) => onFieldChange('Skills', skills.map((skill) => skill.name).join(', '))} />
               <p className="text-xs text-muted">One list with your profile: saving here updates the skills on your profile, where you set their levels.</p>
@@ -98,7 +98,7 @@ export function ResumeSettingsSection({
               <ResumeTextarea label="Education" className="min-h-24" value={draft.Education} onChange={(value) => onFieldChange('Education', value)} />
             </div>
             <details className="rounded-lg border border-border p-3">
-              <summary className="cursor-pointer rounded text-sm font-semibold text-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">Full extracted text</summary>
+              <summary className="cursor-pointer rounded text-sm font-medium text-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">Full extracted text</summary>
               <div className="mt-3">
                 <ResumeTextarea label="Extracted text" className="min-h-32" value={draft.Text} onChange={(value) => onFieldChange('Text', value)} />
               </div>
@@ -107,11 +107,11 @@ export function ResumeSettingsSection({
             <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold">Extract CV or resume</p>
+                  <p className="text-sm font-medium">Extract CV or resume</p>
                   <p className="mt-1 text-xs leading-5 text-muted">Supports PDF, DOC, and DOCX up to 10MB. PDF and DOCX are extracted for review before saving.</p>
                   <p className="mt-1 text-xs leading-5 text-muted">For best results, attach DOCX, PDF, or another readable document instead of an image, which cannot be read here.</p>
                 </div>
-                <label className="interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold hover:border-primary hover:bg-primary/5 hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright">
+                <label className="interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium hover:border-primary hover:bg-primary/5 hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright">
                   <FileText className="h-4 w-4" />
                   Attach file
                   <input
@@ -129,7 +129,7 @@ export function ResumeSettingsSection({
               {attachedFile ? (
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-surface px-3 py-2">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{attachedFile.name}</p>
+                    <p className="truncate text-sm font-medium">{attachedFile.name}</p>
                     <p className="text-xs text-muted">{formatFileSize(attachedFile.size)} ready to upload</p>
                   </div>
                   <Button variant="ghost" size="sm" onClick={onClearAttachedFile}>Remove</Button>
@@ -192,7 +192,7 @@ function ResumePreview({
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-lg font-bold">Preview</h3>
+            <h3 className="font-display text-lg font-medium">Preview</h3>
             <p className="mt-1 text-sm text-muted">{resume?.updatedAt ? `Last imported ${formatDate(resume.updatedAt)}` : 'Resume data preview'}</p>
           </div>
           {resume ? <CheckCircle2 className="h-5 w-5 text-primary" /> : null}
@@ -201,9 +201,9 @@ function ResumePreview({
         <div className="mt-4 rounded-lg border border-border bg-surface-muted p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">AI seniority</p>
-              <h4 className="mt-1 font-display text-xl font-bold">{resume?.predictedSeniority ?? 'Not evaluated yet'}</h4>
-              {prediction.tier ? <p className="text-sm font-semibold text-primary">{prediction.tier}</p> : null}
+              <p className="text-xs font-medium text-muted">AI seniority</p>
+              <h4 className="mt-1 font-display text-xl font-medium">{resume?.predictedSeniority ?? 'Not evaluated yet'}</h4>
+              {prediction.tier ? <p className="text-sm font-medium text-primary">{prediction.tier}</p> : null}
               <p className="mt-1 text-xs leading-5 text-muted">
                 {resume?.predictedSeniorityAt
                   // No percentage: the model applies fixed rules, so it is near 100% and would read as certainty.
@@ -217,7 +217,7 @@ function ResumePreview({
               ) : null}
               <div aria-live="polite">
                 {pending ? (
-                  <p className="mt-2 text-xs font-semibold text-primary">AI evaluation in progress…</p>
+                  <p className="mt-2 text-xs font-medium text-primary">AI evaluation in progress…</p>
                 ) : null}
                 {(retry || aiStatus === 'NEEDS_INPUT') && resume?.aiStatusMessage ? (
                   <p role={retry ? 'alert' : undefined}
@@ -234,7 +234,7 @@ function ResumePreview({
               </div>
             </div>
             <Button type="button" size="sm" variant="secondary" loading={isPredicting} disabled={!resume || pending} onClick={onPredictSeniority}>
-              <Sparkles className="h-4 w-4" />
+              <ListOrdered className="h-4 w-4" />
               {retry ? 'Try again' : pending ? 'Queued' : resume?.predictedSeniority ? 'Run again' : 'Predict'}
             </Button>
           </div>
@@ -244,7 +244,7 @@ function ResumePreview({
           <div className="mt-5 text-sm text-muted">Loading resume...</div>
         ) : hasResumeDraftInput(data) ? (
           <div className="mt-5 grid gap-4">
-            <h4 className="font-display text-2xl font-bold">{data.Name ?? 'Unnamed resume'}</h4>
+            <h4 className="font-display text-2xl font-medium">{data.Name ?? 'Unnamed resume'}</h4>
             <div className="grid gap-2 text-sm text-muted">
               <ResumeMeta label="Email" value={data.Email} />
               <ResumeMeta label="Phone" value={data.Phone} />
@@ -259,9 +259,9 @@ function ResumePreview({
             {data.Summary ? <p className="rounded-lg bg-surface-muted p-3 text-sm leading-6 text-muted">{data.Summary}</p> : null}
             {skills.length ? (
               <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Skills</p>
+                <p className="mb-2 text-xs font-medium text-muted">Skills</p>
                 <div className="flex flex-wrap gap-2">
-                  {skills.map((skill) => <span key={skill} className="rounded bg-accent/30 px-2 py-1 text-xs font-semibold text-foreground">{skill}</span>)}
+                  {skills.map((skill) => <span key={skill} className="rounded bg-accent/30 px-2 py-1 text-xs font-medium text-foreground">{skill}</span>)}
                 </div>
               </div>
             ) : null}
@@ -281,7 +281,7 @@ function ResumePreview({
 function ResumeField({ label, value, onChange, focusId }: { label: string; value?: string | null; onChange: (value: string) => void; focusId?: string }) {
   return (
     <label data-focus={focusId} className="grid gap-1">
-      <span className="text-sm font-semibold">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
       <Input value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
@@ -290,7 +290,7 @@ function ResumeField({ label, value, onChange, focusId }: { label: string; value
 function ResumeTextarea({ label, value, onChange, className = 'min-h-20' }: { label: string; value?: string | null; onChange: (value: string) => void; className?: string }) {
   return (
     <label className="grid gap-1">
-      <span className="text-sm font-semibold">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
       <Textarea className={className} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
@@ -300,7 +300,7 @@ function ResumeMeta({ label, value }: { label: string; value?: string | null }) 
   if (!value) return null
   return (
     <div className="flex justify-between gap-4">
-      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
+      <span className="text-xs font-medium text-muted">{label}</span>
       <span className="min-w-0 truncate text-right font-medium text-foreground">{value}</span>
     </div>
   )
@@ -310,7 +310,7 @@ function ResumeTextBlock({ title, value }: { title: string; value?: string | nul
   if (!value) return null
   return (
     <div>
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
+      <p className="mb-2 text-xs font-medium text-muted">{title}</p>
       <p className="line-clamp-4 text-sm leading-6 text-muted">{value}</p>
     </div>
   )

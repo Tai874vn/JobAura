@@ -14,21 +14,21 @@ export function Footer() {
   const columns = footerColumns(!hydrated || isLoading ? 'loading' : user?.role ?? null)
 
   return (
-    <footer className="border-t border-border bg-surface">
-      <div className="container-page grid gap-8 py-10 md:grid-cols-4">
-        <div>
-          <Link href={hydrated && user ? '/' : '/welcome'} className="font-display text-2xl font-bold text-primary">
+    <footer className="border-t border-border bg-surface-muted">
+      <div className="container-page grid grid-cols-1 gap-10 py-14 sm:grid-cols-3 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
+        <div className="sm:col-span-3 md:col-span-1">
+          <Link href={hydrated && user ? '/' : '/welcome'} className="font-display text-xl font-medium text-primary">
             JobAura
           </Link>
-          <p className="mt-3 text-sm text-muted">Find a role, show your work, or hire the right person, with AI matching built in.</p>
+          <p className="mt-3 max-w-xs text-sm leading-6 text-muted">Find a role, show your work, or hire the right person, with AI matching built in.</p>
         </div>
         {columns.map((column) => (
           <div key={column.title}>
-            <h3 className="text-sm font-bold">{column.title}</h3>
-            <ul className="mt-3 space-y-2 text-sm text-muted">
+            <h3 className="text-sm font-medium text-foreground">{column.title}</h3>
+            <ul className="mt-3 grid gap-1 text-sm text-muted">
               {column.links.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="transition hover:text-primary">
+                  <Link href={link.href} className="inline-flex min-h-8 items-center transition-colors hover:text-primary">
                     {link.label}
                   </Link>
                 </li>

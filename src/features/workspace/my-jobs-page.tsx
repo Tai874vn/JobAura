@@ -37,38 +37,38 @@ export function MyJobsPage() {
 
   return (
     <div className="container-page pt-10 pb-16">
-      <p className="text-[11px] font-bold uppercase tracking-wide text-primary">Buyer workspace</p>
-      <h1 className="mt-1.5 font-display text-3xl font-bold tracking-tight">My hired jobs</h1>
+      <p className="text-xs font-medium text-primary">Buyer workspace</p>
+      <h1 className="mt-1.5 font-display text-3xl font-medium tracking-tight">My hired jobs</h1>
 
       {jobs.length ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Hired jobs summary">
           <div className="rounded-lg border border-border bg-surface p-3.5">
-            <b className="block font-display text-[22px] font-extrabold leading-tight">{inProgress}</b>
-            <span className="text-xs font-semibold text-muted">In progress</span>
+            <b className="block font-display text-[22px] font-medium leading-tight">{inProgress}</b>
+            <span className="text-xs font-medium text-muted">In progress</span>
           </div>
           <div className="rounded-lg border border-border bg-surface p-3.5">
-            <b className="block font-display text-[22px] font-extrabold leading-tight">{completed}</b>
-            <span className="text-xs font-semibold text-muted">Completed</span>
+            <b className="block font-display text-[22px] font-medium leading-tight">{completed}</b>
+            <span className="text-xs font-medium text-muted">Completed</span>
           </div>
           <div className="rounded-lg border border-border bg-surface p-3.5">
-            <b className="block font-display text-[22px] font-extrabold leading-tight">{currency(totalValue)}</b>
-            <span className="text-xs font-semibold text-muted">Total hired value</span>
+            <b className="block font-display text-[22px] font-medium leading-tight">{currency(totalValue)}</b>
+            <span className="text-xs font-medium text-muted">Total hired value</span>
           </div>
         </div>
       ) : null}
 
       <div className="mt-5 grid gap-3" aria-busy={query.isPending} aria-live="polite">
         {query.isPending ? Array.from({ length: 3 }).map((_, index) => <ListRowSkeleton key={index} />) : jobs.map((item) => (
-          <Card key={item.id} className="flex flex-wrap items-center gap-4 p-3.5 transition hover:border-primary hover:shadow-[0_8px_24px_rgba(27,28,28,0.06)]">
+          <Card key={item.id} className="flex flex-wrap items-center gap-4 p-3.5 transition hover:border-primary hover:shadow-float">
             <div className="min-w-48 flex-1">
               <Badge tone={item.completed ? 'primary' : 'neutral'}>
                 {item.completed ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Clock3 className="mr-1 h-3 w-3" />}
                 {item.completed ? 'Completed' : 'In progress'}
               </Badge>
-              <h2 className="mt-1.5 text-[15px] font-bold leading-snug">
+              <h2 className="mt-1.5 text-[15px] font-medium leading-snug">
                 <a href={`/jobs/${item.jobId}`} className="hover:text-primary">{item.job?.title ?? `Job #${item.jobId}`}</a>
               </h2>
-              <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 text-xs font-semibold text-muted">
+              <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 text-xs font-medium text-muted">
                 <span className="inline-flex items-center gap-1"><Tag className="h-3 w-3" /> {currency(item.job?.price)}</span>
                 <span className="inline-flex items-center gap-1"><Hash className="h-3 w-3" /> Job #{item.jobId}</span>
               </div>

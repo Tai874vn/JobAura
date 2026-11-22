@@ -2,7 +2,7 @@ import {
   BrainCircuit,
   Database,
   ShieldCheck,
-  Sparkles,
+  ListOrdered,
   Zap,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -46,10 +46,10 @@ export function StartCandidateMatchingCard({
     <Card>
       <CardContent className="grid gap-6 p-6 lg:grid-cols-[1fr_280px]">
         <div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-muted text-muted">
             <BrainCircuit className="h-6 w-6" />
           </div>
-          <h2 className="mt-4 font-display text-3xl font-bold">
+          <h2 className="mt-4 font-display text-3xl font-medium">
             {hasResults
               ? "Update candidate matches when ready"
               : "Run candidate matching when ready"}
@@ -78,10 +78,10 @@ export function StartCandidateMatchingCard({
           </div>
         </div>
         <div className="rounded-lg border border-border bg-surface-muted p-4">
-          <p className="text-xs font-bold uppercase text-primary">
+          <p className="text-xs font-medium text-primary">
             Selected hiring post
           </p>
-          <h3 className="mt-2 line-clamp-3 font-display text-xl font-bold">
+          <h3 className="mt-2 line-clamp-3 font-display text-xl font-medium">
             {selectedHiringPost?.title ?? "No hiring post selected"}
           </h3>
           <p className="mt-2 text-xs leading-5 text-muted">
@@ -97,7 +97,7 @@ export function StartCandidateMatchingCard({
             loading={isRunning}
             disabled={loadingQuota || !canRun}
           >
-            <Sparkles className="h-4 w-4" />
+            <ListOrdered className="h-4 w-4" />
             {matchingButtonLabel({ canRun, hasResults, hasHiringPost: Boolean(selectedHiringPost), quota, loadingQuota })}
           </Button>
         </div>
@@ -117,7 +117,7 @@ function ProcessItem({
 }) {
   return (
     <div className="rounded-lg border border-border p-3">
-      <div className="flex items-center gap-2 font-bold text-foreground">
+      <div className="flex items-center gap-2 font-medium text-foreground">
         <span className="text-primary">{icon}</span>
         {label}
       </div>

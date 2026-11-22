@@ -73,20 +73,20 @@ export function UnsavedChangesBar({
       )}>
       <div key={alarm} role="status" aria-live="polite"
         className={cn(
-          'pointer-events-auto flex w-full max-w-xl flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-4 py-2.5 shadow-[0_12px_32px_rgba(0,0,0,0.18)]',
+          'pointer-events-auto flex w-full max-w-xl flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-4 py-2.5 shadow-float',
           alarm ? 'animate-[unsaved-shake_0.45s_ease-in-out] motion-reduce:animate-none' : '',
           warning ? 'border-danger bg-danger text-white' : 'border-border bg-foreground text-surface',
         )}>
-        <p className="min-w-0 flex-1 text-sm font-semibold">
-          {warning ? 'Careful — you have unsaved changes!' : blockedReason && !canSave ? blockedReason : 'You have unsaved changes'}
+        <p className="min-w-0 flex-1 text-sm font-medium">
+          {warning ? 'Save or reset your changes before leaving' : blockedReason && !canSave ? blockedReason : 'You have unsaved changes'}
         </p>
         <div className="flex shrink-0 items-center gap-2">
           <button type="button" disabled={saving} onClick={onReset}
-            className="rounded px-2 py-1 text-sm font-semibold underline-offset-2 hover:underline disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">
+            className="rounded px-2 py-1 text-sm font-medium underline-offset-2 hover:underline disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright">
             Reset
           </button>
           <Button size="sm" loading={saving} disabled={!canSave || saving} onClick={onSave}
-            className={warning ? 'bg-white text-danger hover:bg-white/90' : undefined}>
+            className={warning ? 'bg-surface text-danger hover:bg-white/90' : undefined}>
             {saveLabel}
           </Button>
         </div>

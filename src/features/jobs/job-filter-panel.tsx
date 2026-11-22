@@ -32,7 +32,7 @@ export function JobFilterPanel({ values, subcategories, loading, onApply, onClea
 
 function PanelField({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="block min-w-0">
-    <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">{label}</span>
-    <span className="flex h-10 items-center rounded-lg border border-border bg-surface px-3 transition focus-within:border-primary">{children}</span>
+    <span className="mb-1.5 block text-xs font-medium text-muted">{label}</span>
+    <span className="flex h-10 items-center field-shell rounded-lg border border-border bg-surface px-3">{children}</span>
   </label>
 }

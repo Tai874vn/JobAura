@@ -163,7 +163,7 @@ export function FeedPage() {
 }
 
 function MobileTab({ href, label }: { href: string; label: string }) {
-  return <Link href={href} className="shrink-0 rounded-full border border-border bg-surface px-4 py-2 text-xs font-bold">{label}</Link>
+  return <Link href={href} className="shrink-0 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium">{label}</Link>
 }
 
 function FeedSkeleton() {

@@ -1,21 +1,19 @@
-import { CategoryGrid } from './home/category-grid'
+import { BrowseSection } from './home/browse-section'
 import { CtaBand } from './home/cta-band'
 import { FaqSection } from './home/faq'
 import { FeaturedServices } from './home/featured-services'
 import { HowItWorks } from './home/how-it-works'
 import { LandingHero } from './home/hero'
-import { TrendingSkills } from './home/trending-skills'
-import { WhyJobAura } from './home/why-us'
+import { ScoreBreakdown } from './home/score-breakdown'
 
 export function HomePage() {
   return (
     <div>
       <LandingHero />
-      <TrendingSkills />
-      <CategoryGrid />
-      <FeaturedServices />
+      <ScoreBreakdown />
       <HowItWorks />
-      <WhyJobAura />
+      <BrowseSection />
+      <FeaturedServices />
       <FaqSection />
       <CtaBand />
     </div>

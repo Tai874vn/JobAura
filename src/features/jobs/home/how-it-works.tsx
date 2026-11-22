@@ -1,47 +1,46 @@
-import { Handshake, MessagesSquare, Search } from 'lucide-react'
-import { Card, CardContent, Section, SectionHeading } from '@/shared/ui'
+import { Section, SectionHeading } from '@/shared/ui'
 
+// One sequence for both sides of a hire; the order is the information, so the steps stay numbered.
 const steps = [
   {
-    icon: Search,
-    step: 'Step 1',
-    title: 'Find or post a role',
-    text: 'Candidates search open roles by field, level, and location. Recruiters publish a role with the field, years, and skills it needs.',
+    title: 'Post or find a role',
+    candidate: 'Search open roles by occupation, level, and location.',
+    recruiter: 'Publish a role with its occupation, years, and skills.',
   },
   {
-    icon: MessagesSquare,
-    step: 'Step 2',
-    title: 'Show your work',
-    text: 'Candidates add a resume and portfolio posts; AI reads their level from the resume. Recruiters see it on every profile.',
+    title: 'Let the resume speak',
+    candidate: 'Add a resume; your level is read from the work you describe.',
+    recruiter: 'See each applicant’s occupation, years, and level.',
   },
   {
-    icon: Handshake,
-    step: 'Step 3',
-    title: 'Match & talk',
-    text: 'AI ranks roles for each candidate and candidates for each role. Apply in one step, or message each other in real-time chat.',
+    title: 'Match, save, and talk',
+    candidate: 'See the roles that fit you and the skills you still need.',
+    recruiter: 'Get a ranked shortlist and message candidates in real time.',
   },
 ]
 
 export function HowItWorks() {
   return (
     <Section id="how-it-works" tone="default">
-      <SectionHeading title="How it works" description="From first search to first hire in three simple steps." />
-      <div className="mt-7 grid gap-5 md:grid-cols-3">
-        {steps.map((item) => (
-          <Card key={item.title}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <item.icon className="h-5 w-5" />
-                </span>
-                <span className="text-xs font-bold uppercase tracking-wide text-muted">{item.step}</span>
+      <SectionHeading title="How it works" description="The same three steps for candidates and recruiters" />
+      <ol className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
+        {steps.map((step, index) => (
+          <li key={step.title} className="min-w-0 border-t border-foreground/15 pt-5">
+            <p className="font-mono text-xs tabular-nums text-muted">Step {index + 1}</p>
+            <h3 className="mt-2 font-display text-lg font-medium">{step.title}</h3>
+            <dl className="mt-4 grid gap-3 text-sm leading-6">
+              <div>
+                <dt className="font-medium">Candidates</dt>
+                <dd className="text-muted">{step.candidate}</dd>
               </div>
-              <h3 className="mt-4 font-display text-lg font-bold">{item.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-muted">{item.text}</p>
-            </CardContent>
-          </Card>
+              <div>
+                <dt className="font-medium">Recruiters</dt>
+                <dd className="text-muted">{step.recruiter}</dd>
+              </div>
+            </dl>
+          </li>
         ))}
-      </div>
+      </ol>
     </Section>
   )
 }

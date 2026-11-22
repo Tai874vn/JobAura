@@ -31,11 +31,11 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
     <article className="overflow-hidden rounded-lg border border-border bg-surface">
       <div className="flex items-center justify-between gap-3 border-b border-border p-4">
         <div className="flex min-w-0 items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
             {initials(user.name)}
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-bold">{user.name}</span>
+            <span className="block truncate text-sm font-medium">{user.name}</span>
             <span className="block text-xs text-muted">{post.createdAt ? formatDate(post.createdAt) : 'Portfolio post'}</span>
           </span>
         </div>
@@ -60,7 +60,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
         </Link>
         <div className="grid gap-4 p-4">
           <div>
-            <Link href={`/jobs/${post.id}`} className="font-display text-xl font-bold leading-snug hover:text-primary">
+            <Link href={`/jobs/${post.id}`} className="font-display text-xl font-medium leading-snug hover:text-primary">
               {post.title}
             </Link>
             <p className="mt-2 line-clamp-3 text-sm leading-6 text-muted">
@@ -68,7 +68,7 @@ export function ProfilePostCard({ post, user }: { post: Job; user: MarketplacePr
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <span className="text-sm font-semibold">{servicePriceLabel(post.price) ?? 'Portfolio'}</span>
+            <span className="text-sm font-medium">{servicePriceLabel(post.price) ?? 'Portfolio'}</span>
             <ButtonLink href={`/jobs/${post.id}`} variant="secondary" size="sm">
               View details
             </ButtonLink>
@@ -114,7 +114,7 @@ export function ResumeShowcase({
               <div className="rounded-lg border border-border bg-surface p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-display text-2xl font-bold">{draft.Name || 'Resume profile'}</h3>
+                    <h3 className="font-display text-2xl font-medium">{draft.Name || 'Resume profile'}</h3>
                     <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
                       {draft.Email ? <InlineInfo icon={<Mail className="h-4 w-4" />} value={draft.Email} /> : null}
                       {draft.Phone ? <InlineInfo icon={<Phone className="h-4 w-4" />} value={draft.Phone} /> : null}
@@ -128,7 +128,7 @@ export function ResumeShowcase({
                   {fileUrl ? (
                     <a
                       href={fileUrl}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-white px-3 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition hover:border-primary hover:text-primary"
+                      className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition hover:border-primary hover:text-primary"
                     >
                       <Download className="h-4 w-4" />
                       File
@@ -147,7 +147,7 @@ export function ResumeShowcase({
             <aside className="rounded-lg border border-border bg-surface-muted p-4">
               <div className="flex items-center gap-2">
                 <FileJson className="h-4 w-4 text-primary" />
-                <p className="text-sm font-bold">Resume data</p>
+                <p className="text-sm font-medium">Resume data</p>
               </div>
               <p className="mt-2 text-xs leading-5 text-muted">
                 {resume?.sourceFileName ? resume.sourceFileName : resume ? 'Structured resume saved' : 'No source file attached'}
@@ -155,7 +155,7 @@ export function ResumeShowcase({
               {skills.length ? (
                 <div className="mt-4 flex flex-wrap gap-2">
                   {skills.slice(0, 10).map((skill) => (
-                    <span key={skill} className="rounded bg-accent/40 px-2 py-1 text-xs font-semibold text-foreground">
+                    <span key={skill} className="rounded bg-accent/40 px-2 py-1 text-xs font-medium text-foreground">
                       {skill}
                     </span>
                   ))}
@@ -174,9 +174,9 @@ export function ResumeShowcase({
 export function SectionTitle({ title, meta, action }: { title: string; meta?: string; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <h2 className="font-display text-2xl font-bold">{title}</h2>
+      <h2 className="font-display text-2xl font-medium">{title}</h2>
       <div className="flex items-center gap-2">
-        {meta ? <span className="text-xs font-semibold uppercase tracking-[0.12em] text-muted">{meta}</span> : null}
+        {meta ? <span className="text-xs font-medium text-muted">{meta}</span> : null}
         {action}
       </div>
     </div>
@@ -197,8 +197,8 @@ export function ContactRow({ icon, label, value }: { icon: React.ReactNode; labe
     <div className="flex items-center gap-3 rounded-lg bg-surface-muted p-3">
       <span className="text-primary">{icon}</span>
       <span className="min-w-0">
-        <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-muted">{label}</span>
-        <span className="block truncate font-semibold">{value || '-'}</span>
+        <span className="block text-xs font-medium text-muted">{label}</span>
+        <span className="block truncate font-medium">{value || '-'}</span>
       </span>
     </div>
   )

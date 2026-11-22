@@ -40,7 +40,7 @@ export function CertificationFields({ value, onChange, onRemove, problems = [] }
           <Input type="month" value={value.noExpiry ? '' : value.expiresAt} disabled={value.noExpiry}
             onChange={(event) => onChange({ expiresAt: event.target.value })} />
         </Labeled>
-        <label className="flex items-center gap-2 text-xs font-semibold text-muted">
+        <label className="flex items-center gap-2 text-xs font-medium text-muted">
           <input type="checkbox" className="h-4 w-4 accent-primary" checked={value.noExpiry}
             onChange={(event) => onChange({ noExpiry: event.target.checked, expiresAt: event.target.checked ? '' : value.expiresAt })} />
           This credential does not expire
@@ -70,7 +70,7 @@ export function CertificationFields({ value, onChange, onRemove, problems = [] }
 function Labeled({ label, required = false, className, children }: { label: string; required?: boolean; className?: string; children: React.ReactNode }) {
   return (
     <label className={`grid gap-1 ${className ?? ''}`}>
-      <span className="text-sm font-semibold">{label}{required ? <span className="text-danger"> *</span> : null}</span>
+      <span className="text-sm font-medium">{label}{required ? <span className="text-danger"> *</span> : null}</span>
       {children}
     </label>
   )

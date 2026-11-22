@@ -10,7 +10,7 @@ export function InlineEditButton({ label, onClick }: { label: string; onClick: (
   return (
     <button
       type="button"
-      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-white px-3 text-xs font-bold uppercase tracking-[0.12em] text-foreground transition hover:border-primary hover:text-primary"
+      className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-xs font-medium text-foreground transition hover:border-primary hover:text-primary"
       onClick={onClick}
     >
       <Edit3 className="h-3.5 w-3.5" />
@@ -35,7 +35,7 @@ export function OwnerUploadButton({
   onChange: (file: File) => void
 }) {
   return (
-    <label aria-busy={loading} className={cn('interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:border-primary hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright', className, loading && 'pointer-events-none !opacity-100')}>
+    <label aria-busy={loading} className={cn('interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground hover:border-primary hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright', className, loading && 'pointer-events-none !opacity-100')}>
       {loading ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" /> : icon}
       {label}
       <input
@@ -61,15 +61,15 @@ export function ResumeSnippet({ title, value }: { title: string; value?: string 
   if (!value) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-surface-muted p-4 text-sm text-muted">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
+        <p className="mb-1 text-xs font-medium text-muted">{title}</p>
         Not added yet.
       </div>
     )
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white p-4">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted">{title}</p>
+    <div className="rounded-lg border border-border bg-surface p-4">
+      <p className="mb-2 text-xs font-medium text-muted">{title}</p>
       <p className="line-clamp-5 text-sm leading-6 text-muted">{value}</p>
     </div>
   )

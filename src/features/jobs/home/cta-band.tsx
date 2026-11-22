@@ -5,9 +5,9 @@ export function CtaBand() {
   return (
     <Section tone="primary">
       <div className="flex flex-col items-center gap-5 text-center">
-        <h2 className="max-w-2xl font-display text-3xl font-bold text-white sm:text-4xl">Ready when you are.</h2>
+        <h2 className="max-w-2xl font-display text-3xl font-medium text-white sm:text-4xl">Apply to a role or post one today</h2>
         <p className="max-w-xl text-sm leading-6 text-white/80 sm:text-base">
-          Join JobAura to hire trusted professionals or put your skills in front of clients today.
+          A free account lets you apply to roles, post your portfolio, or publish hiring posts
         </p>
         <div className="mt-2 flex flex-wrap justify-center gap-3">
           <ButtonLink href="/auth/register" variant="accent" size="lg">

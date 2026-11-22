@@ -2,7 +2,7 @@ import {
   BriefcaseBusiness,
   Clock3,
   ShieldCheck,
-  Sparkles,
+  ListOrdered,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { RecommendationQuota } from "@/shared/schemas";
@@ -26,22 +26,22 @@ export function RecruiterQuotaCard({
       <CardContent className="p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-bold uppercase text-primary">
+            <p className="text-xs font-medium text-primary">
               Today
             </p>
-            <h2 className="mt-1 font-display text-xl font-bold">
+            <h2 className="mt-1 font-display text-xl font-medium">
               AI runs left
             </h2>
           </div>
-          <Sparkles className="h-5 w-5 text-primary" />
+          <ListOrdered className="h-5 w-5 text-primary" />
         </div>
         {loading ? (
           <div className="mt-4 h-24 animate-pulse rounded bg-surface-muted" />
         ) : (
           <>
             <div className="mt-4 flex items-end justify-between gap-3">
-              <p className="font-display text-4xl font-bold">{remaining}</p>
-              <p className="pb-1 text-sm font-semibold text-muted">
+              <p className="font-display text-4xl font-medium">{remaining}</p>
+              <p className="pb-1 text-sm font-medium text-muted">
                 left of {limit}
               </p>
             </div>
@@ -69,10 +69,10 @@ export function MatchingPolicyCard() {
   return (
     <Card>
       <CardContent className="p-4">
-        <p className="text-xs font-bold uppercase text-primary">
+        <p className="text-xs font-medium text-primary">
           How matching works
         </p>
-        <h2 className="mt-1 font-display text-xl font-bold">
+        <h2 className="mt-1 font-display text-xl font-medium">
           Better posts, better matches
         </h2>
         <div className="mt-4 grid gap-3 text-sm">
@@ -110,7 +110,7 @@ function PolicyRow({
     <div className="flex gap-3 rounded-lg bg-surface-muted p-3">
       <span className="mt-0.5 text-primary">{icon}</span>
       <span>
-        <span className="block font-bold">{label}</span>
+        <span className="block font-medium">{label}</span>
         <span className="mt-1 block text-xs leading-5 text-muted">{text}</span>
       </span>
     </div>

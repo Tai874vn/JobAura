@@ -49,7 +49,7 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
       <Card>
         <CardContent className="p-0">
           <div className="flex items-center justify-between gap-3 border-b border-border p-4">
-            <div className="flex h-10 w-full max-w-md items-center gap-2 rounded-lg border border-border px-3">
+            <div className="field-shell flex h-10 w-full max-w-md items-center gap-2 rounded-lg border border-border px-3">
               <Search className="h-4 w-4 text-muted" />
               <input
                 className="flex-1 bg-transparent text-sm outline-none"
@@ -62,14 +62,14 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-left text-sm">
-              <thead className="bg-surface-muted text-xs uppercase tracking-wider text-muted">
+              <thead className="bg-surface-muted text-xs text-muted">
                 <tr>
                   {config.columns.map((column) => (
-                    <th key={column} className="px-4 py-3 font-bold">
+                    <th key={column} className="px-4 py-3 font-medium">
                       {column}
                     </th>
                   ))}
-                  <th className="px-4 py-3 text-right font-bold">Actions</th>
+                  <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,18 +248,18 @@ function CreateResourceDialog({
 
   return (
     <div className="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <form className="motion-panel w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-2xl" onSubmit={submit}>
+      <form className="motion-panel w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-overlay" onSubmit={submit}>
         <div className="mb-5">
-          <h2 className="font-display text-2xl font-bold">{config.create.label}</h2>
+          <h2 className="font-display text-2xl font-medium">{config.create.label}</h2>
           <p className="text-sm text-muted">Add a new marketplace classification.</p>
         </div>
         <label className="block">
-          <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Name</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">Name</span>
           <Input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoFocus />
         </label>
         {config.create.needsParentType ? (
           <label className="mt-4 block">
-            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-muted">Parent category</span>
+            <span className="mb-1.5 block text-xs font-medium text-muted">Parent category</span>
             <Select
               value={resolvedParentTypeId ?? ''}
               onChange={(event) => setParentTypeId(Number(event.target.value))}

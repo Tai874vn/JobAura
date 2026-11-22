@@ -48,11 +48,11 @@ function RightFeedRailContent() {
         <Card className="p-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />
-            <h2 className="text-sm font-bold">Trending skills</h2>
+            <h2 className="text-sm font-medium">Trending skills</h2>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {skills.map((skill) => (
-              <Link key={skill} href={`/hiring-posts?keyword=${encodeURIComponent(skill)}`} className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-primary hover:text-primary">
+              <Link key={skill} href={`/hiring-posts?keyword=${encodeURIComponent(skill)}`} className="rounded-md border border-border px-2.5 py-1 text-xs text-muted transition-colors hover:border-primary/40 hover:text-primary">
                 {skill}
               </Link>
             ))}
@@ -60,7 +60,7 @@ function RightFeedRailContent() {
         </Card>
       ) : null}
 
-      <nav className="flex flex-wrap gap-x-3 gap-y-1 px-1 pt-1 text-[11.5px] text-muted" aria-label="Footer">
+      <nav className="flex flex-wrap gap-x-3 gap-y-1 px-1 pt-1 text-xs text-muted" aria-label="Footer">
         <Link href="/welcome" className="hover:text-primary hover:underline">About</Link>
         <Link href="/welcome#how-it-works" className="hover:text-primary hover:underline">How it works</Link>
         <Link href="/welcome#faq" className="hover:text-primary hover:underline">FAQ</Link>
@@ -87,7 +87,7 @@ function SuggestedPeople({ suggestions }: { suggestions: ConnectionSuggestion[] 
     <Card className="p-4">
       <div className="flex items-center gap-2">
         <UserPlus className="h-4 w-4 text-primary" />
-        <h2 className="text-sm font-bold">People you may know</h2>
+        <h2 className="text-sm font-medium">People you may know</h2>
       </div>
       <div className="mt-2 divide-y divide-border">
         {suggestions.map((person) => {
@@ -96,8 +96,8 @@ function SuggestedPeople({ suggestions }: { suggestions: ConnectionSuggestion[] 
             <div key={person.id} className="flex items-center gap-2.5 py-2.5">
               <FeedAvatar user={person} />
               <div className="min-w-0 flex-1">
-                <Link href={`/profile/${person.id}`} className="block truncate text-[13px] font-bold hover:text-primary">{person.name}</Link>
-                <p className="truncate text-[11.5px] text-muted">{person.headline || 'JobAura member'}</p>
+                <Link href={`/profile/${person.id}`} className="block truncate text-sm font-medium hover:text-primary">{person.name}</Link>
+                <p className="truncate text-xs text-muted">{person.headline || 'JobAura member'}</p>
               </div>
               <Button
                 type="button"
@@ -106,8 +106,8 @@ function SuggestedPeople({ suggestions }: { suggestions: ConnectionSuggestion[] 
                 disabled={sent || sendMutation.isPending}
                 onClick={() => sendMutation.mutate(person.id)}
                 className={cn(
-                  'h-[30px] shrink-0 gap-1.5 font-bold',
-                  sent ? 'bg-primary/10 text-primary' : 'bg-primary text-white hover:bg-primary-bright',
+                  'h-[30px] shrink-0 gap-1.5 font-medium',
+                  sent ? 'bg-primary/10 text-primary' : 'bg-primary text-white hover:bg-primary-strong',
                 )}
               >
                 <UserPlus className="h-3.5 w-3.5" />

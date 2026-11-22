@@ -3,17 +3,21 @@
 :root {
   --motion-fast: 140ms;
   --motion-standard: 200ms;
-  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --background: #eff1f5;
-  --foreground: #1b1c1c;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Warm paper neutrals: the page is a desk, cards are sheets on it. */
+  --background: #f4f2ee;
+  --foreground: #1c1b19;
   --surface: #ffffff;
-  --surface-muted: #f6f3f2;
-  --border: #dcd9d9;
-  --muted: #5f6b62;
+  --surface-muted: #efece6;
+  --border: #e3e0da;
+  --muted: #5e5a52;
   --primary: #006d43;
   --primary-bright: #00a86b;
+  /* Hover/pressed green: white text on it stays above 4.5:1, unlike primary-bright. */
+  --primary-strong: #005a37;
   --accent: #d2d92d;
   --rating: #fbbc00;
+  --rating-ink: #5c4300;
   --danger: #ba1a1a;
 }
 
@@ -26,11 +30,17 @@
   --color-muted: var(--muted);
   --color-primary: var(--primary);
   --color-primary-bright: var(--primary-bright);
+  --color-primary-strong: var(--primary-strong);
   --color-accent: var(--accent);
   --color-rating: var(--rating);
+  --color-rating-ink: var(--rating-ink);
   --color-danger: var(--danger);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-hanken), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-jb), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --shadow-sm: 0 1px 2px rgba(28, 27, 25, 0.05);
+  --shadow-float: 0 8px 24px rgba(28, 27, 25, 0.08);
+  --shadow-overlay: 0 16px 48px rgba(28, 27, 25, 0.16);
 }
 
 * {
@@ -42,33 +52,9 @@ html {
 }
 
 body {
-  isolation: isolate;
   min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-}
-
-/* A decorative viewport layer stays behind content without intercepting input. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: url("/backgrounds/jobaura-background-stars.webp") center / cover no-repeat;
-}
-
-@media (orientation: portrait) {
-  body::before {
-    /* Keep the left-hand stars visible instead of cropping into the empty center. */
-    background-position: left center;
-  }
-}
-
-@media print, (forced-colors: active) {
-  body::before {
-    display: none;
-  }
 }
 
 button,
@@ -77,6 +63,24 @@ input,
 textarea,
 select {
   outline-color: var(--primary-bright);
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p,
+li,
+dd {
+  text-wrap: pretty;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
 
 ::selection {
@@ -88,8 +92,31 @@ select {
   margin-inline: auto;
 }
 
+/* The hiring posts page follows its Figma frame: a cooler green-grey paper and deeper green ink. */
+.hiring-theme {
+  --background: #f6f7f3;
+  --foreground: #172f29;
+  --surface: #ffffff;
+  --surface-muted: #eef3eb;
+  --border: #dfe6df;
+  --muted: #5c6a64; /* #64736d from the frame, darkened to keep 4.5:1 on the tinted band */
+  --primary: #087b54;
+}
+
 /* Short, local transitions keep the action and its result connected. */
 @layer utilities {
+  /* A bordered box around a bare input (search bars): the box shows keyboard focus for the input inside it. */
+  .field-shell {
+    transition-property: border-color, box-shadow;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--motion-ease);
+  }
+
+  .field-shell:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary), 0 0 0 4px color-mix(in srgb, var(--primary-bright) 24%, transparent);
+  }
+
   .interaction {
     transition-property: color, background-color, border-color, box-shadow, opacity, transform;
     transition-duration: var(--motion-fast);
@@ -120,6 +147,37 @@ select {
   .motion-drawer {
     animation: drawer-in 220ms var(--motion-ease);
   }
+
+  /* A dropdown list unfolds from its button. */
+  .menu-drop {
+    transform-origin: top;
+    animation: menu-drop 180ms var(--motion-ease);
+  }
+
+  /* A ticked box's check pops in. */
+  .check-pop {
+    animation: check-pop 160ms var(--motion-ease);
+  }
+
+  /* A new page of results settles in instead of swapping abruptly. */
+  .results-in {
+    animation: results-in 220ms var(--motion-ease);
+  }
+}
+
+@keyframes menu-drop {
+  from { opacity: 0; transform: translateY(-4px) scaleY(0.92); }
+  to { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+
+@keyframes check-pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes results-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes overlay-in {

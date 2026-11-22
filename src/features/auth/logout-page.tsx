@@ -38,7 +38,7 @@ export function LogoutPage() {
     <div className="flex min-h-screen items-center justify-center">
       <div className="max-w-sm px-4 text-center">
         {failed ? null : <Spinner className="mx-auto h-7 w-7" />}
-        <p className="mt-4 text-sm font-semibold text-muted">
+        <p className="mt-4 text-sm font-medium text-muted">
           {failed ? 'Could not reach the backend logout API.' : 'Signing out...'}
         </p>
         {failed ? (

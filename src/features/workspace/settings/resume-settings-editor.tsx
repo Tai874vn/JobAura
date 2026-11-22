@@ -87,7 +87,7 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
   if (resumeQuery.isPending) return <SettingsPanelSkeleton />
   if (resumeQuery.isError && !resumeQuery.data) return (
     <Card className="p-6" role="alert">
-      <h2 className="font-display text-xl font-bold">Resume could not be loaded</h2>
+      <h2 className="font-display text-xl font-medium">Resume could not be loaded</h2>
       <p className="mt-2 text-sm leading-6 text-muted">Check your connection and retry. Your existing resume will not be replaced with an empty form.</p>
       <Button className="mt-4" variant="secondary" loading={resumeQuery.isFetching} onClick={() => void resumeQuery.refetch()}>Retry</Button>
     </Card>
@@ -96,7 +96,7 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
     <div className="space-y-4">
       {resumeQuery.isError ? <p role="alert" className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm">Could not refresh your resume. Showing the last loaded details. <Button size="sm" variant="ghost" loading={resumeQuery.isFetching} onClick={() => void resumeQuery.refetch()}>Retry</Button></p> : null}
       {save.isError ? <p role="alert" className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">{getErrorMessage(save.error, 'Unable to save resume. Your draft is kept; try again.')}</p> : null}
-      {extracting ? <p role="status" className="text-sm font-semibold text-primary">Extracting your resume…</p> : null}
+      {extracting ? <p role="status" className="text-sm font-medium text-primary">Extracting your resume…</p> : null}
       <fieldset disabled={save.isPending || predict.isPending || extracting} className="min-w-0">
         <ResumeSettingsSection resume={resume} draft={currentDraft} attachedFile={attachedFile} isLoading={false}
           isImporting={save.isPending} isPredicting={predict.isPending} onFieldChange={updateField}

@@ -30,7 +30,7 @@ export function EditorSection({
     <Card data-focus={focusId}>
       <CardContent className="p-5">
         <div className="mb-5 flex flex-wrap items-center gap-3">
-          <h3 className="font-display text-lg font-bold">{title}</h3>
+          <h3 className="font-display text-lg font-medium">{title}</h3>
           {!hideActions ? (
             <div className="ml-auto flex gap-2">
               {onAdd ? (
@@ -58,7 +58,7 @@ export function Field({ label, value, onChange, type = 'text', className, focusI
 }) {
   return (
     <label data-focus={focusId} className={`grid gap-1 ${className ?? ''}`}>
-      <span className="text-sm font-semibold">{label}</span>
+      <span className="text-sm font-medium">{label}</span>
       <Input type={type} value={value ?? ''} onChange={(event) => onChange(event.target.value)} />
     </label>
   )
@@ -68,7 +68,7 @@ export function PortfolioFields({ item, onChange }: { item: PortfolioDraft; onCh
   return (
     <>
       <Field label="Project title" value={item.title} onChange={(title) => onChange({ title })} />
-      <label className="grid gap-1"><span className="text-sm font-semibold">Description</span><Textarea value={item.description ?? ''} onChange={(event) => onChange({ description: event.target.value })} /></label>
+      <label className="grid gap-1"><span className="text-sm font-medium">Description</span><Textarea value={item.description ?? ''} onChange={(event) => onChange({ description: event.target.value })} /></label>
       <Field label="Image URL" value={item.image} onChange={(image) => onChange({ image })} />
       <Field label="Project URL" value={item.url} onChange={(url) => onChange({ url })} />
     </>
@@ -77,7 +77,7 @@ export function PortfolioFields({ item, onChange }: { item: PortfolioDraft; onCh
 
 export function UploadField({ label, icon, onChange, pending = false }: { label: string; icon: React.ReactNode; onChange: (file: File) => void; pending?: boolean }) {
   return (
-    <label aria-busy={pending} className="interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-4 text-sm font-semibold text-muted hover:border-primary hover:bg-primary/5 hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright">
+    <label aria-busy={pending} className="interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-4 text-sm font-medium text-muted hover:border-primary hover:bg-primary/5 hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright">
       {pending ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : icon}
       <span role={pending ? 'status' : undefined}>{pending ? label.replace(/^Upload /, 'Uploading ') + '…' : label}</span>
       <input

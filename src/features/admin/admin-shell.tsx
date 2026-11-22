@@ -26,21 +26,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen lg:grid lg:grid-cols-[260px_1fr]">
       <aside className="border-r border-border bg-surface">
         <div className="flex h-16 items-center border-b border-border px-5">
-          <Link href="/" className="font-display text-2xl font-bold text-primary">
+          <Link href="/" className="font-display text-2xl font-medium text-primary">
             JobAura
           </Link>
         </div>
-        <nav className="grid gap-1 p-3">
+        <nav className="grid gap-0.5 p-3">
           {nav.map(({ href, activePath, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-muted hover:bg-surface-muted hover:text-foreground',
-                pathname === (activePath ?? href) && 'bg-primary text-white hover:bg-primary hover:text-white'
+                'flex h-9 items-center gap-2.5 rounded-lg px-3 text-sm font-medium text-muted transition-colors hover:bg-surface-muted hover:text-foreground',
+                pathname === (activePath ?? href) && 'bg-surface-muted text-foreground [&_svg]:text-primary'
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-4 w-4" strokeWidth={1.5} />
               {label}
             </Link>
           ))}
@@ -49,7 +49,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <section>
         <header className="flex h-16 items-center justify-between border-b border-border bg-surface px-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Administration</p>
+            <p className="text-sm font-medium">Administration</p>
             <p className="text-sm text-muted">Manage marketplace records from the active section.</p>
           </div>
           <div className="ml-4 flex items-center gap-3">

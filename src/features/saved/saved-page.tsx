@@ -49,7 +49,7 @@ export function SavedPage() {
 
   return (
     <div className="container-page pt-10 pb-16">
-      <h1 className="font-display text-3xl font-bold tracking-tight">Saved</h1>
+      <h1 className="font-display text-3xl font-medium tracking-tight">Saved</h1>
 
       <div className="mt-5 flex gap-2" role="tablist" aria-label="Saved items">
         <TabChip
@@ -92,7 +92,7 @@ export function SavedPage() {
             />
           ) : null}
           {posts.length ? (
-            <p className="mt-4 text-center text-xs font-semibold text-muted">Saved from your home feed — tap the bookmark on any post to remove it.</p>
+            <p className="mt-4 text-center text-xs font-medium text-muted">Saved from your home feed — tap the bookmark on any post to remove it.</p>
           ) : null}
           {postsQuery.hasNextPage ? (
             <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} loading={postsQuery.isFetchingNextPage}>
@@ -126,7 +126,7 @@ export function SavedPage() {
             />
           ) : null}
           {jobs.length ? (
-            <p className="mt-4 text-center text-xs font-semibold text-muted">Saved from Explore — the bookmark on each card removes it.</p>
+            <p className="mt-4 text-center text-xs font-medium text-muted">Saved from Explore — the bookmark on each card removes it.</p>
           ) : null}
           {jobsQuery.hasNextPage ? (
             <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} loading={jobsQuery.isFetchingNextPage}>
@@ -148,13 +148,13 @@ function TabChip({ active, onClick, icon, label, count }: { active: boolean; onC
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        'inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13px] font-semibold transition',
+        'inline-flex h-9 items-center gap-1.5 rounded-full border px-4 text-[13px] font-medium transition',
         active ? 'border-foreground bg-foreground text-white' : 'border-border bg-surface text-muted hover:border-primary hover:text-primary'
       )}
     >
       <span className={active ? 'text-accent' : 'text-primary'}>{icon}</span>
       {label}
-      {count !== undefined ? <span className={cn('text-[11px] font-bold', active ? 'text-accent' : 'text-muted')}>{count}</span> : null}
+      {count !== undefined ? <span className={cn('text-xs font-medium', active ? 'text-accent' : 'text-muted')}>{count}</span> : null}
     </button>
   )
 }
@@ -166,7 +166,7 @@ function SavedPostCard({ post, removing, onRemove }: { post: FeedPost; removing:
       <div className="flex items-start gap-3 p-4">
         <FeedAvatar user={post.author} />
         <div className="min-w-0 flex-1">
-          <Link href={`/profile/${post.author.id}`} className="text-sm font-bold hover:text-primary">{post.author.name}</Link>
+          <Link href={`/profile/${post.author.id}`} className="text-sm font-medium hover:text-primary">{post.author.name}</Link>
           <p className="truncate text-xs text-muted">{post.author.headline || 'JobAura member'}</p>
         </div>
         <button

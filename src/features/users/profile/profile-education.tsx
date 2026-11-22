@@ -27,17 +27,17 @@ export function ProfileEducation({ education, isOwner }: {
     <Card>
       <CardContent className="p-5 md:p-6">
         <SectionTitle title="Education" action={isOwner ? (
-          <Link href="/settings?section=resume&focus=education" className="text-sm font-semibold text-primary hover:underline">
+          <Link href="/settings?section=resume&focus=education" className="text-sm font-medium text-primary hover:underline">
             {education ? 'Edit in resume' : 'Add in resume'}
           </Link>
         ) : null} />
         {education ? (
           <div className="mt-4 flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-primary/10 text-primary">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-surface-muted text-muted">
               <GraduationCap className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <h3 className="font-semibold leading-snug">{education.degree}</h3>
+              <h3 className="font-medium leading-snug">{education.degree}</h3>
               {education.fieldOfStudy ? <p className="mt-0.5 text-sm text-muted">{fieldName ?? 'Field of study'}</p> : null}
             </div>
           </div>

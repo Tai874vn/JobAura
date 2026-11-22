@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -160,18 +160,12 @@ export function RecommendedCandidatesPage() {
     <div className="container-page pt-10 pb-16">
       <Link
         href="/candidates"
-        className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-primary"
+        className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to candidate directory
       </Link>
       <PageHeader
-        eyebrow={
-          <>
-            <Sparkles className="h-4 w-4" />
-            Recruiter AI
-          </>
-        }
         title="Recommended candidates"
       />
 
@@ -190,7 +184,7 @@ export function RecommendedCandidatesPage() {
 
           {!content && selectedHiringPostId && cachedQuery.isPending ? (
             <Card>
-              <CardContent className="flex min-h-64 items-center justify-center gap-3 p-8 text-sm font-semibold text-muted">
+              <CardContent className="flex min-h-64 items-center justify-center gap-3 p-8 text-sm font-medium text-muted">
                 <Spinner className="h-5 w-5" />
                 Loading your previous candidate matches...
               </CardContent>

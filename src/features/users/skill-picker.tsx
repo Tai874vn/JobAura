@@ -74,11 +74,11 @@ export function SkillPicker({
 
   return (
     <div className="grid gap-1">
-      <label htmlFor={inputId} className={cn('text-sm font-semibold', hideLabel && 'sr-only')}>{label}</label>
+      <label htmlFor={inputId} className={cn('text-sm font-medium', hideLabel && 'sr-only')}>{label}</label>
       {value.length && !hideChosen ? (
         <ul className="flex flex-wrap gap-1.5" aria-label={`Chosen ${label.toLowerCase()}`}>
           {value.map((name) => (
-            <li key={name} className="inline-flex items-center gap-1 rounded bg-accent/30 py-0.5 pl-2 pr-1 text-xs font-semibold">
+            <li key={name} className="inline-flex items-center gap-1 rounded bg-accent/30 py-0.5 pl-2 pr-1 text-xs font-medium">
               {name}
               <button type="button" className="rounded p-0.5 hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
                 aria-label={`Remove ${name}`} onClick={() => onChange(value.filter((item) => item !== name))}>
@@ -91,9 +91,9 @@ export function SkillPicker({
       {pending.length && !full ? (
         <div className="rounded-lg border border-dashed border-border bg-surface-muted p-2">
           <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-muted">Found in your CV. Add the ones that are yours:</p>
+            <p className="text-xs font-medium text-muted">Found in your CV. Add the ones that are yours:</p>
             {max > 1 ? (
-              <button type="button" className="text-xs font-semibold text-primary hover:underline"
+              <button type="button" className="text-xs font-medium text-primary hover:underline"
                 onClick={() => onChange([...value, ...pending.slice(0, max - value.length).map((skill) => skill.name)])}>
                 Add all
               </button>
@@ -103,7 +103,7 @@ export function SkillPicker({
             {pending.map((skill) => (
               <li key={skill.id}>
                 <button type="button" title={`Written as: ${skill.matched.join(', ')}`}
-                  className="inline-flex items-center gap-1 rounded border border-border bg-surface px-2 py-0.5 text-xs font-semibold hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+                  className="inline-flex items-center gap-1 rounded border border-border bg-surface px-2 py-0.5 text-xs font-medium hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
                   onClick={() => onChange(max === 1 ? [skill.name] : [...value, skill.name])}>
                   <Plus className="h-3 w-3" />
                   {skill.name}
@@ -193,7 +193,7 @@ export function SkillListEditor<T extends SkillItem>({
         <ul className="divide-y divide-border rounded-lg border border-border" aria-label="Your skills">
           {value.filter((skill) => skill.name).map((skill) => (
             <li key={skill.name} className="flex min-h-12 items-center gap-2 px-3 py-1.5">
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">{skill.name}</span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium">{skill.name}</span>
               {showLevel ? (
                 <CompactLevelSelect name={skill.name} value={skill.level}
                   onChange={(level) => onChange(value.map((item) => (item === skill ? { ...item, level } : item)))} />
@@ -240,7 +240,7 @@ export function SkillLevelSelect({
   const listed = skillLevels.find((level) => level.toLowerCase() === (value ?? '').toLowerCase())
   return (
     <div className="grid gap-1">
-      <label htmlFor={id} className={cn('text-sm font-semibold', hideLabel && 'sr-only')}>Level</label>
+      <label htmlFor={id} className={cn('text-sm font-medium', hideLabel && 'sr-only')}>Level</label>
       <select id={id} value={listed ?? value ?? ''} onChange={(event) => onChange(event.target.value)}
         className="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-bright/20">
         <option value="">Choose level</option>

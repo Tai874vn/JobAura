@@ -33,6 +33,8 @@ export function SpecialtyPicker({
   label?: string
 }) {
   const [query, setQuery] = useState('')
+  // True once the user types; until then the box shows the chosen specialty and the list shows them all.
+  const [typing, setTyping] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
   const listId = useId()
@@ -41,7 +43,7 @@ export function SpecialtyPicker({
   const errorId = useId()
   const detail = useQuery(occupationQuery(occupation))
   const specialties = detail.data?.specialties ?? []
-  const options = filterSpecialties(specialties, query)
+  const options = filterSpecialties(specialties, typing ? query : '')
   const listed = !value || !detail.data || specialties.includes(value)
   const none = Boolean(detail.data) && specialties.length === 0
   const listShown = open && Boolean(occupation)
@@ -52,26 +54,23 @@ export function SpecialtyPicker({
 
   function choose(name: string) {
     onChange(name)
+    reset()
+  }
+
+  /** Back to showing the chosen specialty, with the list closed. */
+  function reset() {
     setQuery('')
+    setTyping(false)
     setOpen(false)
     setActive(0)
   }
 
   return (
-    <div className="grid gap-1">
-      <label htmlFor={inputId} className="text-sm font-semibold">
+    <div className="grid content-start gap-1">
+      <label htmlFor={inputId} className="text-sm font-medium">
         {label} <span className="font-normal text-muted">(optional)</span>
       </label>
-      {value ? (
-        <div className={cn('flex min-w-0 items-center justify-between gap-2 rounded-lg border bg-surface px-3 py-1.5 text-sm',
-          listed ? 'border-border' : 'border-danger/40')}>
-          <span id={hintId} className="min-w-0 truncate font-semibold"><span className="sr-only">Chosen: </span>{value}</span>
-          <button type="button" className="rounded p-0.5 text-muted hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
-            aria-label="Clear specialty" onClick={() => onChange('')}>
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      ) : (
+      {value ? null : (
         <p id={hintId} className="text-xs text-muted">
           {!occupation ? 'Choose the occupation first' : none ? 'No specialties are listed for this occupation' : 'None chosen'}
         </p>
@@ -84,24 +83,33 @@ export function SpecialtyPicker({
             role="combobox"
             aria-expanded={listShown && options.length > 0}
             aria-controls={listShown ? listId : undefined}
-            aria-describedby={listed ? hintId : `${hintId} ${errorId}`}
+            aria-describedby={[value ? null : hintId, listed ? null : errorId].filter(Boolean).join(' ') || undefined}
             aria-invalid={!listed || undefined}
             aria-autocomplete="list"
             aria-activedescendant={open && options[active] ? `${listId}-${active}` : undefined}
             autoComplete="off"
             disabled={!occupation}
-            value={query}
+            className={cn(value && 'pr-9', value && !typing && 'font-medium', !listed && 'border-danger/60')}
+            value={typing ? query : value}
             placeholder={occupation ? 'Search specialties, for example Full Stack' : 'Choose the occupation first'}
-            onChange={(event) => { setQuery(event.target.value); setOpen(true); setActive(0) }}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 120)}
+            onChange={(event) => { setQuery(event.target.value); setTyping(true); setOpen(true); setActive(0) }}
+            onFocus={(event) => { event.target.select(); setOpen(true) }}
+            // While it shows the chosen value, a click selects it all, so typing replaces it.
+            onClick={(event) => { if (!typing) event.currentTarget.select() }}
+            onBlur={() => setTimeout(reset, 120)}
             onKeyDown={(event) => {
               if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, options.length - 1))) }
               else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
               else if (event.key === 'Enter' && open && options[active]) { event.preventDefault(); choose(options[active]) }
-              else if (event.key === 'Escape') setOpen(false)
+              else if (event.key === 'Escape') reset()
             }}
           />
+          {value ? (
+            <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+              aria-label="Clear specialty" onMouseDown={(event) => event.preventDefault()} onClick={() => { reset(); onChange('') }}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          ) : null}
           {listShown ? (
             <ul id={listId} role="listbox" aria-label="Specialties" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
               {/* Status rows are not options. The live region inside announces the status and the result count. */}

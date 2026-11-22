@@ -1,5 +1,4 @@
 import type { RecommendationLabel } from "@/shared/schemas";
-import { Badge } from "@/shared/ui";
 import { cn } from "@/shared/lib/utils";
 
 const labelText: Record<RecommendationLabel, string> = {
@@ -8,14 +7,39 @@ const labelText: Record<RecommendationLabel, string> = {
   low_match: "Low match",
 };
 
-const labelClass: Record<RecommendationLabel, string> = {
-  high_match: "border border-primary/20 bg-surface text-primary",
-  medium_match: "border border-rating/40 bg-surface text-[#5c4300]",
-  low_match: "border border-border bg-surface text-foreground",
-};
-
 export function formatMatchScore(score: number) {
   return `${Math.round(score * 100)}%`;
+}
+
+/**
+ * JobAura's signature mark: the match score as a mono figure with a thin bar under it.
+ * Only a high match fills in brand green; the others stay in neutral steps so the best fit leads.
+ */
+export function MatchScore({
+  score,
+  label,
+  showLabel = true,
+  className,
+}: {
+  score: number;
+  label?: RecommendationLabel;
+  showLabel?: boolean;
+  className?: string;
+}) {
+  const percent = Math.max(0, Math.min(100, Math.round(score * 100)));
+  const strong = label ? label === "high_match" : percent >= 80;
+  return (
+    <span className={cn("inline-flex items-center gap-2 text-xs", className)}>
+      <span className="font-mono text-[13px] font-medium tabular-nums text-foreground">{percent}%</span>
+      <span aria-hidden="true" className="h-1 w-12 overflow-hidden rounded-full bg-foreground/10">
+        <span
+          className={cn("block h-full rounded-full", strong ? "bg-primary" : "bg-foreground/35")}
+          style={{ width: `${percent}%` }}
+        />
+      </span>
+      {showLabel && label ? <span className="text-muted">{labelText[label]}</span> : null}
+    </span>
+  );
 }
 
 export function MatchBadge({
@@ -27,16 +51,5 @@ export function MatchBadge({
   score: number;
   className?: string;
 }) {
-  return (
-    <Badge
-      tone="neutral"
-      className={cn(
-        "transform-gpu shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.14)] group-hover/recommendation:-translate-y-0.5 group-hover/recommendation:shadow-[0_10px_24px_rgba(0,0,0,0.14)] group-focus-within/recommendation:-translate-y-0.5 group-focus-within/recommendation:shadow-[0_10px_24px_rgba(0,0,0,0.14)]",
-        labelClass[label],
-        className,
-      )}
-    >
-      {labelText[label]} - {formatMatchScore(score)}
-    </Badge>
-  );
+  return <MatchScore score={score} label={label} className={className} />;
 }

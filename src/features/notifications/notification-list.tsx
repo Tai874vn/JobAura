@@ -44,12 +44,12 @@ export function NotificationSection({ title, notifications, onOpen, emptyText }:
 }) {
   return (
     <section className="mb-2">
-      <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-muted">
+      <div className="sticky top-0 z-10 flex items-center justify-between bg-surface px-2 py-1 text-xs font-medium text-muted">
         <span>{title}</span>
-        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] text-muted">{notifications.length}</span>
+        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-muted">{notifications.length}</span>
       </div>
       {!notifications.length ? (
-        <div className="mx-1 mb-2 rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs font-semibold text-muted">{emptyText}</div>
+        <div className="mx-1 mb-2 rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs font-medium text-muted">{emptyText}</div>
       ) : null}
       {notifications.map((notification) => (
         <NotificationRow key={notification.id} notification={notification} onClick={() => void onOpen(notification)} />
@@ -79,14 +79,14 @@ function NotificationRow({ notification, onClick }: { notification: AppNotificat
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-start justify-between gap-2">
-          <span className={cn('block min-w-0 truncate text-sm', isUnread ? 'font-bold text-foreground' : 'font-semibold text-muted')}>
+          <span className={cn('block min-w-0 truncate text-sm', isUnread ? 'font-medium text-foreground' : 'font-medium text-muted')}>
             {notificationHeadline(notification)}
           </span>
-          <time className="shrink-0 text-xs font-semibold text-muted" dateTime={notificationActivityTime(notification)}>
+          <time className="shrink-0 text-xs font-medium text-muted" dateTime={notificationActivityTime(notification)}>
             {formatNotificationTime(notificationActivityTime(notification))}
           </time>
         </span>
-        {context ? <span className={cn('mt-1 block truncate text-xs font-semibold uppercase tracking-wide', isUnread ? 'text-foreground' : 'text-muted')}>{context}</span> : null}
+        {context ? <span className={cn('mt-1 block truncate text-xs font-medium', isUnread ? 'text-foreground' : 'text-muted')}>{context}</span> : null}
         {detail ? <span className={cn('mt-1.5 block line-clamp-2 text-sm leading-5', isUnread ? 'text-foreground' : 'text-muted')}>{detail}</span> : null}
       </span>
       {isUnread ? <span className="absolute right-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-danger" aria-label="Unread" /> : null}
@@ -99,7 +99,7 @@ function NotificationAvatar({ notification }: { notification: AppNotification })
   const avatarUrl = resolveAssetUrl(actor?.avatar)
 
   return (
-    <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-bold text-white">
+    <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary text-xs font-medium text-white">
       {avatarUrl && actor ? (
         <Image src={avatarUrl} alt={actor.name} fill unoptimized={shouldBypassImageOptimizer(actor.avatar)} className="object-cover" sizes="44px" />
       ) : initials(actor?.name)}

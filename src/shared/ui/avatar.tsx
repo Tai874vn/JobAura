@@ -25,7 +25,7 @@ export function Avatar({
   return (
     <span
       className={cn(
-        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-bold text-white',
+        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary font-medium text-white',
         dims.box,
         className
       )}

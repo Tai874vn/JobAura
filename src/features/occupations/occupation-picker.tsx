@@ -24,7 +24,8 @@ export function useOccupationTitle(code: string) {
 
 /**
  * Search box over the ESCO occupation catalogue. Titles, alternative labels and O*NET specialties all match, so
- * "front end developer" finds user interface developer. Nothing typed is kept unless a result is picked.
+ * "front end developer" finds user interface developer. One box: it shows the chosen title, and typing in it searches;
+ * nothing typed is kept unless a result is picked (Escape or leaving the box shows the chosen title again).
  */
 export function OccupationPicker({
   value,
@@ -56,9 +57,11 @@ export function OccupationPicker({
   compact?: boolean
 }) {
   const [query, setQuery] = useState('')
+  // True once the user types; until then the box shows the chosen occupation's title.
+  const [typing, setTyping] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState(0)
-  const search = useDebounced(query.trim(), 250)
+  const search = useDebounced(typing ? query.trim() : '', 250)
   const listId = useId()
   const inputId = useId()
   const hintId = useId()
@@ -74,27 +77,23 @@ export function OccupationPicker({
 
   function choose(hit: OccupationHit) {
     onPick(hit)
+    reset()
+  }
+
+  /** Back to showing the chosen title, with the list closed. */
+  function reset() {
     setQuery('')
+    setTyping(false)
     setOpen(false)
     setActive(0)
   }
 
   return (
-    <div className="grid gap-1">
-      <label htmlFor={inputId} className={cn(compact ? 'text-xs font-semibold' : 'text-sm font-semibold', hideLabel && 'sr-only')}>
+    <div className="grid content-start gap-1">
+      <label htmlFor={inputId} className={cn(compact ? 'text-xs font-medium' : 'text-sm font-medium', hideLabel && 'sr-only')}>
         {label}{required ? <> <span className="text-danger">*</span></> : null}
       </label>
-      {value ? (
-        <div className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm">
-          <span id={hintId} className="min-w-0 truncate font-semibold"><span className="sr-only">Chosen: </span>{title ?? 'Loading…'}</span>
-          {onClear ? (
-            <button type="button" className="rounded p-0.5 text-muted hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
-              aria-label={`Clear ${label.toLowerCase()}`} onClick={onClear}>
-              <X className="h-3.5 w-3.5" />
-            </button>
-          ) : null}
-        </div>
-      ) : (
+      {value ? null : (
         <p id={hintId} className={cn('text-xs', invalid ? 'text-danger' : 'text-muted')}>
           {emptyLabel}
           {previously ? <span className="text-muted"> (previously: {previously})</span> : null}
@@ -106,23 +105,32 @@ export function OccupationPicker({
           role="combobox"
           aria-expanded={listShown && hits.length > 0}
           aria-controls={listShown ? listId : undefined}
-          aria-describedby={hintId}
+          aria-describedby={value ? undefined : hintId}
           aria-autocomplete="list"
           aria-invalid={invalid || undefined}
           aria-activedescendant={open && hits[active] ? `${listId}-${active}` : undefined}
           autoComplete="off"
-          value={query}
-          placeholder={value ? 'Search to change' : placeholder}
-          onChange={(event) => { setQuery(event.target.value); setOpen(true); setActive(0) }}
-          onFocus={() => setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 120)}
+          className={cn(value && onClear && 'pr-9', value && !typing && 'font-medium')}
+          value={typing ? query : value ? title ?? '' : ''}
+          placeholder={value && !title ? 'Loading…' : placeholder}
+          onChange={(event) => { setQuery(event.target.value); setTyping(true); setOpen(true); setActive(0) }}
+          onFocus={(event) => { event.target.select(); if (typing) setOpen(true) }}
+          // While it shows the chosen value, a click selects it all, so typing replaces it.
+          onClick={(event) => { if (!typing) event.currentTarget.select() }}
+          onBlur={() => setTimeout(reset, 120)}
           onKeyDown={(event) => {
             if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, hits.length - 1))) }
             else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
             else if (event.key === 'Enter' && open && hits[active]) { event.preventDefault(); choose(hits[active]) }
-            else if (event.key === 'Escape') setOpen(false)
+            else if (event.key === 'Escape') reset()
           }}
         />
+        {value && onClear ? (
+          <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:bg-foreground/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+            aria-label={`Clear ${label.toLowerCase()}`} onMouseDown={(event) => event.preventDefault()} onClick={() => { reset(); onClear() }}>
+            <X className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
         {listShown ? (
           <OccupationResults listId={listId} hits={hits} active={active} searching={results.isFetching}
             failed={results.isError} onActive={setActive} onChoose={choose} />

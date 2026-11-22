@@ -37,10 +37,10 @@ export function MyPostsPage() {
 
   return (
     <div className="container-page pt-10 pb-16">
-      <p className="text-[11px] font-bold uppercase tracking-wide text-primary">Seller workspace</p>
+      <p className="text-xs font-medium text-primary">Seller workspace</p>
       <div className="mt-1.5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">My portfolio posts</h1>
+          <h1 className="font-display text-3xl font-medium tracking-tight">My portfolio posts</h1>
         </div>
         <ButtonLink href="/jobs/new">
           <Plus className="h-4 w-4" /> New service
@@ -89,19 +89,19 @@ function MyPostRow({ job, onDelete }: { job: Job; onDelete: () => void }) {
   const hasRating = (job.rating ?? 0) > 0
 
   return (
-    <Card className="flex flex-wrap items-center gap-4 p-3.5 transition hover:border-primary hover:shadow-[0_8px_24px_rgba(27,28,28,0.06)]">
+    <Card className="flex flex-wrap items-center gap-4 p-3.5 transition hover:border-primary hover:shadow-float">
       <span className="relative block h-[63px] w-[84px] shrink-0 overflow-hidden rounded-lg bg-surface-muted">
         {imageUrl ? (
           <Image src={imageUrl} alt={job.title} fill unoptimized={bypassOptimizer} className="object-cover" sizes="84px" />
         ) : (
-          <span className="flex h-full items-center justify-center font-display text-xl font-bold text-primary/30">JA</span>
+          <span className="flex h-full items-center justify-center font-display text-xl font-medium text-primary/30">JA</span>
         )}
       </span>
       <div className="min-w-48 flex-1">
-        <h2 className="text-[15px] font-bold leading-snug">
+        <h2 className="text-[15px] font-medium leading-snug">
           <Link href={`/jobs/${job.id}`} className="hover:text-primary">{job.title}</Link>
         </h2>
-        <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 text-xs font-semibold text-muted">
+        <div className="mt-1 flex flex-wrap gap-x-3.5 gap-y-1 text-xs font-medium text-muted">
           <span className="inline-flex items-center gap-1">
             <Star className={cn('h-3 w-3', hasRating ? 'fill-rating text-rating' : 'text-muted')} />
             {hasRating ? `${(job.rating ?? 0).toFixed(1)}` : 'New · no reviews yet'}

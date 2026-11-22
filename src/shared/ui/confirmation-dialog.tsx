@@ -51,7 +51,7 @@ export function ConfirmationDialog({
         aria-modal="true"
         aria-labelledby="confirmation-title"
         aria-describedby="confirmation-description"
-        className="motion-panel relative w-full max-w-md rounded-lg bg-surface p-5 shadow-2xl"
+        className="motion-panel relative w-full max-w-md rounded-lg bg-surface p-5 shadow-overlay"
       >
         <Button
           className="absolute right-2 top-2"
@@ -69,7 +69,7 @@ export function ConfirmationDialog({
             <AlertTriangle className="h-5 w-5" />
           </span>
           <div className="min-w-0">
-            <h2 id="confirmation-title" className="font-display text-lg font-bold">{title}</h2>
+            <h2 id="confirmation-title" className="font-display text-lg font-medium">{title}</h2>
             <p id="confirmation-description" className="mt-1 text-sm leading-6 text-muted">{description}</p>
           </div>
         </div>

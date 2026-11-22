@@ -40,7 +40,7 @@ export function OAuthCallback() {
         <p className="rounded-lg border border-danger/20 bg-danger/5 px-3 py-2 text-sm font-medium text-danger">
           {getOAuthErrorMessage(error)}
         </p>
-        <Link className="mt-4 inline-block font-semibold text-primary" href="/auth/login">
+        <Link className="mt-4 inline-block font-medium text-primary" href="/auth/login">
           Back to sign in
         </Link>
       </OAuthShell>
@@ -65,12 +65,12 @@ function OAuthShell({
 }) {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <Card className="w-full max-w-md shadow-[0_12px_40px_rgba(0,0,0,0.05)]">
-        <CardContent className="p-6">
-          <Link href="/" className="mb-8 inline-block font-display text-2xl font-bold text-primary">
+      <Card className="w-full max-w-md rounded-2xl shadow-float">
+        <CardContent className="p-8">
+          <Link href="/" className="mb-8 inline-block font-display text-xl font-medium text-primary">
             JobAura
           </Link>
-          <h1 className="font-display text-3xl font-bold">{title}</h1>
+          <h1 className="font-display text-2xl font-medium">{title}</h1>
           <p className="mt-2 text-sm text-muted">{description}</p>
           {children}
         </CardContent>

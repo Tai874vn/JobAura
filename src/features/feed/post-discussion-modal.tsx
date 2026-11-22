@@ -98,10 +98,10 @@ export function PostDiscussionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-discussion-title"
-        className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-surface shadow-2xl sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
+        className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-surface shadow-overlay sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
       >
         <header className="relative flex h-14 shrink-0 items-center justify-center border-b border-border px-14">
-          <h2 id="post-discussion-title" className="truncate font-display text-lg font-bold">
+          <h2 id="post-discussion-title" className="truncate font-display text-lg font-medium">
             {post.author.name}&apos;s post
           </h2>
           <Button className="absolute right-3" type="button" variant="ghost" size="icon" onClick={onClose} title="Close discussion">
@@ -114,7 +114,7 @@ export function PostDiscussionModal({
             <div className="flex items-center gap-3 p-4">
               <FeedAvatar user={post.author} />
               <div className="min-w-0">
-                <Link href={`/profile/${post.author.id}`} className="block truncate text-sm font-bold hover:text-primary">
+                <Link href={`/profile/${post.author.id}`} className="block truncate text-sm font-medium hover:text-primary">
                   {post.author.name}
                 </Link>
                 <p className="truncate text-xs text-muted">
@@ -197,12 +197,12 @@ export function PostDiscussionModal({
             maxLength={1000}
             aria-label="Write a comment"
             placeholder="Write a comment..."
-            className="h-11 min-w-0 flex-1 rounded-full border border-border bg-surface-muted px-4 text-sm outline-none transition focus:border-primary focus:bg-surface"
+            className="h-11 min-w-0 flex-1 rounded-lg border border-border bg-surface-muted px-4 text-sm outline-none transition-colors focus:border-primary focus:bg-surface"
           />
           <Button
             type="submit"
             size="icon"
-            className="h-11 w-11 shrink-0 rounded-full"
+            className="h-11 w-11 shrink-0"
             loading={createComment.isPending}
             disabled={busy || !comment.trim()}
             aria-label="Send comment"

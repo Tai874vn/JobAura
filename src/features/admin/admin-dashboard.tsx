@@ -1,7 +1,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { BriefcaseBusiness, MessageSquare, ShoppingBag, Users } from 'lucide-react'
 import { adminApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { Card, CardContent, PageHeader, Skeleton } from '@/shared/ui'
@@ -11,10 +10,10 @@ export function AdminDashboard() {
   const stats = useQuery({ queryKey: queryKeys.adminStats, queryFn: adminApi.stats })
 
   const metrics = [
-    { label: 'Total Users', value: stats.isError ? '—' : stats.data?.content?.users ?? 0, loading: stats.isPending, icon: Users },
-    { label: 'Active Jobs', value: stats.isError ? '—' : stats.data?.content?.jobs ?? 0, loading: stats.isPending, icon: BriefcaseBusiness },
-    { label: 'Total Hires', value: stats.isError ? '—' : stats.data?.content?.hires ?? 0, loading: stats.isPending, icon: ShoppingBag },
-    { label: 'Comments', value: stats.isError ? '—' : stats.data?.content?.comments ?? 0, loading: stats.isPending, icon: MessageSquare },
+    { label: 'Users', value: stats.isError ? '—' : stats.data?.content?.users ?? 0, loading: stats.isPending },
+    { label: 'Active jobs', value: stats.isError ? '—' : stats.data?.content?.jobs ?? 0, loading: stats.isPending },
+    { label: 'Hires', value: stats.isError ? '—' : stats.data?.content?.hires ?? 0, loading: stats.isPending },
+    { label: 'Comments', value: stats.isError ? '—' : stats.data?.content?.comments ?? 0, loading: stats.isPending },
   ]
 
   return (
@@ -24,14 +23,11 @@ export function AdminDashboard() {
         title="Admin workbench"
       />
       <div className="mb-6 grid gap-4 md:grid-cols-4">
-        {metrics.map(({ label, value, loading, icon: Icon }) => (
+        {metrics.map(({ label, value, loading }) => (
           <Card key={label}>
-            <CardContent>
-              <span className="mb-5 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon className="h-4.5 w-4.5" />
-              </span>
-              {loading ? <Skeleton className="mb-2 h-9 w-16" /> : <p className="font-display text-3xl font-bold">{value}</p>}
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted">{label}</p>
+            <CardContent className="p-5">
+              <p className="text-sm text-muted">{label}</p>
+              {loading ? <Skeleton className="mt-3 h-8 w-16" /> : <p className="mt-3 font-display text-3xl font-medium tabular-nums">{value}</p>}
             </CardContent>
           </Card>
         ))}

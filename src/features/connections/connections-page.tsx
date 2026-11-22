@@ -181,7 +181,7 @@ export function ConnectionsPage() {
 }
 
 function Tab({ active, label, onClick }: { active: boolean; label: string; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className={`h-11 shrink-0 border-b-2 px-5 text-sm font-semibold ${active ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-foreground'}`}>{label}</button>
+  return <button type="button" onClick={onClick} className={`h-11 shrink-0 border-b-2 px-5 text-sm font-medium ${active ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-foreground'}`}>{label}</button>
 }
 
 function PeopleGrid({ loading, empty, children }: { loading: boolean; empty: string; children: React.ReactNode }) {
@@ -233,12 +233,12 @@ function PaginationControls({
 }
 
 function ProfileSummary({ user }: { user: ConnectionProfile }) {
-  return <div className="flex gap-3"><FeedAvatar user={user} size="lg" /><div className="min-w-0"><Link href={`/profile/${user.id}`} className="block truncate font-bold hover:text-primary">{user.name}</Link><p className="line-clamp-2 text-sm text-muted">{user.headline || 'JobAura member'}</p>{user.location ? <p className="mt-1 flex items-center gap-1 text-xs text-muted"><MapPin className="h-3 w-3" />{user.location}</p> : null}</div></div>
+  return <div className="flex gap-3"><FeedAvatar user={user} size="lg" /><div className="min-w-0"><Link href={`/profile/${user.id}`} className="block truncate font-medium hover:text-primary">{user.name}</Link><p className="line-clamp-2 text-sm text-muted">{user.headline || 'JobAura member'}</p>{user.location ? <p className="mt-1 flex items-center gap-1 text-xs text-muted"><MapPin className="h-3 w-3" />{user.location}</p> : null}</div></div>
 }
 
 function SkillList({ user, highlighted = [] }: { user: ConnectionProfile; highlighted?: string[] }) {
   const skills = highlighted.length ? highlighted : user.profileSkills.slice(0, 3).map((skill) => skill.name)
-  return <div className="mt-4 flex min-h-7 flex-wrap gap-2">{skills.map((skill) => <span key={skill} className="rounded border border-border bg-surface-muted px-2 py-1 text-xs font-semibold">{skill}</span>)}</div>
+  return <div className="mt-4 flex min-h-7 flex-wrap gap-2">{skills.map((skill) => <span key={skill} className="rounded border border-border bg-surface-muted px-2 py-1 text-xs font-medium">{skill}</span>)}</div>
 }
 
 function ConnectionCard({ connection, messaging, onMessage, onRemove }: { connection: Connection; messaging: boolean; onMessage: () => void; onRemove: () => void }) {
@@ -255,5 +255,5 @@ function SuggestionCard({ person, pending, onConnect }: { person: ConnectionSugg
 
 function RequestSection({ title, empty, children }: { title: string; empty: string; children: React.ReactNode }) {
   const count = Array.isArray(children) ? children.length : children ? 1 : 0
-  return <section><h2 className="mb-3 font-display text-lg font-bold">{title}</h2><div className="space-y-3">{count ? children : <Card className="p-6 text-sm text-muted">{empty}</Card>}</div></section>
+  return <section><h2 className="mb-3 font-display text-lg font-medium">{title}</h2><div className="space-y-3">{count ? children : <Card className="p-6 text-sm text-muted">{empty}</Card>}</div></section>
 }

@@ -134,8 +134,8 @@ function ProfileLoadError({ id }: { id: number }) {
     <div className="container-page py-10">
       <Card>
         <CardContent className="p-6">
-          <p className="text-sm font-bold uppercase tracking-[0.14em] text-danger">Profile unavailable</p>
-          <h1 className="mt-2 font-display text-3xl font-bold">Could not load profile #{id}</h1>
+          <p className="text-sm font-medium text-danger">Profile unavailable</p>
+          <h1 className="mt-2 font-display text-3xl font-medium">Could not load profile #{id}</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
             The profile page is available, but the backend profile endpoint returned an error instead of profile data.
           </p>

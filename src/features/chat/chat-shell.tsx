@@ -222,7 +222,7 @@ export function ChatShell() {
     <>
       {!isOpen ? (
         <Button
-          className="fixed bottom-5 right-5 z-40 h-12 rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.14)]"
+          className="fixed bottom-5 right-5 z-40 h-12 rounded-full shadow-float"
           onClick={openChat}
         >
           <MessageCircle className="h-4 w-4" />
@@ -231,10 +231,10 @@ export function ChatShell() {
       ) : null}
       {isOpen ? (
         // On a phone the panel is one column: the conversation list, or the open conversation with a back button.
-        <section className="motion-panel fixed bottom-5 right-5 z-50 grid h-[min(580px,calc(100dvh-40px))] w-[720px] max-w-[calc(100vw-40px)] grid-cols-1 overflow-hidden rounded-lg border border-border bg-surface shadow-[0_24px_60px_rgba(27,28,28,0.22)] sm:grid-cols-[280px_minmax(0,1fr)]">
+        <section className="motion-panel fixed bottom-5 right-5 z-50 grid h-[min(580px,calc(100dvh-40px))] w-[720px] max-w-[calc(100vw-40px)] grid-cols-1 overflow-hidden rounded-lg border border-border bg-surface shadow-overlay sm:grid-cols-[280px_minmax(0,1fr)]">
           <aside className={cn('min-w-0 flex-col border-r border-border bg-surface sm:flex', activeRoomId ? 'hidden' : 'flex')}>
             <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
-              <h2 className="font-display text-[15px] font-extrabold">Messages</h2>
+              <h2 className="font-display text-base font-medium">Messages</h2>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {roomsQuery.isPending ? Array.from({ length: 4 }).map((_, index) => (
@@ -273,12 +273,12 @@ export function ChatShell() {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[13.5px] font-bold">{name}</span>
-                        {room.lastMessage?.createdAt ? <span className="shrink-0 text-[10.5px] font-semibold text-muted">{formatRoomTime(room.lastMessage.createdAt)}</span> : null}
+                        <span className="truncate text-[13.5px] font-medium">{name}</span>
+                        {room.lastMessage?.createdAt ? <span className="shrink-0 text-xs font-medium text-muted">{formatRoomTime(room.lastMessage.createdAt)}</span> : null}
                       </span>
                       <span className="flex items-center justify-between gap-2">
                         <span className="truncate text-xs text-muted">{room.lastMessage?.content ?? 'No replies yet'}</span>
-                        {room.unreadCount ? <span className="grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-full bg-primary px-1 text-[10.5px] font-bold text-white">{room.unreadCount}</span> : null}
+                        {room.unreadCount ? <span className="grid h-[18px] min-w-[18px] shrink-0 place-items-center rounded-full bg-primary px-1 text-xs font-medium text-white">{room.unreadCount}</span> : null}
                       </span>
                     </span>
                   </button>
@@ -297,16 +297,16 @@ export function ChatShell() {
                   </Button>
                   <Avatar name={title} src={peer?.avatar} size="sm" className="h-8 w-8" />
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-bold">{title}</span>
+                    <span className="block truncate text-sm font-medium">{title}</span>
                     {peerOnline ? (
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-muted">
+                      <span className="flex items-center gap-1 text-xs font-medium text-muted">
                         <span className="h-1.5 w-1.5 rounded-full bg-primary-bright" aria-hidden="true" /> Online
                       </span>
                     ) : null}
                   </span>
                 </span>
               ) : (
-                <h3 className="min-w-0 truncate text-sm font-bold">{title}</h3>
+                <h3 className="min-w-0 truncate text-sm font-medium">{title}</h3>
               )}
               <Button variant="ghost" size="icon" onClick={closeChat} aria-label="Close chat">
                 <X className="h-4 w-4" />
@@ -326,9 +326,9 @@ export function ChatShell() {
                         )}>
                           {message.content}
                         </div>
-                        {message.createdAt ? <time className="mt-1 text-[10.5px] text-muted">{formatMessageTime(message.createdAt)}</time> : null}
+                        {message.createdAt ? <time className="mt-1 text-xs text-muted">{formatMessageTime(message.createdAt)}</time> : null}
                         {own && message.id === latestOwnMessageId ? (
-                          <span className={cn('mt-0.5 flex items-center gap-1 text-[10.5px] font-bold', latestOwnMessageSeen ? 'text-primary' : 'text-muted')}>
+                          <span className={cn('mt-0.5 flex items-center gap-1 text-xs font-medium', latestOwnMessageSeen ? 'text-primary' : 'text-muted')}>
                             <CheckCheck className="h-3 w-3" />
                             {latestOwnMessageSeen ? 'Seen' : 'Sent'}
                           </span>
@@ -337,13 +337,13 @@ export function ChatShell() {
                     )
                   })}
                   {activeTypingUserIds.length ? (
-                    <div className="flex items-center gap-2 self-start rounded-full border border-border bg-surface px-3.5 py-2" aria-live="polite">
+                    <div className="flex items-center gap-2 self-start rounded-md border border-border bg-surface px-3.5 py-2" aria-live="polite">
                       <span className="flex gap-1">
                         {[0, 1, 2].map((dot) => (
-                          <span key={dot} className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted [animation-delay:-0.3s,0.15s,0s]" style={{ animationDelay: `${dot * 0.15}s` }} />
+                          <span key={dot} className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted" style={{ animationDelay: `${dot * 0.15}s` }} />
                         ))}
                       </span>
-                      <span className="text-xs font-semibold text-muted">{title || 'Someone'} is typing…</span>
+                      <span className="text-xs font-medium text-muted">{title || 'Someone'} is typing…</span>
                     </div>
                   ) : null}
                 </>
@@ -355,7 +355,7 @@ export function ChatShell() {
               )}
             </div>
             <form className="flex gap-2 border-t border-border p-2.5" onSubmit={sendMessage}>
-              <div className="flex min-w-0 flex-1 items-center rounded-full border border-border bg-surface px-4 transition focus-within:border-primary">
+              <div className="flex min-w-0 flex-1 items-center field-shell rounded-md border border-border bg-surface px-4">
                 <input
                   className="h-10 min-w-0 flex-1 bg-transparent text-sm outline-none"
                   placeholder="Write a reply"
