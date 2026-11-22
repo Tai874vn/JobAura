@@ -1,0 +1,82 @@
+# Every push and pull request: type check, lint, unit tests and a production build, on GitHub's machines.
+# A push to main then builds the Docker image on the owner's own machine (a self-hosted runner
+# labelled "jobaura") into its local Docker as jobaura-frontend:latest, the name compose.yaml uses,
+# and also tags it with the commit SHA for rolling back. No registry; nothing is deployed:
+# the owner restarts with `docker compose up -d`.
+#
+# The browser bundle bakes in the public site URL. The image job reads it, and the image hosts,
+# from the same .env file compose.yaml uses, so the image matches a local `docker compose build`.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  image:
+    needs: test
+    # Only trusted code reaches the owner's machine: pushes to main, never pull requests.
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, jobaura]
+    timeout-minutes: 30
+    env:
+      JOBAURA_ENV_FILE: E:\Final_Year_Project\.env
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same build arguments as the frontend service in compose.yaml.
+      - name: Frontend image
+        shell: powershell
+        run: |
+          $vars = @{}
+          Get-Content $env:JOBAURA_ENV_FILE | Where-Object { $_ -match '^\s*([A-Z_]+)=(.*)$' } | ForEach-Object { $vars[$Matches[1]] = $Matches[2].Trim().Trim('"') }
+          $url = $vars['JOBAURA_PUBLIC_URL']
+          if (-not $url) { Write-Error "JOBAURA_PUBLIC_URL is missing from $env:JOBAURA_ENV_FILE"; exit 1 }
+          $hosts = $vars['NEXT_PUBLIC_IMAGE_HOSTS']
+          if (-not $hosts) { $hosts = 'res.cloudinary.com,images.unsplash.com,i.pravatar.cc,lh3.googleusercontent.com' }
+          $strict = $vars['CSP_ENFORCE_STRICT']; if (-not $strict) { $strict = 'false' }
+          $reportOnly = $vars['CSP_REPORT_ONLY']; if (-not $reportOnly) { $reportOnly = 'true' }
+          docker build -t jobaura-frontend:latest -t "jobaura-frontend:${{ github.sha }}" `
+            --build-arg "NEXT_PUBLIC_SITE_URL=$url" `
+            --build-arg "NEXT_PUBLIC_API_BASE_URL=$url" `
+            --build-arg NEXT_PUBLIC_USE_SAME_ORIGIN_API=true `
+            --build-arg "NEXT_PUBLIC_IMAGE_HOSTS=$hosts" `
+            --build-arg BACKEND_API_BASE_URL=http://backend:3002 `
+            --build-arg "CSP_ENFORCE_STRICT=$strict" `
+            --build-arg "CSP_REPORT_ONLY=$reportOnly" `
+            .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
