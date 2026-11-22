@@ -2,10 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { hiringPostsApi, jobsApi } from '@/shared/api/endpoints'
-import { usersApi } from '@/shared/api/endpoints/users'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { UserProfile, UserResume } from '@/shared/schemas'
 import { isOccupationCode, parseResumeJobs } from './resume-career'
+import { useOwnResume } from './use-own-resume'
 
 /**
  * Profile strength: weighted checks that add up to 100. Only what changes how the profile works counts:
@@ -81,7 +81,7 @@ export function profileStrength({ profile, resume, portfolioPosts = 0, hiringPos
 export function useProfileStrength(profile: StrengthInput['profile'] & { id: number }, enabled = true) {
   const isEmployer = profile.role === 'employer'
   const countParams = { page: 1, pageSize: 1 }
-  const resume = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume, enabled: enabled && !isEmployer, retry: false })
+  const { resume } = useOwnResume(enabled && !isEmployer)
   const posts = useQuery({
     queryKey: queryKeys.jobsByCreator(profile.id, countParams),
     queryFn: () => jobsApi.byCreator(profile.id, countParams),
@@ -95,7 +95,7 @@ export function useProfileStrength(profile: StrengthInput['profile'] & { id: num
   const count = (content?: { totalRow?: number; data?: unknown[] } | null) => content?.totalRow ?? content?.data?.length ?? 0
   return profileStrength({
     profile,
-    resume: resume.data?.content ?? null,
+    resume,
     portfolioPosts: count(posts.data?.content),
     hiringPosts: count(hiring.data?.content),
   })
