@@ -61,7 +61,7 @@ describe('MyApplicationsPage', () => {
   it('shows the upcoming interview with a Join call link', () => {
     const html = render('')
     expect(html).toContain('Upcoming interviews')
-    expect(html).toContain('href="/interviews/8/call"')
+    expect(html).toContain('href="/interviews/8/call?application=')
   })
 
   it('opens a swept application from a notification and says Position filled, not an error', () => {

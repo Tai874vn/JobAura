@@ -172,7 +172,7 @@ export function InterviewCard({
       {active ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {interview.status === 'SCHEDULED' && online ? (
-            <ButtonLink href={`/interviews/${interview.id}/call`} size="sm">
+            <ButtonLink href={`/interviews/${interview.id}/call${interview.applicationId ? `?application=${interview.applicationId}` : ''}`} size="sm">
               Join call
             </ButtonLink>
           ) : null}

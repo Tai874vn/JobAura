@@ -96,6 +96,9 @@ const scriptSources = [
   "'unsafe-inline'",
   ...(process.env.NODE_ENV === 'development' ? ["'unsafe-eval'"] : []),
 ]
+// The video call (LiveKit Cloud) opens a websocket and calls its server over https. blob: workers and media are
+// already allowed below, which is what LiveKit needs for the camera and microphone.
+const liveKitOrigins = ['wss://*.livekit.cloud', 'https://*.livekit.cloud']
 const contentSecurityPolicy = [
   cspDirective('default-src', ["'self'"]),
   cspDirective('base-uri', ["'self'"]),
@@ -106,7 +109,7 @@ const contentSecurityPolicy = [
   cspDirective('style-src', ["'self'", "'unsafe-inline'"]),
   cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
   cspDirective('font-src', ["'self'", 'data:']),
-  cspDirective('connect-src', ["'self'", ...apiOrigins, ...websocketOrigins, 'https://*.ingest.sentry.io', 'https://*.sentry.io']),
+  cspDirective('connect-src', ["'self'", ...apiOrigins, ...websocketOrigins, 'https://*.ingest.sentry.io', 'https://*.sentry.io', ...liveKitOrigins]),
   cspDirective('frame-src', ["'self'", 'https://accounts.google.com']),
   cspDirective('worker-src', ["'self'", 'blob:']),
   cspDirective('media-src', ["'self'", 'blob:', 'data:']),
@@ -122,7 +125,7 @@ const contentSecurityPolicyReportOnly = [
   cspDirective('style-src', ["'self'", "'report-sample'"]),
   cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
   cspDirective('font-src', ["'self'", 'data:']),
-  cspDirective('connect-src', ["'self'", ...apiOrigins, ...websocketOrigins, 'https://*.ingest.sentry.io', 'https://*.sentry.io']),
+  cspDirective('connect-src', ["'self'", ...apiOrigins, ...websocketOrigins, 'https://*.ingest.sentry.io', 'https://*.sentry.io', ...liveKitOrigins]),
   cspDirective('frame-src', ["'self'", 'https://accounts.google.com']),
   cspDirective('worker-src', ["'self'", 'blob:']),
   cspDirective('media-src', ["'self'", 'blob:', 'data:']),

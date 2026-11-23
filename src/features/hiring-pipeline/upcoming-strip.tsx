@@ -33,7 +33,7 @@ export function UpcomingStrip({ rows, hrefFor }: { rows: UpcomingInterview[]; hr
               </Link>
             </div>
             {row.mode === 'ONLINE' ? (
-              <ButtonLink href={`/interviews/${row.id}/call`} size="sm" className="shrink-0">
+              <ButtonLink href={`/interviews/${row.id}/call?application=${row.applicationId}`} size="sm" className="shrink-0">
                 <Video className="h-4 w-4" aria-hidden="true" />
                 Join call
               </ButtonLink>
