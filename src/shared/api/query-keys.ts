@@ -38,3 +38,14 @@ export const queryKeys = {
   chatMessages: (roomId: number) => ['chat', 'messages', roomId] as const,
   adminStats: ['admin', 'stats'] as const,
 } as const
+
+/**
+ * Keys for the hiring pipeline. Every key carries the application or post id, so a person never sees
+ * cached data that belongs to someone else.
+ */
+export const pipelineKeys = {
+  detail: (id: number) => ['pipeline', 'application', id] as const,
+  list: (postId: number, params?: object) => ['pipeline', 'post', postId, params ?? {}] as const,
+  mine: (params?: object) => ['pipeline', 'mine', params ?? {}] as const,
+  upcoming: ['pipeline', 'upcoming'] as const,
+} as const

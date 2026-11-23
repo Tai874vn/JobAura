@@ -9,7 +9,9 @@ import {
   applyHiringPostSchema, candidateProfileSchema, commentSchema, createCommentSchema, createHiringPostSchema,
   createJobSchema, hireSchema, hiringApplicationSchema, hiringPostSchema, subcategorySchema, jobSchema,
   categorySchema, recommendationLabelSchema, recommendationScoreSchema, recommendedCandidateSchema,
-  recommendedJobSchema, updateJobSchema,
+  recommendedJobSchema, updateJobSchema, hiringApplicationStatusSchema, hiringStatusReasonSchema,
+  hiringPipelineCountsSchema, interviewSchema, applicationEventSchema, applicationDetailSchema,
+  upcomingInterviewSchema,
 } from './marketplace'
 import {
   chatMessageSchema, chatRoomSchema, chatUserSchema, connectionProfileSchema, connectionSchema,
@@ -45,6 +47,13 @@ export type HiringPost = z.infer<typeof hiringPostSchema>;
 export type CreateHiringPost = z.infer<typeof createHiringPostSchema>;
 export type ApplyHiringPost = z.infer<typeof applyHiringPostSchema>;
 export type HiringApplication = z.infer<typeof hiringApplicationSchema>;
+export type ApplicationStatus = z.infer<typeof hiringApplicationStatusSchema>;
+export type HiringStatusReason = z.infer<typeof hiringStatusReasonSchema>;
+export type HiringPipelineCounts = z.infer<typeof hiringPipelineCountsSchema>;
+export type Interview = z.infer<typeof interviewSchema>;
+export type ApplicationEvent = z.infer<typeof applicationEventSchema>;
+export type ApplicationDetail = z.infer<typeof applicationDetailSchema>;
+export type UpcomingInterview = z.infer<typeof upcomingInterviewSchema>;
 export type RecommendationLabel = z.infer<typeof recommendationLabelSchema>;
 export type RecommendationScore = z.infer<typeof recommendationScoreSchema>;
 export type RecommendedJob = z.infer<typeof recommendedJobSchema>;

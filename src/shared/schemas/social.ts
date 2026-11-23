@@ -113,6 +113,9 @@ export const notificationTypes = [
   "HIRE_CREATED",
   "HIRE_COMPLETED",
   "CHAT_MESSAGE",
+  "APPLICATION_RECEIVED",
+  "APPLICATION_UPDATE",
+  "INTERVIEW_UPDATE",
 ] as const;
 
 export const notificationActorSchema = z.object({

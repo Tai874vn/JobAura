@@ -1,3 +1,4 @@
+import { hiringApplicationStatusSchema, hiringPipelineCountsSchema, hiringStatusReasonSchema } from '@/shared/schemas'
 import type { ApiResponse, HiringApplication, HiringPost, PaginatedContent } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickRole, pickString } from '../core'
 
@@ -47,6 +48,10 @@ export function normalizeHiringPost(raw: unknown): HiringPost {
         }
       : undefined,
     applicationCount: pickNumber(record, "applicationCount") ?? 0,
+    openings: pickNumber(record, "openings") ?? null,
+    hiredCount: pickNumber(record, "hiredCount") ?? 0,
+    offersWaiting: pickNumber(record, "offersWaiting") ?? 0,
+    pipeline: hiringPipelineCountsSchema.safeParse(record.pipeline).data,
     viewerHasApplied: pickBoolean(record, "viewerHasApplied") ?? false,
   };
 }
@@ -63,13 +68,13 @@ export function normalizeHiringApplication(raw: unknown): HiringApplication {
     hiringPostId: pickNumber(record, "hiringPostId") ?? 0,
     applicantId: pickNumber(record, "applicantId") ?? 0,
     coverLetter: pickString(record, "coverLetter") ?? null,
-    status:
-      status === "REVIEWING" ||
-      status === "ACCEPTED" ||
-      status === "REJECTED" ||
-      status === "WITHDRAWN"
-        ? status
-        : "APPLIED",
+    status: hiringApplicationStatusSchema.safeParse(status).success
+      ? (status as HiringApplication["status"])
+      : "APPLIED",
+    statusReason: hiringStatusReasonSchema.safeParse(pickString(record, "statusReason")).success
+      ? (pickString(record, "statusReason") as HiringApplication["statusReason"])
+      : null,
+    statusNote: pickString(record, "statusNote") ?? null,
     createdAt: pickString(record, "createdAt"),
     updatedAt: pickString(record, "updatedAt"),
     hiringPost: record.hiringPost

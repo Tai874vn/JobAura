@@ -36,13 +36,32 @@ export const jobSchema = z.object({
 });
 
 export const hiringPostStatusSchema = z.enum(["OPEN", "CLOSED"]);
+/**
+ * The 8 steps of an application. Four are active (APPLIED, REVIEWING, INTERVIEWING, OFFERED) and four are
+ * final (HIRED, REJECTED, DECLINED, WITHDRAWN). The backend renamed ACCEPTED to HIRED.
+ */
 export const hiringApplicationStatusSchema = z.enum([
   "APPLIED",
   "REVIEWING",
-  "ACCEPTED",
+  "INTERVIEWING",
+  "OFFERED",
+  "HIRED",
   "REJECTED",
+  "DECLINED",
   "WITHDRAWN",
 ]);
+
+/** Why an application was rejected without the recruiter choosing it (the "sweep" when a post closes or fills). */
+export const hiringStatusReasonSchema = z.enum(["POSITION_FILLED", "POST_CLOSED"]);
+
+/** The 5 steps that move forward; the recruiter's pipeline numbers on a post card have all of them. */
+export const hiringPipelineCountsSchema = z.object({
+  APPLIED: z.number().default(0),
+  REVIEWING: z.number().default(0),
+  INTERVIEWING: z.number().default(0),
+  OFFERED: z.number().default(0),
+  HIRED: z.number().default(0),
+});
 
 export const hiringPostSchema = z.object({
   id: z.number(),
@@ -86,6 +105,14 @@ export const hiringPostSchema = z.object({
     })
     .optional(),
   applicationCount: z.number().optional().default(0),
+  /** How many people the post hires; null means no limit. */
+  openings: z.number().nullable().optional(),
+  /** Applications in HIRED. */
+  hiredCount: z.number().optional(),
+  /** Applications in OFFERED (an offer is waiting for an answer). */
+  offersWaiting: z.number().optional(),
+  /** Only on the owner's own post cards. */
+  pipeline: hiringPipelineCountsSchema.optional(),
   viewerHasApplied: z.boolean().optional().default(false),
 });
 
@@ -161,10 +188,97 @@ export const hiringApplicationSchema = z.object({
   applicantId: z.number(),
   coverLetter: z.string().optional().nullable(),
   status: hiringApplicationStatusSchema,
+  /** POSITION_FILLED or POST_CLOSED after a sweep; null when a person made the change. */
+  statusReason: hiringStatusReasonSchema.nullish(),
+  statusNote: z.string().nullish(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
   hiringPost: hiringPostSchema.optional(),
   applicant: userProfileSchema.optional(),
+});
+
+export const interviewModeSchema = z.enum(["ONLINE", "ONSITE", "PHONE"]);
+export const interviewStatusSchema = z.enum([
+  "PROPOSED",
+  "RESCHEDULE_REQUESTED",
+  "SCHEDULED",
+  "COMPLETED",
+  "CANCELLED",
+]);
+
+/** One interview round. Times are ISO strings in UTC. */
+export const interviewSchema = z.object({
+  id: z.number(),
+  applicationId: z.number().optional(),
+  round: z.number(),
+  mode: interviewModeSchema,
+  durationMinutes: z.number().default(45),
+  location: z.string().nullish(),
+  note: z.string().nullish(),
+  proposedTimes: z.array(z.string()).default([]),
+  scheduledAt: z.string().nullish(),
+  status: interviewStatusSchema,
+  rescheduleNote: z.string().nullish(),
+  createdById: z.number().optional(),
+  completedAt: z.string().nullish(),
+  cancelledAt: z.string().nullish(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
+
+/** A row of the application history. `type` is kept as text so a new backend type does not break the page. */
+export const applicationEventSchema = z.object({
+  id: z.number(),
+  type: z.string(),
+  /** Depends on the type (for example { reason, note } for "rejected"); null when there is none. */
+  data: z.record(z.string(), z.unknown()).nullish(),
+  createdAt: z.string(),
+  actor: z.object({ id: z.number(), name: z.string() }).nullish(),
+});
+
+/** The resume part a recruiter reads; null when the candidate has no saved resume. */
+export const applicationResumeSchema = z.object({
+  occupation: z.string().nullish(),
+  occupationTitle: z.string().nullish(),
+  years: z.number().nullish(),
+  relatedYears: z.number().nullish(),
+  level: z.string().nullish(),
+  jobs: z.array(z.unknown()).default([]),
+  degree: z.string().nullish(),
+  skills: z.array(z.string()).default([]),
+});
+
+/** GET /applications/:id and the content of every action on an application. */
+export const applicationDetailSchema = hiringApplicationSchema
+  .omit({ applicant: true })
+  .extend({
+    offerNote: z.string().nullish(),
+    offeredAt: z.string().nullish(),
+    decidedAt: z.string().nullish(),
+    applicant: z
+      .object({
+        id: z.number(),
+        name: z.string(),
+        avatar: z.string().nullish(),
+        headline: z.string().nullish(),
+        location: z.string().nullish(),
+        profileSkills: z.array(profileSkillSchema).default([]),
+      })
+      .optional(),
+    resume: applicationResumeSchema.nullish(),
+    /** The "my applications" list sends cards without these two, so they default to empty. */
+    interviews: z.array(interviewSchema).default([]),
+    events: z.array(applicationEventSchema).default([]),
+    /** Which side the viewer is: the applicant is the candidate; the post owner or an admin is the recruiter. */
+    viewerRole: z.enum(["candidate", "recruiter"]).optional(),
+  });
+
+/** One item of GET /interviews/upcoming. */
+export const upcomingInterviewSchema = interviewSchema.extend({
+  applicationId: z.number(),
+  post: z.object({ id: z.number(), title: z.string(), companyName: z.string().nullish() }),
+  otherPerson: z.object({ id: z.number(), name: z.string(), avatar: z.string().nullish() }),
+  viewerRole: z.enum(["candidate", "recruiter"]),
 });
 
 export const recommendationLabelSchema = z.enum([
