@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
-import { Avatar, Button } from '@/shared/ui'
+import { Avatar, Button, Skeleton } from '@/shared/ui'
 import { pipelineApi, statusLabel, type InterviewRequest } from './api'
-import { applicantActions, noOpeningsLeft, openingsLeft } from './applicant-actions'
+import { applicantActions, dialogStillAllowed, noOpeningsLeft, openingsLeft, outcomeWanted, type ApplicantDialog } from './applicant-actions'
 import { formatApplicantDay, formatYears, resumeJobLines } from './applicant-format'
 import { ApplicationTimeline } from './application-timeline'
 import { ConfirmActionDialog } from './confirm-action-dialog'
@@ -28,7 +28,10 @@ type PanelAction =
   | { type: 'request'; request: InterviewRequest }
   | { type: 'interview'; interviewId: number; action: InterviewAction }
 
-type Dialog = 'reject' | 'offer' | 'withdraw-offer' | 'request' | null
+type Dialog = ApplicantDialog | null
+
+/** Shortlist and Skip have no dialog, so a refused step is told by a toast; every other step is told inside its dialog. */
+const toastsErrors = (act: PanelAction) => act.type === 'shortlist' || (act.type === 'interview' && act.action.type === 'complete')
 
 const doneText: Record<PanelAction['type'], string> = {
   shortlist: 'Shortlisted. The candidate is told.',
@@ -78,7 +81,7 @@ function sortedInterviews(interviews: ApplicationDetail['interviews']) {
 
 function Fact({ label, children, wide = false }: { label: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className={wide ? 'col-span-2 min-w-0 p-3 sm:col-span-2' : 'min-w-0 p-3'}>
+    <div className={wide ? 'col-span-2 min-w-0 p-3' : 'min-w-0 p-3'}>
       <dt className="text-xs text-muted">{label}</dt>
       <dd className="mt-0.5 break-words text-sm font-medium">{children}</dd>
     </div>
@@ -105,7 +108,9 @@ export function ApplicantPanel({
 }) {
   const [dialog, setDialog] = useState<Dialog>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
-  const mutation = usePipelineMutation(application.id, (act: PanelAction) => runAction(application.id, act))
+  const mutation = usePipelineMutation(application.id, (act: PanelAction) => runAction(application.id, act), {
+    quietErrors: (act) => !toastsErrors(act),
+  })
   const pending = mutation.isPending
 
   const applicant = application.applicant
@@ -117,16 +122,28 @@ export function ApplicantPanel({
   const left = openingsLeft(post)
   const resume = application.resume
   const active = application.interviews.some((i) => isActive(i.status))
-  const outcomePossible = application.status === 'INTERVIEWING' && !active && application.interviews.some((i) => i.status === 'COMPLETED')
-  const [outcomeOpen, setOutcomeOpen] = useState(outcomeOnLoad && outcomePossible)
+  const [outcomeOpen, setOutcomeOpen] = useState(outcomeOnLoad && outcomeWanted(application))
+  // A sentence kept on the panel when a dialog had to close because the application moved on.
+  const [notice, setNotice] = useState<string | null>(null)
 
   // ?outcome=1 has been used once; the page takes it out of the address.
   useEffect(() => {
     if (outcomeOnLoad) onOutcomeShown?.()
   }, [outcomeOnLoad, onOutcomeShown])
 
+  // The server refused a step because the application changed (for example the candidate withdrew). Once the
+  // fresh application no longer allows what the dialog does, close it, so no stale button stays live.
+  const stale = dialog !== null && !dialogStillAllowed(dialog, application)
+  // (React allows setting this component's own state while it renders; it redraws at once with the dialog closed.)
+  if (stale) {
+    setNotice(dialogError ?? 'This application changed, so that step is no longer possible.')
+    setDialog(null)
+    setDialogError(null)
+  }
+
   /** Runs an action; a thrown error means the server said no, and the caller shows its sentence. */
   async function perform(act: PanelAction) {
+    setNotice(null)
     await mutation.mutateAsync(act)
     if (act.type === 'interview' && act.action.type === 'complete') setOutcomeOpen(true)
     else toast.success(doneText[act.type])
@@ -196,6 +213,8 @@ export function ApplicantPanel({
         {application.status === 'OFFERED' && application.offerNote ? (
           <p className="mt-4 break-words rounded-lg bg-surface-muted p-3 text-sm">Offer: {application.offerNote}</p>
         ) : null}
+
+        {notice ? <p role="alert" className="mt-4 break-words rounded-lg bg-danger/10 p-3 text-sm text-danger">{notice}</p> : null}
 
         <h3 className="mt-6 font-display text-base font-medium">Resume</h3>
         {resume ? (
@@ -344,6 +363,31 @@ export function ApplicantPanel({
         onSubmit={(request) => void fromDialog({ type: 'request', request })}
       />
       <InterviewOutcomeDialog open={outcomeOpen} name={name} noOpeningsLeft={noRoom} onChoose={choose} />
+    </article>
+  )
+}
+
+/**
+ * Shown while the full application loads: the header from the list row, and nothing to act on yet.
+ * The list row has no interviews or history for sure, so no buttons or resume text are drawn from it.
+ */
+export function ApplicantPanelLoading({ row, backHref }: { row?: ApplicationDetail; backHref: string }) {
+  const name = row?.applicant?.name ?? 'Applicant'
+  return (
+    <article className="flex max-h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface max-lg:h-full max-lg:rounded-none max-lg:border-0" aria-busy="true" aria-label={`${name}, loading`}>
+      <div className="p-4 sm:p-6">
+        <Link href={backHref} scroll={false} className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-primary lg:hidden">
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          All applicants
+        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Avatar name={name} src={row?.applicant?.avatar} size="lg" />
+          <h2 className="min-w-0 flex-1 basis-40 truncate font-display text-xl font-medium leading-tight">{name}</h2>
+          {row ? <StatusBadge status={row.status} viewer="recruiter" reason={row.statusReason} /> : null}
+        </div>
+        <Skeleton className="mt-6 h-24 rounded-lg" />
+        <Skeleton className="mt-4 h-16 rounded-lg" />
+      </div>
     </article>
   )
 }

@@ -13,7 +13,7 @@ import type { ApplicationStatus } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, EmptyState, Pagination, Skeleton } from '@/shared/ui'
 import { pipelineApi, pipelineKeys } from './api'
 import { ApplicantListItem } from './applicant-list-item'
-import { ApplicantPanel } from './applicant-panel'
+import { ApplicantPanel, ApplicantPanelLoading } from './applicant-panel'
 
 export const applicantsPageSize = 20
 
@@ -125,10 +125,15 @@ export function ApplicantsPage({ postId }: { postId: number }) {
     queryKey: pipelineKeys.detail(selectedId ?? 0),
     queryFn: () => pipelineApi.detail(selectedId as number),
     enabled: selectedId !== null && (!post || allowed),
-    placeholderData: (previous) => previous?.id === selectedId ? previous : rows.find((row) => row.id === selectedId),
+    // Back from the call screen the cached application can be old: read it again before the outcome is decided.
+    refetchOnMount: outcomeOnLoad ? 'always' : true,
     staleTime: 15_000,
   })
-  const selected = detail.data && detail.data.id === selectedId && detail.data.hiringPostId === postId ? detail.data : null
+  const loaded = detail.data && detail.data.id === selectedId ? detail.data : null
+  const otherPost = Boolean(loaded && loaded.hiringPostId !== postId)
+  // With ?outcome=1 the panel waits for a fresh read, so the dialog opens (or not) from the real state.
+  const selected = loaded && !otherPost && (!outcomeOnLoad || detail.isFetchedAfterMount) ? loaded : null
+  const onOutcomeShown = useCallback(() => go({ outcome: null }), [go])
 
   if (postQuery.isError && isMissing(postQuery.error)) return <NotFound />
   if (post && !allowed) return <NotFound />
@@ -230,12 +235,12 @@ export function ApplicantsPage({ postId }: { postId: number }) {
                 application={selected}
                 backHref={hrefFor({ application: null, outcome: null })}
                 outcomeOnLoad={outcomeOnLoad}
-                onOutcomeShown={() => go({ outcome: null })}
+                onOutcomeShown={onOutcomeShown}
               />
-            ) : selectedId !== null && detail.isError ? (
+            ) : selectedId !== null && (detail.isError || otherPost) ? (
               <EmptyState title="Could not open this applicant" description="They may belong to another post." />
             ) : selectedId !== null ? (
-              <Skeleton className="h-64 rounded-lg" />
+              <ApplicantPanelLoading row={rows.find((row) => row.id === selectedId)} backHref={hrefFor({ application: null, outcome: null })} />
             ) : null}
           </div>
         </div>

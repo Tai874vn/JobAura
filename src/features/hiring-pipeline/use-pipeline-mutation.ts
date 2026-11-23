@@ -21,7 +21,12 @@ export function isStaleActionError(error: unknown): boolean {
 export function usePipelineMutation<Vars = void>(
   applicationId: number,
   action: (vars: Vars) => Promise<ApplicationDetail>,
-  options: { onSuccess?: (detail: ApplicationDetail) => void; successMessage?: string } = {},
+  options: {
+    onSuccess?: (detail: ApplicationDetail) => void
+    successMessage?: string
+    /** True when a dialog shows the error itself for these inputs, so no toast says it a second time. */
+    quietErrors?: (vars: Vars) => boolean
+  } = {},
 ) {
   const queryClient = useQueryClient()
   return useMutation({
@@ -33,9 +38,13 @@ export function usePipelineMutation<Vars = void>(
       if (options.successMessage) toast.success(options.successMessage)
       options.onSuccess?.(detail)
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error, 'Could not save this change. Please try again.'))
-      if (isStaleActionError(error)) void queryClient.invalidateQueries({ queryKey: pipelineKeys.detail(applicationId) })
+    onError: (error, vars) => {
+      if (!options.quietErrors?.(vars)) toast.error(getErrorMessage(error, 'Could not save this change. Please try again.'))
+      if (isStaleActionError(error)) {
+        // The application moved on: read it again, and the post's applicants list too (row badge and tab counts).
+        void queryClient.invalidateQueries({ queryKey: pipelineKeys.detail(applicationId) })
+        void queryClient.invalidateQueries({ queryKey: ['pipeline', 'post'] })
+      }
     },
   })
 }

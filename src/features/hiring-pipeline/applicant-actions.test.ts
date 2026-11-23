@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ApplicationDetail } from '@/shared/schemas'
-import { applicantActions, noOpeningsLeft, openingsLeft } from './applicant-actions'
+import { applicantActions, dialogStillAllowed, noOpeningsLeft, openingsLeft, outcomeWanted } from './applicant-actions'
 
 type Iv = ApplicationDetail['interviews'][number]['status']
 const app = (status: ApplicationDetail['status'], interviews: Iv[] = [], post: Record<string, unknown> = {}) =>
@@ -67,5 +67,35 @@ describe('applicantActions', () => {
     expect(openingsLeft({ openings: 3, hiredCount: 1, offersWaiting: 1 })).toBe(1)
     expect(openingsLeft({ openings: 1, hiredCount: 1, offersWaiting: 1 })).toBe(-1)
     expect(openingsLeft(undefined)).toBeNull()
+  })
+})
+
+describe('dialogStillAllowed', () => {
+  it('keeps a dialog open while its step is allowed', () => {
+    expect(dialogStillAllowed('reject', app('REVIEWING'))).toBe(true)
+    expect(dialogStillAllowed('offer', app('INTERVIEWING', ['COMPLETED']))).toBe(true)
+    expect(dialogStillAllowed('withdraw-offer', app('OFFERED'))).toBe(true)
+    expect(dialogStillAllowed('request', app('INTERVIEWING', ['COMPLETED']))).toBe(true)
+  })
+
+  it('closes it once the application moved on (the candidate withdrew)', () => {
+    expect(dialogStillAllowed('reject', app('WITHDRAWN'))).toBe(false)
+    expect(dialogStillAllowed('offer', app('WITHDRAWN', ['COMPLETED']))).toBe(false)
+    expect(dialogStillAllowed('withdraw-offer', app('HIRED'))).toBe(false)
+    expect(dialogStillAllowed('request', app('INTERVIEWING', ['SCHEDULED']))).toBe(false)
+  })
+
+  it('closes the offer dialog when the last opening was taken meanwhile', () => {
+    expect(dialogStillAllowed('offer', app('INTERVIEWING', ['COMPLETED'], { openings: 1, hiredCount: 1 }))).toBe(false)
+  })
+})
+
+describe('outcomeWanted', () => {
+  it('asks "How did it go?" only after a finished interview with none going on', () => {
+    expect(outcomeWanted(app('INTERVIEWING', ['COMPLETED']))).toBe(true)
+    expect(outcomeWanted(app('INTERVIEWING', ['SCHEDULED']))).toBe(false)
+    expect(outcomeWanted(app('INTERVIEWING', ['COMPLETED', 'PROPOSED']))).toBe(false)
+    expect(outcomeWanted(app('OFFERED', ['COMPLETED']))).toBe(false)
+    expect(outcomeWanted(app('INTERVIEWING'))).toBe(false)
   })
 })

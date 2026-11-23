@@ -56,3 +56,24 @@ export function applicantActions(
   })()
   return [...steps, 'message']
 }
+
+/** The dialogs the panel opens, each one the first step of an action. */
+export type ApplicantDialog = 'reject' | 'offer' | 'withdraw-offer' | 'request'
+
+const dialogNeeds: Record<ApplicantDialog, ApplicantAction[]> = {
+  reject: ['reject'],
+  offer: ['offer'],
+  'withdraw-offer': ['withdrawOffer'],
+  request: ['requestInterview', 'nextRound'],
+}
+
+/** True while the application still allows what an open dialog would do. If not, the dialog must close. */
+export function dialogStillAllowed(dialog: ApplicantDialog, detail: Pick<ApplicationDetail, 'status' | 'interviews' | 'hiringPost'>): boolean {
+  const actions = applicantActions(detail)
+  return dialogNeeds[dialog].some((need) => actions.includes(need))
+}
+
+/** "How did it go?" is asked when the last interview is done and the recruiter has not decided yet. */
+export function outcomeWanted(detail: Pick<ApplicationDetail, 'status' | 'interviews'>): boolean {
+  return detail.status === 'INTERVIEWING' && !activeInterview(detail) && doneInterview(detail)
+}
