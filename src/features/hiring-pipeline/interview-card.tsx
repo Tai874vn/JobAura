@@ -150,7 +150,7 @@ export function InterviewCard({
             <Button size="sm" variant="secondary" disabled={pending} onClick={() => onAction({ type: 'complete' })}>Mark as done</Button>
           ) : null}
           {candidate && interview.status === 'PROPOSED' ? (
-            <Button size="sm" variant="secondary" disabled={pending} onClick={() => setDialog('other-times')}>Ask for other times</Button>
+            <Button size="sm" variant="secondary" disabled={pending} onClick={() => setDialog('other-times')}>None of these work</Button>
           ) : null}
           {!candidate && interview.status !== 'SCHEDULED' ? (
             <Button size="sm" variant="secondary" disabled={pending} onClick={() => setDialog('new-times')}>Send new times</Button>

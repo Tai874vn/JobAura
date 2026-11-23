@@ -75,7 +75,7 @@ function runAction(id: number, act: PanelAction): Promise<ApplicationDetail> {
 const isActive = (status: string) => status === 'PROPOSED' || status === 'RESCHEDULE_REQUESTED' || status === 'SCHEDULED'
 
 /** Active interviews first, then the newest round first. */
-function sortedInterviews(interviews: ApplicationDetail['interviews']) {
+export function sortedInterviews(interviews: ApplicationDetail['interviews']) {
   return [...interviews].sort((a, b) => Number(isActive(b.status)) - Number(isActive(a.status)) || b.round - a.round)
 }
 

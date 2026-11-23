@@ -63,6 +63,7 @@ export function siteNav(role?: string | null): SiteNav {
       main: [
         { href: '/', label: 'Home' },
         { href: '/hiring-posts', label: 'Hiring posts' },
+        { href: '/my-applications', label: 'My applications' },
         { href: '/jobs/new', label: 'Post portfolio' },
         { href: '/connections', label: 'Connections' },
       ],

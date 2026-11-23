@@ -5,8 +5,14 @@ const labels = (role?: string) => siteNav(role).main.map((link) => link.label)
 
 describe('siteNav', () => {
   it('leads candidates to hiring posts and their portfolio', () => {
-    expect(labels('user')).toEqual(['Home', 'Hiring posts', 'Post portfolio', 'Connections'])
+    expect(labels('user')).toEqual(['Home', 'Hiring posts', 'My applications', 'Post portfolio', 'Connections'])
     expect(siteNav('user').search.target).toBe('/hiring-posts')
+  })
+
+  it('gives candidates a link to their applications, and nobody else', () => {
+    expect(siteNav('user').main).toContainEqual({ href: '/my-applications', label: 'My applications' })
+    expect(labels('employer')).not.toContain('My applications')
+    expect(labels(undefined)).not.toContain('My applications')
   })
 
   it('starts recruiters at their own hiring posts and searches candidates', () => {
