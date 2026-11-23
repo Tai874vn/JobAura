@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import type { Interview } from '@/shared/schemas'
-import { InterviewCard } from './interview-card'
+import { InterviewCard, interviewDialogAllowed } from './interview-card'
 
 const base = {
   id: 5, round: 1, mode: 'ONLINE', durationMinutes: 45, location: null, note: 'Bring your portfolio',
@@ -48,5 +48,21 @@ describe('InterviewCard', () => {
     const html = card({ ...base, proposedTimes: ['2000-01-01T03:00:00.000Z', '2099-11-26T03:00:00.000Z'] }, 'candidate')
     expect(html.match(/Pick this time/g)).toHaveLength(1)
     expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Passed<\/button>/)
+  })
+})
+
+describe('interviewDialogAllowed', () => {
+  it('keeps each dialog while its step is still possible', () => {
+    expect(interviewDialogAllowed('cancel', 'SCHEDULED')).toBe(true)
+    expect(interviewDialogAllowed('other-times', 'PROPOSED')).toBe(true)
+    expect(interviewDialogAllowed('new-times', 'RESCHEDULE_REQUESTED')).toBe(true)
+  })
+
+  it('closes them once the interview moved on', () => {
+    expect(interviewDialogAllowed('cancel', 'CANCELLED')).toBe(false)
+    expect(interviewDialogAllowed('cancel', 'COMPLETED')).toBe(false)
+    expect(interviewDialogAllowed('other-times', 'SCHEDULED')).toBe(false)
+    expect(interviewDialogAllowed('new-times', 'SCHEDULED')).toBe(false)
+    expect(interviewDialogAllowed('new-times', 'CANCELLED')).toBe(false)
   })
 })

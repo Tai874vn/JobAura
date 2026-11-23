@@ -271,6 +271,7 @@ export function ApplicantPanel({
                   interview={interview}
                   viewer="recruiter"
                   pending={pending}
+                  onStale={setNotice}
                   onAction={(action) => {
                     const run = perform({ type: 'interview', interviewId: interview.id, action })
                     // Skip and Mark as done have no dialog to show an error in; the toast already told the recruiter.

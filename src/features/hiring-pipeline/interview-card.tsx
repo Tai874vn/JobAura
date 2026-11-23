@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Badge, Button, ButtonLink } from '@/shared/ui'
 import type { Interview } from '@/shared/schemas'
@@ -36,6 +36,16 @@ function hasPassed(iso: string) {
 type Dialog = 'other-times' | 'cancel' | 'new-times' | null
 
 /**
+ * True while the interview still allows what an open dialog does. After a refused step (409) the interview is
+ * read again; if it moved on (cancelled, booked, done), the dialog must close so no stale button stays live.
+ */
+export function interviewDialogAllowed(dialog: Exclude<Dialog, null>, status: Interview['status']): boolean {
+  if (dialog === 'cancel') return status === 'PROPOSED' || status === 'RESCHEDULE_REQUESTED' || status === 'SCHEDULED'
+  if (dialog === 'other-times') return status === 'PROPOSED'
+  return status === 'PROPOSED' || status === 'RESCHEDULE_REQUESTED'
+}
+
+/**
  * One interview round. The candidate picks a time from the proposed ones; the recruiter sends times, cancels,
  * or skips (marks an online interview as done without holding the call). `pending` locks the buttons while a
  * request is running.
@@ -45,16 +55,28 @@ export function InterviewCard({
   viewer,
   pending = false,
   onAction,
+  onStale,
 }: {
   interview: Interview
   viewer: 'recruiter' | 'candidate'
   pending?: boolean
   /** May return a promise: a dialog stays open until it settles, and shows the error if it fails. */
   onAction: (action: InterviewAction) => void | Promise<unknown>
+  /** Called with the server's sentence when a dialog closed by itself because the interview moved on. */
+  onStale?: (message: string) => void
 }) {
   const [dialog, setDialog] = useState<Dialog>(null)
   const [busy, setBusy] = useState(false)
   const [dialogError, setDialogError] = useState<string | null>(null)
+  const stale = dialog !== null && !interviewDialogAllowed(dialog, interview.status)
+  useEffect(() => {
+    if (!stale) return
+    onStale?.(dialogError ?? 'This interview changed, so that step is no longer possible.')
+    // Closing is the point of this effect (the interview came back from the server changed).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDialog(null)
+    setDialogError(null)
+  }, [stale, dialogError, onStale])
   const closeDialog = () => {
     setDialog(null)
     setDialogError(null)
