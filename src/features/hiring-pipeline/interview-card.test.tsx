@@ -43,4 +43,10 @@ describe('InterviewCard', () => {
     expect(html).toContain('12 Le Loi')
     expect(html).not.toContain('Join call')
   })
+
+  it('disables a proposed time that has already passed', () => {
+    const html = card({ ...base, proposedTimes: ['2000-01-01T03:00:00.000Z', '2099-11-26T03:00:00.000Z'] }, 'candidate')
+    expect(html.match(/Pick this time/g)).toHaveLength(1)
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Passed<\/button>/)
+  })
 })

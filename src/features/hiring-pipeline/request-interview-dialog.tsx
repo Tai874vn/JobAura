@@ -11,6 +11,8 @@ type Props = {
   /** True when the interview already exists and only new times are sent (no mode, length or address). */
   timesOnly?: boolean
   pending?: boolean
+  /** A sentence from the server when sending failed; the dialog stays open with the typed values. */
+  serverError?: string | null
   onSubmit: (request: InterviewRequest) => void
   onClose: () => void
 }
@@ -28,7 +30,7 @@ export function RequestInterviewDialog(props: Props) {
   return <RequestInterviewForm {...props} />
 }
 
-function RequestInterviewForm({ timesOnly = false, pending = false, onSubmit, onClose }: Props) {
+function RequestInterviewForm({ timesOnly = false, pending = false, serverError, onSubmit, onClose }: Props) {
   const titleId = useId()
   const [draft, setDraft] = useState<InterviewDraft>({ mode: 'ONLINE', times: [''], durationMinutes: 45, location: '', note: '' })
   const [error, setError] = useState<string | null>(null)
@@ -141,7 +143,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, onSubmit, on
           </>
         )}
 
-        {error ? <p role="alert" className="mt-4 text-sm text-danger">{error}</p> : null}
+        {error ?? serverError ? <p role="alert" className="mt-4 break-words text-sm text-danger">{error ?? serverError}</p> : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button>

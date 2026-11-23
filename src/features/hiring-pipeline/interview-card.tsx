@@ -1,11 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { getErrorMessage } from '@/shared/lib/utils'
 import { Badge, Button, ButtonLink } from '@/shared/ui'
 import type { Interview } from '@/shared/schemas'
 import type { InterviewRequest } from './api'
 import { ConfirmActionDialog } from './confirm-action-dialog'
 import { formatPipelineTime } from './format-time'
+import { runDialogAction } from './run-dialog-action'
 import { RequestInterviewDialog } from './request-interview-dialog'
 
 /** What a button on the card asks the parent to do. The parent calls the matching `pipelineApi` function. */
@@ -26,6 +28,11 @@ const statusWords: Record<Interview['status'], string> = {
 
 const modeWords: Record<Interview['mode'], string> = { ONLINE: 'Online', ONSITE: 'Onsite', PHONE: 'Phone' }
 
+/** True when a proposed time is already behind us (read at render, so a page left open shows it). */
+function hasPassed(iso: string) {
+  return new Date(iso).getTime() <= Date.now()
+}
+
 type Dialog = 'other-times' | 'cancel' | 'new-times' | null
 
 /**
@@ -42,9 +49,24 @@ export function InterviewCard({
   interview: Interview
   viewer: 'recruiter' | 'candidate'
   pending?: boolean
-  onAction: (action: InterviewAction) => void
+  /** May return a promise: a dialog stays open until it settles, and shows the error if it fails. */
+  onAction: (action: InterviewAction) => void | Promise<unknown>
 }) {
   const [dialog, setDialog] = useState<Dialog>(null)
+  const [busy, setBusy] = useState(false)
+  const [dialogError, setDialogError] = useState<string | null>(null)
+  const closeDialog = () => {
+    setDialog(null)
+    setDialogError(null)
+  }
+  async function runFromDialog(action: InterviewAction) {
+    setBusy(true)
+    setDialogError(null)
+    const result = await runDialogAction(() => onAction(action), (error) => getErrorMessage(error, 'Could not save this change. Please try again.'))
+    setBusy(false)
+    if ('error' in result) setDialogError(result.error)
+    else closeDialog()
+  }
   const candidate = viewer === 'candidate'
   const online = interview.mode === 'ONLINE'
   const place = online ? 'Online on JobAura' : interview.location || (interview.mode === 'PHONE' ? 'By phone' : '')
@@ -73,9 +95,13 @@ export function InterviewCard({
             <li key={time} className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-sm">{formatPipelineTime(time)}</span>
               {candidate ? (
-                <Button size="sm" disabled={pending} onClick={() => onAction({ type: 'pick', startsAt: time })}>
-                  Pick this time
-                </Button>
+                hasPassed(time) ? (
+                  <Button size="sm" disabled>Passed</Button>
+                ) : (
+                  <Button size="sm" disabled={pending} onClick={() => onAction({ type: 'pick', startsAt: time })}>
+                    Pick this time
+                  </Button>
+                )
               ) : null}
             </li>
           ))}
@@ -117,12 +143,10 @@ export function InterviewCard({
         description="The recruiter will be asked to send new times."
         confirmLabel="Ask for other times"
         noteLabel="What works better for you"
-        pending={pending}
-        onCancel={() => setDialog(null)}
-        onConfirm={(note) => {
-          setDialog(null)
-          onAction({ type: 'ask-other-times', note })
-        }}
+        pending={pending || busy}
+        error={dialogError}
+        onCancel={closeDialog}
+        onConfirm={(note) => void runFromDialog({ type: 'ask-other-times', note })}
       />
       <ConfirmActionDialog
         open={dialog === 'cancel'}
@@ -131,22 +155,18 @@ export function InterviewCard({
         confirmLabel="Cancel interview"
         noteLabel="Reason"
         tone="danger"
-        pending={pending}
-        onCancel={() => setDialog(null)}
-        onConfirm={(note) => {
-          setDialog(null)
-          onAction({ type: 'cancel', note })
-        }}
+        pending={pending || busy}
+        error={dialogError}
+        onCancel={closeDialog}
+        onConfirm={(note) => void runFromDialog({ type: 'cancel', note })}
       />
       <RequestInterviewDialog
         open={dialog === 'new-times'}
         timesOnly
-        pending={pending}
-        onClose={() => setDialog(null)}
-        onSubmit={(request: InterviewRequest) => {
-          setDialog(null)
-          onAction({ type: 'send-times', times: request.proposedTimes })
-        }}
+        pending={pending || busy}
+        serverError={dialogError}
+        onClose={closeDialog}
+        onSubmit={(request: InterviewRequest) => void runFromDialog({ type: 'send-times', times: request.proposedTimes })}
       />
     </section>
   )
