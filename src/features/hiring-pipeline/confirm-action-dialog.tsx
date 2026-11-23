@@ -3,6 +3,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { Button, Textarea } from '@/shared/ui'
+import { DialogPortal } from './dialog-portal'
 
 type Props = {
   open: boolean
@@ -53,6 +54,7 @@ function ConfirmActionBody({
   }, [onCancel, pending])
 
   return (
+    <DialogPortal>
     <div
       className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/45 p-4"
       onMouseDown={(event) => {
@@ -80,5 +82,6 @@ function ConfirmActionBody({
         </div>
       </section>
     </div>
+    </DialogPortal>
   )
 }

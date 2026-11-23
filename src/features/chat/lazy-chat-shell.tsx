@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { openChatEventName, parseOpenChatRequest, type OpenChatRequest } from './chat-data'
@@ -12,6 +13,8 @@ const ChatShell = dynamic(() => import('./chat-shell').then((mod) => mod.ChatShe
 
 export function LazyChatShell() {
   const { user, isLoading } = useSession()
+  // The call screen has its own Leave and Skip at the bottom right; the Chat button would sit on top of them.
+  const onCallScreen = /^\/interviews\/[^/]+\/call\/?$/.test(usePathname() ?? '')
   const [canLoadChat, setCanLoadChat] = useState(false)
   const shouldLoadChat = !isLoading && Boolean(user)
   // A Message button pressed before the widget has loaded: load it now and hand it the request.
@@ -50,5 +53,5 @@ export function LazyChatShell() {
     }
   }, [shouldLoadChat])
 
-  return shouldLoadChat && canLoadChat ? <ChatShell initialRequest={early} /> : null
+  return shouldLoadChat && canLoadChat && !onCallScreen ? <ChatShell initialRequest={early} /> : null
 }

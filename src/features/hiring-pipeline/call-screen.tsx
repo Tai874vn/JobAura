@@ -13,6 +13,7 @@ import { pipelineApi, pipelineKeys } from './api'
 import { callExitHref, fallbackExitHref, isAlreadyCompleted } from './call-exit'
 import { callState } from './call-state'
 import type { CallConnection } from './call-stage'
+import { DialogPortal } from './dialog-portal'
 
 // The video part is loaded in the browser only (LiveKit needs the camera, the microphone and WebRTC).
 const CallStage = dynamic(() => import('./call-stage'), { ssr: false })
@@ -58,7 +59,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
 
   // Without ?application= the upcoming list tells which application this interview belongs to.
   const upcoming = useQuery({
-    queryKey: pipelineKeys.upcoming,
+    queryKey: [...pipelineKeys.upcoming, userId],
     queryFn: pipelineApi.upcoming,
     enabled: Boolean(user) && applicationParam === null,
     staleTime: 15_000,
@@ -94,6 +95,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
       // The finished interview must not stay in the lists as "Join call".
       queryClient.setQueryData(pipelineKeys.detail(done.id), done)
       void queryClient.invalidateQueries({ queryKey: ['pipeline'] })
+      void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
     },
   })
 
@@ -196,6 +198,7 @@ function LeaveDialog({ busy, onNo, onYes }: { busy: boolean; onNo: () => void; o
   }, [busy, onNo])
 
   return (
+    <DialogPortal>
     <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4">
       <section
         ref={dialogRef}
@@ -211,5 +214,6 @@ function LeaveDialog({ busy, onNo, onYes }: { busy: boolean; onNo: () => void; o
         </div>
       </section>
     </div>
+    </DialogPortal>
   )
 }

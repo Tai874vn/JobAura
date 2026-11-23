@@ -4,6 +4,7 @@ import { Plus, X } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 import { Button, Input, Select, Textarea } from '@/shared/ui'
 import type { InterviewRequest } from './api'
+import { DialogPortal } from './dialog-portal'
 import { durationOptions, validateInterviewRequest, type InterviewDraft } from './request-interview-validation'
 
 type Props = {
@@ -55,6 +56,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
   }
 
   return (
+    <DialogPortal>
     <div
       className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/45 p-4"
       onMouseDown={(event) => {
@@ -98,7 +100,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
               <div key={index} className="flex items-center gap-2">
                 <Input
                   type="datetime-local"
-                  className="min-w-0 flex-1"
+                  className="min-w-0 flex-1 text-base sm:text-sm"
                   aria-label={`Time ${index + 1}`}
                   value={value}
                   onChange={(event) => set('times', draft.times.map((time, at) => (at === index ? event.target.value : time)))}
@@ -151,5 +153,6 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
         </div>
       </form>
     </div>
+    </DialogPortal>
   )
 }

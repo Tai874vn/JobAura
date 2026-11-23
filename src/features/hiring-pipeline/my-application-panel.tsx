@@ -186,10 +186,13 @@ export function MyApplicationPanel({ application, backHref }: { application: App
               <Fact label="Location">{post.location || 'Not given'}</Fact>
             </dl>
             {post.description?.trim() ? <p className="mt-3 line-clamp-6 whitespace-pre-line break-words text-sm leading-6">{post.description}</p> : null}
-            <Link href={`/hiring-posts/${post.id}`} className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
-              Open the hiring post
-              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
+            {/* The server refuses a closed post to candidates, so the link is only shown while the post is open. */}
+            {post.status === 'OPEN' ? (
+              <Link href={`/hiring-posts/${post.id}`} className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+                Open the hiring post
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+              </Link>
+            ) : null}
           </>
         ) : null}
 
@@ -199,7 +202,7 @@ export function MyApplicationPanel({ application, backHref }: { application: App
         </div>
       </div>
 
-      <div className="border-t border-border bg-surface px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6 lg:pb-3">
+      <div className="border-t border-border bg-surface py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pl-4 pr-28 sm:pl-6 sm:pr-28 lg:pb-3">
         <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="secondary" disabled={!recruiterId} onClick={openChat}>
             <MessageSquare className="h-4 w-4" aria-hidden="true" />

@@ -289,7 +289,7 @@ export function ApplicantPanel({
         </div>
       </div>
 
-      <div className="border-t border-border bg-surface px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:px-6 lg:pb-3">
+      <div className="border-t border-border bg-surface py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pl-4 pr-28 sm:pl-6 sm:pr-28 lg:pb-3">
         <div className="flex flex-wrap items-center gap-2">
           {application.status === 'INTERVIEWING' && active ? <p className="min-w-40 flex-1 text-sm text-muted">You can send an offer after the interview.</p> : null}
           {application.status === 'OFFERED' ? <p className="min-w-40 flex-1 text-sm text-muted">Waiting for {firstName} to answer.</p> : null}

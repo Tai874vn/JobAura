@@ -3,6 +3,7 @@
 import { X } from 'lucide-react'
 import { useEffect, useId } from 'react'
 import { Button } from '@/shared/ui'
+import { DialogPortal } from './dialog-portal'
 
 export type OutcomeChoice = 'offer' | 'round' | 'reject' | 'later'
 
@@ -38,6 +39,7 @@ function OutcomeBody({ name, noOpeningsLeft, onChoose }: { name: string; noOpeni
   }, [onChoose])
 
   return (
+    <DialogPortal>
     <div
       className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/45 p-4"
       onMouseDown={(event) => {
@@ -59,5 +61,6 @@ function OutcomeBody({ name, noOpeningsLeft, onChoose }: { name: string; noOpeni
         </div>
       </section>
     </div>
+    </DialogPortal>
   )
 }

@@ -27,7 +27,10 @@ export function usePipelineLiveUpdates() {
     if (!userId || !connection) return
     return connection.subscribe('/notifications', (socket) => {
       const onNotification = (raw: unknown) => {
-        if (isPipelineNotification(raw)) void queryClient.invalidateQueries({ queryKey: ['pipeline'] })
+        if (!isPipelineNotification(raw)) return
+        void queryClient.invalidateQueries({ queryKey: ['pipeline'] })
+        // The post's numbers (filled, open or closed) can change too.
+        void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
       }
       socket.on('notification:new', onNotification)
       return () => {

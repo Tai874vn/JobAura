@@ -31,6 +31,7 @@ export function ApplyPanel({ postId, onApplied, onCancel }: {
       toast.success("Application sent");
       setMessage("");
       void queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
+      void queryClient.invalidateQueries({ queryKey: ["pipeline"] });
       onApplied();
     },
     onError: (error) => toast.error(getErrorMessage(error, "Could not send your application")),
