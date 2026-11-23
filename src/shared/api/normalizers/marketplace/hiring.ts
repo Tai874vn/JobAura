@@ -2,6 +2,16 @@ import { hiringApplicationStatusSchema, hiringPipelineCountsSchema, hiringStatus
 import type { ApiResponse, HiringApplication, HiringPost, PaginatedContent } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickRole, pickString } from '../core'
 
+function normalizeViewerApplication(raw: unknown): HiringPost["viewerApplication"] {
+  if (!raw || typeof raw !== "object") return null;
+  const record = asRecord(raw);
+  const id = pickNumber(record, "id");
+  const status = hiringApplicationStatusSchema.safeParse(pickString(record, "status"));
+  if (id === undefined || !status.success) return null;
+  const reason = hiringStatusReasonSchema.safeParse(pickString(record, "statusReason"));
+  return { id, status: status.data, statusReason: reason.success ? reason.data : null };
+}
+
 export function normalizeHiringPost(raw: unknown): HiringPost {
   const record = asRecord(raw);
   const status = pickString(record, "status");
@@ -53,6 +63,8 @@ export function normalizeHiringPost(raw: unknown): HiringPost {
     offersWaiting: pickNumber(record, "offersWaiting") ?? 0,
     pipeline: hiringPipelineCountsSchema.safeParse(record.pipeline).data,
     viewerHasApplied: pickBoolean(record, "viewerHasApplied") ?? false,
+    // The viewer's own application (a withdrawn one too); null when the card has none.
+    viewerApplication: normalizeViewerApplication(record.viewerApplication),
   };
 }
 
