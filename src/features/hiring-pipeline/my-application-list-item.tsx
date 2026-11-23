@@ -27,7 +27,6 @@ export function MyApplicationListItem({
   const post = application.hiringPost
   const company = post?.companyName || post?.recruiter?.name || 'Company'
   const booked = nextBooked(application.interviews)
-  const reason = application.status === 'REJECTED' && application.statusReason ? statusReasonText(application.statusReason) : null
 
   return (
     <article
@@ -67,15 +66,10 @@ export function MyApplicationListItem({
         <p className="mt-0.5 truncate text-sm text-muted">{[company, post?.location].filter(Boolean).join(' · ')}</p>
         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
           {application.createdAt ? <span>Applied {formatApplicantDay(application.createdAt)}</span> : null}
-          {reason ? <span>{reason}</span> : null}
           {booked ? <span className="font-medium text-foreground">Interview {formatPipelineTime(booked)}</span> : null}
           {needsAction(application) ? <span className="font-medium text-primary">Action needed</span> : null}
         </p>
       </div>
     </article>
   )
-}
-
-function statusReasonText(reason: string) {
-  return reason === 'POSITION_FILLED' ? 'Position filled' : reason === 'POST_CLOSED' ? 'Post closed' : null
 }

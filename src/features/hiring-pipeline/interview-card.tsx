@@ -33,6 +33,11 @@ function hasPassed(iso: string) {
   return new Date(iso).getTime() <= Date.now()
 }
 
+/** The refusal shown under the proposed times. */
+export function PickErrorLine({ message }: { message: string | null }) {
+  return message ? <p role="alert" className="mt-2 break-words text-sm text-danger">{message}</p> : null
+}
+
 type Dialog = 'other-times' | 'cancel' | 'new-times' | null
 
 /**
@@ -68,6 +73,8 @@ export function InterviewCard({
   const [dialog, setDialog] = useState<Dialog>(null)
   const [busy, setBusy] = useState(false)
   const [dialogError, setDialogError] = useState<string | null>(null)
+  // The server's sentence when a picked time was refused (for example the slot is now in the past).
+  const [pickError, setPickError] = useState<string | null>(null)
   const stale = dialog !== null && !interviewDialogAllowed(dialog, interview.status)
   useEffect(() => {
     if (!stale) return
@@ -80,6 +87,11 @@ export function InterviewCard({
   const closeDialog = () => {
     setDialog(null)
     setDialogError(null)
+  }
+  async function pickTime(startsAt: string) {
+    setPickError(null)
+    const result = await runDialogAction(() => onAction({ type: 'pick', startsAt }), (error) => getErrorMessage(error, 'Could not book this time. Please try again.'))
+    if ('error' in result) setPickError(result.error)
   }
   async function runFromDialog(action: InterviewAction) {
     setBusy(true)
@@ -120,7 +132,7 @@ export function InterviewCard({
                 hasPassed(time) ? (
                   <Button size="sm" disabled>Passed</Button>
                 ) : (
-                  <Button size="sm" disabled={pending} onClick={() => onAction({ type: 'pick', startsAt: time })}>
+                  <Button size="sm" disabled={pending} onClick={() => void pickTime(time)}>
                     Pick this time
                   </Button>
                 )
@@ -129,6 +141,7 @@ export function InterviewCard({
           ))}
         </ul>
       ) : null}
+      {interview.status === 'PROPOSED' ? <PickErrorLine message={pickError} /> : null}
 
       {interview.status === 'RESCHEDULE_REQUESTED' && interview.rescheduleNote ? (
         <p className="mt-2 break-words text-sm text-muted">&ldquo;{interview.rescheduleNote}&rdquo;</p>

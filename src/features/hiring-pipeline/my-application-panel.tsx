@@ -8,7 +8,7 @@ import { formatHiringPostSalary } from '@/features/hiring/hiring-post-card'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
-import { pipelineApi, statusLabel } from './api'
+import { pipelineApi } from './api'
 import { sortedInterviews } from './applicant-panel'
 import { formatApplicantDay } from './applicant-format'
 import { ApplicationTimeline } from './application-timeline'
@@ -80,8 +80,8 @@ export function MyApplicationPanel({ application, backHref }: { application: App
   // A sentence kept on the panel when a dialog had to close because the application moved on.
   const [notice, setNotice] = useState<string | null>(null)
   const mutation = usePipelineMutation(application.id, (act: PanelAction) => runAction(application.id, act), {
-    // Everything but picking a time is told inside its dialog; picking has no dialog, so a toast tells it.
-    quietErrors: (act) => !(act.type === 'interview' && act.action.type === 'pick'),
+    // Every refusal is told on the screen itself (a dialog, or under the times on the interview card), never by a toast.
+    quietErrors: () => true,
   })
   const pending = mutation.isPending
 
@@ -169,11 +169,8 @@ export function MyApplicationPanel({ application, backHref }: { application: App
                   viewer="candidate"
                   pending={pending}
                   onStale={setNotice}
-                  onAction={(action) => {
-                    const run = perform({ type: 'interview', interviewId: interview.id, action })
-                    // Picking a time has no dialog to show an error in; the toast already told the candidate.
-                    return action.type === 'pick' ? run.catch(() => undefined) : run
-                  }}
+                  // The card shows the server's sentence if the step is refused.
+                  onAction={(action) => perform({ type: 'interview', interviewId: interview.id, action })}
                 />
               ))}
             </div>
@@ -210,9 +207,7 @@ export function MyApplicationPanel({ application, backHref }: { application: App
           </Button>
           {canWithdraw ? (
             <Button type="button" variant="danger" className="ml-auto" disabled={pending} onClick={() => setDialog('withdraw')}>Withdraw application</Button>
-          ) : (
-            <p className="ml-auto text-sm text-muted">{statusLabel(application.status, 'candidate', application.statusReason)}</p>
-          )}
+          ) : null}
         </div>
       </div>
 

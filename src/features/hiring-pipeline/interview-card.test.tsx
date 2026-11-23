@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import type { Interview } from '@/shared/schemas'
-import { InterviewCard, interviewDialogAllowed } from './interview-card'
+import { InterviewCard, interviewDialogAllowed, PickErrorLine } from './interview-card'
 
 const base = {
   id: 5, round: 1, mode: 'ONLINE', durationMinutes: 45, location: null, note: 'Bring your portfolio',
@@ -64,5 +64,14 @@ describe('interviewDialogAllowed', () => {
     expect(interviewDialogAllowed('other-times', 'SCHEDULED')).toBe(false)
     expect(interviewDialogAllowed('new-times', 'SCHEDULED')).toBe(false)
     expect(interviewDialogAllowed('new-times', 'CANCELLED')).toBe(false)
+  })
+})
+
+describe('PickErrorLine', () => {
+  it('shows the server sentence as an alert, and nothing when there is none', () => {
+    const html = renderToStaticMarkup(<PickErrorLine message="That time has already passed." />)
+    expect(html).toContain('role="alert"')
+    expect(html).toContain('That time has already passed.')
+    expect(renderToStaticMarkup(<PickErrorLine message={null} />)).toBe('')
   })
 })
