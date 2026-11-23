@@ -10,7 +10,8 @@ import {
   useTracks,
 } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import type { CallState } from './call-state'
+import { useCallback, useState } from 'react'
+import { deviceNotice, isDeviceError, type CallState } from './call-state'
 
 export type CallConnection = 'connecting' | 'connected' | 'failed' | 'disconnected'
 
@@ -40,23 +41,40 @@ export default function CallStage({
   state: CallState
   onConnection: (connection: CallConnection) => void
 }) {
+  // A camera or microphone that cannot start is turned off on its own; the call goes on without it.
+  const [failed, setFailed] = useState<{ camera?: boolean; microphone?: boolean }>({})
+  const notice = deviceNotice(failed)
+
+  const handleConnected = useCallback(() => onConnection('connected'), [onConnection])
+  const handleDisconnected = useCallback(() => onConnection('disconnected'), [onConnection])
+  // Only a failure that is not a camera or microphone problem (for example the room cannot be joined) ends the call.
+  const handleError = useCallback((error: Error) => {
+    if (!isDeviceError(error)) onConnection('failed')
+  }, [onConnection])
+  const handleDeviceFailure = useCallback((_failure?: unknown, kind?: MediaDeviceKind) => {
+    if (kind === 'videoinput') setFailed((old) => ({ ...old, camera: true }))
+    else if (kind === 'audioinput') setFailed((old) => ({ ...old, microphone: true }))
+  }, [])
+
   return (
     <LiveKitRoom
       serverUrl={url}
       token={token}
       connect
-      video
-      audio
+      video={!failed.camera}
+      audio={!failed.microphone}
       data-lk-theme="default"
+      // The speaking border uses the brand green instead of LiveKit's blue.
+      style={{ '--lk-accent-bg': '#006d43' } as React.CSSProperties}
       className="flex min-h-0 flex-1 flex-col"
-      onConnected={() => onConnection('connected')}
-      onDisconnected={() => onConnection('disconnected')}
-      // A refused camera or microphone, or any room error, ends in the plain "could not start" message.
-      onError={() => onConnection('failed')}
-      onMediaDeviceFailure={() => onConnection('failed')}
+      onConnected={handleConnected}
+      onDisconnected={handleDisconnected}
+      onError={handleError}
+      onMediaDeviceFailure={handleDeviceFailure}
     >
       <Tiles />
       <RoomAudioRenderer />
+      {notice ? <p role="status" className="py-1 text-center text-sm text-muted">{notice}</p> : null}
       {/* Mic and camera only. Leave is the page's own button, which asks the recruiter first. */}
       <div className={state === 'live' ? '' : 'invisible'}>
         <ControlBar

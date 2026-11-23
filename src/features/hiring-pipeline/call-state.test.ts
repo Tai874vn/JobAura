@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { callState } from './call-state'
+import { callState, deviceNotice, isDeviceError } from './call-state'
 
 describe('callState', () => {
   it('is preparing while the pass is loading or nothing is known yet', () => {
@@ -27,5 +27,24 @@ describe('callState', () => {
 
   it('is unavailable when the call was disconnected', () => {
     expect(callState({ token: 'ok', connection: 'disconnected' })).toBe('unavailable')
+  })
+})
+
+describe('deviceNotice', () => {
+  it('names the device that did not start', () => {
+    expect(deviceNotice({})).toBeNull()
+    expect(deviceNotice({ camera: true })).toBe('Your camera could not start.')
+    expect(deviceNotice({ microphone: true })).toBe('Your microphone could not start.')
+    expect(deviceNotice({ camera: true, microphone: true })).toBe('Your camera and microphone could not start.')
+  })
+})
+
+describe('isDeviceError', () => {
+  it('is true for browser camera and microphone errors only', () => {
+    const denied = new Error('no')
+    denied.name = 'NotAllowedError'
+    expect(isDeviceError(denied)).toBe(true)
+    expect(isDeviceError(new Error('could not connect'))).toBe(false)
+    expect(isDeviceError('NotAllowedError')).toBe(false)
   })
 })

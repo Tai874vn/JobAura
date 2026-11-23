@@ -16,3 +16,25 @@ export function callState(input: {
   if (input.connection === 'connected') return 'live'
   return 'preparing'
 }
+
+/** The browser's names for "no camera or microphone, or you said no". These end one device, not the whole call. */
+const deviceErrorNames = new Set([
+  'NotAllowedError',
+  'NotFoundError',
+  'NotReadableError',
+  'OverconstrainedError',
+  'SecurityError',
+  'AbortError',
+])
+
+export function isDeviceError(error: unknown): boolean {
+  return error instanceof Error && deviceErrorNames.has(error.name)
+}
+
+/** One plain line for the devices that did not start, or null when both work. */
+export function deviceNotice(failed: { camera?: boolean; microphone?: boolean }): string | null {
+  if (failed.camera && failed.microphone) return 'Your camera and microphone could not start.'
+  if (failed.camera) return 'Your camera could not start.'
+  if (failed.microphone) return 'Your microphone could not start.'
+  return null
+}

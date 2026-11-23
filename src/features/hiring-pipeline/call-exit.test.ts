@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
-import { callExitHref, isAlreadyCompleted } from './call-exit'
+import { callExitHref, fallbackExitHref, isAlreadyCompleted } from './call-exit'
 
 describe('callExitHref', () => {
   it('sends a candidate to My applications with the application open', () => {
@@ -35,5 +35,12 @@ describe('isAlreadyCompleted', () => {
     expect(isAlreadyCompleted(conflict('This interview was already cancelled.'))).toBe(false)
     expect(isAlreadyCompleted(conflict('This interview was already completed.', 400))).toBe(false)
     expect(isAlreadyCompleted(new Error('network'))).toBe(false)
+  })
+})
+
+describe('fallbackExitHref', () => {
+  it('goes to the list page of each side', () => {
+    expect(fallbackExitHref('candidate')).toBe('/my-applications')
+    expect(fallbackExitHref('recruiter')).toBe('/my-hiring-posts')
   })
 })

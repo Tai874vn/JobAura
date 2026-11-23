@@ -22,3 +22,8 @@ export function isAlreadyCompleted(error: unknown): boolean {
   const message = (error.response.data as { message?: unknown } | undefined)?.message
   return typeof message === 'string' && /already completed/i.test(message)
 }
+
+/** Where to go when the application could not be read (so the post id is unknown). */
+export function fallbackExitHref(role: 'recruiter' | 'candidate'): string {
+  return role === 'candidate' ? '/my-applications' : '/my-hiring-posts'
+}
