@@ -14,7 +14,9 @@ import { Badge, Button, ButtonLink, Card, CardContent, EmptyState, PageHeader } 
 import { hiringPostAiState, isHiringPostAiPending } from "./hiring-post-ai";
 import { formatDate, formatYearsRequired } from "./hiring-post-card";
 import { usePostOccupation } from "./use-post-occupation";
+import { ConfirmActionDialog } from "@/features/hiring-pipeline/confirm-action-dialog";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
+import { activeApplicationCount, closePostQuestion, pipelineSummary } from "./hiring-pipeline-summary";
 
 const params = { page: 1, pageSize: 50 };
 
@@ -25,6 +27,8 @@ export function MyHiringPostsPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [creating, setCreating] = useState(false);
+  // The post the recruiter is about to close; closing tells everyone still in progress.
+  const [closing, setClosing] = useState<HiringPost | null>(null);
   const query = useQuery({
     queryKey: queryKeys.myHiringPosts(params),
     queryFn: () => hiringPostsApi.mine(params),
@@ -42,10 +46,14 @@ export function MyHiringPostsPage() {
   const setStatus = useMutation({
     mutationFn: ({ id, status }: { id: number; status: HiringPost["status"] }) => hiringPostsApi.update(id, { status }),
     onSuccess: (_, { status }) => {
+      setClosing(null);
       toast.success(status === "CLOSED" ? "Post closed; candidates can no longer apply" : "Post reopened");
       void refresh();
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Could not change the post status")),
+    onError: (error) => {
+      // A closing dialog shows the server's sentence itself; a reopen has no dialog, so it is a toast.
+      if (!closing) toast.error(getErrorMessage(error, "Could not change the post status"));
+    },
   });
   const predict = useMutation({
     mutationFn: hiringPostsApi.predictSeniority,
@@ -100,9 +108,11 @@ export function MyHiringPostsPage() {
                     <span>{post.location || "Location flexible"}</span>
                     {post.closesAt ? <span>Closes {formatDate(post.closesAt)}</span> : null}
                   </p>
+                  {pipelineSummary(post) ? <p className="mt-2 text-sm font-medium text-foreground">{pipelineSummary(post)}</p> : null}
                   <AiLevelStatus post={post} />
                 </div>
                 <div className="flex flex-wrap gap-2 lg:w-72 lg:justify-end">
+                  <ButtonLink href={`/my-hiring-posts/${post.id}/applicants`} size="sm" variant="secondary"><Users className="h-4 w-4" />Applicants</ButtonLink>
                   <ButtonLink href={`/recommendations/candidates?hiringPostId=${post.id}`} size="sm"><ListOrdered className="h-4 w-4" />Match candidates</ButtonLink>
                   <Button type="button" size="sm" variant="secondary" onClick={() => router.replace(`${pathname}?edit=${post.id}`, { scroll: false })}><Pencil className="h-4 w-4" />Edit</Button>
                   {hiringPostAiState(post).action ? (
@@ -111,7 +121,7 @@ export function MyHiringPostsPage() {
                     </Button>
                   ) : null}
                   <Button type="button" size="sm" variant="ghost" loading={setStatus.isPending && setStatus.variables?.id === post.id}
-                    onClick={() => setStatus.mutate({ id: post.id, status: post.status === "OPEN" ? "CLOSED" : "OPEN" })}>
+                    onClick={() => (post.status === "OPEN" ? setClosing(post) : setStatus.mutate({ id: post.id, status: "OPEN" }))}>
                     {post.status === "OPEN" ? <><Lock className="h-4 w-4" />Close</> : <><LockOpen className="h-4 w-4" />Reopen</>}
                   </Button>
                   <ButtonLink href={`/hiring-posts/${post.id}`} size="sm" variant="ghost"><Eye className="h-4 w-4" />View</ButtonLink>
@@ -126,6 +136,17 @@ export function MyHiringPostsPage() {
         )}
       </div>
 
+      <ConfirmActionDialog
+        open={Boolean(closing)}
+        title="Close post"
+        description={closing ? closePostQuestion(activeApplicationCount(closing.pipeline)) : ""}
+        confirmLabel="Close post"
+        tone="danger"
+        pending={setStatus.isPending}
+        error={setStatus.isError && closing ? getErrorMessage(setStatus.error, "Could not close the post") : null}
+        onConfirm={() => closing && setStatus.mutate({ id: closing.id, status: "CLOSED" })}
+        onCancel={() => { setClosing(null); setStatus.reset(); }}
+      />
       <HiringPostFormDialog open={creating} onClose={() => setCreating(false)} />
       <HiringPostFormDialog open={Boolean(editing)} post={editing} onClose={closeEdit} />
     </div>

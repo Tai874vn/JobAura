@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
+import { openChatEventName, parseOpenChatRequest, type OpenChatRequest } from './chat-data'
 
 const ChatShell = dynamic(() => import('./chat-shell').then((mod) => mod.ChatShell), {
   ssr: false,
@@ -13,6 +14,20 @@ export function LazyChatShell() {
   const { user, isLoading } = useSession()
   const [canLoadChat, setCanLoadChat] = useState(false)
   const shouldLoadChat = !isLoading && Boolean(user)
+  // A Message button pressed before the widget has loaded: load it now and hand it the request.
+  const [early, setEarly] = useState<OpenChatRequest | null>(null)
+
+  useEffect(() => {
+    if (!shouldLoadChat || canLoadChat) return
+    const onOpen = (event: Event) => {
+      const request = parseOpenChatRequest((event as CustomEvent).detail)
+      if (!request) return
+      setEarly(request)
+      setCanLoadChat(true)
+    }
+    window.addEventListener(openChatEventName, onOpen)
+    return () => window.removeEventListener(openChatEventName, onOpen)
+  }, [shouldLoadChat, canLoadChat])
 
   useEffect(() => {
     if (!shouldLoadChat) return
@@ -35,5 +50,5 @@ export function LazyChatShell() {
     }
   }, [shouldLoadChat])
 
-  return shouldLoadChat && canLoadChat ? <ChatShell /> : null
+  return shouldLoadChat && canLoadChat ? <ChatShell initialRequest={early} /> : null
 }

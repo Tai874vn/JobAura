@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Socket } from 'socket.io-client'
 import { ArrowLeft, CheckCheck, MessageCircle, Send, X } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useRealtimeConnection } from '@/features/auth/realtime-provider'
 import { useSession } from '@/features/auth/use-session'
@@ -14,14 +14,25 @@ import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
 import { synchronizeChatConnection } from './chat-connection'
-import { shouldLoadRoomMessages } from './chat-data'
+import { openChatEventName, parseOpenChatRequest, shouldLoadRoomMessages, type OpenChatRequest } from './chat-data'
 
 type SendMessageAcknowledgement = {
   status: 'success' | 'error' | 'rate_limited'
   message?: ChatMessage | string
 }
 
-export function ChatShell() {
+/**
+ * Opens the room an `OpenChatRequest` names. A user id gets the direct room with that person (the server makes
+ * it when there is none yet).
+ */
+async function roomFor(request: OpenChatRequest): Promise<ChatRoom | null> {
+  if (request.roomId) return (await chatApi.room(request.roomId)).content ?? null
+  if (request.userId) return (await chatApi.start(request.userId)).content ?? null
+  return null
+}
+
+export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest | null } = {}) {
+  const queryClient = useQueryClient()
   const { user } = useSession()
   const connection = useRealtimeConnection()
   const userId = user?.id
@@ -31,6 +42,7 @@ export function ChatShell() {
   const activeRoomId = useChatStore((state) => state.activeRoomId)
   const messagesByRoom = useChatStore((state) => state.messagesByRoom)
   const openChat = useChatStore((state) => state.openChat)
+  const openChatForRoom = useChatStore((state) => state.openChatForRoom)
   const closeChat = useChatStore((state) => state.closeChat)
   const setRooms = useChatStore((state) => state.setRooms)
   const setActiveRoom = useChatStore((state) => state.setActiveRoom)
@@ -44,6 +56,35 @@ export function ChatShell() {
   const [isSending, setIsSending] = useState(false)
   const [readReceipts, setReadReceipts] = useState<Record<number, number[]>>({})
   const [typingByRoom, setTypingByRoom] = useState<Record<number, number[]>>({})
+
+  // Other screens (applicants, my applications) ask for a chat with `jobaura:open-chat`. A request made before
+  // this widget had loaded comes in as `initialRequest`.
+  const openRequestedChat = useRef((request: OpenChatRequest) => { void request })
+  useEffect(() => {
+    openRequestedChat.current = (request) => {
+      void roomFor(request)
+        .then((room) => {
+          if (!room) return openChat()
+          openChatForRoom(room)
+          void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms })
+        })
+        .catch(() => toast.error('Could not open the chat'))
+    }
+  })
+  useEffect(() => {
+    if (!userId) return
+    const onOpen = (event: Event) => {
+      const request = parseOpenChatRequest((event as CustomEvent).detail)
+      if (request) openRequestedChat.current(request)
+    }
+    window.addEventListener(openChatEventName, onOpen)
+    return () => window.removeEventListener(openChatEventName, onOpen)
+  }, [userId])
+  const startRequest = useRef(initialRequest)
+  useEffect(() => {
+    if (userId && startRequest.current) openRequestedChat.current(startRequest.current)
+    startRequest.current = null
+  }, [userId])
 
   const roomsQuery = useQuery({
     queryKey: queryKeys.chatRooms,

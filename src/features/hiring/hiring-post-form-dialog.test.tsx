@@ -32,6 +32,19 @@ describe('HiringPostFormDialog', () => {
     expect(html).toContain('Choose the occupation first')
   })
 
+  it('asks how many people are hiring, 1 by default, with a keep-hiring checkbox', () => {
+    const html = markup(null)
+    expect(text(html)).toContain('How many people are you hiring?')
+    expect(text(html)).toContain('Keep hiring until I close the post')
+    expect(html).toMatch(/<input[^>]*max="50"[^>]*value="1"/)
+  })
+
+  it('opens a post with no limit with the box off and the checkbox on', () => {
+    const html = markup({ ...base, id: 3, openings: null })
+    expect(html).toMatch(/type="checkbox"[^>]*checked/)
+    expect(html).toMatch(/type="number"[^>]*disabled/)
+  })
+
   it('shows a saved post with its occupation and specialty', () => {
     const html = markup({ ...base, id: 2, occupationCode: '2513.5', specialty: 'Back End Developer' })
     expect(html).toMatch(/role="combobox"[^>]*value="Web developer"/)

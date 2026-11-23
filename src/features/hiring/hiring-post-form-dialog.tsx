@@ -154,6 +154,18 @@ function HiringPostForm({
             </Field>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="How many people are you hiring?" required={!draft.keepHiring} hint="From 1 to 50. When the last one accepts, the post closes by itself.">
+              <Input type="number" inputMode="numeric" min={1} max={50} step={1} value={draft.openings} disabled={draft.keepHiring}
+                onChange={(event) => set("openings", event.target.value)} placeholder="1" />
+            </Field>
+            <label className="flex items-start gap-2 self-center text-sm font-medium md:mt-6">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" checked={draft.keepHiring}
+                onChange={(event) => set("keepHiring", event.target.checked)} />
+              Keep hiring until I close the post
+            </label>
+          </div>
+
           <Field label="Description" required>
             <Textarea className="min-h-32" value={draft.description} maxLength={5000} required onChange={(event) => set("description", event.target.value)}
               placeholder="What the role does, the team, and what success looks like." />

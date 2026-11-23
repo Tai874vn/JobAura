@@ -1,6 +1,9 @@
 import {
   BriefcaseBusiness,
+  CalendarClock,
   CheckCircle2,
+  ClipboardCheck,
+  FilePlus2,
   Heart,
   MessageCircle,
   MessageSquare,
@@ -34,10 +37,10 @@ const notificationMeta: Record<AppNotification['type'], NotificationMeta> = {
   POST_COMMENT: { icon: MessageSquare, iconClassName: 'bg-amber-50 text-amber-700 ring-amber-100', unreadClassName: 'border-amber-200 bg-amber-50/60' },
   HIRE_CREATED: { icon: BriefcaseBusiness, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
   HIRE_COMPLETED: { icon: CheckCircle2, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
-  // Hiring pipeline updates (copy and links are made in a later task).
-  APPLICATION_RECEIVED: { icon: BriefcaseBusiness, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
-  APPLICATION_UPDATE: { icon: BriefcaseBusiness, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
-  INTERVIEW_UPDATE: { icon: CheckCircle2, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
+  // Hiring pipeline: a new application, a change to one, a change to an interview.
+  APPLICATION_RECEIVED: { icon: FilePlus2, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
+  APPLICATION_UPDATE: { icon: ClipboardCheck, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
+  INTERVIEW_UPDATE: { icon: CalendarClock, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
 }
 
 export function NotificationSection({ title, notifications, onOpen, emptyText }: {

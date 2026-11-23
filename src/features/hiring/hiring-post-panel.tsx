@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, Pencil } from "lucide-react";
+import { ExternalLink, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import type { HiringPost } from "@/shared/schemas";
@@ -37,6 +37,15 @@ export function HiringPostBody({ post }: { post: HiringPost }) {
         </section>
       ) : null}
     </>
+  );
+}
+
+/** Owner's link to the applicants page; the number is every application the post has. */
+export function ManageApplicantsLink({ post }: { post: HiringPost }) {
+  return (
+    <ButtonLink href={`/my-hiring-posts/${post.id}/applicants`}>
+      <Users className="h-4 w-4" />Manage applicants ({post.applicationCount})
+    </ButtonLink>
   );
 }
 
@@ -77,7 +86,10 @@ export function HiringPostPanel({
 
       <div className="mt-5 flex flex-wrap gap-2">
         {isOwner ? (
-          <ButtonLink href={`/my-hiring-posts?edit=${post.id}`}><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
+          <>
+            <ManageApplicantsLink post={post} />
+            <ButtonLink href={`/my-hiring-posts?edit=${post.id}`} variant="secondary"><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
+          </>
         ) : post.status === "CLOSED" ? (
           <p className="text-sm font-medium">This role is no longer taking applications.</p>
         ) : (

@@ -1,7 +1,8 @@
-import { BriefcaseBusiness, CalendarClock, CheckCircle2, Clock3, MapPin, Send, Users, X } from "lucide-react";
+import { BriefcaseBusiness, CalendarClock, Clock3, MapPin, Send, Users, X } from "lucide-react";
 import Link from "next/link";
 import type { HiringPost } from "@/shared/schemas";
 import { Avatar, Badge, Button, ButtonLink, Card, CardContent } from "@/shared/ui";
+import { AppliedAction } from "./applied-action";
 import { ApplyPanel } from "./apply-panel";
 import { usePostOccupation } from "./use-post-occupation";
 
@@ -86,12 +87,7 @@ export function HiringPostAction({ post, viewer, active = false, onToggleApply }
     );
   }
   if (post.viewerHasApplied) {
-    return (
-      <Button type="button" disabled className="w-full">
-        <CheckCircle2 className="h-4 w-4" />
-        Applied
-      </Button>
-    );
+    return <AppliedAction postId={post.id} />;
   }
   return (
     <Button type="button" className="w-full" variant={active ? "secondary" : "primary"} aria-expanded={active} onClick={onToggleApply}>

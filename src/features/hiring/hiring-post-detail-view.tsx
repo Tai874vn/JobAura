@@ -10,7 +10,7 @@ import type { HiringPost } from "@/shared/schemas";
 import { ButtonLink, Card, CardContent } from "@/shared/ui";
 import { ApplyPanel } from "./apply-panel";
 import { formatPostedAgo, HiringPostAction, HiringPostAvatar, HiringPostBadges, HiringPostFacts } from "./hiring-post-card";
-import { HiringPostBody } from "./hiring-post-panel";
+import { HiringPostBody, ManageApplicantsLink } from "./hiring-post-panel";
 import { hiringPostViewer } from "./hiring-post-viewer";
 
 /** A hiring post on its own page, so it can be shared and read in full. */
@@ -51,7 +51,8 @@ export function HiringPostDetailView({ initialPost }: { initialPost: HiringPost 
               {isOwner ? (
                 <>
                   <p className="text-sm text-muted">This is your post.</p>
-                  <ButtonLink href={`/my-hiring-posts?edit=${post.id}`}><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
+                  <ManageApplicantsLink post={post} />
+                  <ButtonLink href={`/my-hiring-posts?edit=${post.id}`} variant="secondary"><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
                 </>
               ) : post.status === "CLOSED" ? (
                 <p className="text-sm font-medium">This role is no longer taking applications.</p>
