@@ -162,6 +162,8 @@ export const createHiringPostSchema = z
     skills: z.array(z.string()).max(20, "Pick up to 20 skills").optional(),
     /** A date (YYYY-MM-DD) after which the post is no longer listed. */
     closesAt: z.string().optional(),
+    /** How many people the post hires (1 to 50); null keeps hiring until the post is closed. */
+    openings: z.number().int().min(1).max(50).nullable().optional(),
   })
   .refine(
     (data) =>

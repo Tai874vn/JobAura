@@ -1,5 +1,6 @@
 import type { AppNotification } from '@/shared/schemas'
 import { safeInternalPath } from '@/shared/lib/session-routing'
+import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
 
 export function roomIdFromNotification(notification: AppNotification) {
   const roomId = notification.metadata?.roomId
@@ -15,7 +16,35 @@ export function safeInternalActionUrl(value: string | null | undefined) {
   return safeInternalPath(value)
 }
 
+/** The post title inside the server's sentence "Hai Vu applied for Senior Test Engineer.", or null. */
+function appliedPostTitle(notification: AppNotification) {
+  const match = /^.+? applied for (.+?)\.?$/.exec(notification.body.trim())
+  return match?.[1] ?? null
+}
+
+function isPipelineNotification(notification: AppNotification) {
+  return notification.type === 'APPLICATION_RECEIVED'
+    || notification.type === 'APPLICATION_UPDATE'
+    || notification.type === 'INTERVIEW_UPDATE'
+}
+
+/** Headline of the 3 hiring pipeline types. The server's title already says what happened. */
+function pipelineHeadline(notification: AppNotification) {
+  const actorName = notification.actor?.name?.trim()
+  if (notification.type === 'APPLICATION_RECEIVED') {
+    const post = appliedPostTitle(notification)
+    return actorName && post ? `${actorName} applied for ${post}` : notification.title
+  }
+  if (notification.type === 'INTERVIEW_UPDATE' && notification.title === 'Interview booked') {
+    // The time is shown in the viewer's own time zone, like everywhere else in the pipeline.
+    const time = formatPipelineTime(metadataString(notification, 'scheduledAt') ?? '')
+    if (time) return `Interview booked for ${time}`
+  }
+  return notification.title
+}
+
 export function notificationHeadline(notification: AppNotification) {
+  if (isPipelineNotification(notification)) return pipelineHeadline(notification)
   const actorName = notification.actor?.name?.trim()
   if (!actorName) return notification.title
   if (notification.readAt) return actorName
@@ -36,6 +65,9 @@ export function notificationHeadline(notification: AppNotification) {
 }
 
 export function notificationContext(notification: AppNotification) {
+  if (notification.type === 'APPLICATION_RECEIVED') return 'Applicant'
+  if (notification.type === 'APPLICATION_UPDATE') return 'Application'
+  if (notification.type === 'INTERVIEW_UPDATE') return 'Interview'
   if (notification.type === 'CHAT_MESSAGE') return 'Message'
   if (notification.type === 'POST_COMMENT' || notification.type === 'POST_LIKE') {
     return metadataString(notification, 'postTitle') ?? 'Post'
@@ -47,6 +79,8 @@ export function notificationContext(notification: AppNotification) {
 
 export function notificationDetail(notification: AppNotification) {
   if (notification.type === 'CHAT_MESSAGE') return null
+  // "Hai Vu applied for ..." is already the headline, so it is not said twice.
+  if (notification.type === 'APPLICATION_RECEIVED' && appliedPostTitle(notification)) return null
   return notification.body || null
 }
 

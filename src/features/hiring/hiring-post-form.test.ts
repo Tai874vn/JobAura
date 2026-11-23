@@ -77,6 +77,38 @@ describe('hiringPostPayload', () => {
   })
 })
 
+describe('openings in the form', () => {
+  it('a new post hires 1 person by default', () => {
+    expect(emptyHiringPostDraft).toMatchObject({ openings: '1', keepHiring: false })
+    expect(hiringPostPayload(draft(), now).data?.openings).toBe(1)
+  })
+
+  it('sends the number typed, 1 to 50', () => {
+    expect(hiringPostPayload(draft({ openings: '50' }), now).data?.openings).toBe(50)
+    expect(hiringPostPayload(draft({ openings: ' 3 ' }), now).data?.openings).toBe(3)
+  })
+
+  it('refuses a number outside 1 to 50, a fraction, or an empty box', () => {
+    for (const openings of ['0', '51', '2.5', '', 'abc', '-1']) {
+      expect(hiringPostPayload(draft({ openings }), now).error).toBe('Openings must be a whole number from 1 to 50')
+    }
+  })
+
+  it('"Keep hiring until I close the post" sends null and ignores the number box', () => {
+    const result = hiringPostPayload(draft({ keepHiring: true, openings: '' }), now)
+    expect(result.error).toBeUndefined()
+    expect(result.data?.openings).toBeNull()
+  })
+
+  it('opens a saved post with its openings; null means keep hiring', () => {
+    const post = { id: 1, recruiterId: 2, title: 'QA', description: 'Test the product end to end.', skills: [], status: 'OPEN' as const, applicationCount: 0, viewerHasApplied: false }
+    expect(draftFromPost({ ...post, openings: 4 })).toMatchObject({ openings: '4', keepHiring: false })
+    expect(draftFromPost({ ...post, openings: null })).toMatchObject({ openings: '1', keepHiring: true })
+    // An older card without the number is treated as 1 opening.
+    expect(draftFromPost(post)).toMatchObject({ openings: '1', keepHiring: false })
+  })
+})
+
 describe('hiring post requests', () => {
   it('create and update send occupationCode and specialty, and no careerField', async () => {
     const seen: InternalAxiosRequestConfig[] = []

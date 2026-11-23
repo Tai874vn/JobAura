@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { AppNotification } from '@/shared/schemas'
 import {
+  notificationContext,
+  notificationDetail,
   notificationHeadline,
   roomIdFromNotification,
   safeInternalActionUrl,
@@ -38,5 +40,55 @@ describe('notification display model', () => {
       actor: { id: 2, name: 'Alex' },
       metadata: { unreadCount: 3 },
     }))).toBe('3 new messages from Alex')
+  })
+
+  describe('hiring pipeline notifications', () => {
+    const pipeline = (overrides: Partial<AppNotification>) => notification({
+      metadata: { applicationId: 9, postId: 4 },
+      actionUrl: '/my-hiring-posts/4/applicants?application=9',
+      ...overrides,
+    })
+
+    it('says who applied for which post, read or not', () => {
+      const received = pipeline({
+        type: 'APPLICATION_RECEIVED', title: 'New applicant', body: 'Hai Vu applied for Senior Test Engineer.',
+        actor: { id: 5, name: 'Hai Vu' },
+      })
+      expect(notificationHeadline(received)).toBe('Hai Vu applied for Senior Test Engineer')
+      expect(notificationHeadline({ ...received, readAt: '2026-11-23T00:00:00.000Z' })).toBe('Hai Vu applied for Senior Test Engineer')
+      expect(notificationContext(received)).toBe('Applicant')
+      // The headline already says it all, so the body is not repeated.
+      expect(notificationDetail(received)).toBeNull()
+    })
+
+    it('falls back to the server title when the body has another shape', () => {
+      expect(notificationHeadline(pipeline({ type: 'APPLICATION_RECEIVED', title: 'New applicant', body: 'Something else', actor: { id: 5, name: 'Hai Vu' } })))
+        .toBe('New applicant')
+    })
+
+    it('uses the title of an application update, with the body as detail', () => {
+      const update = pipeline({
+        type: 'APPLICATION_UPDATE', title: 'Offer accepted', body: 'Hai Vu accepted the offer for Senior Test Engineer.',
+        actor: { id: 5, name: 'Hai Vu' },
+      })
+      expect(notificationHeadline(update)).toBe('Offer accepted')
+      expect(notificationContext(update)).toBe('Application')
+      expect(notificationDetail(update)).toBe('Hai Vu accepted the offer for Senior Test Engineer.')
+    })
+
+    it('names the booked time in the viewer own time zone when the payload carries it', () => {
+      const booked = pipeline({
+        type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'Hai Vu picked Tue 25 Nov 03:00 (Vietnam time) for the Senior Test Engineer interview.',
+        metadata: { applicationId: 9, postId: 4, scheduledAt: new Date(2026, 10, 25, 10, 0).toISOString() },
+      })
+      expect(notificationHeadline(booked)).toBe('Interview booked for Wed 25 Nov, 10:00')
+      expect(notificationContext(booked)).toBe('Interview')
+    })
+
+    it('keeps the title when no time is in the payload or it is not a date', () => {
+      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'x' }))).toBe('Interview booked')
+      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'x', metadata: { scheduledAt: 'soon' } }))).toBe('Interview booked')
+      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview cancelled', body: 'x', metadata: { scheduledAt: new Date().toISOString() } }))).toBe('Interview cancelled')
+    })
   })
 })

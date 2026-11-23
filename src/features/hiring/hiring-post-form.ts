@@ -23,11 +23,15 @@ export type HiringPostDraft = {
   requirements: string
   salaryMin: string
   salaryMax: string
+  /** How many people to hire, as text (1 to 50). Ignored when `keepHiring` is on. */
+  openings: string
+  /** "Keep hiring until I close the post": no limit, sent as `openings: null`. */
+  keepHiring: boolean
 }
 
 export const emptyHiringPostDraft: HiringPostDraft = {
   title: '', companyName: '', occupationCode: '', specialty: '', legacyField: '', yearsRequired: '', employmentType: 'Full-time', location: '',
-  closesAt: '', description: '', skills: [], requirements: '', salaryMin: '', salaryMax: '',
+  closesAt: '', description: '', skills: [], requirements: '', salaryMin: '', salaryMax: '', openings: '1', keepHiring: false,
 }
 
 const text = (value?: string | null) => value ?? ''
@@ -49,6 +53,9 @@ export function draftFromPost(post: HiringPost): HiringPostDraft {
     requirements: text(post.requirements),
     salaryMin: number(post.salaryMin),
     salaryMax: number(post.salaryMax),
+    // null means no limit; a card without the number (older server) counts as 1 opening.
+    openings: post.openings == null ? '1' : String(post.openings),
+    keepHiring: post.openings === null,
   }
 }
 
@@ -72,6 +79,10 @@ export function hiringPostPayload(
   if (specialty && !draft.occupationCode) return { error: 'Choose the occupation before its specialty' }
   if (specialty && specialties && !specialties.includes(specialty)) return { error: 'Choose a specialty listed under the occupation' }
   if (draft.closesAt && draft.closesAt < todayInput(now)) return { error: 'The closing date must be today or later' }
+  const openings = draft.keepHiring ? null : Number(draft.openings.trim() === '' ? NaN : draft.openings)
+  if (openings !== null && !(Number.isInteger(openings) && openings >= 1 && openings <= 50)) {
+    return { error: 'Openings must be a whole number from 1 to 50' }
+  }
   const optional = (value: string) => value.trim() || undefined
   const parsed = createHiringPostSchema.safeParse({
     title: draft.title.trim(),
@@ -87,6 +98,7 @@ export function hiringPostPayload(
     requirements: optional(draft.requirements),
     salaryMin: draft.salaryMin.trim() === '' ? undefined : draft.salaryMin,
     salaryMax: draft.salaryMax.trim() === '' ? undefined : draft.salaryMax,
+    openings,
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'Check the hiring post details' }
   return { data: parsed.data }
