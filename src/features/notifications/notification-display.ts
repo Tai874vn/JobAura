@@ -16,26 +16,22 @@ export function safeInternalActionUrl(value: string | null | undefined) {
   return safeInternalPath(value)
 }
 
-/** The post title inside the server's sentence "Hai Vu applied for Senior Test Engineer.", or null. */
-function appliedPostTitle(notification: AppNotification) {
-  const match = /^.+? applied for (.+?)\.?$/.exec(notification.body.trim())
-  return match?.[1] ?? null
-}
-
 function isPipelineNotification(notification: AppNotification) {
   return notification.type === 'APPLICATION_RECEIVED'
     || notification.type === 'APPLICATION_UPDATE'
     || notification.type === 'INTERVIEW_UPDATE'
 }
 
-/** Headline of the 3 hiring pipeline types. The server's title already says what happened. */
+/**
+ * Headline of the 3 hiring pipeline types, from the payload fields the server adds (`kind`, `actorName`,
+ * `postTitle`, `scheduledAt`). An older notification without them shows the server's title.
+ */
 function pipelineHeadline(notification: AppNotification) {
-  const actorName = notification.actor?.name?.trim()
-  if (notification.type === 'APPLICATION_RECEIVED') {
-    const post = appliedPostTitle(notification)
-    return actorName && post ? `${actorName} applied for ${post}` : notification.title
-  }
-  if (notification.type === 'INTERVIEW_UPDATE' && notification.title === 'Interview booked') {
+  const kind = metadataString(notification, 'kind')
+  const actorName = metadataString(notification, 'actorName') ?? notification.actor?.name?.trim()
+  const postTitle = metadataString(notification, 'postTitle')
+  if (kind === 'received' && actorName && postTitle) return `${actorName} applied for ${postTitle}`
+  if (kind === 'interview') {
     // The time is shown in the viewer's own time zone, like everywhere else in the pipeline.
     const time = formatPipelineTime(metadataString(notification, 'scheduledAt') ?? '')
     if (time) return `Interview booked for ${time}`
@@ -80,7 +76,7 @@ export function notificationContext(notification: AppNotification) {
 export function notificationDetail(notification: AppNotification) {
   if (notification.type === 'CHAT_MESSAGE') return null
   // "Hai Vu applied for ..." is already the headline, so it is not said twice.
-  if (notification.type === 'APPLICATION_RECEIVED' && appliedPostTitle(notification)) return null
+  if (notification.type === 'APPLICATION_RECEIVED' && metadataString(notification, 'postTitle') && metadataString(notification, 'actorName')) return null
   return notification.body || null
 }
 

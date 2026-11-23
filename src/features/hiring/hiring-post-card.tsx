@@ -87,7 +87,7 @@ export function HiringPostAction({ post, viewer, active = false, onToggleApply }
     );
   }
   if (post.viewerHasApplied) {
-    return <AppliedAction postId={post.id} />;
+    return <AppliedAction application={post.viewerApplication} />;
   }
   return (
     <Button type="button" className="w-full" variant={active ? "secondary" : "primary"} aria-expanded={active} onClick={onToggleApply}>

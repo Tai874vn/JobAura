@@ -53,6 +53,7 @@ describe('notification display model', () => {
       const received = pipeline({
         type: 'APPLICATION_RECEIVED', title: 'New applicant', body: 'Hai Vu applied for Senior Test Engineer.',
         actor: { id: 5, name: 'Hai Vu' },
+        metadata: { applicationId: 9, postId: 4, postTitle: 'Senior Test Engineer', actorName: 'Hai Vu', kind: 'received' },
       })
       expect(notificationHeadline(received)).toBe('Hai Vu applied for Senior Test Engineer')
       expect(notificationHeadline({ ...received, readAt: '2026-11-23T00:00:00.000Z' })).toBe('Hai Vu applied for Senior Test Engineer')
@@ -61,9 +62,10 @@ describe('notification display model', () => {
       expect(notificationDetail(received)).toBeNull()
     })
 
-    it('falls back to the server title when the body has another shape', () => {
-      expect(notificationHeadline(pipeline({ type: 'APPLICATION_RECEIVED', title: 'New applicant', body: 'Something else', actor: { id: 5, name: 'Hai Vu' } })))
-        .toBe('New applicant')
+    it('falls back to the server title for an older notification without the new fields', () => {
+      const old = pipeline({ type: 'APPLICATION_RECEIVED', title: 'New applicant', body: 'Hai Vu applied for Senior Test Engineer.', actor: { id: 5, name: 'Hai Vu' } })
+      expect(notificationHeadline(old)).toBe('New applicant')
+      expect(notificationDetail(old)).toBe('Hai Vu applied for Senior Test Engineer.')
     })
 
     it('uses the title of an application update, with the body as detail', () => {
@@ -79,7 +81,7 @@ describe('notification display model', () => {
     it('names the booked time in the viewer own time zone when the payload carries it', () => {
       const booked = pipeline({
         type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'Hai Vu picked Tue 25 Nov 03:00 (Vietnam time) for the Senior Test Engineer interview.',
-        metadata: { applicationId: 9, postId: 4, scheduledAt: new Date(2026, 10, 25, 10, 0).toISOString() },
+        metadata: { applicationId: 9, postId: 4, postTitle: 'Senior Test Engineer', actorName: 'Hai Vu', kind: 'interview', scheduledAt: new Date(2026, 10, 25, 10, 0).toISOString() },
       })
       expect(notificationHeadline(booked)).toBe('Interview booked for Wed 25 Nov, 10:00')
       expect(notificationContext(booked)).toBe('Interview')
@@ -87,8 +89,9 @@ describe('notification display model', () => {
 
     it('keeps the title when no time is in the payload or it is not a date', () => {
       expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'x' }))).toBe('Interview booked')
-      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'x', metadata: { scheduledAt: 'soon' } }))).toBe('Interview booked')
-      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview cancelled', body: 'x', metadata: { scheduledAt: new Date().toISOString() } }))).toBe('Interview cancelled')
+      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'x', metadata: { kind: 'interview', scheduledAt: 'soon' } }))).toBe('Interview booked')
+      // New times or a request carry proposedTimes, not scheduledAt: the server title stays.
+      expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview request', body: 'x', metadata: { kind: 'interview', proposedTimes: [new Date().toISOString()] } }))).toBe('Interview request')
     })
   })
 })

@@ -8,6 +8,7 @@ import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
 import type { HiringPost } from "@/shared/schemas";
 import { ButtonLink, Card, CardContent } from "@/shared/ui";
+import { AppliedAction } from "./applied-action";
 import { ApplyPanel } from "./apply-panel";
 import { formatPostedAgo, HiringPostAction, HiringPostAvatar, HiringPostBadges, HiringPostFacts } from "./hiring-post-card";
 import { HiringPostBody, ManageApplicantsLink } from "./hiring-post-panel";
@@ -55,7 +56,10 @@ export function HiringPostDetailView({ initialPost }: { initialPost: HiringPost 
                   <ButtonLink href={`/my-hiring-posts?edit=${post.id}`} variant="secondary"><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
                 </>
               ) : post.status === "CLOSED" ? (
-                <p className="text-sm font-medium">This role is no longer taking applications.</p>
+                <>
+                  <p className="text-sm font-medium">This role is no longer taking applications.</p>
+                  {viewer === "candidate" && post.viewerHasApplied ? <AppliedAction application={post.viewerApplication} /> : null}
+                </>
               ) : viewer === "recruiter" ? (
                 <p className="text-sm text-muted">Candidates apply to this role from this page.</p>
               ) : (

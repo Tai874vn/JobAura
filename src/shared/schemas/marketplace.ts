@@ -114,6 +114,10 @@ export const hiringPostSchema = z.object({
   /** Only on the owner's own post cards. */
   pipeline: hiringPipelineCountsSchema.optional(),
   viewerHasApplied: z.boolean().optional().default(false),
+  /** The viewer's own application to this post (a withdrawn one too); null for guests, recruiters and non-applicants. */
+  viewerApplication: z
+    .object({ id: z.number(), status: hiringApplicationStatusSchema, statusReason: hiringStatusReasonSchema.nullish() })
+    .nullish(),
 });
 
 export const createHiringPostSchema = z

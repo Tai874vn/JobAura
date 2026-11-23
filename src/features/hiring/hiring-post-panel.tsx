@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { HiringPost } from "@/shared/schemas";
 import { ButtonLink } from "@/shared/ui";
+import { AppliedAction } from "./applied-action";
 import { ApplyPanel } from "./apply-panel";
 import {
   formatPostedAgo,
@@ -91,7 +92,10 @@ export function HiringPostPanel({
             <ButtonLink href={`/my-hiring-posts?edit=${post.id}`} variant="secondary"><Pencil className="h-4 w-4" />Edit in My hiring posts</ButtonLink>
           </>
         ) : post.status === "CLOSED" ? (
-          <p className="text-sm font-medium">This role is no longer taking applications.</p>
+          <div className="grid gap-3">
+            <p className="text-sm font-medium">This role is no longer taking applications.</p>
+            {viewer === "candidate" && post.viewerHasApplied ? <AppliedAction application={post.viewerApplication} /> : null}
+          </div>
         ) : (
           <div className="w-44"><HiringPostAction post={post} viewer={viewer} active={applying} onToggleApply={() => setApplying((value) => !value)} /></div>
         )}

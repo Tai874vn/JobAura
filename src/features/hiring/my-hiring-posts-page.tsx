@@ -90,7 +90,9 @@ export function MyHiringPostsPage() {
           <EmptyState icon={<BriefcaseBusiness />} title="Your posts could not be loaded" description="Check your connection and try again."
             action={<Button type="button" variant="secondary" onClick={() => void query.refetch()}>Try again</Button>} />
         ) : posts.length ? (
-          posts.map((post) => (
+          posts.map((post) => {
+            const summary = pipelineSummary(post);
+            return (
             <Card key={post.id}>
               <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center">
                 <div className="min-w-0 flex-1">
@@ -108,7 +110,7 @@ export function MyHiringPostsPage() {
                     <span>{post.location || "Location flexible"}</span>
                     {post.closesAt ? <span>Closes {formatDate(post.closesAt)}</span> : null}
                   </p>
-                  {pipelineSummary(post) ? <p className="mt-2 text-sm font-medium text-foreground">{pipelineSummary(post)}</p> : null}
+                  {summary ? <p className="mt-2 text-sm font-medium text-foreground">{summary}</p> : null}
                   <AiLevelStatus post={post} />
                 </div>
                 <div className="flex flex-wrap gap-2 lg:w-72 lg:justify-end">
@@ -121,14 +123,14 @@ export function MyHiringPostsPage() {
                     </Button>
                   ) : null}
                   <Button type="button" size="sm" variant="ghost" loading={setStatus.isPending && setStatus.variables?.id === post.id}
-                    onClick={() => (post.status === "OPEN" ? setClosing(post) : setStatus.mutate({ id: post.id, status: "OPEN" }))}>
+                    onClick={() => (post.status === "OPEN" ? (setStatus.reset(), setClosing(post)) : setStatus.mutate({ id: post.id, status: "OPEN" }))}>
                     {post.status === "OPEN" ? <><Lock className="h-4 w-4" />Close</> : <><LockOpen className="h-4 w-4" />Reopen</>}
                   </Button>
                   <ButtonLink href={`/hiring-posts/${post.id}`} size="sm" variant="ghost"><Eye className="h-4 w-4" />View</ButtonLink>
                 </div>
               </CardContent>
             </Card>
-          ))
+          );})
         ) : (
           <EmptyState icon={<BriefcaseBusiness />} title="No hiring posts yet"
             description="Publish your first role. Candidates find it on Hiring posts, and AI matching ranks candidates for it."
