@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import type { Interview } from '@/shared/schemas'
-import { InterviewCard, interviewDialogAllowed, PickErrorLine } from './interview-card'
+import { InterviewCard, interviewDialogAllowed, PickErrorLine, routePickError } from './interview-card'
 
 const base = {
   id: 5, round: 1, mode: 'ONLINE', durationMinutes: 45, location: null, note: 'Bring your portfolio',
@@ -73,5 +73,17 @@ describe('PickErrorLine', () => {
     expect(html).toContain('role="alert"')
     expect(html).toContain('That time has already passed.')
     expect(renderToStaticMarkup(<PickErrorLine message={null} />)).toBe('')
+  })
+})
+
+describe('routePickError', () => {
+  it('tells the sentence under the times while the interview waits for a time', () => {
+    expect(routePickError('Too late.', 'PROPOSED')).toBe('inline')
+  })
+  it('sends it to the panel once the interview moved on', () => {
+    for (const status of ['CANCELLED', 'SCHEDULED', 'COMPLETED', 'RESCHEDULE_REQUESTED'] as const) expect(routePickError('Gone.', status)).toBe('notice')
+  })
+  it('has nothing to route without a sentence', () => {
+    expect(routePickError(null, 'CANCELLED')).toBe('none')
   })
 })
