@@ -175,7 +175,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
             ) : null}
           </div>
 
-          <div role="tablist" aria-label="Applicant status" className="-mx-1 mt-4 flex gap-1 overflow-x-auto border-b border-border px-1">
+          <div role="tablist" aria-label="Applicant status" className="-mx-1 mt-4 flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border px-1">
             {applicantTabs.map(({ key, label }) => {
               const count = countOf(key)
               const active = key === tab

@@ -12,3 +12,9 @@ export function formatPipelineTime(iso: string): string {
   if (Number.isNaN(date.getTime())) return ''
   return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}, ${two(date.getHours())}:${two(date.getMinutes())}`
 }
+
+/** The sentence told after a time is picked, for example "Interview booked for Tue 25 Nov, 10:00." */
+export function bookedToastText(startsAt: string): string {
+  const when = formatPipelineTime(startsAt)
+  return when ? `Interview booked for ${when}.` : 'Interview booked.'
+}

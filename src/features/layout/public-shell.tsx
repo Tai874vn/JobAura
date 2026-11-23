@@ -5,7 +5,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+      <main className="flex min-w-0 flex-1 flex-col max-sm:pb-[4.5rem]">{children}</main>
       <Footer />
     </div>
   )

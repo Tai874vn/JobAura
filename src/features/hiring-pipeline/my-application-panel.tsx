@@ -17,6 +17,7 @@ import { candidateDialogAllowed, type CandidateDialog } from './candidate-progre
 import { ConfirmActionDialog } from './confirm-action-dialog'
 import { InterviewCard, type InterviewAction } from './interview-card'
 import { OfferCard } from './offer-card'
+import { bookedToastText } from './format-time'
 import { runDialogAction } from './run-dialog-action'
 import { StatusBadge } from './status-badge'
 import { usePipelineMutation } from './use-pipeline-mutation'
@@ -106,7 +107,8 @@ export function MyApplicationPanel({ application, backHref }: { application: App
   async function perform(act: PanelAction) {
     setNotice(null)
     await mutation.mutateAsync(act)
-    toast.success(doneText[act.type])
+    if (act.type === 'interview' && act.action.type === 'pick') toast.success(bookedToastText(act.action.startsAt), { duration: 4000 })
+    else toast.success(doneText[act.type])
   }
   function closeDialog() {
     setDialog(null)

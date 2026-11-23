@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPipelineTime } from './format-time'
+import { bookedToastText, formatPipelineTime } from './format-time'
 
 describe('formatPipelineTime', () => {
   it('writes the time like "Wed 25 Nov, 10:00" in the viewer local time', () => {
@@ -13,5 +13,15 @@ describe('formatPipelineTime', () => {
 
   it('returns an empty text for a bad date', () => {
     expect(formatPipelineTime('nope')).toBe('')
+  })
+})
+
+describe('bookedToastText', () => {
+  it('names the picked time', () => {
+    expect(bookedToastText(new Date(2026, 10, 25, 10, 0).toISOString())).toBe('Interview booked for Wed 25 Nov, 10:00.')
+  })
+
+  it('stays short when the time cannot be read', () => {
+    expect(bookedToastText('nope')).toBe('Interview booked.')
   })
 })

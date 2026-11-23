@@ -56,7 +56,7 @@ export function MyApplicationListItem({
                 event.preventDefault()
                 onSelect()
               }}
-              className={cn('block truncate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright group-hover:text-primary', selected && 'lg:text-primary')}
+              className={cn('line-clamp-2 break-words focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright group-hover:text-primary', selected && 'lg:text-primary')}
             >
               {post?.title ?? 'Hiring post'}
             </Link>
