@@ -145,8 +145,12 @@ const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   {
+    // camera and microphone are allowed for this site only (self), for the interview call page.
+    // The policy is fixed when the page first loads, and "Join call" opens the call without a
+    // full reload, so the allow rule has to be on every page, not only on /interviews/<id>/call.
     key: 'Permissions-Policy',
-    value: 'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
+    value:
+      'accelerometer=(), camera=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(self), payment=(), usb=()',
   },
 ]
 
