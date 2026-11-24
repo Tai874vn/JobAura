@@ -31,6 +31,7 @@ export function siteNav(role?: string | null): SiteNav {
       ],
       account: [
         { href: '/', label: 'Home feed' },
+        { href: '/contracts', label: 'Contracts' },
         { href: '/my-hiring-posts', label: 'My hiring posts' },
         { href: '/jobs/new', label: 'Post portfolio' },
         { href: '/my-posts', label: 'My portfolio posts' },
@@ -47,6 +48,7 @@ export function siteNav(role?: string | null): SiteNav {
         { href: '/my-hiring-posts', label: 'My hiring posts' },
         { href: '/candidates', label: 'Find candidates' },
         { href: '/recommendations/candidates', label: 'AI matching' },
+        { href: '/contracts', label: 'Contracts' },
         { href: '/connections', label: 'Connections' },
       ],
       account: [
@@ -64,6 +66,7 @@ export function siteNav(role?: string | null): SiteNav {
         { href: '/', label: 'Home' },
         { href: '/hiring-posts', label: 'Hiring posts' },
         { href: '/my-applications', label: 'My applications' },
+        { href: '/contracts', label: 'Contracts' },
         { href: '/jobs/new', label: 'Post portfolio' },
         { href: '/connections', label: 'Connections' },
       ],
