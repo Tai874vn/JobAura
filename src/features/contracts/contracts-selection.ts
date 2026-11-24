@@ -23,6 +23,17 @@ export type Row =
   | { kind: 'proposal'; id: number; updatedAt: string; item: ProposalListItem }
   | { kind: 'contract'; id: number; updatedAt: string; item: ContractListItem }
 
+/** The address with some keys set (a string) or removed (null). Pure, so the page and its tests build the same links. */
+export function hrefWith(pathname: string, search: string, next: Record<string, string | null>): string {
+  const url = new URLSearchParams(search)
+  for (const [key, value] of Object.entries(next)) {
+    if (value === null) url.delete(key)
+    else url.set(key, value)
+  }
+  const out = url.toString()
+  return out ? `${pathname}?${out}` : pathname
+}
+
 export const positiveId = (value: string | null) => (value && /^[1-9]\d{0,9}$/.test(value) ? Number(value) : null)
 
 export type PageParams = {

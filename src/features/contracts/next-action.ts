@@ -48,9 +48,9 @@ export function nextAction(item: Item, viewerId: number): Action {
     return item.turnUserId === viewerId ? { label: 'Answer proposal', mine: true } : waiting
   }
 
-  if (item.status === 'COMPLETED') {
-    return isContractDetail(item) && item.canReview && item.viewerRole === 'client' ? { label: 'Leave a review', mine: true } : NONE
-  }
+  // The server's `canReview` covers COMPLETED, and ENDED with a paid milestone. The list row does not carry it
+  // (nor whether a review exists), so a list row shows no review label; the panel does.
+  if (isContractDetail(item) && item.canReview && item.viewerRole === 'client') return { label: 'Leave a review', mine: true }
   if (item.status !== 'ACTIVE') return NONE
 
   // Questions for the viewer come first: they stop the other side from going on.

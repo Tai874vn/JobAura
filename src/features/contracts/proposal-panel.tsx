@@ -134,7 +134,7 @@ export function ProposalPanel({
         <Avatar name={other.name} src={other.avatar} size="lg" />
         <div className="min-w-0 flex-1 basis-40">
           <p className="truncate font-medium">{other.name}</p>
-          <p className="truncate text-sm text-muted">{proposal.viewerRole === 'client' ? 'Seller' : 'Client'} · proposal sent {formatPipelineTime(proposal.createdAt)}</p>
+          <p className="truncate text-sm text-muted">{proposal.viewerRole === 'client' ? 'Freelancer' : 'Client'} · proposal sent {formatPipelineTime(proposal.createdAt)}</p>
         </div>
         <Badge tone={open ? 'primary' : 'neutral'}>{statusWord}</Badge>
       </div>
@@ -222,7 +222,7 @@ export function ProposalPanel({
       <ConfirmDialog
         open={dialog?.type === 'accept'}
         title="Accept this proposal?"
-        description={`This starts a contract for ${credits(latest?.total ?? 0)} in ${latest?.milestones.length ?? 0} milestones. No credits move until the client funds a milestone.`}
+        description={`This starts a contract for ${credits(latest?.total ?? 0)} in ${latest?.milestones.length ?? 0} ${latest?.milestones.length === 1 ? 'milestone' : 'milestones'}. No credits move until the client funds a milestone.`}
         confirmLabel="Accept"
         pending={pending}
         error={dialogError}
@@ -236,6 +236,7 @@ export function ProposalPanel({
         confirmLabel="Decline"
         tone="danger"
         noteLabel="Reason"
+        noteMaxLength={1000}
         pending={pending}
         error={dialogError}
         onCancel={closeDialog}

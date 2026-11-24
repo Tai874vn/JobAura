@@ -99,6 +99,12 @@ describe('nextAction for end requests, amendments and reviews', () => {
     expect(nextAction(detail({ status: 'COMPLETED', milestones: [], canReview: false }), CLIENT)).toEqual({ label: '', mine: false })
     expect(nextAction(detail({ status: 'COMPLETED', milestones: [], canReview: true, viewerRole: 'freelancer' }), FREELANCER)).toEqual({ label: '', mine: false })
   })
+  it('offers a review on an ended contract too when the server says canReview', () => {
+    expect(nextAction(detail({ status: 'ENDED', endReason: 'MUTUAL', milestones: [], canReview: true }), CLIENT)).toEqual({ label: 'Leave a review', mine: true })
+  })
+  it('shows no review label on a list row (it has no canReview)', () => {
+    expect(nextAction(contract(null, { status: 'COMPLETED' }), CLIENT)).toEqual({ label: '', mine: false })
+  })
   it('has no next action on an ended contract', () => {
     expect(nextAction(contract(milestone('PENDING'), { status: 'ENDED', endReason: 'MUTUAL' }), CLIENT)).toEqual({ label: '', mine: false })
   })

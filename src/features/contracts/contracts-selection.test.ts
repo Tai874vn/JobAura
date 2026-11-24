@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildRows, expiresIn, listPlan, parsePageParams, resolveSelection, resolveTab } from './contracts-selection'
+import { buildRows, hrefWith, expiresIn, listPlan, parsePageParams, resolveSelection, resolveTab } from './contracts-selection'
 
 const p = (q: string) => parsePageParams(new URLSearchParams(q))
 
@@ -73,5 +73,16 @@ describe('expiresIn', () => {
     expect(expiresIn('2026-11-24T15:30:00Z', now)).toBe('in 3 hours')
     expect(expiresIn('2026-11-24T12:20:00Z', now)).toBe('in under an hour')
     expect(expiresIn('2026-11-24T11:00:00Z', now)).toBe('expired')
+  })
+})
+
+describe('hrefWith', () => {
+  it('sets and removes keys, and keeps the others', () => {
+    expect(hrefWith('/contracts', 'tab=freelancer&contract=7', { contract: null, filter: 'active' })).toBe('/contracts?tab=freelancer&filter=active')
+    expect(hrefWith('/contracts', 'contract=7', { contract: null })).toBe('/contracts')
+  })
+  it('writes the tab that came from the opened item, so Back and the chips keep it', () => {
+    expect(hrefWith('/contracts', 'proposal=5', { proposal: null, contract: null, tab: 'freelancer' })).toBe('/contracts?tab=freelancer')
+    expect(hrefWith('/contracts', 'proposal=5', { filter: 'ended', proposal: null, contract: null, tab: 'freelancer' })).toBe('/contracts?filter=ended&tab=freelancer')
   })
 })

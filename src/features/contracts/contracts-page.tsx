@@ -3,7 +3,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useCallback } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { cn } from '@/shared/lib/utils'
 import type { ContractStatus, ProposalStatus, Side } from '@/shared/schemas'
@@ -13,6 +12,7 @@ import { ContractListItem } from './contract-list-item'
 import { ContractPanel } from './contract-panel'
 import {
   buildRows,
+  hrefWith,
   contractFilters,
   contractTabs,
   listPlan,
@@ -62,18 +62,7 @@ export function ContractsPage() {
   const { filter } = params
   const fromAddress = params.selection
 
-  const hrefFor = useCallback(
-    (next: Record<string, string | null>) => {
-      const url = new URLSearchParams(searchParams.toString())
-      for (const [key, value] of Object.entries(next)) {
-        if (value === null) url.delete(key)
-        else url.set(key, value)
-      }
-      const search = url.toString()
-      return search ? `${pathname}?${search}` : pathname
-    },
-    [pathname, searchParams],
-  )
+  const hrefFor = (next: Record<string, string | null>) => hrefWith(pathname, searchParams.toString(), next)
   const go = (next: Record<string, string | null>, mode: 'push' | 'replace' = 'replace') =>
     router[mode](hrefFor(next), { scroll: false })
 
@@ -135,10 +124,11 @@ export function ContractsPage() {
     staleTime: 15_000,
   })
 
-  const backHref = hrefFor({ proposal: null, contract: null })
+  // The tab may come from the opened item (no ?tab=): write it, so Back, the chips and the new contract keep it.
+  const backHref = hrefFor({ proposal: null, contract: null, tab })
   const hrefOf = (row: Row) => hrefFor(row.kind === 'proposal' ? { proposal: String(row.id), contract: null, tab } : { contract: String(row.id), proposal: null, tab })
   const select = (row: Row) => go(row.kind === 'proposal' ? { proposal: String(row.id), contract: null, tab } : { contract: String(row.id), proposal: null, tab }, 'push')
-  const contractHref = (id: number) => hrefFor({ contract: String(id), proposal: null })
+  const contractHref = (id: number) => hrefFor({ contract: String(id), proposal: null, tab })
 
   function panel() {
     if (!selection || !user) return null
@@ -165,7 +155,7 @@ export function ContractsPage() {
           backHref={backHref}
           contractHref={contractHref}
           // Accepting made a contract: the page opens it (the proposal was just read again, so Back shows the new list).
-          onAccepted={(contractId) => go({ proposal: null, contract: String(contractId) })}
+          onAccepted={(contractId) => go({ proposal: null, contract: String(contractId), tab })}
         />
       )
     }
@@ -206,7 +196,7 @@ export function ContractsPage() {
                 key={key}
                 type="button"
                 aria-pressed={key === filter}
-                onClick={() => go({ filter: key === 'all' ? null : key, proposal: null, contract: null })}
+                onClick={() => go({ filter: key === 'all' ? null : key, proposal: null, contract: null, tab })}
                 className={cn(
                   'interaction rounded-full border px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright',
                   key === filter ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted hover:text-foreground',

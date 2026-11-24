@@ -28,7 +28,7 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
         <Avatar name={other.name} src={other.avatar} size="lg" />
         <div className="min-w-0 flex-1 basis-40">
           <p className="truncate font-medium">{other.name}</p>
-          <p className="truncate text-sm text-muted">{contract.viewerRole === 'client' ? 'Seller' : 'Client'}</p>
+          <p className="truncate text-sm text-muted">{contract.viewerRole === 'client' ? 'Freelancer' : 'Client'}</p>
         </div>
         <Badge tone={contract.status === 'ACTIVE' ? 'primary' : 'neutral'}>{contractLabel(contract)}</Badge>
       </div>
