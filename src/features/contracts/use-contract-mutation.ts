@@ -28,7 +28,11 @@ export function useContractMutation<Vars = void, Detail = unknown>(
     mutationFn: action,
     onSuccess: (detail, vars) => {
       queryClient.setQueryData(detailKey, detail)
-      void queryClient.invalidateQueries({ queryKey: ['contracts'] })
+      // Everything under 'contracts' except the detail we just wrote (it is fresh, so no second request).
+      void queryClient.invalidateQueries({
+        queryKey: ['contracts'],
+        predicate: (query) => JSON.stringify(query.queryKey) !== JSON.stringify(detailKey),
+      })
       void queryClient.invalidateQueries({ queryKey: ['wallet'] })
       if (options.successMessage) toast.success(options.successMessage)
       options.onSuccess?.(detail, vars)

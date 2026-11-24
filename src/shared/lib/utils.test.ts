@@ -22,6 +22,9 @@ describe('utils', () => {
     expect(getErrorMessage(axiosError)).toBe('Server unavailable')
     expect(getErrorMessage(new Error('Boom'))).toBe('Boom')
     expect(getErrorMessage({})).toBe('Something went wrong')
+    const listError = new AxiosError('Bad', undefined, undefined, undefined, { data: { message: ['amount must be a number', 'second'] } } as never)
+    expect(getErrorMessage(listError)).toBe('amount must be a number')
+    expect(getErrorMessage(new AxiosError('Bad', undefined, undefined, undefined, { data: { message: [] } } as never), 'Fallback')).toBe('Fallback')
   })
 
   it('returns initials and resolves asset URLs safely', () => {

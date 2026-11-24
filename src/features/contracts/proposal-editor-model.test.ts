@@ -6,6 +6,7 @@ import {
   fromVersion,
   prefillFromService,
   toVersionBody,
+  type EditorCheckOptions,
   type EditorRow,
   type EditorState,
 } from './proposal-editor-model'
@@ -93,7 +94,7 @@ describe('editorErrors', () => {
   it('refuses an amount above 1,000,000', () => {
     const s = good()
     s.rows[0].amount = '1000001'
-    expect(messages(s)).toEqual(['rows.a.amount: amount must not be greater than 1000000'])
+    expect(messages(s)).toEqual(['rows.a.amount: A milestone can be up to 1,000,000 credits.'])
   })
 
   it('refuses a first due date of today or before', () => {
@@ -131,6 +132,50 @@ describe('editorErrors', () => {
     const s = good()
     s.rows[0] = row('a', '2026-11-01', '5')
     expect(editorErrors(s, TODAY, { closedKeys: new Set(['a']) })).toEqual([])
+  })
+})
+
+describe('editorErrors in amendment mode (the server change-request rules)', () => {
+  const rows = (): EditorRow[] => [
+    row('m1', '2026-11-20', '500'), // APPROVED, closed
+    row('m2', '2026-11-29', '300'), // FUNDED and overdue
+    row('m3', '2026-12-20', '700'), // PENDING
+  ]
+  const base = (r: EditorRow[]): EditorState => ({ ...good(), rows: r })
+  const opts = {
+    closedKeys: new Set(['m1']),
+    originalDates: { m1: '2026-11-20', m2: '2026-11-29', m3: '2026-12-20' },
+  }
+  const text = (s: EditorState, o: EditorCheckOptions = opts) => editorErrors(s, TODAY, o).map((e) => `${e.field}: ${e.message}`)
+
+  it('allows lowering a PENDING amount while the FUNDED milestone is overdue', () => {
+    const r = rows()
+    r[2].amount = '600'
+    expect(text(base(r))).toEqual([])
+  })
+
+  it('allows adding a milestone while the FUNDED one is overdue', () => {
+    expect(text(base([...rows(), row('n1', '2026-12-25', '50')]))).toEqual([])
+  })
+
+  it('refuses a moved date that is not in the future, and a new row dated today', () => {
+    const r = rows()
+    r[2].dueDate = TODAY
+    expect(text(base(r))).toEqual(['rows.m3.dueDate: A new due date must be in the future.'])
+    expect(text(base([...rows(), row('n1', TODAY, '5')]))).toEqual(['rows.n1.dueDate: A new due date must be in the future.'])
+  })
+
+  it('refuses a change that breaks the order against a SUBMITTED or APPROVED row', () => {
+    const r = [row('s1', '2026-12-15', '100'), row('s2', '2026-12-18', '100')]
+    r[1].dueDate = '2026-12-10'
+    const o = { closedKeys: new Set(['s1']), originalDates: { s1: '2026-12-15', s2: '2026-12-18' } }
+    expect(text(base(r), o)).toEqual(['rows.s2.dueDate: Milestone due dates must be in order.'])
+  })
+
+  it('leaves cancelled rows out of the date order', () => {
+    const r = [row('c1', '2026-12-30', '5'), row('p1', '2026-12-10', '5')]
+    const o = { cancelledKeys: new Set(['c1']), closedKeys: new Set(['c1']), originalDates: { c1: '2026-12-30', p1: '2026-12-10' } }
+    expect(text(base(r), o)).toEqual([])
   })
 })
 

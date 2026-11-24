@@ -1,3 +1,4 @@
+import { credits } from '@/shared/lib/credits'
 import type { MilestoneStatus, ProposalVersionView, VersionBody } from '@/shared/schemas'
 
 /** One step of the service's milestone template: the share is a whole percent, and all shares add up to 100. */
@@ -127,15 +128,28 @@ export function isRowClosed(status: MilestoneStatus | undefined): boolean {
   return status === 'SUBMITTED' || status === 'APPROVED' || status === 'CANCELLED'
 }
 
+export type EditorCheckOptions = {
+  /** Rows that cannot change (amendment mode): no error is ever shown on them. */
+  closedKeys?: ReadonlySet<string>
+  /** Rows of cancelled milestones: left out completely (the server leaves them out of the date order too). */
+  cancelledKeys?: ReadonlySet<string>
+  /**
+   * Amendment mode: the due date each existing row had when the editor opened, by row key. Giving this switches to the
+   * server's change-request rules: only a new or moved date must be in the future, and the date order also counts
+   * the closed (SUBMITTED, APPROVED) rows.
+   */
+  originalDates?: Readonly<Record<string, string>>
+}
+
 /**
- * Checks a proposal the same way the server does (same sentences), and says which field is wrong.
+ * Checks a proposal (or a contract change) the same way the server does (same sentences), and says which field is wrong.
  * `field` is `brief`, `deadline`, `milestones`, `referenceLinks`, or `rows.<key>.<title|dueDate|amount>`.
- * A first due date of today is refused too (the form asks for tomorrow or later).
- * `closedKeys` are rows that cannot change (amendment mode): they are left out of every row check.
+ * For a new proposal a first due date of today is refused too (the form asks for tomorrow or later).
  */
-export function editorErrors(s: EditorState, today: string, opts: { closedKeys?: ReadonlySet<string> } = {}): EditorError[] {
+export function editorErrors(s: EditorState, today: string, opts: EditorCheckOptions = {}): EditorError[] {
   const errors: EditorError[] = []
   const add = (field: string, message: string) => errors.push({ field, message })
+  const amendment = opts.originalDates !== undefined
 
   if (!s.brief.trim()) add('brief', 'Brief is required.')
   else if (s.brief.length > 5000) add('brief', 'The brief can be up to 5000 characters.')
@@ -149,30 +163,48 @@ export function editorErrors(s: EditorState, today: string, opts: { closedKeys?:
 
   if (!isDay(s.deadline)) add('deadline', 'Pick a deadline.')
 
-  if (s.rows.length < 1 || s.rows.length > MAX_MILESTONES) add('milestones', 'A proposal has 1 to 20 milestones.')
+  if (s.rows.length > MAX_MILESTONES) {
+    add('milestones', amendment ? 'A contract has up to 20 milestones.' : 'A proposal has 1 to 20 milestones.')
+  } else if (s.rows.length < 1) {
+    add('milestones', 'A proposal has 1 to 20 milestones.')
+  }
 
   let previous: string | null = null
   let firstChecked = true
   for (const row of s.rows) {
-    if (opts.closedKeys?.has(row.key)) continue
+    if (opts.cancelledKeys?.has(row.key)) continue
+    const closed = opts.closedKeys?.has(row.key) ?? false
+    // A closed row only takes part in the date order (it sets `previous`); it never shows an error.
     const field = (name: string) => `rows.${row.key}.${name}`
+    const report = (name: string, message: string) => {
+      if (!closed) add(field(name), message)
+    }
 
-    if (!row.title.trim()) add(field('title'), 'Each milestone needs a title.')
-    else if (row.title.length > 120) add(field('title'), 'A title can be up to 120 characters.')
-    if (row.description.length > 2000) add(field('description'), 'A description can be up to 2000 characters.')
+    if (!row.title.trim()) report('title', 'Each milestone needs a title.')
+    else if (row.title.length > 120) report('title', 'A title can be up to 120 characters.')
+    if (row.description.length > 2000) report('description', 'A description can be up to 2000 characters.')
 
     const amount = amountOf(row)
-    if (amount < 1) add(field('amount'), 'Each milestone is at least 1 credit.')
-    else if (amount > MAX_AMOUNT) add(field('amount'), 'amount must not be greater than 1000000')
+    if (amount < 1) report('amount', 'Each milestone is at least 1 credit.')
+    else if (amount > MAX_AMOUNT) report('amount', `A milestone can be up to ${credits(MAX_AMOUNT)}.`)
 
     if (!isDay(row.dueDate)) {
-      add(field('dueDate'), 'Pick a due date.')
-    } else {
-      if (firstChecked && row.dueDate <= today) add(field('dueDate'), 'The first due date must be in the future.')
-      else if (previous && row.dueDate < previous) add(field('dueDate'), 'Milestone due dates must be in order.')
-      else if (isDay(s.deadline) && row.dueDate > s.deadline) add(field('dueDate'), 'A due date cannot be after the deadline.')
-      previous = row.dueDate
+      report('dueDate', 'Pick a due date.')
+      continue
     }
+    const changed = opts.originalDates?.[row.key] !== row.dueDate
+    if (amendment) {
+      if (changed && row.dueDate <= today) report('dueDate', 'A new due date must be in the future.')
+      else if (previous && row.dueDate < previous) report('dueDate', 'Milestone due dates must be in order.')
+      else if (isDay(s.deadline) && row.dueDate > s.deadline) report('dueDate', 'A due date cannot be after the deadline.')
+    } else if (firstChecked && row.dueDate <= today) {
+      report('dueDate', 'The first due date must be in the future.')
+    } else if (previous && row.dueDate < previous) {
+      report('dueDate', 'Milestone due dates must be in order.')
+    } else if (isDay(s.deadline) && row.dueDate > s.deadline) {
+      report('dueDate', 'A due date cannot be after the deadline.')
+    }
+    previous = row.dueDate
     firstChecked = false
   }
   return errors

@@ -49,13 +49,22 @@ export function ProposalEditor({ initial, mode, lockedRows, pending = false, ser
   const [today] = useState(() => todayString())
   const [briefTouched, setBriefTouched] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [originalDates] = useState<Record<string, string>>(() =>
+    Object.fromEntries(initial.rows.filter((r) => lockedRows?.[r.key] !== undefined).map((r) => [r.key, r.dueDate])),
+  )
   const nextKey = useRef(1)
   const fileInput = useRef<HTMLInputElement>(null)
 
   const amendment = mode === 'amendment'
   const statusOf = (key: string) => lockedRows?.[key]
   const closedKeys = new Set(state.rows.filter((r) => isRowClosed(statusOf(r.key))).map((r) => r.key))
-  const allErrors = editorErrors(state, today, { closedKeys })
+  const cancelledKeys = new Set(state.rows.filter((r) => statusOf(r.key) === 'CANCELLED').map((r) => r.key))
+  const allErrors = editorErrors(state, today, {
+    closedKeys,
+    cancelledKeys,
+    // Amendment mode uses the server's change-request rules, which need the dates the rows started with.
+    originalDates: amendment ? originalDates : undefined,
+  })
   // An amendment does not carry a brief or references.
   const errors = amendment ? allErrors.filter((e) => e.field !== 'brief' && !e.field.startsWith('reference')) : allErrors
   const total = editorTotal(state.rows)

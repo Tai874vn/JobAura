@@ -19,7 +19,9 @@ export function currency(value: number | undefined) {
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong') {
   if (error instanceof AxiosError) {
     const data = error.response?.data as { message?: unknown } | undefined
-    return typeof data?.message === 'string' ? data.message : fallback
+    // A validation error (400) sends a list of sentences; the first one is enough to show.
+    const message = Array.isArray(data?.message) ? data.message[0] : data?.message
+    return typeof message === 'string' && message ? message : fallback
   }
 
   return error instanceof Error ? error.message : fallback
