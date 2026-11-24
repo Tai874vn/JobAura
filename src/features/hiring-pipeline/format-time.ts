@@ -18,3 +18,10 @@ export function bookedToastText(startsAt: string): string {
   const when = formatPipelineTime(startsAt)
   return when ? `Interview booked for ${when}.` : 'Interview booked.'
 }
+
+/** A day without a clock, for example "Tue 25 Nov" (used for contract due dates). */
+export function formatPipelineDay(iso: string): string {
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return ''
+  return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`
+}

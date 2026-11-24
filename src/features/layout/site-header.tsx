@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSession } from "@/features/auth/use-session";
 import { PipelineLiveUpdates } from "@/features/hiring-pipeline/use-pipeline-live-updates";
+import { ContractLiveUpdates } from "@/features/contracts/use-contract-live-updates";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, Button } from "@/shared/ui";
@@ -54,6 +55,7 @@ export function SiteHeader() {
         {user ? (
           <div className="ml-auto">
             <PipelineLiveUpdates />
+            <ContractLiveUpdates />
             <NotificationBell />
           </div>
         ) : null}
