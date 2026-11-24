@@ -183,7 +183,8 @@ export function JobForm({ job }: { job?: Job }) {
                     </Select>
                   </Field>
                   <Field id="post-kind" label="Kind of work" error={form.formState.errors.subcategoryId?.message}>
-                    <Select id="post-kind" disabled={!subcategories.length} {...form.register('subcategoryId')}>
+                    {/* The key remounts the select when its options arrive, so the saved kind of work is shown instead of the placeholder. */}
+                    <Select key={`${categoryId}-${subcategories.length}`} id="post-kind" disabled={!subcategories.length} {...form.register('subcategoryId')}>
                       <option value={0}>{categoryId ? 'Choose the kind of work' : 'Choose a field first'}</option>
                       {subcategories.map((detail) => <option key={detail.id} value={detail.id}>{detail.name}</option>)}
                     </Select>

@@ -5,6 +5,7 @@ import {
   editorTotal,
   fromVersion,
   prefillFromService,
+  splitPrice,
   toVersionBody,
   type EditorCheckOptions,
   type EditorRow,
@@ -224,5 +225,12 @@ describe('fromVersion', () => {
     const s = fromVersion(v)
     expect(s.deadline).toBe('2026-12-31')
     expect(s.rows[0]).toMatchObject({ title: 'A', description: '', dueDate: '2026-12-10', amount: '500' })
+  })
+})
+
+describe('splitPrice', () => {
+  it('puts the left-over credits on the last part', () => {
+    expect(splitPrice(1001, [30, 70])).toEqual([300, 701])
+    expect(splitPrice(0, [50, 50])).toEqual([0, 0])
   })
 })

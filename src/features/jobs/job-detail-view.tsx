@@ -13,6 +13,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { credits } from '@/shared/lib/credits'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { splitPrice } from '@/features/contracts/proposal-editor-model'
 import { NewProposalDialog } from '@/features/contracts/new-proposal-dialog'
 import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-price'
 import type { Comment, Job } from '@/shared/schemas'
@@ -40,6 +41,8 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const sellerAvatar = getSellerAvatar(job)
   const listedDate = formatListedDate(job.createdAt)
   const template = job.milestoneTemplate ?? []
+  // The same split the proposal dialog starts from, so the numbers match.
+  const splitAmounts = splitPrice(job.price, template.map((step) => step.share))
 
   const deleteMutation = useMutation({
     mutationFn: () => jobsApi.delete(job.id),
@@ -192,7 +195,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                       <li key={index} className="text-sm">
                         <div className="flex items-baseline justify-between gap-3">
                           <span className="min-w-0 break-words font-medium">{step.title} · {step.share}%</span>
-                          <span className="shrink-0 text-muted">{credits(Math.floor((job.price * step.share) / 100))}</span>
+                          <span className="shrink-0 text-muted">{credits(splitAmounts[index])}</span>
                         </div>
                         {step.description ? <p className="mt-0.5 break-words text-xs leading-snug text-muted">{step.description}</p> : null}
                       </li>

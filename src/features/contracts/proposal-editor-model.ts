@@ -64,6 +64,14 @@ function endOfDay(day: string): Date {
   return new Date(y, m - 1, d, 23, 59, 0, 0)
 }
 
+/** The price cut by whole-percent shares: each is floored, and the left-over credits go to the last one, so the parts add up to the price. */
+export function splitPrice(price: number, shares: number[]): number[] {
+  const whole = Math.max(0, Math.floor(price))
+  const amounts = shares.map((share) => Math.floor((whole * share) / 100))
+  if (amounts.length) amounts[amounts.length - 1] += whole - amounts.reduce((sum, a) => sum + a, 0)
+  return amounts
+}
+
 /**
  * The rows a client starts from when they send a proposal for a service:
  * - the price is split by the template shares: floor(price x share / 100), and the left-over credits go to the last
@@ -80,9 +88,7 @@ export function prefillFromService(
     ? job.milestoneTemplate
     : [{ title: 'Full work', description: '', share: 100 }]
   const price = Math.max(0, Math.floor(job.price))
-  const amounts = steps.map((step) => Math.floor((price * step.share) / 100))
-  const left = price - amounts.reduce((sum, a) => sum + a, 0)
-  amounts[amounts.length - 1] += left
+  const amounts = splitPrice(price, steps.map((step) => step.share))
 
   const tomorrow = dayNumber(addDays(today, 1))
   const last = isDay(deadline) ? dayNumber(deadline) : tomorrow

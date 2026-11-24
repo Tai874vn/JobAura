@@ -22,6 +22,10 @@ type Props = {
   onClose: () => void
 }
 
+/** The server sentence for a second open proposal on the same service. */
+export const OPEN_PROPOSAL_SENTENCE = 'You already have an open proposal for this service.'
+const serverSentence = (error: unknown) => getErrorMessage(error, '')
+
 /** How many days from today the first deadline suggestion is. The client changes it freely. */
 const DEFAULT_DEADLINE_DAYS = 14
 
@@ -65,7 +69,7 @@ export function NewProposalDialog({ job, onSent, onClose }: Props) {
 
   const error = mutation.error
   // The server sentence is shown here, in the dialog. For "already open" the client can go and read that proposal.
-  const alreadyOpen = error instanceof AxiosError && error.response?.status === 409
+  const alreadyOpen = error instanceof AxiosError && error.response?.status === 409 && serverSentence(error) === OPEN_PROPOSAL_SENTENCE
   const serverError = error ? getErrorMessage(error, 'Could not send the proposal. Please try again.') : null
 
   return (
