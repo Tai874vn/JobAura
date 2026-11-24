@@ -174,7 +174,7 @@ export function ProposalPanel({
       ) : null}
 
       {open && (allowed.accept || allowed.withdraw) ? (
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap gap-2 pr-24 lg:pr-0">
           {allowed.accept ? (
             <>
               <Button type="button" disabled={pending} onClick={() => setDialog({ type: 'accept', version: proposal.latestVersion })}>Accept</Button>

@@ -169,7 +169,7 @@ export function NotificationBell() {
       </Button>
 
       {open ? (
-        <div id="notification-panel" className="motion-popover absolute right-0 top-11 z-50 w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-lg border border-border bg-surface shadow-overlay">
+        <div id="notification-panel" className="motion-popover fixed inset-x-4 top-[4.5rem] z-50 overflow-hidden sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-[420px] sm:max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface shadow-overlay">
           <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <h2 className="font-display text-lg font-medium">Notifications</h2>
@@ -221,7 +221,7 @@ export function NotificationBell() {
                   No notifications yet
                 </p>
                 <p className="mt-1 text-xs text-muted">
-                  Connection, post, hire, and chat updates will appear here.
+                  Connection, post, contract, and chat updates will appear here.
                 </p>
               </div>
             )}

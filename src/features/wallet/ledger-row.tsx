@@ -18,7 +18,8 @@ export function LedgerRow({ entry }: { entry: LedgerEntryView }) {
           <p className="break-words text-sm font-medium text-foreground">{text}</p>
         )}
       </div>
-      <div className="text-right">
+      {/* On a phone the amount drops under the sentence and lines up on the left; on wider screens it sits on the right. */}
+      <div className="w-full sm:w-auto sm:text-right">
         <p className={change > 0 ? 'text-sm font-medium text-primary' : 'text-sm font-medium text-foreground'}>{ledgerAmount(entry)}</p>
         <p className="text-xs text-muted">Balance {credits(entry.availableAfter)}</p>
       </div>

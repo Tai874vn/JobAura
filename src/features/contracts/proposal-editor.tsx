@@ -179,7 +179,7 @@ export function ProposalEditor({ initial, mode, lockedRows, pending = false, ser
       )}
 
       <div>
-        <label htmlFor="pe-deadline" className="text-sm font-medium">Deadline</label>
+        <label htmlFor="pe-deadline" className="block text-sm font-medium">Deadline</label>
         <Input
           id="pe-deadline"
           type="date"

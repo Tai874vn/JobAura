@@ -39,7 +39,7 @@ export function EndRequestCard({
       {mine ? <p className="mt-2 text-sm text-muted">Waiting for {other} to answer. The contract goes on meanwhile.</p> : null}
       {workChanged ? <p className="mt-2 text-sm text-muted">Work was submitted after the end request. Ask the client to send a new one.</p> : null}
       {onAccept || onDecline || onWithdraw ? (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2 pr-24 lg:pr-0">
           {onAccept ? <Button type="button" size="sm" variant="danger" disabled={pending} onClick={onAccept}>Accept and end</Button> : null}
           {onDecline ? <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={onDecline}>Decline</Button> : null}
           {onWithdraw ? <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={onWithdraw}>Withdraw</Button> : null}

@@ -19,7 +19,7 @@ export function WalletChip() {
     <Link
       href="/wallet"
       aria-label={`Wallet: ${credits(data.available)} available`}
-      className="interaction inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-full bg-[#d2d92d] px-3 text-sm font-medium text-[#1f2400] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2"
+      className="interaction inline-flex h-8 shrink-0 items-center whitespace-nowrap rounded-full bg-accent px-3 text-sm font-medium text-foreground hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2"
     >
       {credits(data.available)}
     </Link>

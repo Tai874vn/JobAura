@@ -37,7 +37,7 @@ export function AmendmentCard({
       </ul>
       {mine ? <p className="mt-2 text-sm text-muted">Waiting for {contract.client.id === viewerId ? contract.freelancer.name : contract.client.name} to answer.</p> : null}
       {onAccept || onDecline || onWithdraw ? (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2 pr-24 lg:pr-0">
           {onAccept ? <Button type="button" size="sm" disabled={pending} onClick={onAccept}>Accept</Button> : null}
           {onDecline ? <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={onDecline}>Decline</Button> : null}
           {onWithdraw ? <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={onWithdraw}>Withdraw</Button> : null}
