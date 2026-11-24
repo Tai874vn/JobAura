@@ -103,7 +103,7 @@ describe('notification display model', () => {
       title: 'Server title',
       body: 'Server body.',
       actor: { id: 5, name: 'Hai Vu' },
-      metadata: { kind: isProposalStep(step) ? 'proposal' : 'contract', step, proposalId: null, contractId: null, milestoneId: null, actorName: 'Hai Vu', title: 'Logo design', ...extra },
+      metadata: { kind: isProposalStep(step) ? 'proposal' : 'contract', step, proposalId: null, contractId: null, milestoneId: null, actorName: 'Hai Vu', title: 'Counter-offer', jobTitle: 'Logo design', ...extra },
       ...overrides,
     })
 
@@ -133,6 +133,9 @@ describe('notification display model', () => {
     })
 
     it('keeps the headline once read, and falls back to the server title', () => {
+      // Old rows have no jobTitle: the headline just leaves the service name out.
+      expect(notificationHeadline(contract('proposal_countered', { jobTitle: undefined }))).toBe('New version of the proposal')
+      expect(notificationHeadline(contract('proposal_expired', { jobTitle: undefined }))).toBe('The proposal expired')
       expect(notificationHeadline(contract('proposal_sent', {}, { readAt: '2026-11-24T00:00:00.000Z' }))).toBe('Hai Vu sent you a proposal')
       expect(notificationHeadline(contract('some_new_step'))).toBe('Server title')
       expect(notificationHeadline(notification({ type: 'CONTRACT_UPDATE', title: 'Old title', metadata: {} }))).toBe('Old title')

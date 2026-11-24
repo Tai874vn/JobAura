@@ -54,14 +54,15 @@ function metadataNumber(notification: AppNotification, key: string) {
 /**
  * Headline of a proposal or contract notification, from `metadata.step` (the event name), `actorName` and `title`
  * (the service or proposal title). The milestone number and the amount are added when the server sends them
- * (`position`, `amount`); without them the headline stays general and the body (detail line) has the number.
+ * (`position`, `amount`, `rule`, `jobTitle`); without them the headline stays general and the body (detail line) has the number.
  * A step this app does not know shows the server's title.
  */
 function contractHeadline(notification: AppNotification) {
   const step = metadataString(notification, 'step')
   const actor = metadataString(notification, 'actorName') ?? notification.actor?.name?.trim() ?? 'Someone'
-  const title = metadataString(notification, 'title')
-  const forTitle = title ? ` for ${title}` : ''
+  // `jobTitle` is the service name. (`metadata.title` is the notification's own title, so it is never used here.)
+  const jobTitle = metadataString(notification, 'jobTitle')
+  const forTitle = jobTitle ? ` for ${jobTitle}` : ''
   const position = metadataNumber(notification, 'position')
   const amount = metadataNumber(notification, 'amount')
   switch (step) {

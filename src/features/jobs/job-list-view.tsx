@@ -8,6 +8,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { JobSearchParams } from '@/shared/schemas'
+import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import { JobCard } from './job-card'
 import { JobCategoryNav } from './job-category-nav'
@@ -79,8 +80,8 @@ export function JobListView() {
       const name = subcategories.find((subcategory) => subcategory.id === subcategoryId)?.name
       filters.push({ key: 'subcategory', label: name ?? `Specialty #${subcategoryId}` })
     }
-    if (minPrice !== undefined) filters.push({ key: 'minPrice', label: `From $${minPrice}` })
-    if (maxPrice !== undefined) filters.push({ key: 'maxPrice', label: `Under $${maxPrice}` })
+    if (minPrice !== undefined) filters.push({ key: 'minPrice', label: `From ${credits(minPrice)}` })
+    if (maxPrice !== undefined) filters.push({ key: 'maxPrice', label: `Under ${credits(maxPrice)}` })
     if (minRating !== undefined) filters.push({ key: 'minRating', label: `${minRating}+ stars` })
     return filters
   }, [categoryId, keyword, maxPrice, minPrice, minRating, subcategoryId, subcategories, categories])
