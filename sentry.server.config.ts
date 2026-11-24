@@ -3,14 +3,22 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { resolveSentryConfig } from "./src/shared/config/sentry";
 
-const isProduction = process.env.NODE_ENV === "production";
+const config = resolveSentryConfig({
+  runtime: "server",
+  serverDsn: process.env.SENTRY_DSN,
+  publicDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  appEnv: process.env.NEXT_PUBLIC_APP_ENV,
+  nodeEnv: process.env.NODE_ENV,
+});
 
 Sentry.init({
-  dsn: "https://a0e90b23c416b868b9dc6254f64c0a05@o4511434684235776.ingest.de.sentry.io/4511434713399376",
+  dsn: config.dsn,
+  environment: config.environment,
 
-  // Keep full traces locally, sample production traffic to control noise and quota.
-  tracesSampleRate: isProduction ? 0.1 : 1,
+  // Keep production sampling as-is and disable trace sampling in local development.
+  tracesSampleRate: config.tracesSampleRate,
 
   // Enable logs to be sent to Sentry
   enableLogs: true,

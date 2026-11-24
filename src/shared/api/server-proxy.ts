@@ -79,7 +79,23 @@ export function createProxyResponseHeaders(source: Headers) {
     }
   }
 
+  // Default to private, no-store when the backend omits Cache-Control so browsers
+  // and shared proxies never cache private API JSON by accident.
+  if (!headers.has('cache-control')) {
+    headers.set('cache-control', 'private, no-store')
+  }
+
   return headers
+}
+
+/**
+ * Checks whether a proxy fetch failed simply because the browser cancelled the
+ * request (e.g. page navigation or query cancellation) rather than a backend outage.
+ */
+export function isClientAbortError(aborted: boolean, error: unknown): boolean {
+  if (aborted) return true
+  if (!error || typeof error !== 'object') return false
+  return 'name' in error && (error as { name?: unknown }).name === 'AbortError'
 }
 
 export async function proxyApiRequest(
@@ -112,6 +128,10 @@ export async function proxyApiRequest(
       headers: createProxyResponseHeaders(response.headers),
     })
   } catch (error) {
+    if (isClientAbortError(request.signal.aborted, error)) {
+      return new NextResponse(null, { status: 499 })
+    }
+
     console.warn('[API proxy] Unable to reach backend API', {
       method: request.method,
       path: request.nextUrl.pathname,

@@ -61,6 +61,30 @@ describe('WalletPage', () => {
     })
     expect(html).toContain('Load more')
   })
+
+  it('shows Try again buttons and stops skeleton animation when balance or history fails', async () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } },
+    })
+    await client.fetchQuery({
+      queryKey: walletKeys.summary(1),
+      queryFn: async () => { throw new Error('Server offline') },
+    }).catch(() => {})
+    await client.fetchInfiniteQuery({
+      queryKey: walletKeys.ledger({ viewerId: 1, pageSize: 20 }),
+      queryFn: async () => { throw new Error('Ledger offline') },
+      initialPageParam: 1,
+    }).catch(() => {})
+
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}><WalletPage /></QueryClientProvider>,
+    )
+
+    expect(html).toContain('Your balance could not be loaded.')
+    expect(html).toContain('The history could not be loaded.')
+    expect(html.match(/>Try again<\/button>/g)).toHaveLength(2)
+    expect(html).not.toContain('animate-pulse')
+  })
 })
 
 describe('WalletChip', () => {

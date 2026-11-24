@@ -8,7 +8,7 @@ describe('utils', () => {
     expect(cn('px-2', 'px-4', 'text-sm')).toBe('px-4 text-sm')
   })
 
-  it('extracts error messages from axios and generic errors', () => {
+  it('extracts error messages from axios, timeout, offline, and generic errors', () => {
     const axiosError = new AxiosError(
       'Request failed',
       undefined,
@@ -23,6 +23,14 @@ describe('utils', () => {
     const listError = new AxiosError('Bad', undefined, undefined, undefined, { data: { message: ['amount must be a number', 'second'] } } as never)
     expect(getErrorMessage(listError)).toBe('amount must be a number')
     expect(getErrorMessage(new AxiosError('Bad', undefined, undefined, undefined, { data: { message: [] } } as never), 'Fallback')).toBe('Fallback')
+
+    // Plain axios-like errors (e.g. across module boundaries) are detected by axios.isAxiosError.
+    expect(getErrorMessage({ isAxiosError: true, response: { data: { message: 'Cross-realm message' } } })).toBe('Cross-realm message')
+
+    // Timeout and offline/network errors return clear plain-English hints.
+    expect(getErrorMessage(new AxiosError('timeout of 10000ms exceeded', 'ECONNABORTED'))).toBe('The request timed out. Please try again.')
+    expect(getErrorMessage(new AxiosError('timeout', 'ETIMEDOUT'))).toBe('The request timed out. Please try again.')
+    expect(getErrorMessage(new AxiosError('Network Error', 'ERR_NETWORK'))).toBe('Unable to reach the server. Check your connection and try again.')
   })
 
   it('returns initials and resolves asset URLs safely', () => {

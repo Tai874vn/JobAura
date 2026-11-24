@@ -1,7 +1,8 @@
 'use client'
 
+import * as Sentry from '@sentry/nextjs'
 import axios from 'axios'
-import { isServer, QueryClient } from '@tanstack/react-query'
+import { isServer, MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 let browserQueryClient: QueryClient | undefined
 
@@ -20,8 +21,36 @@ export function shouldRetryQuery(failureCount: number, error: unknown): boolean 
   return failureCount < 2
 }
 
-function makeQueryClient() {
+/**
+ * Reports only unexpected server errors (HTTP 500+) to Sentry so normal
+ * 4xx validation/auth responses or offline drops do not create alert noise.
+ */
+export function shouldReportServerError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false
+  const status = error.response?.status
+  return typeof status === 'number' && status >= 500
+}
+
+function captureServerError(error: unknown, source: 'query' | 'mutation', key?: readonly unknown[]) {
+  if (!shouldReportServerError(error)) return
+  Sentry.captureException(error, {
+    tags: { source: `react-query:${source}` },
+    extra: key ? { key: JSON.stringify(key) } : undefined,
+  })
+}
+
+export function createQueryClient() {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error, query) => {
+        captureServerError(error, 'query', query.queryKey)
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (error, _variables, _context, mutation) => {
+        captureServerError(error, 'mutation', mutation.options.mutationKey)
+      },
+    }),
     defaultOptions: {
       queries: {
         retry: shouldRetryQuery,
@@ -34,7 +63,7 @@ function makeQueryClient() {
 }
 
 export function getQueryClient() {
-  if (isServer) return makeQueryClient()
-  browserQueryClient ??= makeQueryClient()
+  if (isServer) return createQueryClient()
+  browserQueryClient ??= createQueryClient()
   return browserQueryClient
 }

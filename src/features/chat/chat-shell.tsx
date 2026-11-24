@@ -9,7 +9,7 @@ import { useRealtimeConnection } from '@/features/auth/realtime-provider'
 import { useSession } from '@/features/auth/use-session'
 import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
@@ -69,7 +69,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
           openChatForRoom(room)
           void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms(userId) })
         })
-        .catch(() => toast.error('Could not open the chat'))
+        .catch((error) => toast.error(getErrorMessage(error, 'Could not open the chat')))
     }
   })
   useEffect(() => {
@@ -185,8 +185,8 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
         setMessages(roomId, result.content ?? [])
         socketRef.current?.emit('mark-as-read', { roomId })
       })
-      .catch(() => {
-        if (!cancelled) toast.error('Could not load this conversation')
+      .catch((error) => {
+        if (!cancelled) toast.error(getErrorMessage(error, 'Could not load this conversation'))
       })
 
     return () => {

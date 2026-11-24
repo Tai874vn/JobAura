@@ -1,13 +1,21 @@
 // This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a users loads a page in their browser.
+// The added config here will be used whenever a user loads a page in their browser.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { resolveSentryConfig } from "@/shared/config/sentry";
 
-const isProduction = process.env.NODE_ENV === "production";
+// Read public env vars directly so Next.js can inline them into the browser bundle.
+const config = resolveSentryConfig({
+  runtime: "client",
+  publicDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  appEnv: process.env.NEXT_PUBLIC_APP_ENV,
+  nodeEnv: process.env.NODE_ENV,
+});
 
 Sentry.init({
-  dsn: "https://a0e90b23c416b868b9dc6254f64c0a05@o4511434684235776.ingest.de.sentry.io/4511434713399376",
+  dsn: config.dsn,
+  environment: config.environment,
 
   integrations: [
     Sentry.replayIntegration({
@@ -17,10 +25,10 @@ Sentry.init({
     }),
   ],
 
-  // Keep full traces locally, sample production traffic to control noise and quota.
-  tracesSampleRate: isProduction ? 0.1 : 1,
-  replaysSessionSampleRate: isProduction ? 0.1 : 0,
-  replaysOnErrorSampleRate: 1,
+  // Keep production sampling as-is and disable trace/replay sampling in local development.
+  tracesSampleRate: config.tracesSampleRate,
+  replaysSessionSampleRate: config.replaysSessionSampleRate,
+  replaysOnErrorSampleRate: config.replaysOnErrorSampleRate,
 
   // Enable logs to be sent to Sentry
   enableLogs: true,

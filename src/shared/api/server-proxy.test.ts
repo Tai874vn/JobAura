@@ -1,12 +1,19 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { NextRequest } from 'next/server'
 import {
   buildBackendApiUrl,
   createProxyRequestHeaders,
   createProxyResponseHeaders,
+  isClientAbortError,
+  proxyApiRequest,
 } from './server-proxy'
 
 describe('server API proxy', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
   it('builds an encoded backend URL and preserves the query string', () => {
     const requestUrl = new URL(
       'https://jobaura.site/api/jobs/frontend%20developer?page=2',
@@ -47,7 +54,7 @@ describe('server API proxy', () => {
     expect(headers.get('x-forwarded-proto')).toBe('https')
   })
 
-  it('removes hop-by-hop response headers without dropping application headers', () => {
+  it('removes hop-by-hop response headers and defaults Cache-Control to private, no-store', () => {
     const source = new Headers({
       connection: 'keep-alive',
       'content-length': '42',
@@ -63,5 +70,42 @@ describe('server API proxy', () => {
     expect(headers.get('content-type')).toBe('application/json')
     expect(headers.get('location')).toBe('https://jobaura.site/auth/callback')
     expect(headers.get('set-cookie')).toContain('access_token=token')
+    expect(headers.get('cache-control')).toBe('private, no-store')
+  })
+
+  it('preserves an explicit backend Cache-Control header', () => {
+    const headers = createProxyResponseHeaders(
+      new Headers({ 'cache-control': 'public, max-age=60' }),
+    )
+    expect(headers.get('cache-control')).toBe('public, max-age=60')
+  })
+
+  it('detects client-aborted requests and skips 502 warnings', async () => {
+    const abortError = new DOMException('Aborted', 'AbortError')
+    expect(isClientAbortError(true, new Error('other'))).toBe(true)
+    expect(isClientAbortError(false, abortError)).toBe(true)
+    expect(isClientAbortError(false, new Error('ECONNREFUSED'))).toBe(false)
+
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const controller = new AbortController()
+    controller.abort()
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => { throw abortError }))
+
+    const request = new NextRequest('http://frontend:3000/api/auth/me', { signal: controller.signal })
+    const response = await proxyApiRequest(request, ['auth', 'me'])
+
+    expect(response.status).toBe(499)
+    expect(warnSpy).not.toHaveBeenCalled()
+  })
+
+  it('logs a warning and returns 502 on real backend network failures', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(async () => { throw new Error('ECONNREFUSED') }))
+
+    const request = new NextRequest('http://frontend:3000/api/auth/me')
+    const response = await proxyApiRequest(request, ['auth', 'me'])
+
+    expect(response.status).toBe(502)
+    expect(warnSpy).toHaveBeenCalledOnce()
   })
 })

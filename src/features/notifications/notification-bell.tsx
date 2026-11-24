@@ -17,6 +17,7 @@ import { useSession } from "@/features/auth/use-session";
 import { chatApi, notificationsApi } from "@/shared/api/endpoints";
 import { normalizeNotification } from "@/shared/api/normalizers";
 import { queryKeys } from "@/shared/api/query-keys";
+import { getErrorMessage } from "@/shared/lib/utils";
 import type { ApiResponse, AppNotification } from "@/shared/schemas";
 import { useChatStore } from "@/shared/stores/chat-store";
 import { Button } from "@/shared/ui";
@@ -64,7 +65,7 @@ export function NotificationBell() {
         queryKey: queryKeys.notificationUnreadCount(userId),
       });
     },
-    onError: () => toast.error("Could not update notification"),
+    onError: (error) => toast.error(getErrorMessage(error, "Could not update notification")),
   });
 
   const markAllRead = useMutation({
@@ -79,7 +80,7 @@ export function NotificationBell() {
         }),
       );
     },
-    onError: () => toast.error("Could not mark notifications as read"),
+    onError: (error) => toast.error(getErrorMessage(error, "Could not mark notifications as read")),
   });
 
   useEffect(() => {
@@ -125,8 +126,8 @@ export function NotificationBell() {
           const room = (await chatApi.room(roomId)).content;
           if (room) openChatForRoom(room);
           return;
-        } catch {
-          toast.error("Could not open chat");
+        } catch (error) {
+          toast.error(getErrorMessage(error, "Could not open chat"));
         }
       }
     }

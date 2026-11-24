@@ -5,10 +5,10 @@ import { ProfilePage } from '@/features/users/profile-page'
 import { getUserPosts } from '@/features/users/profile-posts'
 import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
+import { resolveServerEntity } from '@/shared/api/server-load'
 import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, Job, PaginatedContent, UserProfile } from '@/shared/schemas'
-import { Card, CardContent } from '@/shared/ui'
 
 const getProfileData = cache(async (id: string) => {
   const [response, jobsResponse] = await Promise.all([
@@ -19,19 +19,19 @@ const getProfileData = cache(async (id: string) => {
     }),
   ])
 
-  return { response, jobsResponse }
+  const profile = resolveServerEntity(response, (data) => data.content)
+  return { profile, jobsResponse }
 })
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   const profileId = positiveIntegerRouteParam(id)
   if (!profileId) return { title: 'Profile not found', robots: { index: false, follow: false } }
-  const { response } = await getProfileData(String(profileId))
-  const user = response.ok ? response.data.content : null
+  const { profile } = await getProfileData(String(profileId))
 
-  if (!user) {
+  if (profile.kind !== 'ok') {
     return {
-      title: 'Profile not found',
+      title: profile.kind === 'not-found' ? 'Profile not found' : 'Profile unavailable',
       robots: {
         index: false,
         follow: false,
@@ -39,6 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const user = profile.data
   const title = `${user.name} - JobAura profile`
   const description = seoDescription(user.headline || user.bio, `View ${user.name}'s public JobAura profile, skills, services, and marketplace activity.`)
   const image = absoluteAssetUrl(user.avatar ?? user.coverImage ?? user.cover)
@@ -113,37 +114,21 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
   const { id } = await params
   const profileId = positiveIntegerRouteParam(id)
   if (!profileId) notFound()
-  const { response, jobsResponse } = await getProfileData(String(profileId))
+  const { profile, jobsResponse } = await getProfileData(String(profileId))
 
-  if (!response.ok) return <ProfileLoadError id={profileId} />
-  if (!response.data.content) notFound()
+  if (profile.kind === 'not-found') notFound()
+  if (profile.kind === 'error') {
+    // Throw so profile/[id]/error.tsx handles recovery instead of serving a soft-404 HTTP 200 page.
+    throw new Error(`Could not load profile #${profileId}: ${profile.message}`)
+  }
 
   const jobs = jobsResponse.ok ? normalizePaginatedJobsResponse(jobsResponse.data).content?.data ?? [] : []
-  const posts = getUserPosts(jobs, response.data.content.id)
+  const posts = getUserPosts(jobs, profile.data.id)
 
   return (
     <>
-      <JsonLd data={personJsonLd(response.data.content, posts)} />
-      <ProfilePage user={response.data.content} posts={posts} />
+      <JsonLd data={personJsonLd(profile.data, posts)} />
+      <ProfilePage user={profile.data} posts={posts} />
     </>
-  )
-}
-
-function ProfileLoadError({ id }: { id: number }) {
-  return (
-    <div className="container-page py-10">
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm font-medium text-danger">Profile unavailable</p>
-          <h1 className="mt-2 font-display text-3xl font-medium">Could not load profile #{id}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
-            The profile page is available, but the backend profile endpoint returned an error instead of profile data.
-          </p>
-          <p className="mt-4 rounded-lg bg-surface-muted p-4 text-sm text-muted">
-            Please try again later. If the problem continues, contact JobAura support with profile ID #{id}.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
   )
 }

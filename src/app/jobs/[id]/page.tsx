@@ -5,6 +5,7 @@ import { JobDetailView } from '@/features/jobs/job-detail-view'
 import { getSellerHref, getSellerName } from '@/features/jobs/seller-profile'
 import { normalizeJobResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
+import { resolveServerEntity } from '@/shared/api/server-load'
 import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, Comment, Job } from '@/shared/schemas'
@@ -15,14 +16,13 @@ const getJob = cache(async (id: string) => {
     next: { revalidate: 300 },
   })
 
-  return response.ok ? normalizeJobResponse(response.data).content : null
+  return resolveServerEntity(response, (data) => normalizeJobResponse(data).content)
 })
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   const jobId = positiveIntegerRouteParam(id)
-  const job = jobId ? await getJob(String(jobId)) : null
-  if (!job) {
+  if (!jobId) {
     return {
       title: 'Service not found',
       robots: {
@@ -32,6 +32,18 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   }
 
+  const result = await getJob(String(jobId))
+  if (result.kind !== 'ok') {
+    return {
+      title: result.kind === 'not-found' ? 'Service not found' : 'Service unavailable',
+      robots: {
+        index: false,
+        follow: false,
+      },
+    }
+  }
+
+  const job = result.data
   const title = job.title
   const description = seoDescription(job.shortDescription || job.description, `Hire ${title} on JobAura.`)
   const image = absoluteAssetUrl(job.image)
@@ -101,8 +113,14 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const { id } = await params
   const jobId = positiveIntegerRouteParam(id)
   if (!jobId) notFound()
-  const job = await getJob(String(jobId))
-  if (!job) notFound()
+  const result = await getJob(String(jobId))
+  if (result.kind === 'not-found') notFound()
+  if (result.kind === 'error') {
+    // Let jobs/[id]/error.tsx show recovery UI instead of misreporting a 5xx outage as a 404.
+    throw new Error(`Could not load service #${jobId}: ${result.message}`)
+  }
+
+  const job = result.data
   return (
     <>
       <JsonLd data={serviceJsonLd(job)} />

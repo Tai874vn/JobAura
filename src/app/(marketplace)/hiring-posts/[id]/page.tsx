@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { HiringPostDetailView } from '@/features/hiring/hiring-post-detail-view'
 import { normalizeHiringPost } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
+import { resolveServerEntity } from '@/shared/api/server-load'
 import { absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, HiringPost } from '@/shared/schemas'
@@ -11,21 +12,37 @@ import type { ApiResponse, HiringPost } from '@/shared/schemas'
 // Read first without cookies, so the page is the same for everyone and can be cached; the client view then loads the
 // signed-in candidate's "applied" state.
 const getHiringPost = cache(async (id: number) => {
+  const extractPost = (data: ApiResponse<HiringPost>) => (data.content ? normalizeHiringPost(data.content) : null)
   const response = await serverRequest<ApiResponse<HiringPost>>(`/api/hiring-posts/${id}`, {
     includeCookies: false,
     next: { revalidate: 120 },
   })
-  if (response.ok && response.data.content) return normalizeHiringPost(response.data.content)
+  const publicOutcome = resolveServerEntity(response, extractPost)
+  // Return immediately on success or on a network error (status 0) / 5xx outage so outages never become 404s.
+  // Any 4xx (closed posts return 403 to anonymous callers, and 401/404/etc. may still resolve with cookies)
+  // falls through to the uncached cookie-authenticated retry.
+  if (publicOutcome.kind === 'ok') return publicOutcome
+  if (!response.ok && (response.status === 0 || response.status >= 500)) return publicOutcome
+
   // A closed post is only shown to its owner and to admins, so the open read above is refused. Try once with the
   // viewer's own cookies (never cached, because it can show a private page); anyone else still gets "not found".
   const own = await serverRequest<ApiResponse<HiringPost>>(`/api/hiring-posts/${id}`)
-  return own.ok && own.data.content ? normalizeHiringPost(own.data.content) : null
+  return resolveServerEntity(own, extractPost, { treatUnauthorizedAsNotFound: true })
 })
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const id = positiveIntegerRouteParam((await params).id)
-  const post = id ? await getHiringPost(id) : null
-  if (!post) return { title: 'Hiring post not found', robots: { index: false, follow: false } }
+  if (!id) return { title: 'Hiring post not found', robots: { index: false, follow: false } }
+
+  const result = await getHiringPost(id)
+  if (result.kind !== 'ok') {
+    return {
+      title: result.kind === 'not-found' ? 'Hiring post not found' : 'Hiring post unavailable',
+      robots: { index: false, follow: false },
+    }
+  }
+
+  const post = result.data
   // A closed post (seen only by its owner or an admin) stays out of search results.
   const hidden = post.status !== 'OPEN'
 
@@ -62,8 +79,14 @@ function jobPostingJsonLd(post: HiringPost) {
 export default async function HiringPostPage({ params }: { params: Promise<{ id: string }> }) {
   const id = positiveIntegerRouteParam((await params).id)
   if (!id) notFound()
-  const post = await getHiringPost(id)
-  if (!post) notFound()
+  const result = await getHiringPost(id)
+  if (result.kind === 'not-found') notFound()
+  if (result.kind === 'error') {
+    // Let (marketplace)/error.tsx show recovery UI instead of misreporting a 5xx outage as a 404.
+    throw new Error(`Could not load hiring post #${id}: ${result.message}`)
+  }
+
+  const post = result.data
   return (
     <>
       <JsonLd data={jobPostingJsonLd(post)} />

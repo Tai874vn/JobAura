@@ -152,7 +152,15 @@ export function JobForm({ job }: { job?: Job }) {
         <Card>
           <form
             className="grid gap-0"
-            onSubmit={form.handleSubmit((values) => mutation.mutate(createJobSchema.parse(values)))}
+            onSubmit={form.handleSubmit((values) => {
+              // Validate safely instead of throwing from .parse(), which would trigger an unhandled rejection.
+              const parsed = createJobSchema.safeParse(values)
+              if (!parsed.success) {
+                toast.error(parsed.error.issues[0]?.message ?? 'Please check the form fields and try again.')
+                return
+              }
+              mutation.mutate(parsed.data)
+            })}
           >
             <section className="p-5">
               <h2 className="mb-4 flex items-center gap-2 text-xs font-medium text-muted">

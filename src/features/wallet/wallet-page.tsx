@@ -26,19 +26,27 @@ export function WalletPage() {
   })
   const rows = ledger.data?.pages.flatMap((page) => page.data) ?? []
   const data = summary.data
+  const missingFigure = summary.isError ? '—' : null
 
   return (
     <div className="container-page max-w-3xl py-6">
       <h1 className="font-display text-2xl font-medium text-foreground">Wallet</h1>
       <p className="mt-1 text-sm text-muted">Credits are demo money for this project. Every user starts with 5,000 credits.</p>
 
-      <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-busy={!data}>
-        <Figure label="Available" value={data ? credits(data.available) : null} />
-        <Figure label="Held" value={data ? credits(data.held) : null} />
-        <Figure label="Paid out" value={data ? credits(data.paidOut) : null} />
-        <Figure label="Earned" value={data ? credits(data.earned) : null} />
+      <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4" aria-busy={summary.isPending}>
+        <Figure label="Available" value={data ? credits(data.available) : missingFigure} />
+        <Figure label="Held" value={data ? credits(data.held) : missingFigure} />
+        <Figure label="Paid out" value={data ? credits(data.paidOut) : missingFigure} />
+        <Figure label="Earned" value={data ? credits(data.earned) : missingFigure} />
       </dl>
-      {summary.isError ? <p className="mt-3 text-sm text-danger" role="alert">Your balance could not be loaded. Please try again.</p> : null}
+      {summary.isError ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger/25 bg-surface px-4 py-3 text-sm" role="alert">
+          <p className="text-danger">Your balance could not be loaded.</p>
+          <Button type="button" size="sm" variant="secondary" loading={summary.isFetching} onClick={() => summary.refetch()}>
+            Try again
+          </Button>
+        </div>
+      ) : null}
 
       {/* Shown only when the server says VNPay is set up (topUp.enabled). */}
       <section id="top-up" aria-label="Top up" data-slot="top-up" className="mt-4 empty:hidden">
@@ -52,7 +60,12 @@ export function WalletPage() {
             {[0, 1, 2].map((n) => <Skeleton key={n} className="h-12 w-full" />)}
           </div>
         ) : ledger.isError ? (
-          <p className="mt-3 text-sm text-danger" role="alert">The history could not be loaded. Please try again.</p>
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger/25 bg-surface px-4 py-3 text-sm" role="alert">
+            <p className="text-danger">The history could not be loaded.</p>
+            <Button type="button" size="sm" variant="secondary" loading={ledger.isFetching} onClick={() => ledger.refetch()}>
+              Try again
+            </Button>
+          </div>
         ) : rows.length === 0 ? (
           <p className="mt-3 text-sm text-muted">Nothing here yet.</p>
         ) : (

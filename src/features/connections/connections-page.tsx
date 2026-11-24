@@ -1,7 +1,7 @@
 'use client'
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
+import { AlertCircle, Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
@@ -130,42 +130,81 @@ export function ConnectionsPage() {
 
       <div className="mt-6">
         {tab === 'connections' ? (
-          <>
-            <PeopleGrid loading={connectionsQuery.isPending} empty="No connections yet. Discover people to start building your network.">
-              {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} messaging={messageMutation.isPending && messageMutation.variables === connection.user.id} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
-            </PeopleGrid>
-            <PaginationControls
-              pageIndex={connectionsQuery.data?.content?.pageIndex}
-              totalPages={connectionsQuery.data?.content?.totalPages}
-              isFetching={connectionsQuery.isFetching}
-              onPageChange={setConnectionsPage}
+          connectionsQuery.isError && !connectionsQuery.data ? (
+            <EmptyState
+              icon={<AlertCircle />}
+              title="Could not load connections"
+              description={getErrorMessage(connectionsQuery.error, 'Please try again in a moment.')}
+              action={
+                <Button type="button" variant="secondary" loading={connectionsQuery.isFetching} onClick={() => connectionsQuery.refetch()}>
+                  Try again
+                </Button>
+              }
             />
-          </>
+          ) : (
+            <>
+              <PeopleGrid loading={connectionsQuery.isPending} empty="No connections yet. Discover people to start building your network.">
+                {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} messaging={messageMutation.isPending && messageMutation.variables === connection.user.id} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
+              </PeopleGrid>
+              <PaginationControls
+                pageIndex={connectionsQuery.data?.content?.pageIndex}
+                totalPages={connectionsQuery.data?.content?.totalPages}
+                isFetching={connectionsQuery.isFetching}
+                onPageChange={setConnectionsPage}
+              />
+            </>
+          )
         ) : null}
 
         {tab === 'requests' ? (
-          <div className="grid gap-8 lg:grid-cols-2">
-            <RequestSection title="Incoming" empty="No incoming requests.">
-              {(requests?.incoming ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} incoming accepting={acceptMutation.isPending && acceptMutation.variables === connection.id} removing={removeMutation.isPending && removeMutation.variables === connection.id} onAccept={() => acceptMutation.mutate(connection.id)} onRemove={() => removeMutation.mutate(connection.id)} />)}
-            </RequestSection>
-            <RequestSection title="Sent" empty="No sent requests.">
-              {(requests?.outgoing ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} removing={removeMutation.isPending && removeMutation.variables === connection.id} onRemove={() => removeMutation.mutate(connection.id)} />)}
-            </RequestSection>
-          </div>
+          requestsQuery.isError && !requestsQuery.data ? (
+            <EmptyState
+              icon={<AlertCircle />}
+              title="Could not load requests"
+              description={getErrorMessage(requestsQuery.error, 'Please try again in a moment.')}
+              action={
+                <Button type="button" variant="secondary" loading={requestsQuery.isFetching} onClick={() => requestsQuery.refetch()}>
+                  Try again
+                </Button>
+              }
+            />
+          ) : (
+            <div className="grid gap-8 lg:grid-cols-2">
+              <RequestSection title="Incoming" empty="No incoming requests.">
+                {(requests?.incoming ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} incoming accepting={acceptMutation.isPending && acceptMutation.variables === connection.id} removing={removeMutation.isPending && removeMutation.variables === connection.id} onAccept={() => acceptMutation.mutate(connection.id)} onRemove={() => removeMutation.mutate(connection.id)} />)}
+              </RequestSection>
+              <RequestSection title="Sent" empty="No sent requests.">
+                {(requests?.outgoing ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} removing={removeMutation.isPending && removeMutation.variables === connection.id} onRemove={() => removeMutation.mutate(connection.id)} />)}
+              </RequestSection>
+            </div>
+          )
         ) : null}
 
         {tab === 'discover' ? (
-          <>
-            <PeopleGrid loading={suggestionsQuery.isPending} empty="No new suggestions match this search.">
-              {suggestions.map((person) => <SuggestionCard key={person.id} person={person} pending={sendMutation.isPending && sendMutation.variables === person.id} onConnect={() => sendMutation.mutate(person.id)} />)}
-            </PeopleGrid>
-            <PaginationControls
-              pageIndex={suggestionsQuery.data?.content?.pageIndex}
-              totalPages={suggestionsQuery.data?.content?.totalPages}
-              isFetching={suggestionsQuery.isFetching}
-              onPageChange={setDiscoverPage}
+          suggestionsQuery.isError && !suggestionsQuery.data ? (
+            <EmptyState
+              icon={<AlertCircle />}
+              title="Could not load suggestions"
+              description={getErrorMessage(suggestionsQuery.error, 'Please try again in a moment.')}
+              action={
+                <Button type="button" variant="secondary" loading={suggestionsQuery.isFetching} onClick={() => suggestionsQuery.refetch()}>
+                  Try again
+                </Button>
+              }
             />
-          </>
+          ) : (
+            <>
+              <PeopleGrid loading={suggestionsQuery.isPending} empty="No new suggestions match this search.">
+                {suggestions.map((person) => <SuggestionCard key={person.id} person={person} pending={sendMutation.isPending && sendMutation.variables === person.id} onConnect={() => sendMutation.mutate(person.id)} />)}
+              </PeopleGrid>
+              <PaginationControls
+                pageIndex={suggestionsQuery.data?.content?.pageIndex}
+                totalPages={suggestionsQuery.data?.content?.totalPages}
+                isFetching={suggestionsQuery.isFetching}
+                onPageChange={setDiscoverPage}
+              />
+            </>
+          )
         ) : null}
       </div>
       <ConfirmationDialog

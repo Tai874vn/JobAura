@@ -1,10 +1,12 @@
 'use client'
 
+import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from '@/features/auth/use-session'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { ButtonLink, EmptyState, ListRowSkeleton } from '@/shared/ui'
+import { getErrorMessage } from '@/shared/lib/utils'
+import { Button, ButtonLink, EmptyState, ListRowSkeleton } from '@/shared/ui'
 import { JobForm } from './job-form'
 
 /** Loads one post and opens the post form on it. Only the owner (or an admin) can edit. */
@@ -15,6 +17,28 @@ export function JobEditPage({ jobId }: { jobId: number }) {
 
   if (query.isPending) {
     return <div className="container-page pt-10"><ListRowSkeleton /></div>
+  }
+  if (query.isError && !job) {
+    const status = axios.isAxiosError(query.error) ? query.error.response?.status : undefined
+    // Treat transient network or server failures separately from missing/forbidden posts so users can retry.
+    if (status !== 403 && status !== 404) {
+      return (
+        <div className="container-page pt-10">
+          <EmptyState
+            title="Could not load this post"
+            description={getErrorMessage(query.error, 'Something went wrong while loading this post. Please try again.')}
+            action={
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button type="button" loading={query.isFetching} onClick={() => query.refetch()}>
+                  Try again
+                </Button>
+                <ButtonLink href="/my-posts" variant="secondary">Back to my posts</ButtonLink>
+              </div>
+            }
+          />
+        </div>
+      )
+    }
   }
   if (!job || (user?.role !== 'admin' && user?.id !== job.creatorId)) {
     return (
