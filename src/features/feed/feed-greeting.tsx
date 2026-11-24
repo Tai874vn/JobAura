@@ -11,12 +11,12 @@ export function FeedGreeting({ user }: { user: UserProfile }) {
   const completeness = useProfileStrength(user).score
 
   const connectionsQuery = useQuery({
-    queryKey: queryKeys.connections({ page: 1, pageSize: 1 }),
+    queryKey: queryKeys.connections({ page: 1, pageSize: 1 }, user.id),
     queryFn: () => connectionsApi.all({ page: 1, pageSize: 1 }),
     staleTime: 60_000,
   })
   const quotaQuery = useQuery({
-    queryKey: queryKeys.recommendationQuota,
+    queryKey: queryKeys.viewerRecommendationQuota(user.id),
     queryFn: recommendationsApi.quota,
     staleTime: 30_000,
     retry: false,

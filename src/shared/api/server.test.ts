@@ -73,4 +73,28 @@ describe('serverRequest', () => {
       error: 'connection refused',
     })
   })
+
+  it('refuses to cache cookie-authenticated requests', async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(serverRequest('/api/private', { next: { revalidate: 60 } })).rejects.toThrow(
+      'refusing to cache a request that forwards cookies',
+    )
+    await expect(serverRequest('/api/private', { next: { tags: ['private'] } })).rejects.toThrow(
+      'refusing to cache a request that forwards cookies',
+    )
+    await expect(serverRequest('/api/private', { cache: 'force-cache' })).rejects.toThrow(
+      'refusing to cache a request that forwards cookies',
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('allows includeCookies: true when revalidate is 0', async () => {
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json({ ok: true }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(serverRequest('/api/private', { next: { revalidate: 0 } })).resolves.toMatchObject({ ok: true })
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
 })

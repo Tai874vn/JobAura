@@ -2,31 +2,28 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect } from 'react'
 import { getSignedInRedirect } from '@/shared/lib/roles'
 import { ShortlistPreview } from '@/features/jobs/home/shortlist-preview'
 import { Card, CardContent, Spinner } from '@/shared/ui'
 import { useSession } from './use-session'
 
-const subscribeNever = () => () => {}
-
 export function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextPath?: string | null }) {
   const router = useRouter()
   const { user, isLoading } = useSession()
-  // The server always renders the "checking" state. This page sits in a Suspense boundary that hydrates after
-  // the header has already asked who is signed in, so render that same state until hydration ends.
-  const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false)
 
   useEffect(() => {
     if (!isLoading && user) router.replace(getSignedInRedirect(user, nextPath))
   }, [isLoading, nextPath, router, user])
 
-  if (!hydrated || isLoading || user) {
+  // Keeping guests unblocked here lets SSR and initial hydration show the static auth form
+  // immediately without a spinner flash, while redirecting signed-in users once /api/auth/me confirms a live session.
+  if (user) {
     return (
       <main className="flex min-h-screen items-center justify-center" aria-labelledby="auth-status-title">
-        <h1 id="auth-status-title" className="sr-only">Checking authentication</h1>
+        <h1 id="auth-status-title" className="sr-only">Redirecting to your workspace</h1>
         <Spinner className="h-7 w-7" />
-        <span className="sr-only" role="status">Checking authentication</span>
+        <span className="sr-only" role="status">Redirecting to your workspace</span>
       </main>
     )
   }

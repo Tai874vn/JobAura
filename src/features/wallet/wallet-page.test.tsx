@@ -25,7 +25,7 @@ function render(ui: React.ReactNode, seed: (c: QueryClient) => void) {
 describe('WalletPage', () => {
   it('shows the four figures, the note and the ledger rows linking to the contract', () => {
     const html = render(<WalletPage />, (c) => {
-      c.setQueryData(walletKeys.summary, summary)
+      c.setQueryData(walletKeys.summary(1), summary)
       c.setQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }), {
         pages: [{ data: [row(2), row(1, { type: 'SEED', availableDelta: 5000, heldDelta: 0, availableAfter: 5000, heldAfter: 0, contract: null, milestone: null })], total: 2, page: 1, pageSize: 20, totalPages: 1 }],
         pageParams: [1],
@@ -43,7 +43,7 @@ describe('WalletPage', () => {
 
   it('shows the Top up button only when the server enables it', () => {
     const seed = (enabled: boolean) => (c: QueryClient) => {
-      c.setQueryData(walletKeys.summary, { ...summary, topUp: { ...summary.topUp, enabled } })
+      c.setQueryData(walletKeys.summary(1), { ...summary, topUp: { ...summary.topUp, enabled } })
     }
     const on = render(<WalletPage />, seed(true))
     expect(on).toContain('>Top up</button>')
@@ -54,7 +54,7 @@ describe('WalletPage', () => {
 
   it('offers Load more while there is a next page', () => {
     const html = render(<WalletPage />, (c) => {
-      c.setQueryData(walletKeys.summary, summary)
+      c.setQueryData(walletKeys.summary(1), summary)
       c.setQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }), {
         pages: [{ data: [row(1)], total: 30, page: 1, pageSize: 20, totalPages: 2 }], pageParams: [1],
       })
@@ -71,7 +71,7 @@ describe('WalletChip', () => {
   })
 
   it('shows the balance as a link to /wallet', () => {
-    const html = render(<WalletChip />, (c) => c.setQueryData(walletKeys.summary, summary))
+    const html = render(<WalletChip />, (c) => c.setQueryData(walletKeys.summary(1), summary))
     expect(html).toContain('href="/wallet"')
     expect(html).toContain('>1,250 credits<')
   })

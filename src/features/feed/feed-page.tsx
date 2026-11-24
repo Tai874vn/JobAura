@@ -33,7 +33,7 @@ export function FeedPage() {
   const closeDiscussion = useCallback(() => setSelectedPostId(null), [])
 
   const feedQuery = useInfiniteQuery({
-    queryKey: queryKeys.feed,
+    queryKey: queryKeys.feed(user.id),
     queryFn: async ({ pageParam }) => (await postsApi.feed({ cursor: pageParam ?? undefined, limit: 10 })).content ?? { data: [], nextCursor: null },
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
@@ -44,21 +44,21 @@ export function FeedPage() {
     mutationFn: ({ content, image }: { content: string; image?: File }) => postsApi.create(content, image),
     onSuccess: (response) => {
       if (!response.content) return
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) => prependPost(current, response.content!))
-      queryClient.invalidateQueries({ queryKey: queryKeys.feedStats })
+      queryClient.setQueryData<FeedCache>(queryKeys.feed(user.id), (current) => prependPost(current, response.content!))
+      queryClient.invalidateQueries({ queryKey: queryKeys.feedStats(user.id) })
       toast.success('Post published')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not publish this post')),
   })
 
-  const likeMutation = useMutation(postLikeOptions(queryClient))
-  const saveMutation = useMutation(postSaveOptions(queryClient))
+  const likeMutation = useMutation(postLikeOptions(queryClient, user.id))
+  const saveMutation = useMutation(postSaveOptions(queryClient, user.id))
 
   const deleteMutation = useMutation({
     mutationFn: postsApi.delete,
     onSuccess: (_response, postId) => {
-      queryClient.setQueryData<FeedCache>(queryKeys.feed, (current) => removePost(current, postId))
-      queryClient.invalidateQueries({ queryKey: queryKeys.feedStats })
+      queryClient.setQueryData<FeedCache>(queryKeys.feed(user.id), (current) => removePost(current, postId))
+      queryClient.invalidateQueries({ queryKey: queryKeys.feedStats(user.id) })
       setPendingDeletePost(null)
       toast.success('Post deleted')
     },

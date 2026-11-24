@@ -2,10 +2,11 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useSyncExternalStore } from 'react'
+import { useSession } from '@/features/auth/use-session'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Skeleton } from '@/shared/ui'
-import { walletApi } from './api'
+import { walletApi, walletKeys } from './api'
 
 /** What the person reads for each answer of the payment check. */
 export function topUpOutcome(r: { status: 'PAID' | 'FAILED' | 'PENDING'; credits: number; available: number }): { title: string; detail: string | null } {
@@ -19,13 +20,14 @@ const subscribeNothing = () => () => {} // the address does not change while thi
 /** The page VNPay sends the browser back to. It passes the query string on to the server, unchanged. */
 export function TopUpReturn() {
   const client = useQueryClient()
+  const { user } = useSession()
   // The query string only exists in the browser, so it is read after the page loads.
   const query = useSyncExternalStore(subscribeNothing, () => window.location.search, () => null)
 
   const check = useQuery({
-    queryKey: ['wallet', 'top-up-return', query],
+    queryKey: walletKeys.topUpReturn(query, user?.id),
     queryFn: () => walletApi.topUpReturn(query ?? ''),
-    enabled: query !== null,
+    enabled: query !== null && Boolean(user),
     retry: false,
     staleTime: Infinity,
   })

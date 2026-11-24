@@ -5,6 +5,7 @@ import { Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMi
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { chatApi, connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
@@ -24,6 +25,8 @@ export function ConnectionsPage() {
   const [discoverPage, setDiscoverPage] = useState(1)
   const [connectionToRemove, setConnectionToRemove] = useState<Connection | null>(null)
   const queryClient = useQueryClient()
+  const { user } = useSession()
+  const viewerId = user?.id
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
 
   useEffect(() => {
@@ -45,15 +48,15 @@ export function ConnectionsPage() {
     [discoverPage, debouncedKeyword]
   )
   const connectionsQuery = useQuery({
-    queryKey: queryKeys.connections(connectionsParams),
+    queryKey: queryKeys.connections(connectionsParams, viewerId),
     queryFn: () => connectionsApi.all(connectionsParams),
     enabled: tab === 'connections',
     placeholderData: keepPreviousData,
     staleTime: 10_000,
   })
-  const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests, queryFn: connectionsApi.requests })
+  const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests(viewerId), queryFn: connectionsApi.requests })
   const suggestionsQuery = useQuery({
-    queryKey: queryKeys.connectionSuggestions(suggestionsParams),
+    queryKey: queryKeys.connectionSuggestions(suggestionsParams, viewerId),
     queryFn: () => connectionsApi.suggestions(suggestionsParams),
     enabled: tab === 'discover',
     placeholderData: keepPreviousData,

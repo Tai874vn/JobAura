@@ -67,7 +67,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
         .then((room) => {
           if (!room) return openChat()
           openChatForRoom(room)
-          void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms })
+          void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms(userId) })
         })
         .catch(() => toast.error('Could not open the chat'))
     }
@@ -88,7 +88,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
   }, [userId])
 
   const roomsQuery = useQuery({
-    queryKey: queryKeys.chatRooms,
+    queryKey: queryKeys.chatRooms(userId),
     queryFn: chatApi.rooms,
     enabled: Boolean(userId && isSocketActive),
   })

@@ -11,7 +11,7 @@ export function SettingsOverviewPanel({ profile, onSelect }: {
   onSelect: (section: SettingSection) => void
 }) {
   const strength = useProfileStrength(profile)
-  const resumeQuery = useQuery(settingsResumeOptions(hasResumeSection(profile.role)))
+  const resumeQuery = useQuery(settingsResumeOptions(hasResumeSection(profile.role), profile.id))
   return <SettingsOverview profile={profile} completion={strength.score} missing={strength.missing}
     resume={resumeQuery.data?.content ?? null} resumeLoading={resumeQuery.isLoading}
     resumeError={resumeQuery.isError} resumeRetrying={resumeQuery.isFetching}

@@ -110,7 +110,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
 
   const listParams = applicantsListParams(status, page)
   const list = useQuery({
-    queryKey: pipelineKeys.list(postId, listParams),
+    queryKey: pipelineKeys.list(postId, listParams, user?.id),
     queryFn: () => pipelineApi.list(postId, listParams),
     enabled: Boolean(user) && (!post || allowed),
     placeholderData: keepPreviousData,
@@ -122,7 +122,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
   const selectedId = applicationParam ?? rows[0]?.id ?? null
 
   const detail = useQuery({
-    queryKey: pipelineKeys.detail(selectedId ?? 0),
+    queryKey: pipelineKeys.detail(selectedId ?? 0, user?.id),
     queryFn: () => pipelineApi.detail(selectedId as number),
     enabled: selectedId !== null && (!post || allowed),
     // Back from the call screen the cached application can be old: read it again before the outcome is decided.

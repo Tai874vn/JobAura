@@ -113,11 +113,11 @@ describe('schemas', () => {
 })
 
 describe('pipelineKeys', () => {
-  it('carries the id in every key', () => {
-    expect(pipelineKeys.detail(4)).toEqual(['pipeline', 'application', 4])
-    expect(pipelineKeys.list(2, { page: 1 })).toEqual(['pipeline', 'post', 2, { page: 1 }])
-    expect(pipelineKeys.mine({ page: 1 })).toEqual(['pipeline', 'mine', { page: 1 }])
-    expect(pipelineKeys.upcoming).toEqual(['pipeline', 'upcoming'])
+  it('carries the viewer and id in every key', () => {
+    expect(pipelineKeys.detail(4, 9)).toEqual(['pipeline', 'application', 9, 4])
+    expect(pipelineKeys.list(2, { page: 1 }, 9)).toEqual(['pipeline', 'post', 2, 9, { page: 1 }])
+    expect(pipelineKeys.mine({ page: 1 }, 9)).toEqual(['pipeline', 'mine', 9, { page: 1 }])
+    expect(pipelineKeys.upcoming(9)).toEqual(['pipeline', 'upcoming', 9])
   })
 })
 

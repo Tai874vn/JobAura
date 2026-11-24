@@ -20,7 +20,7 @@ describe('Resume settings recovery', () => {
 
   it('offers retry instead of a blank form when initial data fails', () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    client.getQueryCache().build(client, { queryKey: queryKeys.myResume }).setState({ status: 'error', error: new Error('Offline') })
+    client.getQueryCache().build(client, { queryKey: queryKeys.myResume() }).setState({ status: 'error', error: new Error('Offline') })
     const html = render(client)
     expect(html).toContain('Resume could not be loaded')
     expect(html).toContain('Retry')
@@ -30,7 +30,7 @@ describe('Resume settings recovery', () => {
 
   it('allows creating a resume after the server confirms it is absent', () => {
     const client = new QueryClient()
-    client.setQueryData(queryKeys.myResume, { content: null })
+    client.setQueryData(queryKeys.myResume(), { content: null })
     const html = render(client)
     expect(html).toContain('Career fields')
     expect(html).toContain('Save resume')

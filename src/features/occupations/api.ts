@@ -31,6 +31,7 @@ export const occupationQuery = (code: string) => ({
   queryFn: () => occupationsApi.get(code),
   enabled: Boolean(code),
   staleTime: Infinity,
+  gcTime: 30 * 60_000,
   retry: false,
 })
 

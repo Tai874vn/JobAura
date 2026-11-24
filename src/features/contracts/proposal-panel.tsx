@@ -84,7 +84,7 @@ export function ProposalPanel({
   const [dialogError, setDialogError] = useState<string | null>(null)
   // A sentence kept on the panel when a dialog had to close because the proposal moved on.
   const [notice, setNotice] = useState<string | null>(null)
-  const mutation = useContractMutation(contractKeys.proposal(proposal.id), (act: Act) => run(proposal.id, act), {
+  const mutation = useContractMutation(contractKeys.proposal(proposal.id, viewerId), (act: Act) => run(proposal.id, act), {
     // Every refusal is told on the screen itself (a dialog or the notice), never by a toast.
     quietErrors: () => true,
   })

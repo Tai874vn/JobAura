@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
 import { pipelineKeys } from './api'
@@ -29,10 +30,12 @@ export function usePipelineMutation<Vars = void>(
   } = {},
 ) {
   const queryClient = useQueryClient()
+  const { user } = useSession()
+  const detailKey = pipelineKeys.detail(applicationId, user?.id)
   return useMutation({
     mutationFn: action,
     onSuccess: (detail) => {
-      queryClient.setQueryData(pipelineKeys.detail(applicationId), detail)
+      queryClient.setQueryData(detailKey, detail)
       void queryClient.invalidateQueries({ queryKey: ['pipeline'] })
       void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
       if (options.successMessage) toast.success(options.successMessage)
@@ -42,7 +45,7 @@ export function usePipelineMutation<Vars = void>(
       if (!options.quietErrors?.(vars)) toast.error(getErrorMessage(error, 'Could not save this change. Please try again.'))
       if (isStaleActionError(error)) {
         // The application moved on: read it again, and the post's applicants list too (row badge and tab counts).
-        void queryClient.invalidateQueries({ queryKey: pipelineKeys.detail(applicationId) })
+        void queryClient.invalidateQueries({ queryKey: detailKey })
         void queryClient.invalidateQueries({ queryKey: ['pipeline', 'post'] })
       }
     },

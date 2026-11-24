@@ -36,9 +36,9 @@ function render(search = 'application=12') {
   mocks.search = search
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
   client.setQueryData(['hiring-posts', 'detail', 5, 2], { content: post })
-  client.setQueryData(pipelineKeys.list(5, applicantsListParams(undefined, 1)), { data: rows, counts, totalPages: 1 })
-  client.setQueryData(pipelineKeys.detail(12), fullDetail)
-  client.setQueryData(pipelineKeys.detail(11), { ...rows[0], events: [] })
+  client.setQueryData(pipelineKeys.list(5, applicantsListParams(undefined, 1), 2), { data: rows, counts, totalPages: 1 })
+  client.setQueryData(pipelineKeys.detail(12, 2), fullDetail)
+  client.setQueryData(pipelineKeys.detail(11, 2), { ...rows[0], events: [] })
   return renderToStaticMarkup(
     <QueryClientProvider client={client}>
       <ApplicantsPage postId={5} />
@@ -78,7 +78,7 @@ describe('ApplicantsPage', () => {
     mocks.search = 'application=12'
     const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
     client.setQueryData(['hiring-posts', 'detail', 5, 2], { content: post })
-    client.setQueryData(pipelineKeys.list(5, applicantsListParams(undefined, 1)), { data: rows, counts, totalPages: 1 })
+    client.setQueryData(pipelineKeys.list(5, applicantsListParams(undefined, 1), 2), { data: rows, counts, totalPages: 1 })
     const html = renderToStaticMarkup(
       <QueryClientProvider client={client}>
         <ApplicantsPage postId={5} />

@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { canAccessRole, getSignedInRedirect, type AccountRole } from '@/shared/lib/roles'
+import { buildLoginRedirect } from '@/shared/lib/session-routing'
 import { Spinner } from '@/shared/ui'
 import { useSession } from './use-session'
 
@@ -19,24 +20,34 @@ export function RequireAuth({
 }) {
   const pathname = usePathname()
   const router = useRouter()
-  const hasRedirectedRef = useRef(false)
+  // Track the exact route we last redirected from so a layout-level RequireAuth
+  // resets when the user moves to an allowed page and can redirect again later.
+  const lastRedirectedPathRef = useRef<string | null>(null)
   const { user, isLoading } = useSession()
   const requiredRoles = admin ? (['admin'] as const) : allowedRoles
   const hasRequiredRole = canAccessRole(user?.role, requiredRoles)
 
   useEffect(() => {
-    if (isLoading || hasRedirectedRef.current) return
+    if (isLoading) return
+
+    const search = typeof window !== 'undefined' ? window.location.search : ''
+    const currentRoute = `${pathname}${search}`
 
     if (!user) {
-      hasRedirectedRef.current = true
-      router.replace(anonymousRedirect ?? `/auth/login?next=${encodeURIComponent(pathname)}`)
+      if (lastRedirectedPathRef.current === currentRoute) return
+      lastRedirectedPathRef.current = currentRoute
+      router.replace(anonymousRedirect ?? buildLoginRedirect(pathname, search))
       return
     }
 
     if (!hasRequiredRole) {
-      hasRedirectedRef.current = true
+      if (lastRedirectedPathRef.current === currentRoute) return
+      lastRedirectedPathRef.current = currentRoute
       router.replace(getSignedInRedirect(user))
+      return
     }
+
+    lastRedirectedPathRef.current = null
   }, [anonymousRedirect, hasRequiredRole, isLoading, pathname, router, user])
 
   if (isLoading || !user || !hasRequiredRole) {

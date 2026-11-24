@@ -44,7 +44,7 @@ describe('ConnectionActions', () => {
     session.user = { id: 1 }
     const client = new QueryClient({ defaultOptions: { queries: { retry: false, retryOnMount: false } } })
     await client.fetchQuery({
-      queryKey: queryKeys.connectionStatus(42),
+      queryKey: queryKeys.connectionStatus(42, 1),
       queryFn: () => Promise.reject(new Error('Connection unavailable')),
     }).catch(() => undefined)
     const html = renderToStaticMarkup(

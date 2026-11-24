@@ -5,6 +5,7 @@ import { ArrowDownWideNarrow, BriefcaseBusiness, Plus, Search } from "lucide-rea
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
@@ -41,6 +42,7 @@ export function MyHiringPostsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { user } = useSession();
   const applied = readMyPostsFilters(searchParams);
   const [keyword, setKeyword] = useState(applied.keyword);
   const [showFilters, setShowFilters] = useState(false);
@@ -51,13 +53,13 @@ export function MyHiringPostsPage() {
   // Every post (for the stats line and ?edit=), and the posts the keyword finds (the same request when no keyword).
   const allParams = myPostsRequest("");
   const all = useQuery({
-    queryKey: queryKeys.myHiringPosts(allParams),
+    queryKey: queryKeys.myHiringPosts(allParams, user?.id),
     queryFn: () => hiringPostsApi.mine(allParams),
     refetchInterval: pollWhileAiWorks,
   });
   const matchParams = myPostsRequest(applied.keyword);
   const matches = useQuery({
-    queryKey: queryKeys.myHiringPosts(matchParams),
+    queryKey: queryKeys.myHiringPosts(matchParams, user?.id),
     queryFn: () => hiringPostsApi.mine(matchParams),
     refetchInterval: pollWhileAiWorks,
     // Keep the last list on screen while a new keyword loads, instead of flashing a skeleton.

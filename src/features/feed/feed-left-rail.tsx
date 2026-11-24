@@ -14,7 +14,7 @@ import { selectFeedCover } from './feed-cover'
 import { useProfileStrength } from '@/features/users/profile-strength'
 
 export function LeftFeedRail({ user }: { user: UserProfile }) {
-  const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests, queryFn: connectionsApi.requests, staleTime: 30_000 })
+  const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests(user.id), queryFn: connectionsApi.requests, staleTime: 30_000 })
   const pending = requestsQuery.data?.content?.incomingCount ?? 0
   const strength = useProfileStrength(user)
   const completeness = strength.score

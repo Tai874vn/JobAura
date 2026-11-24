@@ -59,7 +59,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
 
   // Without ?application= the upcoming list tells which application this interview belongs to.
   const upcoming = useQuery({
-    queryKey: [...pipelineKeys.upcoming, userId],
+    queryKey: pipelineKeys.upcoming(user?.id),
     queryFn: pipelineApi.upcoming,
     enabled: Boolean(user) && applicationParam === null,
     staleTime: 15_000,
@@ -67,7 +67,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
   const applicationId = applicationParam ?? upcoming.data?.find((row) => row.id === interviewId)?.applicationId ?? null
 
   const detail = useQuery({
-    queryKey: pipelineKeys.detail(applicationId ?? 0),
+    queryKey: pipelineKeys.detail(applicationId ?? 0, user?.id),
     queryFn: () => pipelineApi.detail(applicationId as number),
     enabled: Boolean(user) && applicationId !== null,
     staleTime: 15_000,
@@ -93,7 +93,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
     mutationFn: () => pipelineApi.completeInterview(interviewId),
     onSuccess: (done) => {
       // The finished interview must not stay in the lists as "Join call".
-      queryClient.setQueryData(pipelineKeys.detail(done.id), done)
+      queryClient.setQueryData(pipelineKeys.detail(done.id, user?.id), done)
       void queryClient.invalidateQueries({ queryKey: ['pipeline'] })
       void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
     },

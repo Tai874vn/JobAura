@@ -20,14 +20,30 @@ describe('account roles', () => {
     expect(isAccountRole('recruiting-admin')).toBe(false)
   })
 
-  it('routes signed-in users by role', () => {
+  it('routes signed-in users by role and falls back for every open-redirect attack string', () => {
     expect(getSignedInRedirect({ role: 'admin' })).toBe('/admin')
     expect(getSignedInRedirect({ role: 'employer' })).toBe('/my-hiring-posts')
     expect(getSignedInRedirect({ role: 'user' })).toBe('/')
     expect(getSignedInRedirect({ role: 'employer' }, '/settings')).toBe('/settings')
-    expect(getSignedInRedirect({ role: 'employer' }, '//evil.example')).toBe('/my-hiring-posts')
-    expect(getSignedInRedirect({ role: 'employer' }, '/\\evil.example')).toBe('/my-hiring-posts')
-    expect(getSignedInRedirect({ role: 'employer' }, 'https://evil.example')).toBe('/my-hiring-posts')
+    expect(getSignedInRedirect({ role: 'user' }, '/contracts?contract=42#top')).toBe('/contracts?contract=42#top')
+
+    for (const attack of [
+      '/.//evil.com',
+      '/..//evil.com',
+      '/a/..//evil.com',
+      '/%2e//evil.com',
+      '/%2e%2e//evil.com',
+      '//evil.example',
+      '/\\evil.example',
+      '/%2f/evil.com',
+      '/%5cevil.com',
+      'https://evil.example',
+      '/%0d%0aSet-Cookie:a=b',
+      '/%E0%A4%A',
+    ]) {
+      expect(getSignedInRedirect({ role: 'employer' }, attack)).toBe('/my-hiring-posts')
+      expect(getSignedInRedirect({ role: 'user' }, attack)).toBe('/')
+    }
   })
 
   it('limits candidate directory access to employers and admins', () => {

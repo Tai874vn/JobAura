@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ExternalLink, ListOrdered, Lock, LockOpen, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
+import { useSession } from "@/features/auth/use-session";
 import { pipelineApi, pipelineKeys, statusLabel } from "@/features/hiring-pipeline/api";
 import { cn } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
@@ -133,10 +134,11 @@ function PostDetails({ id, post, onPredict, predictPending, predictDisabled, aiA
   predictDisabled: boolean;
   aiAction?: string | null;
 }) {
+  const { user } = useSession();
   // The latest applicants and every step's count, Not selected too; loaded only once the details are open.
   const listParams = { page: 1, pageSize: RECENT_SHOWN };
   const recent = useQuery({
-    queryKey: pipelineKeys.list(post.id, listParams),
+    queryKey: pipelineKeys.list(post.id, listParams, user?.id),
     queryFn: () => pipelineApi.list(post.id, listParams),
     staleTime: 30_000,
   });

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { suggestedSkills } from '@/features/users/resume-ai'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -19,7 +20,9 @@ import { settingsResumeOptions } from './settings-resume-query'
 
 export function ResumeSettingsEditor({ active }: { active: boolean }) {
   const client = useQueryClient()
-  const resumeQuery = useQuery(settingsResumeOptions(active))
+  const { user } = useSession()
+  const myResumeKey = queryKeys.myResume(user?.id)
+  const resumeQuery = useQuery(settingsResumeOptions(active, user?.id))
   const resume = resumeQuery.data?.content ?? null
   const [draft, setDraft] = useState<Partial<ResumeDraft>>({})
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
@@ -35,13 +38,13 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
       try {
         return await usersApi.uploadResumeFile(file)
       } catch {
-        void client.invalidateQueries({ queryKey: queryKeys.myResume })
+        void client.invalidateQueries({ queryKey: myResumeKey })
         throw new Error('Resume details were saved, but the file upload failed. Your attachment is kept so you can retry.')
       }
     },
     onSuccess: (response, variables) => {
-      if (response.content) client.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content })
-      void client.invalidateQueries({ queryKey: queryKeys.myResume })
+      if (response.content) client.setQueryData(myResumeKey, { ...resumeQuery.data, content: response.content })
+      void client.invalidateQueries({ queryKey: myResumeKey })
       // Resume skills are the profile's skill list, so the profile reloads too.
       void client.invalidateQueries({ queryKey: queryKeys.me })
       setDraft({}); setAttachedFile(null)
@@ -52,8 +55,8 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
   const predict = useMutation({
     mutationFn: usersApi.predictResumeSeniority,
     onSuccess: (response) => {
-      if (response.content) client.setQueryData(queryKeys.myResume, { ...resumeQuery.data, content: response.content })
-      void client.invalidateQueries({ queryKey: queryKeys.myResume })
+      if (response.content) client.setQueryData(myResumeKey, { ...resumeQuery.data, content: response.content })
+      void client.invalidateQueries({ queryKey: myResumeKey })
       toast.success('AI evaluation queued')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to predict resume seniority')),

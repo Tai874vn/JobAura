@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { BriefcaseBusiness, MapPin, ListOrdered } from 'lucide-react'
 import Link from 'next/link'
+import { useSession } from '@/features/auth/use-session'
 import { usePostOccupation } from '@/features/hiring/use-post-occupation'
 import { MatchBadge } from '@/features/jobs/recommendation-ui'
 import { hiringPostsApi, recommendationsApi } from '@/shared/api/endpoints'
@@ -18,14 +19,16 @@ const freshParams = { page: 1, pageSize: 3 }
  * otherwise the newest open posts.
  */
 export function JobsForYou() {
+  const { user } = useSession()
+  const viewerId = user?.id
   const matchesQuery = useQuery({
-    queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }),
+    queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId),
     queryFn: () => recommendationsApi.jobs({ ...recommendationParams, cacheOnly: true }),
     staleTime: 15_000,
     retry: false,
   })
   const freshQuery = useQuery({
-    queryKey: queryKeys.hiringPosts(freshParams),
+    queryKey: queryKeys.hiringPosts(freshParams, viewerId),
     queryFn: () => hiringPostsApi.open(freshParams),
     staleTime: 120_000,
   })

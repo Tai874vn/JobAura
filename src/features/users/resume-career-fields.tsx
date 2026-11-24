@@ -251,7 +251,7 @@ function EducationFields({
   fieldOfStudy: string
   onFieldChange: (field: ResumeFieldKey, value: string) => void
 }) {
-  const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity })
+  const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity, gcTime: 30 * 60_000 })
   const options = fields.data?.content ?? []
   const hasDegree = degree !== '' && degree !== 'Not stated'
   return (

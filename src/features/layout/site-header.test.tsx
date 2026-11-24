@@ -22,7 +22,7 @@ vi.mock('@/features/notifications/notification-bell', () => ({ NotificationBell:
 
 function render() {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
-  client.setQueryData(walletKeys.summary, { available: 1250, held: 0, paidOut: 0, earned: 0, topUp: { enabled: false, minCredits: 1, maxCredits: 2, vndPerCredit: 1 } })
+  client.setQueryData(walletKeys.summary(mocks.session.user?.id), { available: 1250, held: 0, paidOut: 0, earned: 0, topUp: { enabled: false, minCredits: 1, maxCredits: 2, vndPerCredit: 1 } })
   return renderToStaticMarkup(<QueryClientProvider client={client}><SiteHeader /></QueryClientProvider>)
 }
 

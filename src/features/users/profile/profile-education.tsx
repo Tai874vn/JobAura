@@ -20,7 +20,7 @@ export function ProfileEducation({ education, isOwner }: {
   education?: { degree: string; fieldOfStudy: string | null } | null
   isOwner: boolean
 }) {
-  const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity, enabled: Boolean(education?.fieldOfStudy) })
+  const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity, gcTime: 30 * 60_000, enabled: Boolean(education?.fieldOfStudy) })
   if (!education && !isOwner) return null
   const fieldName = fields.data?.content?.find((field) => field.code === education?.fieldOfStudy)?.name
   return (

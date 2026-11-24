@@ -55,8 +55,8 @@ function render(search: string, seed: Seed = {}) {
   } else if (filter === 'active') {
     client.setQueryData(contractKeys.contracts(contractsListParams(1, tab, 'ACTIVE')), page(seed.contracts))
   }
-  if (seed.proposal) client.setQueryData(contractKeys.proposal(5), seed.proposal)
-  if (seed.contract) client.setQueryData(contractKeys.contract(7), seed.contract)
+  if (seed.proposal) client.setQueryData(contractKeys.proposal(5, 1), seed.proposal)
+  if (seed.contract) client.setQueryData(contractKeys.contract(7, 1), seed.contract)
   return renderToStaticMarkup(
     <QueryClientProvider client={client}>
       <ContractsPage />

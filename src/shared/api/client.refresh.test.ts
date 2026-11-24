@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { UserProfile } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
+import { csrfTokenFromCookie, hasCsrfTokenCookie } from './csrf'
 import { queryKeys } from './query-keys'
 import { setCachedSession } from './session-cache'
 import { apiClient, uploadClient } from './client'
@@ -32,20 +33,20 @@ function httpError(config: InternalAxiosRequestConfig, status: number, code?: st
 
 function seedSession() {
   setCachedSession({ id: 1, name: 'Ava' } as UserProfile, cache.client)
-  cache.client!.setQueryData(queryKeys.savedPosts, { content: ['Private post'] })
+  cache.client!.setQueryData(queryKeys.savedPosts(1), { content: ['Private post'] })
   useChatStore.setState({ isOpen: true, isSocketActive: true })
 }
 
 function expectSessionRetained() {
   expect(cache.client!.getQueryData(queryKeys.me)).toMatchObject({ content: { id: 1 } })
-  expect(cache.client!.getQueryData(queryKeys.savedPosts)).toEqual({ content: ['Private post'] })
+  expect(cache.client!.getQueryData(queryKeys.savedPosts(1))).toEqual({ content: ['Private post'] })
   expect(useChatStore.getState().isOpen).toBe(true)
   expect(useChatStore.getState().isSocketActive).toBe(true)
 }
 
 function expectSessionCleared() {
   expect(cache.client!.getQueryData<{ content?: UserProfile }>(queryKeys.me)?.content).toBeUndefined()
-  expect(cache.client!.getQueryData(queryKeys.savedPosts)).toBeUndefined()
+  expect(cache.client!.getQueryData(queryKeys.savedPosts(1))).toBeUndefined()
   expect(useChatStore.getState().isOpen).toBe(false)
   expect(useChatStore.getState().isSocketActive).toBe(false)
 }
@@ -255,7 +256,62 @@ describe('terminal auth failures', () => {
     })).rejects.toMatchObject({ response: { status: 401 } })
 
     expect(refreshCalls).toBe(1)
+    expect(hasCsrfTokenCookie()).toBe(false)
     expectSessionCleared()
+  })
+
+  it('clears the stale csrf_token cookie on a revoked guest /api/auth/me check when unchanged', async () => {
+    expect(hasCsrfTokenCookie()).toBe(true)
+    await expect(apiClient.get('/api/auth/me', {
+      adapter: async (config) => { throw httpError(config, 401, 'SESSION_REVOKED') },
+    })).rejects.toMatchObject({ response: { data: { code: 'SESSION_REVOKED' } } })
+
+    expect(hasCsrfTokenCookie()).toBe(false)
+    expect(cache.client!.getQueryData<{ content?: UserProfile }>(queryKeys.me)?.content).toBeUndefined()
+  })
+
+  it('keeps a newer csrf_token cookie when it changed after the failed request was sent', async () => {
+    await expect(apiClient.get('/api/auth/me', {
+      adapter: async (config) => {
+        document.cookie = 'csrf_token=fresh%2Fcsrf'
+        throw httpError(config, 401, 'SESSION_REVOKED')
+      },
+    })).rejects.toMatchObject({ response: { data: { code: 'SESSION_REVOKED' } } })
+
+    expect(csrfTokenFromCookie(document.cookie)).toBe('fresh/csrf')
+  })
+
+  it('keeps a newer csrf_token cookie when it changed while refresh was in flight', async () => {
+    seedSession()
+    axios.defaults.adapter = async (config) => {
+      document.cookie = 'csrf_token=fresh%2Fcsrf'
+      throw httpError(config, 401, 'REFRESH_TOKEN_EXPIRED')
+    }
+    await expect(apiClient.get('/api/private', {
+      adapter: async (config) => { throw httpError(config, 401, 'ACCESS_TOKEN_EXPIRED') },
+    })).rejects.toMatchObject({ response: { data: { code: 'REFRESH_TOKEN_EXPIRED' } } })
+
+    expect(csrfTokenFromCookie(document.cookie)).toBe('fresh/csrf')
+    expectSessionCleared()
+  })
+
+  it('does not clear csrf_token when the failed request had no cookie at send time', async () => {
+    document.cookie = ''
+    await expect(apiClient.get('/api/auth/me', {
+      adapter: async (config) => {
+        document.cookie = 'csrf_token=fresh%2Fcsrf'
+        throw httpError(config, 401, 'SESSION_REVOKED')
+      },
+    })).rejects.toMatchObject({ response: { data: { code: 'SESSION_REVOKED' } } })
+
+    expect(csrfTokenFromCookie(document.cookie)).toBe('fresh/csrf')
+
+    document.cookie = ''
+    await expect(apiClient.get('/api/auth/me', {
+      adapter: async (config) => { throw httpError(config, 401, 'SESSION_REVOKED') },
+    })).rejects.toMatchObject({ response: { data: { code: 'SESSION_REVOKED' } } })
+
+    expect(document.cookie).toBe('')
   })
 
   it('still handles a terminal response on a retried request', async () => {

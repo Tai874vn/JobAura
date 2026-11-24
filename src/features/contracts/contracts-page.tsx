@@ -68,13 +68,13 @@ export function ContractsPage() {
 
   // The opened item is read first: with no ?tab= (a notification link) its side picks the tab.
   const openedProposal = useQuery({
-    queryKey: contractKeys.proposal(fromAddress?.kind === 'proposal' ? fromAddress.id : 0),
+    queryKey: contractKeys.proposal(fromAddress?.kind === 'proposal' ? fromAddress.id : 0, user?.id),
     queryFn: () => contractsApi.proposal(fromAddress?.id as number),
     enabled: Boolean(user) && fromAddress?.kind === 'proposal',
     staleTime: 15_000,
   })
   const openedContract = useQuery({
-    queryKey: contractKeys.contract(fromAddress?.kind === 'contract' ? fromAddress.id : 0),
+    queryKey: contractKeys.contract(fromAddress?.kind === 'contract' ? fromAddress.id : 0, user?.id),
     queryFn: () => contractsApi.contract(fromAddress?.id as number),
     enabled: Boolean(user) && fromAddress?.kind === 'contract',
     staleTime: 15_000,
@@ -112,13 +112,13 @@ export function ContractsPage() {
   const selection = resolveSelection(fromAddress, rows)
   const phoneView = fromAddress !== null
   const selectedProposal = useQuery({
-    queryKey: contractKeys.proposal(selection?.kind === 'proposal' ? selection.id : 0),
+    queryKey: contractKeys.proposal(selection?.kind === 'proposal' ? selection.id : 0, user?.id),
     queryFn: () => contractsApi.proposal(selection?.id as number),
     enabled: Boolean(user) && selection?.kind === 'proposal',
     staleTime: 15_000,
   })
   const selectedContract = useQuery({
-    queryKey: contractKeys.contract(selection?.kind === 'contract' ? selection.id : 0),
+    queryKey: contractKeys.contract(selection?.kind === 'contract' ? selection.id : 0, user?.id),
     queryFn: () => contractsApi.contract(selection?.id as number),
     enabled: Boolean(user) && selection?.kind === 'contract',
     staleTime: 15_000,

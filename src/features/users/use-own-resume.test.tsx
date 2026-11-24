@@ -5,14 +5,14 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { useOwnResume } from './use-own-resume'
 
 function Probe({ enabled }: { enabled: boolean }) {
-  const { resume } = useOwnResume(enabled)
+  const { resume } = useOwnResume(enabled, 1)
   return <span>{resume ? String((resume.data as { Name?: string }).Name) : 'none'}</span>
 }
 
 function render(enabled: boolean) {
   const client = new QueryClient()
   // The signed-in user's resume is already cached (they opened Settings or applied to a post earlier).
-  client.setQueryData(queryKeys.myResume, { message: 'ok', content: { id: 1, userId: 1, data: { Name: 'Me' } } })
+  client.setQueryData(queryKeys.myResume(1), { message: 'ok', content: { id: 1, userId: 1, data: { Name: 'Me' } } })
   return renderToStaticMarkup(<QueryClientProvider client={client}><Probe enabled={enabled} /></QueryClientProvider>)
 }
 

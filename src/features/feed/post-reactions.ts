@@ -8,40 +8,43 @@ import { togglePostLike, togglePostSaved } from './feed-data'
 
 type FeedCache = InfiniteData<FeedPage, string | null>
 
-export function postLikeOptions(client: QueryClient) {
+export function postLikeOptions(client: QueryClient, viewerId?: number | null) {
+  const feedKey = queryKeys.feed(viewerId)
   return mutationOptions({
     mutationFn: ({ id, liked }: { id: number; liked: boolean }) => liked ? postsApi.like(id) : postsApi.unlike(id),
     onMutate: async ({ id, liked }) => {
-      await client.cancelQueries({ queryKey: queryKeys.feed })
-      const previous = client.getQueryData<FeedCache>(queryKeys.feed)
-      client.setQueryData<FeedCache>(queryKeys.feed, (cache) => mapPost(cache, id, (post) => togglePostLike(post, liked)))
+      await client.cancelQueries({ queryKey: feedKey })
+      const previous = client.getQueryData<FeedCache>(feedKey)
+      client.setQueryData<FeedCache>(feedKey, (cache) => mapPost(cache, id, (post) => togglePostLike(post, liked)))
       return { previous }
     },
     onError: (error, _variables, context) => {
-      client.setQueryData(queryKeys.feed, context?.previous)
+      client.setQueryData(feedKey, context?.previous)
       toast.error(getErrorMessage(error, 'Could not update like'))
     },
-    onSettled: () => client.invalidateQueries({ queryKey: queryKeys.feed }),
+    onSettled: () => client.invalidateQueries({ queryKey: feedKey }),
   })
 }
 
-export function postSaveOptions(client: QueryClient) {
+export function postSaveOptions(client: QueryClient, viewerId?: number | null) {
+  const feedKey = queryKeys.feed(viewerId)
+  const savedKey = queryKeys.savedPosts(viewerId)
   return mutationOptions({
     mutationFn: ({ id, saved }: { id: number; saved: boolean }) =>
       saved ? savedItemsApi.savePost(id) : savedItemsApi.unsavePost(id),
     onMutate: async ({ id, saved }) => {
-      await client.cancelQueries({ queryKey: queryKeys.feed })
-      const previous = client.getQueryData<FeedCache>(queryKeys.feed)
-      client.setQueryData<FeedCache>(queryKeys.feed, (cache) => mapPost(cache, id, (post) => togglePostSaved(post, saved)))
+      await client.cancelQueries({ queryKey: feedKey })
+      const previous = client.getQueryData<FeedCache>(feedKey)
+      client.setQueryData<FeedCache>(feedKey, (cache) => mapPost(cache, id, (post) => togglePostSaved(post, saved)))
       return { previous }
     },
     onError: (error, _variables, context) => {
-      client.setQueryData(queryKeys.feed, context?.previous)
+      client.setQueryData(feedKey, context?.previous)
       toast.error(getErrorMessage(error, 'Could not update saved posts'))
     },
     onSettled: () => Promise.all([
-      client.invalidateQueries({ queryKey: queryKeys.feed }),
-      client.invalidateQueries({ queryKey: queryKeys.savedPosts }),
+      client.invalidateQueries({ queryKey: feedKey }),
+      client.invalidateQueries({ queryKey: savedKey }),
     ]),
   })
 }

@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
+import { useSession } from '@/features/auth/use-session'
 import { credits } from '@/shared/lib/credits'
 import { Skeleton } from '@/shared/ui'
 import { walletApi, walletKeys } from './api'
@@ -12,7 +13,13 @@ import { walletApi, walletKeys } from './api'
  * If the read fails the chip is left out rather than showing a wrong number.
  */
 export function WalletChip() {
-  const { data, isError } = useQuery({ queryKey: walletKeys.summary, queryFn: walletApi.summary, staleTime: 30_000 })
+  const { user } = useSession()
+  const { data, isError } = useQuery({
+    queryKey: walletKeys.summary(user?.id),
+    queryFn: walletApi.summary,
+    enabled: Boolean(user),
+    staleTime: 30_000,
+  })
   if (isError) return null
   if (!data) return <Skeleton className="h-8 w-24 shrink-0 rounded-full" />
   return (

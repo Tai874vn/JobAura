@@ -68,7 +68,7 @@ export function HiringPostsPage() {
     ...Object.fromEntries(filterKeys.filter((key) => applied[key]).map((key) => [key, applied[key]])),
   };
   const query = useQuery({
-    queryKey: queryKeys.hiringPosts(params),
+    queryKey: queryKeys.hiringPosts(params, user?.id),
     queryFn: () => hiringPostsApi.open(params),
     staleTime: 60_000,
     // Keep the current list on screen while the next filter's results load, instead of flashing a skeleton.

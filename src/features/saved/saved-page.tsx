@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Bookmark, BriefcaseBusiness, ChevronDown, FileText, SearchX } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
@@ -20,15 +21,17 @@ type SavedTab = 'posts' | 'jobs'
 export function SavedPage() {
   const [tab, setTab] = useState<SavedTab>('posts')
   const queryClient = useQueryClient()
+  const { user } = useSession()
+  const viewerId = user?.id
   const postsQuery = useInfiniteQuery({
-    queryKey: queryKeys.savedPosts,
+    queryKey: queryKeys.savedPosts(viewerId),
     queryFn: async ({ pageParam }) => (await savedItemsApi.posts(pageParam ?? undefined)).content ?? { data: [], nextCursor: null },
     initialPageParam: null as string | null,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: tab === 'posts',
   })
   const jobsQuery = useInfiniteQuery({
-    queryKey: queryKeys.savedJobs,
+    queryKey: queryKeys.savedJobs(viewerId),
     queryFn: async ({ pageParam }) => (await savedItemsApi.jobs(pageParam ?? undefined)).content ?? { data: [], nextCursor: null },
     initialPageParam: null as string | null,
     getNextPageParam: (page) => page.nextCursor ?? undefined,
@@ -37,8 +40,8 @@ export function SavedPage() {
   const removePost = useMutation({
     mutationFn: savedItemsApi.unsavePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.savedPosts })
-      queryClient.invalidateQueries({ queryKey: queryKeys.feed })
+      queryClient.invalidateQueries({ queryKey: queryKeys.savedPosts(viewerId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feed(viewerId) })
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not remove saved post')),
   })

@@ -38,9 +38,9 @@ const upcomingRow = {
 function render(search: string, details: Record<number, unknown> = {}) {
   mocks.search = search
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
-  client.setQueryData(pipelineKeys.mine({ userId: 7, ...myApplicationsParams(1) }), { data: rows, total: 4, page: 1, pageSize: 20, totalPages: 1 })
-  client.setQueryData([...pipelineKeys.upcoming, 7], [upcomingRow])
-  for (const [id, value] of Object.entries(details)) client.setQueryData(pipelineKeys.detail(Number(id)), value)
+  client.setQueryData(pipelineKeys.mine(myApplicationsParams(1), 7), { data: rows, total: 4, page: 1, pageSize: 20, totalPages: 1 })
+  client.setQueryData(pipelineKeys.upcoming(7), [upcomingRow])
+  for (const [id, value] of Object.entries(details)) client.setQueryData(pipelineKeys.detail(Number(id), 7), value)
   return renderToStaticMarkup(
     <QueryClientProvider client={client}>
       <MyApplicationsPage />

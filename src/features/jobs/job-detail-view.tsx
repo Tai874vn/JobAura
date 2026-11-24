@@ -63,7 +63,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
       const room = response.content
       if (room) {
         openChatForRoom(room)
-        queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms })
+        queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms(user?.id) })
       } else {
         openChat()
       }

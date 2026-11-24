@@ -1,13 +1,15 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { useSession } from '@/features/auth/use-session'
 import { adminApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { Card, CardContent, PageHeader, Skeleton } from '@/shared/ui'
 import { AdminResourcePage } from './admin-resource-page'
 
 export function AdminDashboard() {
-  const stats = useQuery({ queryKey: queryKeys.adminStats, queryFn: adminApi.stats })
+  const { user } = useSession()
+  const stats = useQuery({ queryKey: queryKeys.adminStats(user?.id), queryFn: adminApi.stats })
 
   const metrics = [
     { label: 'Users', value: stats.isError ? '—' : stats.data?.content?.users ?? 0, loading: stats.isPending },

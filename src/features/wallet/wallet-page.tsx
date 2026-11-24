@@ -15,7 +15,7 @@ const PAGE_SIZE = 20
 /** The wallet: four figures, a place for the Top up, and the ledger (the list of every change) 20 rows at a time. */
 export function WalletPage() {
   const { user } = useSession()
-  const summary = useQuery({ queryKey: walletKeys.summary, queryFn: walletApi.summary, staleTime: 15_000, enabled: Boolean(user) })
+  const summary = useQuery({ queryKey: walletKeys.summary(user?.id), queryFn: walletApi.summary, staleTime: 15_000, enabled: Boolean(user) })
   const ledger = useInfiniteQuery({
     // The person is part of the key, so another person never reads this list from the cache.
     queryKey: walletKeys.ledger({ viewerId: user?.id ?? 0, pageSize: PAGE_SIZE }),

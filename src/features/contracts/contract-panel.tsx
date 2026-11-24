@@ -130,7 +130,7 @@ const milestoneName = (m: MilestoneView) => `Milestone ${m.position}: ${m.title}
  */
 export function ContractPanel({ contract, viewerId, backHref }: { contract: ContractDetail; viewerId: number; backHref: string }) {
   const queryClient = useQueryClient()
-  const detailKey = contractKeys.contract(contract.id)
+  const detailKey = contractKeys.contract(contract.id, viewerId)
   const [dialog, setDialog] = useState<ContractDialog | null>(null)
   const [dialogError, setDialogError] = useState<string | null>(null)
   // A sentence kept on the panel when a dialog had to close because the contract moved on.
@@ -171,7 +171,7 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
   const clock = current && active ? milestoneClock(contract, current, now) : null
 
   // The balance, for "after funding" in the fund dialog. Read only when the client can fund.
-  const wallet = useQuery({ queryKey: walletKeys.summary, queryFn: walletApi.summary, enabled: can('fund'), staleTime: 15_000 })
+  const wallet = useQuery({ queryKey: walletKeys.summary(viewerId), queryFn: walletApi.summary, enabled: can('fund'), staleTime: 15_000 })
 
   // The contract changed under an open dialog (the other side or the deadline job acted): close it and say so.
   // Not while a step is running: the fresh contract from our own step arrives just before the dialog closes itself.

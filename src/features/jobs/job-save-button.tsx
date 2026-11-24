@@ -16,7 +16,7 @@ export function JobSaveButton({ jobId, initialSaved = false }: { jobId: number; 
   const { user, isLoading: isSessionLoading } = useSession()
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null)
   const savedQuery = useQuery({
-    queryKey: queryKeys.savedJobsPreview,
+    queryKey: queryKeys.savedJobsPreview(user?.id),
     queryFn: () => savedItemsApi.jobs(undefined, 20),
     enabled: !isSessionLoading && Boolean(user) && !initialSaved,
     staleTime: 60_000,

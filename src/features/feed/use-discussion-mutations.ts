@@ -7,11 +7,11 @@ import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApiResponse, PostComment } from '@/shared/schemas'
 import { syncDiscussionChange } from './discussion-cache'
 
-export function useDiscussionMutations(postId: number) {
+export function useDiscussionMutations(postId: number, viewerId?: number | null) {
   const client = useQueryClient()
   // Serialize changes within this discussion so count updates cannot race each other.
   const scope = { id: `post-discussion-${postId}` }
-  const created = (comment: PostComment) => syncDiscussionChange(client, postId, { type: 'created', comment })
+  const created = (comment: PostComment) => syncDiscussionChange(client, postId, { type: 'created', comment }, viewerId)
   const createComment = useMutation({
     scope,
     mutationFn: async (content: string) => requireComment(await postsApi.createComment(postId, content)),
@@ -29,14 +29,14 @@ export function useDiscussionMutations(postId: number) {
     scope,
     mutationFn: async ({ comment, content }: { comment: PostComment; content: string }) =>
       requireComment(await postsApi.updateComment(postId, comment.id, content)),
-    onSuccess: (comment) => syncDiscussionChange(client, postId, { type: 'updated', comment }),
+    onSuccess: (comment) => syncDiscussionChange(client, postId, { type: 'updated', comment }, viewerId),
     onError: (error) => toast.error(getErrorMessage(error, 'Could not edit comment')),
   })
   const deleteComment = useMutation({
     scope,
     mutationFn: (comment: PostComment) => postsApi.deleteComment(postId, comment.id),
     onSuccess: async (_response, comment) => {
-      await syncDiscussionChange(client, postId, { type: 'deleted', comment })
+      await syncDiscussionChange(client, postId, { type: 'deleted', comment }, viewerId)
       toast.success(comment.parentId == null ? 'Comment deleted' : 'Reply deleted')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not delete comment')),

@@ -48,9 +48,9 @@ describe('Guest session checks', () => {
   it('still removes private data when a known signed-in session expires', async () => {
     const client = cache.client!
     setCachedSession({ id: 1, name: 'Ava' } as UserProfile, client)
-    client.setQueryData(queryKeys.savedPosts, { content: ['Private post'] })
+    client.setQueryData(queryKeys.savedPosts(1), { content: ['Private post'] })
     await expect(guestSessionRequest()).rejects.toMatchObject({ response: { status: 401 } })
-    expect(client.getQueryData(queryKeys.savedPosts)).toBeUndefined()
+    expect(client.getQueryData(queryKeys.savedPosts(1))).toBeUndefined()
     expect(client.getQueryData<{ content?: UserProfile }>(queryKeys.me)?.content).toBeUndefined()
   })
 })

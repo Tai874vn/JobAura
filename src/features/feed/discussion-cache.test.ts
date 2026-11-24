@@ -21,8 +21,8 @@ function seed() {
   const cache: InfiniteData<FeedPage, string | null> = {
     pages: [{ data: [post, { ...post, id: 99, commentCount: 20 }], nextCursor: 'feed-next' }], pageParams: [null],
   }
-  client.setQueryData(queryKeys.feed, cache)
-  client.setQueryData(queryKeys.savedPosts, cache)
+  client.setQueryData(queryKeys.feed(), cache)
+  client.setQueryData(queryKeys.savedPosts(), cache)
   client.setQueryData(queryKeys.postComments(10), page([root]))
   client.setQueryData(queryKeys.postReplies(10, 4), page([{ ...reply, id: 7 }]))
   client.setQueryData(queryKeys.postReplies(10, 9), page([]))
@@ -37,27 +37,27 @@ describe('discussion cache synchronization', () => {
     seed()
     await syncDiscussionChange(client, 10, { type: 'created', comment: reply })
 
-    expect(cachedPost(queryKeys.feed)).toMatchObject({ commentCount: 4, recentComments: [{ id: 4, replyCount: 3 }] })
-    expect(cachedPost(queryKeys.savedPosts).commentCount).toBe(4)
+    expect(cachedPost(queryKeys.feed())).toMatchObject({ commentCount: 4, recentComments: [{ id: 4, replyCount: 3 }] })
+    expect(cachedPost(queryKeys.savedPosts()).commentCount).toBe(4)
     const roots = client.getQueryData<CommentCache>(queryKeys.postComments(10))!
     expect(roots.pages[0].data).toMatchObject([{ id: 4, replyCount: 3 }])
     const replies = client.getQueryData<CommentCache>(queryKeys.postReplies(10, 4))!
     expect(replies.pages[0].data.map((item) => item.id)).toEqual([8, 7])
     expect(replies.pages[0].nextCursor).toBe(7)
     expect(replies.pageParams).toEqual([null])
-    for (const key of [queryKeys.feed, queryKeys.savedPosts, queryKeys.postComments(10), queryKeys.postReplies(10, 4)]) {
+    for (const key of [queryKeys.feed(), queryKeys.savedPosts(), queryKeys.postComments(10), queryKeys.postReplies(10, 4)]) {
       expect(client.getQueryState(key)?.isInvalidated).toBe(true)
     }
     expect(client.getQueryState(queryKeys.postReplies(10, 9))?.isInvalidated).toBe(false)
-    expect(client.getQueryData<InfiniteData<FeedPage>>(queryKeys.feed)!.pages[0].data[1].commentCount).toBe(20)
+    expect(client.getQueryData<InfiniteData<FeedPage>>(queryKeys.feed())!.pages[0].data[1].commentCount).toBe(20)
   })
 
   it('removes a deleted root, its total reply count and the stale thread cache', async () => {
     seed()
     await syncDiscussionChange(client, 10, { type: 'deleted', comment: root })
 
-    expect(cachedPost(queryKeys.feed)).toMatchObject({ commentCount: 0, recentComments: [] })
-    expect(cachedPost(queryKeys.savedPosts).commentCount).toBe(0)
+    expect(cachedPost(queryKeys.feed())).toMatchObject({ commentCount: 0, recentComments: [] })
+    expect(cachedPost(queryKeys.savedPosts()).commentCount).toBe(0)
     expect(client.getQueryData<CommentCache>(queryKeys.postComments(10))!.pages[0].data).toEqual([])
     expect(client.getQueryData(queryKeys.postReplies(10, 4))).toBeUndefined()
     expect(client.getQueryData(queryKeys.postReplies(10, 9))).toBeDefined()
@@ -67,7 +67,7 @@ describe('discussion cache synchronization', () => {
     seed()
     await syncDiscussionChange(client, 10, { type: 'deleted', comment: { ...reply, id: 7 } })
 
-    expect(cachedPost(queryKeys.feed)).toMatchObject({ commentCount: 2, recentComments: [{ id: 4, replyCount: 1 }] })
+    expect(cachedPost(queryKeys.feed())).toMatchObject({ commentCount: 2, recentComments: [{ id: 4, replyCount: 1 }] })
     expect(client.getQueryData<CommentCache>(queryKeys.postReplies(10, 4))!.pages[0].data).toEqual([])
     expect(client.getQueryData<CommentCache>(queryKeys.postComments(10))!.pages[0].data[0].replyCount).toBe(1)
   })
@@ -77,12 +77,12 @@ describe('discussion cache synchronization', () => {
     await syncDiscussionChange(client, 10, { type: 'updated', comment: { ...reply, id: 7, content: 'Edited' } })
 
     expect(client.getQueryData<CommentCache>(queryKeys.postReplies(10, 4))!.pages[0].data[0].content).toBe('Edited')
-    expect(cachedPost(queryKeys.feed)).toMatchObject({ commentCount: 3, recentComments: [{ id: 4, content: 'Root' }] })
+    expect(cachedPost(queryKeys.feed())).toMatchObject({ commentCount: 3, recentComments: [{ id: 4, content: 'Root' }] })
   })
 
   it('does not seed partial feed or thread lists that have never been loaded', async () => {
     await syncDiscussionChange(client, 10, { type: 'created', comment: reply })
-    expect(client.getQueryData(queryKeys.feed)).toBeUndefined()
+    expect(client.getQueryData(queryKeys.feed())).toBeUndefined()
     expect(client.getQueryData(queryKeys.postReplies(10, 4))).toBeUndefined()
   })
 })

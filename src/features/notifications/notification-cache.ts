@@ -7,9 +7,10 @@ export function prependNotification(
   queryClient: QueryClient,
   notification: AppNotification,
   limit: number,
+  viewerId?: number | null,
 ) {
   queryClient.setQueryData<ApiResponse<NotificationPage>>(
-    queryKeys.notifications,
+    queryKeys.notifications(viewerId),
     (current) => {
       const existing = current?.content?.data ?? []
       const nextItems = existing.filter((item) => item.id !== notification.id)
@@ -27,9 +28,10 @@ export function prependNotification(
 export function updateNotificationInCache(
   queryClient: QueryClient,
   notification: AppNotification,
+  viewerId?: number | null,
 ) {
   queryClient.setQueryData<ApiResponse<NotificationPage>>(
-    queryKeys.notifications,
+    queryKeys.notifications(viewerId),
     (current) => {
       if (!current?.content) return current
       return {
@@ -45,10 +47,10 @@ export function updateNotificationInCache(
   )
 }
 
-export function markCachedNotificationsRead(queryClient: QueryClient) {
+export function markCachedNotificationsRead(queryClient: QueryClient, viewerId?: number | null) {
   const readAt = new Date().toISOString()
   queryClient.setQueryData<ApiResponse<NotificationPage>>(
-    queryKeys.notifications,
+    queryKeys.notifications(viewerId),
     (current) => {
       if (!current?.content) return current
       return {

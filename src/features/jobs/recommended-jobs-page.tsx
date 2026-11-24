@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, ListOrdered, Zap } from 'lucide-react'
 import { useMemo, useState, type FocusEvent as ReactFocusEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
@@ -23,17 +24,19 @@ type SkillGapTooltipState = {
 
 export function RecommendedJobsPage() {
   const queryClient = useQueryClient()
+  const { user } = useSession()
+  const viewerId = user?.id
   const [lastContent, setLastContent] = useState<RecommendationContent<RecommendedJob> | null>(null)
   const [skillGapTooltip, setSkillGapTooltip] = useState<SkillGapTooltipState>(null)
   const [applyingId, setApplyingId] = useState<number | null>(null)
   const quotaQuery = useQuery({
-    queryKey: queryKeys.recommendationQuota,
+    queryKey: queryKeys.viewerRecommendationQuota(viewerId),
     queryFn: recommendationsApi.quota,
     staleTime: 30 * 1000,
     retry: false,
   })
   const cachedQuery = useQuery({
-    queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }),
+    queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId),
     queryFn: () => recommendationsApi.jobs({ ...recommendationParams, cacheOnly: true }),
     staleTime: 15 * 1000,
     retry: false,
@@ -43,8 +46,8 @@ export function RecommendedJobsPage() {
       recommendationsApi.jobs({ ...recommendationParams, forceRefresh: forceRefresh || undefined }),
     onSuccess: (response) => {
       setLastContent(response.content ?? null)
-      queryClient.invalidateQueries({ queryKey: queryKeys.recommendationQuota })
-      queryClient.invalidateQueries({ queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.viewerRecommendationQuota(viewerId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId) })
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'AI recommendations are unavailable'))

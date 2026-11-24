@@ -81,14 +81,14 @@ export function profileStrength({ profile, resume, portfolioPosts = 0, hiringPos
 export function useProfileStrength(profile: StrengthInput['profile'] & { id: number }, enabled = true) {
   const isEmployer = profile.role === 'employer'
   const countParams = { page: 1, pageSize: 1 }
-  const { resume } = useOwnResume(enabled && !isEmployer)
+  const { resume } = useOwnResume(enabled && !isEmployer, profile.id)
   const posts = useQuery({
     queryKey: queryKeys.jobsByCreator(profile.id, countParams),
     queryFn: () => jobsApi.byCreator(profile.id, countParams),
     enabled: enabled && !isEmployer,
   })
   const hiring = useQuery({
-    queryKey: queryKeys.myHiringPosts(countParams),
+    queryKey: queryKeys.myHiringPosts(countParams, profile.id),
     queryFn: () => hiringPostsApi.mine(countParams),
     enabled: enabled && isEmployer,
   })

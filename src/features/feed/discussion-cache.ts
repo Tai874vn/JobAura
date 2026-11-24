@@ -12,15 +12,18 @@ export async function syncDiscussionChange(
   client: QueryClient,
   postId: number,
   change: DiscussionChange,
+  viewerId?: number | null,
 ) {
   const { comment, type } = change
+  const feedKey = queryKeys.feed(viewerId)
+  const savedKey = queryKeys.savedPosts(viewerId)
   const rootsKey = queryKeys.postComments(postId)
   const threadKey = queryKeys.postReplies(postId, comment.parentId ?? comment.id)
-  const keys = [queryKeys.feed, queryKeys.savedPosts, rootsKey, threadKey]
+  const keys = [feedKey, savedKey, rootsKey, threadKey]
   // Do not let an older in-flight response overwrite the confirmed mutation.
   await Promise.all(keys.map((queryKey) => client.cancelQueries({ queryKey, exact: true })))
 
-  for (const key of [queryKeys.feed, queryKeys.savedPosts]) {
+  for (const key of [feedKey, savedKey]) {
     client.setQueryData<InfiniteData<FeedPage, string | null>>(key, (cache) => cache && ({
       ...cache,
       pages: cache.pages.map((page) => ({

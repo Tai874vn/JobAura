@@ -10,7 +10,11 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { authApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
-import { setCachedSession } from "@/shared/api/session-cache";
+import {
+  broadcastSessionChange,
+  resetClientSession,
+  setCachedSession,
+} from "@/shared/api/session-cache";
 import { resolveClientOrigin } from "@/shared/config/client-origin";
 import { env } from "@/shared/config/env";
 import { GoogleIcon } from "@/shared/icons";
@@ -19,6 +23,10 @@ import {
   signupRoleOptions,
   type SignupRole,
 } from "@/shared/lib/roles";
+import {
+  safeInternalPath,
+  storeOAuthNextPath,
+} from "@/shared/lib/session-routing";
 import { getErrorMessage } from "@/shared/lib/utils";
 import {
   signInSchema,
@@ -26,6 +34,7 @@ import {
   type SignIn,
   type SignUp,
 } from "@/shared/schemas";
+import { useChatStore } from "@/shared/stores/chat-store";
 import { Button, Input } from "@/shared/ui";
 import { AuthCard, AuthPageGate, FieldError } from "./auth-form-layout";
 import { GoogleSignupRoleModal } from "./google-signup-role-modal";
@@ -68,19 +77,33 @@ function LoginFormFields({
     typeof window === "undefined" ? undefined : window.location.origin,
   );
 
+  const safeNextPath = safeInternalPath(nextPath);
+  const registerHref = safeNextPath
+    ? `/auth/register?next=${encodeURIComponent(safeNextPath)}`
+    : "/auth/register";
+
   const mutation = useMutation({
     mutationFn: authApi.signIn,
     onSuccess: (res) => {
       const user = res.content?.user;
-      if (user) setCachedSession(user, queryClient);
+      // Clear any previous visitor or account cache before storing the new user so stale data never leaks across sign-ins.
+      useChatStore.getState().reset();
+      resetClientSession(queryClient, { broadcast: false });
+      if (user) {
+        setCachedSession(user, queryClient);
+        broadcastSessionChange("signin", user.id);
+      } else {
+        broadcastSessionChange("signin");
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push(getSignedInRedirect(user, nextPath));
+      router.push(getSignedInRedirect(user, safeNextPath));
     },
     onError: (error) =>
       toast.error(getErrorMessage(error, "Unable to sign in")),
   });
 
   function continueWithGoogle() {
+    storeOAuthNextPath(safeNextPath);
     window.location.assign(`${apiBaseUrl}/api/auth/google`);
   }
 
@@ -90,6 +113,7 @@ function LoginFormFields({
       return;
     }
 
+    storeOAuthNextPath(safeNextPath);
     window.location.assign(
       `${apiBaseUrl}/api/auth/google?role=${encodeURIComponent(googleSignupRole)}`,
     );
@@ -151,7 +175,7 @@ function LoginFormFields({
       />
       <p className="mt-5 text-center text-sm text-muted">
         New here?{" "}
-        <Link className="font-medium text-primary hover:text-primary-strong" href="/auth/register">
+        <Link className="font-medium text-primary hover:text-primary-strong" href={registerHref}>
           Create an account
         </Link>
       </p>
@@ -161,21 +185,34 @@ function LoginFormFields({
 
 export function RegisterForm() {
   const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next");
   const notice = searchParams.get("notice");
   // ?role=employer comes from "Post a role" on the landing, so the account type is already picked.
   const requestedRole = searchParams.get("role");
   const role = requestedRole === "user" || requestedRole === "employer" ? requestedRole : undefined;
 
   return (
-    <AuthPageGate>
-      <RegisterFormFields notice={notice} role={role} />
+    <AuthPageGate nextPath={nextPath}>
+      <RegisterFormFields nextPath={nextPath} notice={notice} role={role} />
     </AuthPageGate>
   );
 }
 
-function RegisterFormFields({ notice, role }: { notice?: string | null; role?: "user" | "employer" }) {
+function RegisterFormFields({
+  nextPath,
+  notice,
+  role,
+}: {
+  nextPath?: string | null;
+  notice?: string | null;
+  role?: "user" | "employer";
+}) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const safeNextPath = safeInternalPath(nextPath);
+  const loginHref = safeNextPath
+    ? `/auth/login?next=${encodeURIComponent(safeNextPath)}`
+    : "/auth/login";
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<SignUp>({
     resolver: zodResolver(signUpSchema),
@@ -195,9 +232,16 @@ function RegisterFormFields({ notice, role }: { notice?: string | null; role?: "
     mutationFn: authApi.signUp,
     onSuccess: (res) => {
       const user = res.content?.user;
-      if (user) setCachedSession(user, queryClient);
+      useChatStore.getState().reset();
+      resetClientSession(queryClient, { broadcast: false });
+      if (user) {
+        setCachedSession(user, queryClient);
+        broadcastSessionChange("signin", user.id);
+      } else {
+        broadcastSessionChange("signin");
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push(getSignedInRedirect(user));
+      router.push(getSignedInRedirect(user, safeNextPath));
     },
     onError: (error) =>
       toast.error(getErrorMessage(error, "Unable to create account")),
@@ -224,6 +268,7 @@ function RegisterFormFields({ notice, role }: { notice?: string | null; role?: "
   function continueWithGoogle() {
     const role = requireRole();
     if (!role) return;
+    storeOAuthNextPath(safeNextPath);
     window.location.assign(
       `${apiBaseUrl}/api/auth/google?role=${encodeURIComponent(role)}`,
     );
@@ -329,7 +374,7 @@ function RegisterFormFields({ notice, role }: { notice?: string | null; role?: "
       </form>
       <p className="mt-5 text-center text-sm text-muted">
         Already have an account?{" "}
-        <Link className="font-medium text-primary hover:text-primary-strong" href="/auth/login">
+        <Link className="font-medium text-primary hover:text-primary-strong" href={loginHref}>
           Sign in
         </Link>
       </p>

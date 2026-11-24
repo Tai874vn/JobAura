@@ -71,7 +71,7 @@ export function useProfileSettings(profile: UserProfile) {
       if (parts.certifications) setCertificationsBase(snapshot.certifications)
       refreshProfile()
       // The resume shows the same skill list and is evaluated again.
-      if (parts.skills) void client.invalidateQueries({ queryKey: queryKeys.myResume })
+      if (parts.skills) void client.invalidateQueries({ queryKey: queryKeys.myResume(profile.id) })
       toast.success('Profile saved')
     },
     onError: (error) => {

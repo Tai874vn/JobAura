@@ -35,7 +35,6 @@ export function MyApplicationsPage() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { user } = useSession()
-  const userId = user?.id ?? 0
 
   const page = positive(searchParams.get('page')) ?? 1
   const applicationParam = positive(searchParams.get('application'))
@@ -58,7 +57,7 @@ export function MyApplicationsPage() {
   const params = myApplicationsParams(page)
   const list = useQuery({
     // The key carries the user id, so one person never sees another person's cached list.
-    queryKey: pipelineKeys.mine({ userId, ...params }),
+    queryKey: pipelineKeys.mine(params, user?.id),
     queryFn: () => pipelineApi.mine(params),
     enabled: Boolean(user),
     placeholderData: keepPreviousData,
@@ -69,14 +68,14 @@ export function MyApplicationsPage() {
   const selectedId = applicationParam ?? rows[0]?.id ?? null
 
   const upcoming = useQuery({
-    queryKey: [...pipelineKeys.upcoming, userId],
+    queryKey: pipelineKeys.upcoming(user?.id),
     queryFn: pipelineApi.upcoming,
     enabled: Boolean(user),
     staleTime: 15_000,
   })
 
   const detail = useQuery({
-    queryKey: pipelineKeys.detail(selectedId ?? 0),
+    queryKey: pipelineKeys.detail(selectedId ?? 0, user?.id),
     queryFn: () => pipelineApi.detail(selectedId as number),
     enabled: selectedId !== null && Boolean(user),
     staleTime: 15_000,

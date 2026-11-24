@@ -22,7 +22,7 @@ const application = {
 describe('CallScreen', () => {
   it('shows a plain message with Leave and Skip when the call pass request fails', () => {
     const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } } })
-    client.setQueryData(pipelineKeys.detail(2), application)
+    client.setQueryData(pipelineKeys.detail(2, 9), application)
     client.getQueryCache().build(client, { queryKey: ['call-token', 5, 9] }).setState({ status: 'error', error: new Error('503'), fetchStatus: 'idle' })
 
     const html = renderToStaticMarkup(

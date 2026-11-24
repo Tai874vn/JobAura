@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileWarning, Send } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
+import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { usersApi } from "@/shared/api/endpoints/users";
 import { queryKeys } from "@/shared/api/query-keys";
@@ -20,9 +21,10 @@ export function ApplyPanel({ postId, onApplied, onCancel }: {
   onCancel?: () => void;
 }) {
   const queryClient = useQueryClient();
+  const { user } = useSession();
   const messageId = useId();
   const [message, setMessage] = useState("");
-  const resume = useQuery({ queryKey: queryKeys.myResume, queryFn: usersApi.myResume, retry: false, staleTime: 60_000 });
+  const resume = useQuery({ queryKey: queryKeys.myResume(user?.id), queryFn: usersApi.myResume, retry: false, staleTime: 60_000 });
   const hasNoResume = resume.isSuccess && !resume.data?.content;
 
   const apply = useMutation({

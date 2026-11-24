@@ -30,7 +30,7 @@ export function PostDiscussionModal({
   onClose: () => void
 }) {
   const [comment, setComment] = useState('')
-  const { createComment, createReply, editComment, deleteComment } = useDiscussionMutations(post.id)
+  const { createComment, createReply, editComment, deleteComment } = useDiscussionMutations(post.id, currentUserId)
   const busy = createComment.isPending || createReply.isPending || editComment.isPending || deleteComment.isPending
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)

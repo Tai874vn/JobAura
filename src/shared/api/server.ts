@@ -37,6 +37,19 @@ async function readResponseBody(response: Response): Promise<unknown> {
 export async function serverRequest<T>(path: string, options: RequestOptions = {}): Promise<ServerRequestResult<T>> {
   const { backendApiBaseUrl } = getServerEnv()
   const { body: requestBody, includeCookies = true, ...requestOptions } = options
+  const wantsDataCache =
+    (typeof requestOptions.next?.revalidate === 'number' && requestOptions.next.revalidate > 0) ||
+    Boolean(requestOptions.next?.tags?.length) ||
+    requestOptions.cache === 'force-cache'
+
+  // Refuse to put cookie-authenticated responses into Next.js's shared Data Cache,
+  // which would risk leaking one user's data to another visitor.
+  if (includeCookies && wantsDataCache) {
+    throw new Error(
+      `serverRequest(${path}): refusing to cache a request that forwards cookies. Pass includeCookies: false for public cached data.`,
+    )
+  }
+
   const headers = new Headers(requestOptions.headers)
   const cookieHeader = includeCookies ? (await cookies()).toString() : ''
   const cache = requestOptions.cache ?? (requestOptions.next ? undefined : 'no-store')

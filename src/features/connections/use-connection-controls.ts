@@ -23,7 +23,7 @@ export function useConnectionControls(userId: number, userName?: string) {
   const isSelf = Boolean(user && user.id === userId)
 
   const statusQuery = useQuery({
-    queryKey: queryKeys.connectionStatus(userId),
+    queryKey: queryKeys.connectionStatus(userId, user?.id),
     queryFn: () => connectionsApi.status(userId),
     enabled: Boolean(user && !isSelf),
   })
@@ -33,7 +33,7 @@ export function useConnectionControls(userId: number, userName?: string) {
 
   const refreshConnections = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.connectionStatus(userId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.connectionStatus(userId, user?.id) }),
       queryClient.invalidateQueries({ queryKey: ['connections'] }),
     ])
   }

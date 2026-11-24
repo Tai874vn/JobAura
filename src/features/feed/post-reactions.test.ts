@@ -18,8 +18,8 @@ describe('post reaction reconciliation', () => {
       author, likeCount: 0, commentCount: 0, viewerHasLiked: false, viewerHasSaved: false, recentComments: [],
     }
     const snapshot = (): InfiniteData<FeedPage, string | null> => ({ pages: [{ data: [post], nextCursor: null }], pageParams: [null] })
-    client.setQueryData(queryKeys.feed, snapshot())
-    const feed = new QueryObserver(client, { queryKey: queryKeys.feed, queryFn: async () => snapshot() })
+    client.setQueryData(queryKeys.feed(6), snapshot())
+    const feed = new QueryObserver(client, { queryKey: queryKeys.feed(6), queryFn: async () => snapshot() })
     const unsubscribe = feed.subscribe(() => undefined)
     let finishRequest!: () => void
     apiClient.defaults.adapter = (config) => new Promise((resolve) => {
@@ -28,16 +28,16 @@ describe('post reaction reconciliation', () => {
         resolve({ config, status: 200, statusText: 'OK', headers: {}, data: { message: 'Updated' } })
       }
     })
-    const current = () => client.getQueryData<InfiniteData<FeedPage>>(queryKeys.feed)!.pages[0].data[0]
+    const current = () => client.getQueryData<InfiniteData<FeedPage>>(queryKeys.feed(6))!.pages[0].data[0]
     const field = action === 'like' ? 'viewerHasLiked' : 'viewerHasSaved'
     const pending = action === 'like'
-      ? new MutationObserver(client, postLikeOptions(client)).mutate({ id: 10, liked: true })
-      : new MutationObserver(client, postSaveOptions(client)).mutate({ id: 10, saved: true })
+      ? new MutationObserver(client, postLikeOptions(client, 6)).mutate({ id: 10, liked: true })
+      : new MutationObserver(client, postSaveOptions(client, 6)).mutate({ id: 10, saved: true })
     try {
       await vi.waitFor(() => { expect(finishRequest).toBeTypeOf('function'); expect(current()[field]).toBe(true) })
       const reply: PostComment = { id: 8, postId: 10, authorId: 6, parentId: 4, replyCount: 0, content: 'Reply', createdAt: post.createdAt, author }
       post = { ...post, commentCount: 1 }
-      await syncDiscussionChange(client, 10, { type: 'created', comment: reply })
+      await syncDiscussionChange(client, 10, { type: 'created', comment: reply }, 6)
       expect(current()[field]).toBe(false)
       finishRequest()
       await pending

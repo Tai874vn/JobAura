@@ -44,12 +44,12 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
 
   const listQuery = useQuery({
-    queryKey: queryKeys.notifications,
+    queryKey: queryKeys.notifications(userId),
     queryFn: () => notificationsApi.list({ limit: previewLimit }),
     enabled: Boolean(userId),
   });
   const countQuery = useQuery({
-    queryKey: queryKeys.notificationUnreadCount,
+    queryKey: queryKeys.notificationUnreadCount(userId),
     queryFn: notificationsApi.unreadCount,
     enabled: Boolean(userId),
     staleTime: 30_000,
@@ -59,9 +59,9 @@ export function NotificationBell() {
     mutationFn: notificationsApi.markRead,
     onSuccess: (response) => {
       if (response.content)
-        updateNotificationInCache(queryClient, response.content);
+        updateNotificationInCache(queryClient, response.content, userId);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.notificationUnreadCount,
+        queryKey: queryKeys.notificationUnreadCount(userId),
       });
     },
     onError: () => toast.error("Could not update notification"),
@@ -70,9 +70,9 @@ export function NotificationBell() {
   const markAllRead = useMutation({
     mutationFn: notificationsApi.markAllRead,
     onSuccess: () => {
-      markCachedNotificationsRead(queryClient);
+      markCachedNotificationsRead(queryClient, userId);
       queryClient.setQueryData<ApiResponse<{ unreadCount: number }>>(
-        queryKeys.notificationUnreadCount,
+        queryKeys.notificationUnreadCount(userId),
         (current) => ({
           ...(current ?? {}),
           content: { unreadCount: 0 },
@@ -87,11 +87,11 @@ export function NotificationBell() {
     return connection.subscribe("/notifications", (socket) => {
       const onNotification = (raw: unknown) => {
         const notification = normalizeNotification(raw);
-        prependNotification(queryClient, notification, previewLimit);
+        prependNotification(queryClient, notification, previewLimit, userId);
       };
       const onUnreadCount = ({ unreadCount }: { unreadCount: number }) => {
         queryClient.setQueryData<ApiResponse<{ unreadCount: number }>>(
-          queryKeys.notificationUnreadCount,
+          queryKeys.notificationUnreadCount(userId),
           (current) => ({
             ...(current ?? {}),
             content: { unreadCount },

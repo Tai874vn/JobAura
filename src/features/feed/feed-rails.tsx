@@ -5,6 +5,7 @@ import { TrendingUp, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { useSession } from '@/features/auth/use-session'
 import { connectionsApi, skillsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
@@ -30,9 +31,10 @@ export function RightFeedRail() {
 }
 
 function RightFeedRailContent() {
+  const { user } = useSession()
   const skillsQuery = useQuery({ queryKey: ['skills', 'feed'], queryFn: skillsApi.all, staleTime: 300_000 })
   const suggestionsQuery = useQuery({
-    queryKey: queryKeys.connectionSuggestions({ page: 1, pageSize: 2 }),
+    queryKey: queryKeys.connectionSuggestions({ page: 1, pageSize: 2 }, user?.id),
     queryFn: () => connectionsApi.suggestions({ page: 1, pageSize: 2 }),
     staleTime: 60_000,
   })

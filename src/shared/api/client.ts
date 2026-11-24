@@ -5,7 +5,7 @@ import { resolveClientOrigin } from '@/shared/config/client-origin'
 import { env } from '@/shared/config/env'
 import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { csrfTokenForMethod, hasCsrfTokenCookie } from './csrf'
+import { clearCsrfTokenCookie, csrfTokenForMethod, csrfTokenFromCookie, hasCsrfTokenCookie } from './csrf'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'
 import { getQueryClient } from './query-client'
 import { queryKeys } from './query-keys'
@@ -31,7 +31,11 @@ import { resetClientSession, setCachedSession } from './session-cache'
  * withCredentials: true = send the login cookies with every request.
  */
 type RefreshFlight = { promise: Promise<void> | null }
-type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean; _refreshFlight?: RefreshFlight }
+type RetryConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean
+  _refreshFlight?: RefreshFlight
+  metadata?: { csrfAtSend?: string }
+}
 
 // Shared by both clients in this tab only. Cross-tab REFRESH_REUSED is terminal;
 // this does not add consumed-token replay or any reuse grace.
@@ -59,9 +63,15 @@ export const uploadClient = axios.create({
   withCredentials: true,
 })
 
+function currentCsrfToken(): string | undefined {
+  if (typeof document === 'undefined') return undefined
+  return csrfTokenFromCookie(document.cookie)
+}
+
 function installCsrfInterceptor(instance: typeof apiClient | typeof uploadClient) {
   instance.interceptors.request.use((config: RetryConfig) => {
     config._refreshFlight = refreshFlight
+    config.metadata = { ...config.metadata, csrfAtSend: currentCsrfToken() }
     const token = csrfTokenForMethod(config.method)
     if (token) config.headers.set('X-CSRF-Token', token)
     return config
@@ -71,16 +81,22 @@ function installCsrfInterceptor(instance: typeof apiClient | typeof uploadClient
 installCsrfInterceptor(apiClient)
 installCsrfInterceptor(uploadClient)
 
-function handleSessionExpired(isGuestSessionCheck = false) {
+function handleSessionExpired(isGuestSessionCheck = false, csrfAtSend?: string) {
   const client = getQueryClient()
   const knownUser = client.getQueryData<ApiResponse<UserProfile>>(queryKeys.me)?.content
+  if (csrfAtSend && currentCsrfToken() === csrfAtSend) {
+    clearCsrfTokenCookie()
+  }
   // A first guest /me check is not a logout. Removing other queries here can
   // strand their active observers while public pages are still loading.
-  if (isGuestSessionCheck && !knownUser) setCachedSession(null, client)
-  else resetClientSession(client)
+  if (isGuestSessionCheck && !knownUser) {
+    setCachedSession(null, client)
+  } else {
+    resetClientSession(client)
+  }
   useChatStore.getState().reset()
   if (typeof window !== 'undefined') {
-    const redirect = getSessionExpiredRedirect(window.location.pathname)
+    const redirect = getSessionExpiredRedirect(window.location.pathname, window.location.search)
     if (redirect) window.location.href = redirect
   }
 }
@@ -112,7 +128,7 @@ function refreshSession(flight: RefreshFlight): Promise<void> {
     }).then(() => undefined).catch((error: unknown) => {
       // An untyped refresh 401 is terminal for legacy backends only.
       if (isTerminalAuthError(error) || (axios.isAxiosError(error) && error.response?.status === 401 && !authErrorCode(error))) {
-        handleSessionExpired()
+        handleSessionExpired(false, csrfToken)
       }
       throw error
     }).finally(() => {
@@ -145,7 +161,7 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
       }
 
       if (isTerminalAuthError(error)) {
-        handleSessionExpired(originalRequest.url === '/api/auth/me')
+        handleSessionExpired(originalRequest.url === '/api/auth/me', originalRequest.metadata?.csrfAtSend)
         return Promise.reject(error)
       }
 
@@ -155,7 +171,7 @@ function installRefreshInterceptor(instance: typeof apiClient | typeof uploadCli
       }
 
       if (!hasCsrfTokenCookie()) {
-        handleSessionExpired(originalRequest.url === '/api/auth/me')
+        handleSessionExpired(originalRequest.url === '/api/auth/me', originalRequest.metadata?.csrfAtSend)
         return Promise.reject(error)
       }
 

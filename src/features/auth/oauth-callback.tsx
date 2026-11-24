@@ -1,10 +1,15 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
+import { authApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { broadcastSessionChange, resetClientSession, setCachedSession } from '@/shared/api/session-cache'
+import { getSignedInRedirect } from '@/shared/lib/roles'
+import { consumeOAuthNextPath, safeInternalPath } from '@/shared/lib/session-routing'
+import { useChatStore } from '@/shared/stores/chat-store'
 import { Card, CardContent, Spinner } from '@/shared/ui'
 
 const oauthErrorMessages: Record<string, string> = {
@@ -19,20 +24,49 @@ function getOAuthErrorMessage(error: string) {
 }
 
 export function OAuthCallback() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const queryClient = useQueryClient()
-  const error = searchParams.get('error')
+  const queryError = searchParams.get('error')
+  const queryNext = searchParams.get('next')
+  const [sessionError, setSessionError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (error) return
+    if (queryError) return
 
-    queryClient.invalidateQueries({ queryKey: queryKeys.me })
-    const timeoutId = window.setTimeout(() => {
-      window.location.replace('/')
-    }, 500)
+    let cancelled = false
+    async function finalizeOAuthSignIn() {
+      useChatStore.getState().reset()
+      resetClientSession(queryClient, { broadcast: false })
+      try {
+        const res = await queryClient.fetchQuery({
+          queryKey: queryKeys.me,
+          queryFn: authApi.me,
+          staleTime: 0,
+        })
+        if (cancelled) return
+        const user = res.content ?? null
+        if (!user) {
+          setSessionError('auth_failed')
+          return
+        }
+        setCachedSession(user, queryClient)
+        broadcastSessionChange('signin', user.id)
+        const storedNext = consumeOAuthNextPath()
+        const nextPath = queryNext != null ? safeInternalPath(queryNext) : storedNext
+        router.replace(getSignedInRedirect(user, nextPath))
+      } catch {
+        if (!cancelled) setSessionError('auth_failed')
+      }
+    }
 
-    return () => window.clearTimeout(timeoutId)
-  }, [error, queryClient])
+    void finalizeOAuthSignIn()
+    return () => {
+      cancelled = true
+    }
+  }, [queryClient, queryError, queryNext, router])
+
+  const error = queryError ?? sessionError
 
   if (error) {
     return (
