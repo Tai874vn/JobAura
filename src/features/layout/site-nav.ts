@@ -89,3 +89,18 @@ export function siteNav(role?: string | null): SiteNav {
     search: { target: '/hiring-posts', placeholder: 'Search hiring posts by role, skill, or company' },
   }
 }
+
+/** True when the page path is this link's page or one of its sub pages. Home ("/") matches only itself. */
+function linkMatches(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/'
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
+/**
+ * Whether a header link is the current page. When two links match (on /jobs/new both "/jobs" and "/jobs/new" do),
+ * only the longest (most specific) one counts, so the header never underlines two links at once.
+ */
+export function isCurrentLink(pathname: string, href: string, hrefs: string[]): boolean {
+  if (!linkMatches(pathname, href)) return false
+  return !hrefs.some((other) => other.length > href.length && linkMatches(pathname, other))
+}

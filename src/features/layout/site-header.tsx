@@ -11,7 +11,7 @@ import { NotificationBell } from "@/features/notifications/notification-bell";
 import { WalletChip } from "@/features/wallet/wallet-chip";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, Button } from "@/shared/ui";
-import { siteNav } from "./site-nav";
+import { isCurrentLink, siteNav } from "./site-nav";
 
 export function SiteHeader() {
   const router = useRouter();
@@ -20,7 +20,8 @@ export function SiteHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isLoading: isSessionLoading } = useSession();
   const nav = siteNav(user?.role);
-  const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
+  const navHrefs = [...nav.main, ...nav.account].map((link) => link.href);
+  const isCurrent = (href: string) => isCurrentLink(pathname, href, navHrefs);
 
   function goToLogout() {
     setAccountMenuOpen(false);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { siteNav } from './site-nav'
+import { isCurrentLink, siteNav } from './site-nav'
 
 const labels = (role?: string) => siteNav(role).main.map((link) => link.label)
 
@@ -43,5 +43,19 @@ describe('siteNav', () => {
   it('keeps the admin link out of recruiter and candidate headers', () => {
     expect(labels('employer')).not.toContain('Admin')
     expect(labels('user')).not.toContain('Admin')
+  })
+})
+
+describe('isCurrentLink', () => {
+  const hrefs = ['/', '/jobs', '/jobs/new', '/hiring-posts']
+  it('marks only the most specific link, so /jobs/new does not also light up /jobs', () => {
+    expect(isCurrentLink('/jobs/new', '/jobs/new', hrefs)).toBe(true)
+    expect(isCurrentLink('/jobs/new', '/jobs', hrefs)).toBe(false)
+  })
+  it('still marks the parent link on its other sub pages, and home only on /', () => {
+    expect(isCurrentLink('/jobs/42', '/jobs', hrefs)).toBe(true)
+    expect(isCurrentLink('/jobs', '/jobs', hrefs)).toBe(true)
+    expect(isCurrentLink('/jobs', '/', hrefs)).toBe(false)
+    expect(isCurrentLink('/', '/', hrefs)).toBe(true)
   })
 })
