@@ -116,6 +116,8 @@ export const notificationTypes = [
   "APPLICATION_RECEIVED",
   "APPLICATION_UPDATE",
   "INTERVIEW_UPDATE",
+  "PROPOSAL_UPDATE",
+  "CONTRACT_UPDATE",
 ] as const;
 
 export const notificationActorSchema = z.object({

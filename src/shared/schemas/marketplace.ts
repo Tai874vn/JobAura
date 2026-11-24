@@ -33,6 +33,14 @@ export const jobSchema = z.object({
   updatedAt: z.string().optional(),
   subcategory: subcategorySchema.optional(),
   user: userSchema.pick({ id: true, name: true, avatar: true }).optional(),
+  /** Where the work happens. Missing means REMOTE. */
+  workMode: z.enum(['REMOTE', 'ONSITE', 'BOTH']).optional(),
+  /** Area for on-site work; null for REMOTE. */
+  serviceArea: z.string().nullish(),
+  /** Steps that pre-fill a proposal; `share` is a whole percent and all shares add up to 100. */
+  milestoneTemplate: z
+    .array(z.object({ title: z.string(), description: z.string().nullish(), share: z.number() }))
+    .nullish(),
 });
 
 export const hiringPostStatusSchema = z.enum(["OPEN", "CLOSED"]);

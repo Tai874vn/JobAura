@@ -64,6 +64,8 @@ export function notificationContext(notification: AppNotification) {
   if (notification.type === 'APPLICATION_RECEIVED') return 'Applicant'
   if (notification.type === 'APPLICATION_UPDATE') return 'Application'
   if (notification.type === 'INTERVIEW_UPDATE') return 'Interview'
+  if (notification.type === 'PROPOSAL_UPDATE') return 'Proposal'
+  if (notification.type === 'CONTRACT_UPDATE') return 'Contract'
   if (notification.type === 'CHAT_MESSAGE') return 'Message'
   if (notification.type === 'POST_COMMENT' || notification.type === 'POST_LIKE') {
     return metadataString(notification, 'postTitle') ?? 'Post'

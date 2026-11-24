@@ -14,6 +14,13 @@ import {
   upcomingInterviewSchema,
 } from './marketplace'
 import {
+  proposalStatusSchema, contractStatusSchema, milestoneStatusSchema, amendmentStatusSchema, endReasonSchema,
+  ledgerTypeSchema, sideSchema, endChoiceSchema, personSummarySchema, jobSummarySchema, contractEventSchema,
+  versionBodySchema, createProposalBodySchema, proposalVersionSchema, proposalDetailSchema, proposalListItemSchema,
+  submissionSchema, milestoneSchema, amendmentChangeSchema, amendmentSchema, endRequestSchema, contractDetailSchema,
+  contractListItemSchema, walletSummarySchema, ledgerEntrySchema, topUpResultSchema,
+} from './contracts'
+import {
   chatMessageSchema, chatRoomSchema, chatUserSchema, connectionProfileSchema, connectionSchema,
   connectionStatusSchema, connectionSuggestionSchema, feedAuthorSchema, feedPageSchema, feedPostSchema,
   notificationSchema, postCommentSchema,
@@ -127,3 +134,30 @@ export type NotificationPage = {
   data: AppNotification[];
   nextCursor: string | null;
 };
+
+export type ProposalStatus = z.infer<typeof proposalStatusSchema>;
+export type ContractStatus = z.infer<typeof contractStatusSchema>;
+export type MilestoneStatus = z.infer<typeof milestoneStatusSchema>;
+export type AmendmentStatus = z.infer<typeof amendmentStatusSchema>;
+export type EndReason = z.infer<typeof endReasonSchema>;
+export type LedgerType = z.infer<typeof ledgerTypeSchema>;
+export type Side = z.infer<typeof sideSchema>;
+export type EndChoice = z.infer<typeof endChoiceSchema>;
+export type PersonSummary = z.infer<typeof personSummarySchema>;
+export type JobSummary = z.infer<typeof jobSummarySchema>;
+export type ContractEventView = z.infer<typeof contractEventSchema>;
+export type VersionBody = z.infer<typeof versionBodySchema>;
+export type CreateProposalBody = z.infer<typeof createProposalBodySchema>;
+export type ProposalVersionView = z.infer<typeof proposalVersionSchema>;
+export type ProposalDetail = z.infer<typeof proposalDetailSchema>;
+export type ProposalListItem = z.infer<typeof proposalListItemSchema>;
+export type SubmissionView = z.infer<typeof submissionSchema>;
+export type MilestoneView = z.infer<typeof milestoneSchema>;
+export type AmendmentChange = z.infer<typeof amendmentChangeSchema>;
+export type AmendmentView = z.infer<typeof amendmentSchema>;
+export type EndRequestView = z.infer<typeof endRequestSchema>;
+export type ContractDetail = z.infer<typeof contractDetailSchema>;
+export type ContractListItem = z.infer<typeof contractListItemSchema>;
+export type WalletSummary = z.infer<typeof walletSummarySchema>;
+export type LedgerEntryView = z.infer<typeof ledgerEntrySchema>;
+export type TopUpResult = z.infer<typeof topUpResultSchema>;

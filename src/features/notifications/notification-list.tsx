@@ -41,6 +41,9 @@ const notificationMeta: Record<AppNotification['type'], NotificationMeta> = {
   APPLICATION_RECEIVED: { icon: FilePlus2, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
   APPLICATION_UPDATE: { icon: ClipboardCheck, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
   INTERVIEW_UPDATE: { icon: CalendarClock, iconClassName: 'bg-violet-50 text-violet-700 ring-violet-100', unreadClassName: 'border-violet-200 bg-violet-50/60' },
+  // Service contracts: a step on a proposal, a step on a contract.
+  PROPOSAL_UPDATE: { icon: FilePlus2, iconClassName: 'bg-emerald-50 text-emerald-700 ring-emerald-100', unreadClassName: 'border-emerald-200 bg-emerald-50/60' },
+  CONTRACT_UPDATE: { icon: BriefcaseBusiness, iconClassName: 'bg-emerald-50 text-emerald-700 ring-emerald-100', unreadClassName: 'border-emerald-200 bg-emerald-50/60' },
 }
 
 export function NotificationSection({ title, notifications, onOpen, emptyText }: {

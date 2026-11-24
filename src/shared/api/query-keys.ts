@@ -49,3 +49,20 @@ export const pipelineKeys = {
   mine: (params?: object) => ['pipeline', 'mine', params ?? {}] as const,
   upcoming: ['pipeline', 'upcoming'] as const,
 } as const
+
+/**
+ * Keys for service contracts. Every key carries the id or the viewer's side and page, so a person never
+ * sees cached data that belongs to someone else.
+ */
+export const contractKeys = {
+  proposal: (id: number) => ['contracts', 'proposal', id] as const,
+  contract: (id: number) => ['contracts', 'contract', id] as const,
+  proposals: (p: object) => ['contracts', 'proposals', p] as const,
+  contracts: (p: object) => ['contracts', 'list', p] as const,
+} as const
+
+/** Keys for the credit wallet. The whole ['wallet'] branch is cleared when someone signs out. */
+export const walletKeys = {
+  summary: ['wallet', 'summary'] as const,
+  ledger: (p: object) => ['wallet', 'ledger', p] as const,
+} as const
