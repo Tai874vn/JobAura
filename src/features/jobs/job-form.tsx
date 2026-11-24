@@ -1,9 +1,9 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
-import { AlignLeft, ImagePlus, Info, Send, Trash2, UploadCloud } from 'lucide-react'
+import { AlignLeft, ImagePlus, Info, MapPin, Send, Trash2, UploadCloud } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -14,8 +14,10 @@ import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { createJobSchema, type CreateJob } from '@/shared/schemas'
+import { createJobSchema, type CreateJob, type Job } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, Card, Input, PageHeader, Select, Textarea } from '@/shared/ui'
+import { MilestoneTemplateField } from './milestone-template-field'
+import { fromTemplate, serviceAreaError, templateErrors, toTemplatePayload, type TemplateRow } from './milestone-template'
 import { servicePriceLabel } from './service-price'
 
 type CreateJobInput = z.input<typeof createJobSchema>
@@ -24,24 +26,58 @@ const titleLimit = 160
 const shortLimit = 500
 const descriptionLimit = 5000
 
-/** A candidate's portfolio post: a project or the kind of work they do, so recruiters can find them. */
-export function JobForm() {
+const workModes = [
+  { value: 'REMOTE', label: 'Remote' },
+  { value: 'ONSITE', label: 'Onsite' },
+  { value: 'BOTH', label: 'Remote or onsite' },
+] as const
+
+/**
+ * A candidate's post: a project or the kind of work they do, so recruiters can find them. With a rate it is a
+ * service clients can send a proposal to. Pass `job` to edit an existing post; without it the form creates one.
+ */
+export function JobForm({ job }: { job?: Job }) {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const editing = Boolean(job)
   const { user } = useSession()
   const fileRef = useRef<HTMLInputElement>(null)
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [templateRows, setTemplateRows] = useState<TemplateRow[]>(() => fromTemplate(job?.milestoneTemplate))
   const form = useForm<CreateJobInput>({
     resolver: zodResolver(createJobSchema),
-    defaultValues: { title: '', price: 0, shortDescription: '', description: '', subcategoryId: 0, reviews: 0, rating: 0 },
+    defaultValues: {
+      title: job?.title ?? '',
+      price: job?.price ?? 0,
+      shortDescription: job?.shortDescription ?? '',
+      description: job?.description ?? '',
+      subcategoryId: job?.subcategoryId ?? 0,
+      workMode: job?.workMode ?? 'REMOTE',
+      serviceArea: job?.serviceArea ?? '',
+      reviews: job?.reviews ?? 0,
+      rating: job?.rating ?? 0,
+    },
   })
+  const workMode = form.watch('workMode') ?? 'REMOTE'
+  const serviceArea = form.watch('serviceArea') ?? ''
+  const areaError = serviceAreaError(workMode, serviceArea)
+  const saveBlocked = templateErrors(templateRows).length > 0 || Boolean(areaError)
   const title = form.watch('title')
   const price = form.watch('price')
   // Pick the field first (37 of them), then the kind of work inside it, instead of one list of 400+ entries.
   const categoriesQuery = useQuery({ queryKey: queryKeys.categories, queryFn: categoriesApi.all })
   const categories = categoriesQuery.data?.content ?? []
   const categoriesUnavailable = categoriesQuery.isError && !categories.length
-  const [categoryId, setCategoryId] = useState(0)
+  // The field the person picked; until they pick one, it follows the saved kind of work (when editing).
+  const [pickedCategoryId, setPickedCategoryId] = useState<number | null>(null)
+  const savedSubcategoryId = form.watch('subcategoryId')
+  const categoryId =
+    pickedCategoryId ??
+    job?.subcategory?.categoryId ??
+    job?.subcategory?.category?.id ??
+    categories.find((category) => category.subcategories?.some((sub) => sub.id === Number(savedSubcategoryId)))?.id ??
+    0
   const subcategories = categories.find((category) => category.id === categoryId)?.subcategories ?? []
 
   useEffect(() => {
@@ -57,15 +93,24 @@ export function JobForm() {
         if (!validation.valid) throw new Error(validation.message)
       }
 
-      const created = await jobsApi.create(values)
-      if (file && created.content?.id) await jobsApi.uploadImage(created.content.id, file)
-      return created
+      // Remote work has no area, and no steps means no template (null clears an old one).
+      const body: CreateJob = {
+        ...values,
+        serviceArea: values.workMode === 'REMOTE' ? null : values.serviceArea?.trim() || null,
+        milestoneTemplate: toTemplatePayload(templateRows),
+      }
+      const saved = job ? await jobsApi.update(job.id, body) : await jobsApi.create(body)
+      const savedId = saved.content?.id ?? job?.id
+      if (file && savedId) await jobsApi.uploadImage(savedId, file)
+      return { ...saved, savedId }
     },
     onSuccess: (res) => {
-      toast.success('Portfolio post published')
-      router.push(res.content?.id ? `/jobs/${res.content.id}` : '/my-posts')
+      toast.success(editing ? 'Post saved' : 'Portfolio post published')
+      void queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      router.push(res.savedId ? `/jobs/${res.savedId}` : '/my-posts')
+      router.refresh()
     },
-    onError: (error) => toast.error(getErrorMessage(error, 'Could not publish your post')),
+    onError: (error) => toast.error(getErrorMessage(error, editing ? 'Could not save your post' : 'Could not publish your post')),
   })
 
   function selectImage(nextFile?: File) {
@@ -99,7 +144,7 @@ export function JobForm() {
   return (
     <div className="container-page pt-10 pb-16">
       <PageHeader
-        title="Post your portfolio"
+        title={editing ? 'Edit your post' : 'Post your portfolio'}
         description="Show a project or the kind of work you do. Recruiters find you through these posts and your profile."
       />
 
@@ -129,7 +174,7 @@ export function JobForm() {
                       value={categoryId}
                       disabled={categoriesQuery.isPending || categoriesUnavailable}
                       onChange={(event) => {
-                        setCategoryId(Number(event.target.value))
+                        setPickedCategoryId(Number(event.target.value))
                         form.setValue('subcategoryId', 0)
                       }}
                     >
@@ -144,10 +189,35 @@ export function JobForm() {
                     </Select>
                   </Field>
                 </div>
-                <Field id="post-rate" label="Rate in USD (optional)" error={form.formState.errors.price?.message}>
+                <Field id="post-rate" label="Rate in credits (optional)" error={form.formState.errors.price?.message}>
                   <Input id="post-rate" type="number" min={0} inputMode="numeric" {...form.register('price')} />
-                  <p className="mt-1.5 text-xs font-normal text-muted">Leave 0 to show your work without a price; recruiters contact you directly.</p>
+                  <p className="mt-1.5 text-xs font-normal text-muted">Leave 0 to show your work without a price; recruiters contact you directly. With a rate, clients can send you a proposal.</p>
                 </Field>
+              </div>
+            </section>
+
+            <section className="border-t border-border p-5">
+              <h2 className="mb-4 flex items-center gap-2 text-xs font-medium text-muted">
+                <MapPin className="h-3.5 w-3.5 text-primary" /> How you work
+              </h2>
+              <div className="grid gap-4">
+                <fieldset>
+                  <legend className="text-sm font-medium">Work mode</legend>
+                  <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+                    {workModes.map((mode) => (
+                      <label key={mode.value} className="flex items-center gap-2 text-sm">
+                        <input type="radio" value={mode.value} className="h-4 w-4 accent-primary" {...form.register('workMode')} />
+                        {mode.label}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                {workMode !== 'REMOTE' ? (
+                  <Field id="post-area" label="Service area" counter={`${serviceArea.length}/160`} error={serviceArea.length ? areaError : undefined}>
+                    <Input id="post-area" {...form.register('serviceArea')} maxLength={160} placeholder="Hanoi, or within 30 km of Da Nang" />
+                  </Field>
+                ) : null}
+                <MilestoneTemplateField rows={templateRows} onChange={setTemplateRows} />
               </div>
             </section>
 
@@ -215,10 +285,10 @@ export function JobForm() {
             </section>
 
             <section className="flex flex-wrap items-center justify-end gap-2.5 border-t border-border p-5">
-              <ButtonLink href="/my-posts" variant="secondary">Cancel</ButtonLink>
-              <Button type="submit" loading={mutation.isPending}>
+              <ButtonLink href={job ? `/jobs/${job.id}` : '/my-posts'} variant="secondary">Cancel</ButtonLink>
+              <Button type="submit" loading={mutation.isPending} disabled={saveBlocked}>
                 <Send className="h-4 w-4" />
-                Publish post
+                {editing ? 'Save changes' : 'Publish post'}
               </Button>
             </section>
           </form>

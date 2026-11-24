@@ -157,6 +157,9 @@ export function toJobPayload(data: CreateJob | UpdateJob) {
     shortDescription: data.shortDescription,
     description: data.description,
     subcategoryId: data.subcategoryId,
+    workMode: data.workMode,
+    serviceArea: data.serviceArea,
+    milestoneTemplate: data.milestoneTemplate,
   };
 }
 

@@ -3,19 +3,21 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowUpRight, Calendar, MessageSquare, Send, ListOrdered, Star, Trash2 } from 'lucide-react'
+import { ArrowUpRight, Calendar, MapPin, MessageSquare, ListOrdered, Pencil, Star, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
-import { chatApi, commentsApi, hiresApi, jobsApi } from '@/shared/api/endpoints'
+import { chatApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'
-import { cn, currency, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import { isPortfolioPost } from './service-price'
+import { credits } from '@/shared/lib/credits'
+import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { NewProposalDialog } from '@/features/contracts/new-proposal-dialog'
+import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-price'
 import type { Comment, Job } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog, Textarea } from '@/shared/ui'
+import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog } from '@/shared/ui'
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
 
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
@@ -26,8 +28,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const { user } = useSession()
   const openChat = useChatStore((state) => state.openChat)
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
-  const [review, setReview] = useState('')
-  const [rating, setRating] = useState(5)
+  const [proposalOpen, setProposalOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const isOwner = user?.id === job.creatorId
   // A post without a rate is a portfolio post: no purchase steps, just ways to reach the candidate.
@@ -38,22 +39,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const sellerHref = getSellerHref(job)
   const sellerAvatar = getSellerAvatar(job)
   const listedDate = formatListedDate(job.createdAt)
-
-  const hireMutation = useMutation({
-    mutationFn: () => hiresApi.create({ jobId: job.id }),
-    onSuccess: () => toast.success('Service hired successfully'),
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to hire this service')),
-  })
-
-  const commentMutation = useMutation({
-    mutationFn: () => commentsApi.create({ jobId: job.id, content: review, rating: rating }),
-    onSuccess: () => {
-      setReview('')
-      queryClient.invalidateQueries({ queryKey: queryKeys.job(job.id) })
-      toast.success('Review posted')
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Unable to post review')),
-  })
+  const template = job.milestoneTemplate ?? []
 
   const deleteMutation = useMutation({
     mutationFn: () => jobsApi.delete(job.id),
@@ -173,32 +159,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
                       <p className="mt-1.5 text-sm leading-6 text-muted">{comment.content}</p>
                     </div>
                   </div>
-                )) : <p className="py-2 text-sm text-muted">No reviews yet. Be the first to share what it was like working with this seller.</p>}
-              </div>
-              <div className="mt-4 rounded-lg bg-surface-muted p-4">
-                <p className="mb-2 text-[13px] font-medium">Rate this service</p>
-                <div className="mb-2.5 flex gap-1" role="radiogroup" aria-label="Your rating">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={rating === value}
-                      aria-label={`${value} ${value === 1 ? 'star' : 'stars'}`}
-                      className={cn('grid h-8 w-8 place-items-center rounded-lg transition hover:bg-surface', rating >= value ? 'text-rating' : 'text-border')}
-                      onClick={() => setRating(value)}
-                    >
-                      <Star className={cn('h-5 w-5', rating >= value && 'fill-rating')} />
-                    </button>
-                  ))}
-                </div>
-                <Textarea aria-label="Your review" placeholder="Share what it was like working with this seller…" value={review} onChange={(event) => setReview(event.target.value)} />
-                <div className="mt-3 flex justify-end">
-                  <Button onClick={() => requireLogin(() => commentMutation.mutate())} loading={commentMutation.isPending} disabled={!review.trim()}>
-                    <Send className="h-4 w-4" />
-                    Post review
-                  </Button>
-                </div>
+                )) : <p className="py-2 text-sm text-muted">No reviews yet. Reviews appear here after a contract with this seller is finished.</p>}
               </div>
             </CardContent>
           </Card>
@@ -219,32 +180,49 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
           ) : (
           <Card>
             <CardContent className="p-5">
-              <p className="text-sm text-muted">Starting at</p>
-              <p className="mt-0.5 font-display text-4xl font-medium tracking-tight">{currency(job.price)}</p>
-              <div className="mt-4 border-t border-border pt-4">
-                <p className="text-xs font-medium text-muted">How it works</p>
-                <ol className="mt-3 grid gap-3">
-                  <BuyStep number={1} title="Agree in chat" text="Scope, timeline, and price — free, before you commit." />
-                  <BuyStep number={2} title="Hire the service" text="One click here confirms the work at this price." />
-                  <BuyStep number={3} title="Track in My jobs" text="Follow progress until the work is marked complete." />
-                </ol>
-              </div>
-              <Button className="mt-5 w-full" size="lg" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>Continue ({currency(job.price)})</Button>
-              <Button
-                className="mt-3 w-full"
-                variant="secondary"
-                onClick={() => requireLogin(() => contactSellerMutation.mutate())}
-                loading={contactSellerMutation.isPending}
-              >
-                <MessageSquare className="h-4 w-4" />
-                Contact seller
-              </Button>
+              <p className="font-display text-3xl font-medium tracking-tight">{servicePriceLabel(job.price)}</p>
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-muted">
+                <MapPin className="h-4 w-4 shrink-0" /> {workModeLine(job.workMode, job.serviceArea)}
+              </p>
+              {template.length ? (
+                <div className="mt-4 border-t border-border pt-4">
+                  <h2 className="text-sm font-medium">How the work is usually split</h2>
+                  <ul className="mt-3 grid gap-2.5">
+                    {template.map((step, index) => (
+                      <li key={index} className="text-sm">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className="min-w-0 break-words font-medium">{step.title} · {step.share}%</span>
+                          <span className="shrink-0 text-muted">{credits(Math.floor((job.price * step.share) / 100))}</span>
+                        </div>
+                        {step.description ? <p className="mt-0.5 break-words text-xs leading-snug text-muted">{step.description}</p> : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {isOwner ? null : (
+                <>
+                  <Button className="mt-5 w-full" size="lg" onClick={() => requireLogin(() => setProposalOpen(true))}>Send a proposal</Button>
+                  <Button
+                    className="mt-3 w-full"
+                    variant="secondary"
+                    onClick={() => requireLogin(() => contactSellerMutation.mutate())}
+                    loading={contactSellerMutation.isPending}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    Message
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
           )}
           {sellerCard}
           {isOwner ? (
-            <Button variant="danger" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /> Delete post</Button>
+            <>
+              <ButtonLink href={`/jobs/${job.id}/edit`} variant="secondary"><Pencil className="h-4 w-4" /> Edit post</ButtonLink>
+              <Button variant="danger" onClick={() => setDeleteOpen(true)}><Trash2 className="h-4 w-4" /> Delete post</Button>
+            </>
           ) : null}
           {canViewCandidateMatches ? (
             <Card>
@@ -267,15 +245,14 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
         </aside>
       </div>
 
-      {portfolio ? null : <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden" aria-label="Purchase bar">
-        <div className="leading-tight">
-          <b className="block font-display text-lg font-medium">{currency(job.price)}</b>
-          <span className="text-xs font-medium text-muted">Starting at</span>
-        </div>
-        <Button className="ml-auto flex-1" onClick={() => requireLogin(() => hireMutation.mutate())} loading={hireMutation.isPending}>
-          Continue
+      {portfolio || isOwner ? null : <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-border bg-surface/95 px-4 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2.5 backdrop-blur lg:hidden" aria-label="Proposal bar">
+        <b className="font-display text-lg font-medium leading-tight">{servicePriceLabel(job.price)}</b>
+        <Button className="ml-auto" onClick={() => requireLogin(() => setProposalOpen(true))}>
+          Send a proposal
         </Button>
       </div>}
+
+      {proposalOpen ? <NewProposalDialog job={job} onClose={() => setProposalOpen(false)} /> : null}
 
       <ConfirmationDialog
         open={deleteOpen}
@@ -287,20 +264,6 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
         onConfirm={() => deleteMutation.mutate()}
       />
     </div>
-  )
-}
-
-function BuyStep({ number, title, text }: { number: number; title: string; text: string }) {
-  return (
-    <li className="flex gap-2.5">
-      <span className="mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-full bg-primary/10 text-xs font-medium text-primary">
-        {number}
-      </span>
-      <span>
-        <b className="block text-[13px]">{title}</b>
-        <span className="text-xs leading-snug text-muted">{text}</span>
-      </span>
-    </li>
   )
 }
 

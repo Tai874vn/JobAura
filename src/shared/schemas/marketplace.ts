@@ -397,6 +397,20 @@ export const createJobSchema = z.object({
     .max(5000, "Description must be 5000 characters or fewer")
     .optional(),
   subcategoryId: z.coerce.number().min(1, "Choose the kind of work"),
+  workMode: z.enum(["REMOTE", "ONSITE", "BOTH"]).default("REMOTE"),
+  /** Null for remote work. */
+  serviceArea: z.string().trim().max(160, "The area is at most 160 characters.").nullish(),
+  /** Null for no template; otherwise 1-10 steps whose shares add up to 100 (the form checks this). */
+  milestoneTemplate: z
+    .array(
+      z.object({
+        title: z.string().trim().min(1).max(80),
+        description: z.string().trim().max(300).optional(),
+        share: z.number().int().min(1).max(100),
+      }),
+    )
+    .max(10)
+    .nullish(),
   reviews: z.coerce.number().default(0),
   rating: z.coerce.number().min(0).max(5).default(0),
 });

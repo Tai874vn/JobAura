@@ -112,6 +112,7 @@ function MyPostRow({ job, onDelete }: { job: Job; onDelete: () => void }) {
       </div>
       <div className="flex gap-2">
         <ButtonLink href={`/jobs/${job.id}`} variant="secondary" size="sm">View</ButtonLink>
+        <ButtonLink href={`/jobs/${job.id}/edit`} variant="secondary" size="sm">Edit</ButtonLink>
         <Button variant="danger" size="sm" onClick={onDelete}>
           <Trash2 className="h-4 w-4" /> Delete
         </Button>
