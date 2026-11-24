@@ -9,6 +9,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, EmptyState, Input, PageHeader, Select, Skeleton } from '@/shared/ui'
 import { getResourceConfig, type Resource, type ResourceConfig, type ResourceRow } from './admin-resource-model'
+import { refreshMarketplaceTaxonomyPages } from './refresh-taxonomy-pages'
 
 export function AdminResourcePage({ resource, embedded = false }: { resource: Resource; embedded?: boolean }) {
   const config = getResourceConfig(resource)
@@ -31,6 +32,13 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
     mutationFn: (id: number) => config.remove(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', resource] })
+      if (resource === 'categories' || resource === 'subcategories') {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.categories })
+        void queryClient.invalidateQueries({ queryKey: queryKeys.subcategories })
+        void refreshMarketplaceTaxonomyPages().catch(() => {})
+      } else if (resource === 'jobs') {
+        void queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      }
       setPendingDelete(null)
       toast.success(`${config.title} updated`)
     },
@@ -213,7 +221,11 @@ function CreateResourceDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', resource] })
-      queryClient.invalidateQueries({ queryKey: resource === 'categories' ? queryKeys.categories : queryKeys.subcategories })
+      if (resource === 'categories' || resource === 'subcategories') {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.categories })
+        void queryClient.invalidateQueries({ queryKey: queryKeys.subcategories })
+        void refreshMarketplaceTaxonomyPages().catch(() => {})
+      }
       toast.success(`${config.title} created`)
       resetForm()
       onClose()

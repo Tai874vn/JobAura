@@ -36,6 +36,33 @@ describe('SiteHeader', () => {
     expect(html).toContain('aria-busy="true"')
   })
 
+  it('puts the visitor links in the server HTML but keeps the bar invisible while the session loads', () => {
+    const html = render()
+    const nav = html.slice(html.indexOf('<nav'), html.indexOf('</nav>'))
+
+    expect(nav).toContain('href="/hiring-posts"')
+    expect(nav).toContain('href="/jobs"')
+    expect(nav).toMatch(/^<nav class="[^"]* invisible[ "]/)
+  })
+
+  it('shows the visitor links once a visitor session is known', () => {
+    mocks.session = { user: null, isLoading: false }
+    const nav = render().split('</nav>')[0]
+
+    expect(nav).toContain('href="/hiring-posts"')
+    expect(nav.slice(nav.indexOf('<nav'))).not.toMatch(/^<nav class="[^"]* invisible[ "]/)
+  })
+
+  it('shows a signed-in person only their own links, never the visitor set', () => {
+    mocks.session = { user: { id: 2, name: 'Rae', role: 'employer', avatar: null }, isLoading: false }
+    const html = render()
+    const nav = html.slice(html.indexOf('<nav'), html.indexOf('</nav>'))
+
+    expect(nav).toContain('href="/my-hiring-posts"')
+    expect(nav).not.toContain('href="/jobs"')
+    expect(nav).not.toMatch(/^<nav class="[^"]* invisible[ "]/)
+  })
+
   it('shows the balance chip linking to /wallet for a signed-in user', () => {
     mocks.session = { user: { id: 1, name: 'Ann', role: 'user', avatar: null }, isLoading: false }
     const html = render()

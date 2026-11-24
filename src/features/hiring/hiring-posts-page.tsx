@@ -5,7 +5,7 @@ import { ArrowDownWideNarrow, BriefcaseBusiness, ListChecks, ListOrdered, MapPin
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useSession } from "@/features/auth/use-session";
-import { hiringPostsApi, hiringPostSorts, type HiringPostFilters } from "@/shared/api/endpoints/hiring-posts";
+import { hiringPostsApi, hiringPostSorts } from "@/shared/api/endpoints/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
   BrowseHero, BrowsePage, ButtonLink, ChoiceMenu, countOf, EmptyState, ExploreChip, ExploreRow, FilterChoice, FilterGroup, FilterPanel,
@@ -16,19 +16,17 @@ import { occupationLabel } from "@/features/occupations/api";
 import { employmentTypes, hiringPostLevels } from "./hiring-post-form";
 import { HiringPostResultCard } from "./hiring-post-result-card";
 import { hiringPostViewer } from "./hiring-post-viewer";
+import {
+  hiringPostFilterKeys as filterKeys,
+  hiringPostsPageSize as pageSize,
+  readHiringPostFilters,
+  rolesPastLastPage,
+  toHiringPostFacetParams,
+  toHiringPostQueryParams,
+  type HiringPostAppliedFilters as Filters,
+} from "./hiring-posts-browse";
 
-const pageSize = 10;
-/** The backend lists at most this many pages of open posts (MAX_HIRING_POST_PAGE); later pages are a 400. */
-export const maxHiringPostPage = 100;
 
-/** How many matching roles lie past the last page the list can show, so the reader can be asked to narrow it. */
-export function rolesPastLastPage(total: number, totalPages: number, size = pageSize) {
-  return Math.max(0, total - totalPages * size);
-}
-
-const filterKeys = ["keyword", "occupation", "level", "employmentType", "location", "sort"] as const;
-type FilterKey = (typeof filterKeys)[number];
-type Filters = Record<FilterKey, string>;
 type MultiKey = "occupation" | "level" | "employmentType";
 // Quick searches under the search bar until the backend says which occupations have the most open roles.
 const fallbackExplore = ["Software developer", "Data analyst", "Product manager", "Graphic designer", "Business analyst"];
@@ -51,22 +49,26 @@ export function HiringPostsPage() {
   const { user } = useSession();
   const viewer = hiringPostViewer(user?.role);
 
-  const applied = Object.fromEntries(filterKeys.map((key) => [key, searchParams.get(key) ?? ""])) as Filters;
-  // A hand-edited ?page=500 would only get a 400, so it is read as the last page the backend serves.
-  const page = Math.min(maxHiringPostPage, Math.max(1, Number(searchParams.get("page")) || 1));
-  // What is typed but not searched yet; ticking a filter applies at once.
+  const { applied, page } = readHiringPostFilters(searchParams);
+  // Keep the search inputs synced with the URL whenever a chip, Reset, or browser Back/Forward changes it.
   const [keyword, setKeyword] = useState(applied.keyword);
+  const [syncedKeyword, setSyncedKeyword] = useState(applied.keyword);
+  if (syncedKeyword !== applied.keyword) {
+    setSyncedKeyword(applied.keyword);
+    setKeyword(applied.keyword);
+  }
   const [location, setLocation] = useState(applied.location);
+  const [syncedLocation, setSyncedLocation] = useState(applied.location);
+  if (syncedLocation !== applied.location) {
+    setSyncedLocation(applied.location);
+    setLocation(applied.location);
+  }
   const [showFilters, setShowFilters] = useState(false);
   const activeFilterCount = (["occupation", "level", "employmentType", "location"] as const)
     .reduce((sum, key) => sum + listOf(applied[key]).length, 0);
   const searching = activeFilterCount > 0 || Boolean(applied.keyword);
 
-  const params: HiringPostFilters = {
-    page,
-    pageSize,
-    ...Object.fromEntries(filterKeys.filter((key) => applied[key]).map((key) => [key, applied[key]])),
-  };
+  const params = toHiringPostQueryParams(applied, page);
   const query = useQuery({
     queryKey: queryKeys.hiringPosts(params, user?.id),
     queryFn: () => hiringPostsApi.open(params),
@@ -75,7 +77,7 @@ export function HiringPostsPage() {
     placeholderData: keepPreviousData,
   });
   // Counts beside each choice and the location list. Both are extras: without them the filters still work.
-  const facetParams = Object.fromEntries(filterKeys.filter((key) => key !== "sort" && applied[key]).map((key) => [key, applied[key]]));
+  const facetParams = toHiringPostFacetParams(applied);
   const facets = useQuery({
     queryKey: queryKeys.hiringPostFacets(facetParams),
     queryFn: () => hiringPostsApi.facets(facetParams),

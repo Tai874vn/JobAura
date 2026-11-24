@@ -19,6 +19,7 @@ import { isHiringPostAiPending } from "./hiring-post-ai";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
 import { activeApplicationCount, closePostQuestion } from "./hiring-pipeline-summary";
 import { MyHiringPostResultCard } from "./my-hiring-post-result-card";
+import { refreshHiringPostPages } from "./refresh-hiring-post-pages";
 import {
   arrangeMyPosts, myPostsHref, myPostsLoadLimit, myPostsPage, myPostsPageSize, myPostsRequest, myPostsSortLabels,
   myPostsStatsLine, readMyPostsFilters, statusCounts, type MyPostsFilters, type MyPostsSort, type MyPostsStatus,
@@ -101,10 +102,11 @@ export function MyHiringPostsPage() {
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
   const setStatus = useMutation({
     mutationFn: ({ id, status }: { id: number; status: HiringPost["status"] }) => hiringPostsApi.update(id, { status }),
-    onSuccess: (_, { status }) => {
+    onSuccess: (_, { id, status }) => {
       setClosing(null);
       toast.success(status === "CLOSED" ? "Post closed; candidates can no longer apply" : "Post reopened");
       void refresh();
+      void refreshHiringPostPages(id).catch(() => {});
     },
     onError: (error) => {
       // A closing dialog shows the server's sentence itself; a reopen has no dialog, so it is a toast.
@@ -113,9 +115,10 @@ export function MyHiringPostsPage() {
   });
   const predict = useMutation({
     mutationFn: hiringPostsApi.predictSeniority,
-    onSuccess: () => {
+    onSuccess: (_, id) => {
       toast.success("Working out the AI level");
       void refresh();
+      void refreshHiringPostPages(id).catch(() => {});
     },
     onError: (error) => toast.error(getErrorMessage(error, "Could not queue this post for its AI level")),
   });

@@ -5,7 +5,8 @@ import { HiringPostDetailView } from '@/features/hiring/hiring-post-detail-view'
 import { normalizeHiringPost } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { resolveServerEntity } from '@/shared/api/server-load'
-import { absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { defaultShareImage, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { jobPostingJsonLd } from '@/shared/lib/seo-jsonld'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, HiringPost } from '@/shared/schemas'
 
@@ -55,24 +56,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     description,
     robots: hidden ? { index: false, follow: false } : undefined,
     alternates: { canonical },
-    openGraph: { title, description, url: canonical, siteName: 'JobAura', type: 'website' },
-    twitter: { card: 'summary', title, description },
-  }
-}
-
-function jobPostingJsonLd(post: HiringPost) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'JobPosting',
-    title: post.title,
-    description: post.description,
-    datePosted: post.createdAt,
-    validThrough: post.closesAt ?? undefined,
-    employmentType: post.employmentType ?? undefined,
-    hiringOrganization: { '@type': 'Organization', name: post.companyName || post.recruiter?.name || 'JobAura recruiter' },
-    jobLocation: post.location ? { '@type': 'Place', address: post.location } : undefined,
-    skills: post.skills.length ? post.skills.join(', ') : undefined,
-    url: absoluteSiteUrl(`/hiring-posts/${post.id}`),
+    openGraph: { title, description, url: canonical, siteName: 'JobAura', type: 'website', images: [defaultShareImage] },
+    twitter: { card: 'summary_large_image', title, description, images: [defaultShareImage.url] },
   }
 }
 
@@ -87,9 +72,11 @@ export default async function HiringPostPage({ params }: { params: Promise<{ id:
   }
 
   const post = result.data
+  // A closed post gets no JobPosting data: it is private and kept out of search.
+  const structuredData = jobPostingJsonLd(post)
   return (
     <>
-      <JsonLd data={jobPostingJsonLd(post)} />
+      {structuredData ? <JsonLd data={structuredData} /> : null}
       <HiringPostDetailView initialPost={post} />
     </>
   )

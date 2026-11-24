@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
-import { chatApi, jobsApi } from '@/shared/api/endpoints'
+import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'
 import { credits } from '@/shared/lib/credits'
@@ -19,6 +19,7 @@ import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-pric
 import type { Comment, Job } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog } from '@/shared/ui'
+import { deleteJob } from './delete-job'
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
 
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
@@ -45,9 +46,11 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   const splitAmounts = splitPrice(job.price, template.map((step) => step.share))
 
   const deleteMutation = useMutation({
-    mutationFn: () => jobsApi.delete(job.id),
+    // The server action deletes the post and clears the cached pages that showed it.
+    mutationFn: () => deleteJob(job.id),
     onSuccess: () => {
       setDeleteOpen(false)
+      void queryClient.invalidateQueries({ queryKey: ['jobs'] })
       toast.success('Service deleted')
       router.push('/my-posts')
     },

@@ -6,7 +6,8 @@ import { getSellerHref, getSellerName } from '@/features/jobs/seller-profile'
 import { normalizeJobResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { resolveServerEntity } from '@/shared/api/server-load'
-import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { absoluteAssetUrl, defaultShareImage, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { serviceJsonLd } from '@/shared/lib/seo-jsonld'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, Comment, Job } from '@/shared/schemas'
 
@@ -61,51 +62,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       url: canonical,
       siteName: 'JobAura',
       type: 'website',
-      images: image ? [{ url: image, alt: title }] : undefined,
+      // With no picture of its own, the card uses the shared JobAura picture.
+      images: image ? [{ url: image, alt: title }] : [defaultShareImage],
     },
     twitter: {
-      card: image ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title,
       description,
-      images: image ? [image] : undefined,
+      images: [image ?? defaultShareImage.url],
     },
-  }
-}
-
-function serviceJsonLd(job: Job & { binhLuans?: Comment[] }) {
-  const sellerName = getSellerName(job)
-  const sellerHref = getSellerHref(job)
-  const reviewCount = Math.max(job.reviews ?? 0, job.binhLuans?.length ?? 0)
-  const ratingValue = job.rating ?? 0
-
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    '@id': absoluteSiteUrl(`/jobs/${job.id}#service`),
-    name: job.title,
-    description: seoDescription(job.description || job.shortDescription, `Hire ${job.title} on JobAura.`, 500),
-    image: absoluteAssetUrl(job.image),
-    category: job.subcategory?.name,
-    provider: {
-      '@type': 'Person',
-      name: sellerName,
-      url: sellerHref ? absoluteSiteUrl(sellerHref) : undefined,
-    },
-    offers: {
-      '@type': 'Offer',
-      url: absoluteSiteUrl(`/jobs/${job.id}`),
-      priceCurrency: 'USD',
-      price: job.price,
-      availability: 'https://schema.org/InStock',
-    },
-    aggregateRating:
-      ratingValue > 0 && reviewCount > 0
-        ? {
-            '@type': 'AggregateRating',
-            ratingValue,
-            reviewCount,
-          }
-        : undefined,
   }
 }
 
@@ -123,7 +88,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const job = result.data
   return (
     <>
-      <JsonLd data={serviceJsonLd(job)} />
+      <JsonLd data={serviceJsonLd(job, { name: getSellerName(job), href: getSellerHref(job) })} />
       <JobDetailView job={job} comments={job.binhLuans ?? []} />
     </>
   )

@@ -86,7 +86,8 @@ export function getSessionExpiredRedirect(pathname: string, search = '') {
   return isPublic ? null : buildLoginRedirect(pathname, search)
 }
 
-const PROTECTED_PREFIXES = [
+/** Pages that need a sign-in. The proxy sends visitors to the login page, and robots.txt keeps crawlers out. */
+export const PROTECTED_PREFIXES = [
   '/admin',
   '/contracts',
   '/my-applications',

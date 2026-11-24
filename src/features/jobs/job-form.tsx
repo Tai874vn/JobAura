@@ -18,6 +18,7 @@ import { createJobSchema, type CreateJob, type Job } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, Card, Input, PageHeader, Select, Textarea } from '@/shared/ui'
 import { MilestoneTemplateField } from './milestone-template-field'
 import { fromTemplate, serviceAreaError, templateErrors, toTemplatePayload, type TemplateRow } from './milestone-template'
+import { refreshJobPagesAfterSave } from './refresh-job-pages'
 import { servicePriceLabel } from './service-price'
 
 type CreateJobInput = z.input<typeof createJobSchema>
@@ -104,9 +105,12 @@ export function JobForm({ job }: { job?: Job }) {
       if (file && savedId) await jobsApi.uploadImage(savedId, file)
       return { ...saved, savedId }
     },
-    onSuccess: (res) => {
+    onSuccess: async (res) => {
       toast.success(editing ? 'Post saved' : 'Portfolio post published')
       void queryClient.invalidateQueries({ queryKey: ['jobs'] })
+      // Clear the server's cached copies of the post page first, so the page we open next shows the saved post.
+      // A failure here only means the old copy shows for a few minutes, so it never blocks the save.
+      if (res.savedId) await refreshJobPagesAfterSave(res.savedId).catch(() => {})
       router.push(res.savedId ? `/jobs/${res.savedId}` : '/my-posts')
       router.refresh()
     },

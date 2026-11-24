@@ -4,6 +4,7 @@ import { credits } from '@/shared/lib/credits'
 import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Comment, Job, Subcategory, Category, User } from '@/shared/schemas'
 import { Badge } from '@/shared/ui'
+import { deleteJob } from '@/features/jobs/delete-job'
 
 export type Resource = 'jobs' | 'users' | 'categories' | 'subcategories' | 'comments'
 export type ResourceRow = Job | User | Category | Subcategory | Comment
@@ -29,7 +30,8 @@ const resourceConfigs: Record<Resource, ResourceConfig> = {
     title: 'Jobs',
     columns: ['ID', 'Image', 'Title', 'Seller', 'Price', 'Rating', 'Status'],
     load: async () => (await jobsApi.all()).content ?? [],
-    remove: jobsApi.delete,
+    // Deleted through a server action, which also clears the cached public pages that showed the post.
+    remove: deleteJob,
     renderCells: renderJobCells,
     createHref: '/jobs/new',
     createLabel: 'Create New Job',

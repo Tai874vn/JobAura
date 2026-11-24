@@ -1,31 +1,7 @@
 import type { MetadataRoute } from 'next'
-
-function siteOrigin() {
-  try {
-    return new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').origin
-  } catch {
-    return 'http://localhost:3000'
-  }
-}
+import { siteOrigin } from '@/shared/lib/seo'
+import { buildRobots } from '@/shared/lib/seo-files'
 
 export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: [
-        '/admin',
-        '/auth/callback',
-        '/candidates',
-        '/connections',
-        '/jobs/new',
-        '/logout',
-        '/my-posts',
-        '/recommendations',
-        '/saved',
-        '/settings',
-      ],
-    },
-    sitemap: `${siteOrigin()}/sitemap.xml`,
-  }
+  return buildRobots(siteOrigin())
 }

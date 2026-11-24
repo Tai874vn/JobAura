@@ -19,6 +19,11 @@ export function SiteHeader() {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, isLoading: isSessionLoading } = useSession();
+  // While the session loads (always on the server render) there is no user, so this is the visitor menu
+  // (Hiring posts, Portfolios). The links are in the server HTML for crawlers, but the bar stays invisible
+  // (visibility: hidden, so its space is kept) until the session is known: a visitor sees them right after the page
+  // starts, and a signed-in person never sees visitor links before their own appear. Server and first browser
+  // pass render the same thing, so there is no hydration mismatch.
   const nav = siteNav(user?.role);
   const navHrefs = [...nav.main, ...nav.account].map((link) => link.href);
   const isCurrent = (href: string) => isCurrentLink(pathname, href, navHrefs);
@@ -37,8 +42,8 @@ export function SiteHeader() {
         </Link>
         {/* Every page searches in its own content (hiring posts, candidates, the landing hero), so the header has no
             search box. Links fill the header's height so the current page can carry an underline on its bottom edge. */}
-        <nav className="hidden shrink-0 items-stretch gap-2 self-stretch lg:ml-6 lg:flex" aria-label="Main">
-          {isSessionLoading ? null : nav.main.map((link) => (
+        <nav className={cn("hidden shrink-0 items-stretch gap-2 self-stretch lg:ml-6 lg:flex", isSessionLoading && "invisible")} aria-label="Main">
+          {nav.main.map((link) => (
             <Link
               key={link.href}
               href={link.href}

@@ -21,6 +21,7 @@ import {
   todayInput,
   type HiringPostDraft,
 } from "./hiring-post-form";
+import { refreshHiringPostPages } from "./refresh-hiring-post-pages";
 
 /**
  * Create a hiring post, or edit one when `post` is given. The ESCO occupation (with an optional specialty) and the
@@ -82,6 +83,8 @@ function HiringPostForm({
     onSuccess: (response) => {
       toast.success(post ? "Hiring post updated" : "Hiring post published");
       void queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
+      const savedId = response.content?.id ?? post?.id;
+      if (savedId) void refreshHiringPostPages(savedId).catch(() => {});
       if (response.content) onSaved?.(response.content);
       onClose();
     },

@@ -10,6 +10,10 @@ import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-pric
  */
 
 export const jobsPageSize = 12
+/** The longest search text read from the URL; longer text is cut, so a huge ?keyword= cannot reach the backend. */
+export const maxJobKeywordLength = 100
+/** The server fetches the first paint only for the plain list, up to this page (see canPrefetchJobs). */
+export const maxPrefetchJobsPage = 10
 
 export const popularPortfolioTerms = [
   'Software Engineer',
@@ -129,7 +133,7 @@ export function customPriceRangeLabel(minPrice?: number, maxPrice?: number): str
 /** Reads filters and page from the URL query string; unknown or invalid values fall back to empty defaults. */
 export function readJobListFilters(params: Pick<URLSearchParams, 'get'>): JobListFilters & { page: number } {
   return {
-    keyword: params.get('keyword')?.trim() ?? '',
+    keyword: params.get('keyword')?.trim().slice(0, maxJobKeywordLength).trim() ?? '',
     categoryId: positiveInteger(params.get('category') ?? params.get('categoryId')),
     subcategoryId: positiveInteger(params.get('subcategory') ?? params.get('subcategoryId')),
     minPrice: nonNegativeNumber(params.get('minPrice')),
@@ -170,6 +174,15 @@ export function toJobSearchParams(filters: JobListFilters, page: number, pageSiz
     ...(filters.minRating !== undefined ? { minRating: filters.minRating } : {}),
     ...(filters.sort ? { sort: filters.sort } : {}),
   }
+}
+
+/**
+ * Whether the /jobs server page should fetch the first paint itself. Only the plain list (no search, filter or sort)
+ * on its first pages: those few addresses share one server cache entry each. Any other address is left to the
+ * browser, as before, so random ?keyword= values cannot fill the server cache or reach the backend through it.
+ */
+export function canPrefetchJobs(filters: JobListFilters, page: number): boolean {
+  return countActiveJobFilters(filters) === 0 && !filters.keyword && !filters.sort && page <= maxPrefetchJobsPage
 }
 
 /** Counts active sidebar filters for the mobile Filters button badge (excludes keyword and sort). */

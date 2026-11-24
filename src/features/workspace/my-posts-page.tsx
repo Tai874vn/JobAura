@@ -10,6 +10,7 @@ import { useSession } from '@/features/auth/use-session'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { deleteJob } from '@/features/jobs/delete-job'
 import { servicePriceLabel } from '@/features/jobs/service-price'
 import type { Job } from '@/shared/schemas'
 import { Button, ButtonLink, Card, ConfirmationDialog, EmptyState, ListRowSkeleton } from '@/shared/ui'
@@ -25,9 +26,10 @@ export function MyPostsPage() {
     enabled: Boolean(user),
   })
   const deleteMutation = useMutation({
-    mutationFn: jobsApi.delete,
+    // The server action deletes the post and clears the cached pages that showed it.
+    mutationFn: deleteJob,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['jobs', 'creator', user?.id] })
+      void queryClient.invalidateQueries({ queryKey: ['jobs'] })
       setPendingDelete(null)
       toast.success('Service deleted')
     },

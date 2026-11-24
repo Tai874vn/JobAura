@@ -37,6 +37,7 @@ import { useProfileStrength } from './profile-strength'
 import { ProfileEducation, resumeEducation } from './profile/profile-education'
 import { formatCertificationMonth, isCertificationExpired } from './certifications'
 import { useProfileUpload } from './use-profile-upload'
+import { refreshMyProfilePage } from './refresh-profile-page'
 import { InlineEditButton, OwnerUploadButton } from './profile/profile-editor'
 import {
   ContactRow,
@@ -91,6 +92,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
       setCachedSession(next, queryClient)
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
+    void refreshMyProfilePage().catch(() => {})
     router.refresh()
   }
 

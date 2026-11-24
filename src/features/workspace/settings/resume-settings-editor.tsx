@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
+import { refreshMyProfilePage } from '@/features/users/refresh-profile-page'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { suggestedSkills } from '@/features/users/resume-ai'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -47,6 +48,7 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
       void client.invalidateQueries({ queryKey: myResumeKey })
       // Resume skills are the profile's skill list, so the profile reloads too.
       void client.invalidateQueries({ queryKey: queryKeys.me })
+      void refreshMyProfilePage().catch(() => {})
       setDraft({}); setAttachedFile(null)
       toast.success(`${variables.file ? 'Resume file and details saved' : 'Resume saved'}. AI evaluation is queued.`)
     },

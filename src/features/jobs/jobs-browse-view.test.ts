@@ -3,6 +3,7 @@ import type { Category, Job } from '@/shared/schemas'
 import {
   activePriceRangeId,
   buildJobsHref,
+  canPrefetchJobs,
   canPostPortfolio,
   categoryNameForJob,
   countActiveJobFilters,
@@ -14,6 +15,7 @@ import {
   readJobListFilters,
   toJobSearchParams,
 } from './jobs-browse-view'
+import { queryKeys } from '@/shared/api/query-keys'
 
 const params = (search: string) => new URLSearchParams(search)
 
@@ -207,5 +209,36 @@ describe('price ranges and helpers', () => {
     expect(
       categoryNameForJob({ subcategory: { id: 11, name: 'Product Design', category: { id: 1, name: 'Design' } } }, []),
     ).toBe('Design')
+  })
+})
+
+describe('server first paint for /jobs', () => {
+  const read = (search: string) => {
+    const { page, ...filters } = readJobListFilters(params(search))
+    return { page, filters }
+  }
+
+  it('is fetched on the server only for the plain list on its first pages', () => {
+    for (const search of ['', 'page=2', 'page=10']) {
+      const { filters, page } = read(search)
+      expect(canPrefetchJobs(filters, page)).toBe(true)
+    }
+    for (const search of ['keyword=logo', 'category=3', 'minPrice=10', 'minRating=4', 'sort=newest', 'page=11']) {
+      const { filters, page } = read(search)
+      expect(canPrefetchJobs(filters, page)).toBe(false)
+    }
+  })
+
+  it('cuts a very long keyword to 100 characters', () => {
+    expect(read(`keyword=${'a'.repeat(500)}`).filters.keyword).toHaveLength(100)
+  })
+
+  it('gives the server page and the list the same React Query key', () => {
+    const server = read('page=2')
+    const { page, ...clientFilters } = readJobListFilters(new URLSearchParams('?page=2'))
+
+    expect(queryKeys.jobs(toJobSearchParams(server.filters, server.page))).toEqual(
+      queryKeys.jobs(toJobSearchParams(clientFilters, page)),
+    )
   })
 })

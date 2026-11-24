@@ -1,7 +1,69 @@
+import type { Metadata } from 'next'
 import { resolveHttpUrl } from './urls'
 
 const defaultSiteUrl = 'http://localhost:3000'
 const defaultDescription = 'Find a role, show your work, or hire the right person, with AI matching built in.'
+
+/** The shared preview picture made by src/app/opengraph-image.tsx (keep the size and text the same there). */
+export const defaultShareImage = {
+  url: '/opengraph-image',
+  width: 1200,
+  height: 630,
+  alt: 'JobAura: find a role, show your work, or hire the right person',
+} as const
+
+export type PageMetadataInput = {
+  title: string
+  description: string
+  canonical: string
+  type?: 'website' | 'profile'
+  image?: string
+  imageAlt?: string
+  robots?: Metadata['robots']
+}
+
+/**
+ * Builds the same set of page metadata for every public page: the title, the description, the canonical URL
+ * (the one address search engines should list), Open Graph (the preview card on Facebook, LinkedIn, chat apps)
+ * and the Twitter card. With no `image`, the card uses the shared picture from src/app/opengraph-image.tsx. It is
+ * named here on purpose: a page that sets its own `openGraph` replaces the layout's, picture included.
+ */
+export function buildPageMetadata({
+  title,
+  description,
+  canonical,
+  type = 'website',
+  image,
+  imageAlt,
+  robots,
+}: PageMetadataInput): Metadata {
+  // The layout's title template adds " | JobAura" to the tab title; preview cards do not use the template.
+  const fullTitle = `${title} | JobAura`
+  const picture = image
+    ? { url: image, alt: imageAlt ?? title }
+    : { url: defaultShareImage.url, width: defaultShareImage.width, height: defaultShareImage.height, alt: defaultShareImage.alt }
+
+  return {
+    title,
+    description,
+    ...(robots ? { robots } : {}),
+    alternates: { canonical },
+    openGraph: {
+      title: fullTitle,
+      description,
+      url: canonical,
+      siteName: 'JobAura',
+      type,
+      images: [picture],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: fullTitle,
+      description,
+      images: [picture.url],
+    },
+  }
+}
 
 export function siteOrigin() {
   try {

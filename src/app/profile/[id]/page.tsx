@@ -6,13 +6,19 @@ import { getUserPosts } from '@/features/users/profile-posts'
 import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { resolveServerEntity } from '@/shared/api/server-load'
-import { absoluteAssetUrl, absoluteSiteUrl, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { absoluteAssetUrl, defaultShareImage, JsonLd, seoDescription } from '@/shared/lib/seo'
+import { personJsonLd } from '@/shared/lib/seo-jsonld'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 import type { ApiResponse, Job, PaginatedContent, UserProfile } from '@/shared/schemas'
 
 const getProfileData = cache(async (id: string) => {
   const [response, jobsResponse] = await Promise.all([
-    serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`, { includeCookies: false }),
+    // Public, cookie-less read kept for 2 minutes (ISR: the page is rebuilt in the background at most every 2
+    // minutes). Saving the profile clears it at once through refreshMyProfilePage.
+    serverRequest<ApiResponse<UserProfile>>(`/api/users/profile/${id}`, {
+      includeCookies: false,
+      next: { revalidate: 120 },
+    }),
     serverRequest<ApiResponse<PaginatedContent<Job>>>(`/api/jobs/by-creator/${id}?page=1&pageSize=20`, {
       includeCookies: false,
       next: { revalidate: 300 },
@@ -40,7 +46,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 
   const user = profile.data
-  const title = `${user.name} - JobAura profile`
+  // The layout adds " | JobAura" to the tab title, so the page title is just the person (and their headline).
+  const headline = user.headline?.trim()
+  const title = headline ? `${user.name} - ${headline}` : user.name
   const description = seoDescription(user.headline || user.bio, `View ${user.name}'s public JobAura profile, skills, services, and marketplace activity.`)
   const image = absoluteAssetUrl(user.avatar ?? user.coverImage ?? user.cover)
   const canonical = `/profile/${user.id}`
@@ -56,57 +64,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       description,
       url: canonical,
       siteName: 'JobAura',
-      type: 'website',
-      images: image ? [{ url: image, alt: user.name }] : undefined,
+      type: 'profile',
+      // With no picture of its own, the card uses the shared JobAura picture.
+      images: image ? [{ url: image, alt: user.name }] : [defaultShareImage],
     },
     twitter: {
-      card: image ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title,
       description,
-      images: image ? [image] : undefined,
+      images: [image ?? defaultShareImage.url],
     },
-  }
-}
-
-function profileSkills(user: UserProfile) {
-  return (user.profileSkills ?? user.skills ?? legacySkills(user.skill)).map((skill) => skill.name).filter(Boolean)
-}
-
-function legacySkills(value?: string | null) {
-  if (!value) return []
-  return value
-    .split(',')
-    .map((name, sortOrder) => ({ name: name.trim(), sortOrder }))
-    .filter((skill) => skill.name)
-}
-
-function personJsonLd(user: UserProfile, posts: Job[]) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    '@id': absoluteSiteUrl(`/profile/${user.id}#person`),
-    name: user.name,
-    url: absoluteSiteUrl(`/profile/${user.id}`),
-    image: absoluteAssetUrl(user.avatar),
-    jobTitle: user.headline,
-    description: seoDescription(user.bio || user.headline, `${user.name}'s public JobAura profile.`, 500),
-    address: user.location
-      ? {
-          '@type': 'PostalAddress',
-          addressLocality: user.location,
-        }
-      : undefined,
-    knowsAbout: profileSkills(user),
-    makesOffer: posts.slice(0, 10).map((job) => ({
-      '@type': 'Offer',
-      itemOffered: {
-        '@type': 'Service',
-        name: job.title,
-        url: absoluteSiteUrl(`/jobs/${job.id}`),
-      },
-      priceCurrency: 'USD',
-      price: job.price,
-    })),
   }
 }
 

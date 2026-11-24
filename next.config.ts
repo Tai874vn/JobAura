@@ -164,6 +164,9 @@ const nextConfig: NextConfig = {
       { source: '/admin/job-detail-types', destination: '/admin/subcategories', permanent: true },
       { source: '/admin/hired-jobs', destination: '/admin', permanent: true },
       { source: '/admin/hires', destination: '/admin', permanent: true },
+      // "My jobs and hires" is gone: service work now lives on the contracts page. Old links and bookmarks land
+      // there straight away, without loading the workspace layout first.
+      { source: '/my-jobs', destination: '/contracts', permanent: true },
     ]
   },
   turbopack: {
@@ -171,12 +174,23 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: imageRemotePatterns,
+    // Serve AVIF, then WebP (smaller picture formats) to browsers that accept them; others get the original.
+    formats: ['image/avif', 'image/webp'],
+    // Keep each resized picture for at least an hour before checking the source again.
+    minimumCacheTTL: 3600,
   },
   async headers() {
     return [
       {
         source: '/:path*',
         headers: securityHeaders,
+      },
+      {
+        // Plain picture and font files at the site root (the icon, and any later files in public/) may be kept by
+        // the browser for a day and reused for a week while a fresh copy loads. Only one path level matches (no "/"
+        // in the name), so /_next/ build files, which Next.js already marks as never changing, are never touched.
+        source: '/:file([^/]+\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff2?))',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }],
       },
     ]
   },

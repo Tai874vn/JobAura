@@ -7,6 +7,7 @@ import { usersApi } from '@/shared/api/endpoints/users'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
 import { cleanObject, toDateInput } from '@/features/users/profile-form-utils'
+import { refreshMyProfilePage } from '@/features/users/refresh-profile-page'
 import { useProfileUpload } from '@/features/users/use-profile-upload'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
@@ -43,6 +44,7 @@ export function useProfileSettings(profile: UserProfile) {
   function refreshProfile(next?: UserProfile) {
     if (next) setCachedSession(next, client)
     void client.invalidateQueries({ queryKey: queryKeys.me })
+    void refreshMyProfilePage().catch(() => {})
   }
   // One Save for the whole profile: it sends only the parts that changed since they were last saved.
   const [basicBase, setBasicBase] = useState(() => JSON.stringify(basic))
