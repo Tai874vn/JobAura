@@ -129,7 +129,11 @@ describe('notification display model', () => {
       expect(notificationHeadline(contract('work_submitted', { position: 1 }))).toBe('Work submitted for milestone 1')
       expect(notificationHeadline(contract('changes_requested', { position: 1 }))).toBe('Changes requested on milestone 1')
       expect(notificationHeadline(contract('milestone_approved', { position: 1, amount: 300 }))).toBe('Milestone 1 approved · 300 credits released')
-      expect(notificationHeadline(contract('warning_sent', { position: 2, rule: 'FREELANCER_LATE' }))).toBe('Milestone 2 is past its due date')
+      expect(notificationHeadline(contract('warning_sent', { position: 2, rule: 'freelancer_late' }))).toBe('Milestone 2 is past its due date')
+      expect(notificationHeadline(contract('warning_sent', { position: 2, rule: 'client_silent' }))).toBe('Milestone 2 is waiting for a review')
+      expect(notificationHeadline(contract('warning_sent', { position: 3, rule: 'not_funded' }))).toBe('Milestone 3 is not funded yet')
+      expect(notificationHeadline(contract('warning_sent', { position: null, rule: 'freelancer_late' }))).toBe('A milestone is past its due date')
+      expect(notificationHeadline(contract('warning_sent', { rule: null }))).toBe('Server title')
     })
 
     it('keeps the headline once read, and falls back to the server title', () => {

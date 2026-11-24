@@ -82,9 +82,15 @@ function contractHeadline(notification: AppNotification) {
     case 'contract_completed': return 'Contract completed'
     case 'contract_ended': return 'Contract ended'
     case 'warning_sent':
-      // Only the "work is late" warning is about a due date; the other two keep the server's title.
-      if (metadataString(notification, 'rule') === 'FREELANCER_LATE') return position ? `Milestone ${position} is past its due date` : 'A milestone is past its due date'
+    {
+      // The server sends the rule in lower case (freelancer_late); compare without caring about case.
+      const rule = metadataString(notification, 'rule')?.toLowerCase()
+      const milestone = position ? `Milestone ${position}` : 'A milestone'
+      if (rule === 'freelancer_late') return `${milestone} is past its due date`
+      if (rule === 'client_silent') return `${milestone} is waiting for a review`
+      if (rule === 'not_funded') return `${milestone} is not funded yet`
       return notification.title
+    }
     default: return notification.title
   }
 }
