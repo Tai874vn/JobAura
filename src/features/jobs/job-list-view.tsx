@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { ChevronDown, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronDown, Plus, Search, SearchX, SlidersHorizontal, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
@@ -14,7 +14,8 @@ import { JobCard } from './job-card'
 import { JobCategoryNav } from './job-category-nav'
 import { JobFilterPanel } from './job-filter-panel'
 import { JobResultsSkeleton } from './job-results-skeleton'
-import { Button, EmptyState, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, EmptyState, Spinner } from '@/shared/ui'
+import { useSession } from '@/features/auth/use-session'
 
 const pageSize = 12
 
@@ -28,6 +29,9 @@ function pageWindow(currentPage: number, totalPages: number) {
 type FilterKey = 'keyword' | 'category' | 'subcategory' | 'minPrice' | 'maxPrice' | 'minRating'
 
 export function JobListView() {
+  // Candidates and admins post their own portfolio from here (the header has one Portfolios link).
+  const { user } = useSession()
+  const canPost = user?.role === 'user' || user?.role === 'admin'
   const router = useRouter()
   const [isNavigating, startNavigation] = useTransition()
   const [isApplying, setIsApplying] = useState(false)
@@ -155,7 +159,10 @@ export function JobListView() {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <div className="container-page pt-10">
-        <h1 className="font-display text-3xl font-medium tracking-tight">Candidate portfolios</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display text-3xl font-medium tracking-tight">Candidate portfolios</h1>
+          {canPost ? <ButtonLink href="/jobs/new"><Plus className="h-4 w-4" aria-hidden="true" />Post portfolio</ButtonLink> : null}
+        </div>
         {heroSearch}
         <div className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
           <span className="text-xs font-medium text-muted">Popular</span>

@@ -5,7 +5,7 @@ const labels = (role?: string) => siteNav(role).main.map((link) => link.label)
 
 describe('siteNav', () => {
   it('leads candidates to hiring posts and their portfolio', () => {
-    expect(labels('user')).toEqual(['Home', 'Hiring posts', 'My applications', 'Contracts', 'Post portfolio', 'Connections'])
+    expect(labels('user')).toEqual(['Home', 'Hiring posts', 'My applications', 'Contracts', 'Portfolios', 'Connections'])
     expect(siteNav('user').search.target).toBe('/hiring-posts')
   })
 
@@ -35,11 +35,11 @@ describe('siteNav', () => {
 
   it('gives admins every area: admin pages, both public lists, and both roles\' tools', () => {
     expect(siteNav('admin').home).toBe('/')
-    expect(labels('admin')).toEqual(['Admin', 'Home', 'Hiring posts', 'My hiring posts', 'Portfolios', 'Post portfolio', 'Find candidates', 'AI matching', 'Connections'])
+    expect(labels('admin')).toEqual(['Admin', 'Home', 'Hiring posts', 'My hiring posts', 'Portfolios', 'Find candidates', 'AI matching', 'Connections'])
     expect(siteNav('admin').main).toContainEqual({ href: '/my-hiring-posts', label: 'My hiring posts', wide: true })
     expect(labels('user')).not.toContain('My hiring posts')
     const account = siteNav('admin').account.map((link) => link.label)
-    expect(account).toEqual(expect.arrayContaining(['Home feed', 'My hiring posts', 'Post portfolio', 'My portfolio posts', 'Settings']))
+    expect(account).toEqual(expect.arrayContaining(['Home feed', 'My hiring posts', 'My portfolio posts', 'Settings']))
   })
 
   it('keeps the admin link out of recruiter and candidate headers', () => {
@@ -59,5 +59,15 @@ describe('isCurrentLink', () => {
     expect(isCurrentLink('/jobs', '/jobs', hrefs)).toBe(true)
     expect(isCurrentLink('/jobs', '/', hrefs)).toBe(false)
     expect(isCurrentLink('/', '/', hrefs)).toBe(true)
+  })
+})
+
+describe('portfolio links', () => {
+  it('has one Portfolios link in the header, never a separate Post portfolio link', () => {
+    for (const role of ['user', 'admin', 'employer', undefined]) {
+      const all = [...siteNav(role).main, ...siteNav(role).account].map((link) => link.href)
+      expect(all).not.toContain('/jobs/new')
+    }
+    expect(siteNav('user').main).toContainEqual({ href: '/jobs', label: 'Portfolios' })
   })
 })
