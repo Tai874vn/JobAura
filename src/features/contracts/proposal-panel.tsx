@@ -84,9 +84,15 @@ export function ProposalPanel({
   const [dialogError, setDialogError] = useState<string | null>(null)
   // A sentence kept on the panel when a dialog had to close because the proposal moved on.
   const [notice, setNotice] = useState<string | null>(null)
+  function closeDialog() {
+    setDialog(null)
+    setDialogError(null)
+  }
   const mutation = useContractMutation(contractKeys.proposal(proposal.id, viewerId), (act: Act) => run(proposal.id, act), {
     // Every refusal is told on the screen itself (a dialog or the notice), never by a toast.
     quietErrors: () => true,
+    // Close the dialog in the same render batch as setQueryData so our own success never triggers the stale-dialog notice.
+    onSuccess: closeDialog,
   })
   const pending = mutation.isPending
 
@@ -99,8 +105,8 @@ export function ProposalPanel({
   const open = proposal.status === 'OPEN'
 
   // The server refused a step because the proposal changed. Once the fresh proposal no longer allows what the
-  // dialog does, close it, so no stale button stays live. (React allows setting this component's own state while it renders.)
-  if (dialog !== null && !dialogAllowed(dialog, proposal, viewerId)) {
+  // dialog does, close it, so no stale button stays live. Guard with !pending so in-flight mutations never flash this.
+  if (dialog !== null && !pending && !dialogAllowed(dialog, proposal, viewerId)) {
     setNotice(dialogError ?? 'This proposal changed, so that step is no longer possible.')
     setDialog(null)
     setDialogError(null)
@@ -111,10 +117,6 @@ export function ProposalPanel({
     const detail = await mutation.mutateAsync(act)
     toast.success(doneText[act.type])
     if (act.type === 'accept' && detail.contractId !== null) onAccepted(detail.contractId)
-  }
-  function closeDialog() {
-    setDialog(null)
-    setDialogError(null)
   }
   async function fromDialog(act: Act) {
     setDialogError(null)

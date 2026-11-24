@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { BriefcaseBusiness, MapPin, ListOrdered } from 'lucide-react'
+import { MapPin, ListOrdered } from 'lucide-react'
 import Link from 'next/link'
 import { useSession } from '@/features/auth/use-session'
 import { usePostOccupation } from '@/features/hiring/use-post-occupation'
@@ -9,7 +9,7 @@ import { MatchBadge } from '@/features/jobs/recommendation-ui'
 import { hiringPostsApi, recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { HiringPost, RecommendedJob } from '@/shared/schemas'
-import { ButtonLink, Card } from '@/shared/ui'
+import { ButtonLink, Card, Skeleton } from '@/shared/ui'
 
 const recommendationParams = { topK: 12, poolSize: 50 }
 const freshParams = { page: 1, pageSize: 3 }
@@ -49,9 +49,17 @@ export function JobsForYou() {
       </div>
 
       {loading ? (
-        <div className="mt-3 grid gap-2" aria-hidden="true">
-          {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-14 animate-pulse rounded-lg bg-surface-muted" />)}
-        </div>
+        <ul className="mt-2 divide-y divide-border" aria-busy="true" aria-label="Loading roles">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <li key={index} className="space-y-2 py-3" aria-hidden="true">
+              <Skeleton className="h-4 w-2/3" />
+              <div className="flex gap-3">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </li>
+          ))}
+        </ul>
       ) : posts.length ? (
         <ul className="mt-2 divide-y divide-border">
           {posts.map((post) => (
@@ -74,7 +82,8 @@ export function JobsForYou() {
         <p className="mt-3 text-sm text-muted">No open roles right now. Check back soon.</p>
       )}
 
-      {!showingMatches ? (
+      {/* Wait until loading finishes before showing the AI prompt so it does not flash when matches exist. */}
+      {!loading && !showingMatches ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-primary/5 p-3">
           <p className="text-sm">Let AI rank open roles for your resume.</p>
           <ButtonLink href="/recommendations/jobs" size="sm"><ListOrdered className="h-4 w-4" />Find my matches</ButtonLink>

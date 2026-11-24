@@ -8,15 +8,16 @@ import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, ButtonLink, EmptyState, Skeleton, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, EmptyState, Spinner } from '@/shared/ui'
 import { pipelineApi, pipelineKeys } from './api'
 import { callExitHref, fallbackExitHref, isAlreadyCompleted } from './call-exit'
+import { CallLoading, CallStageSkeleton } from './call-loading'
 import { callState } from './call-state'
 import type { CallConnection } from './call-stage'
 import { DialogPortal } from './dialog-portal'
 
 // The video part is loaded in the browser only (LiveKit needs the camera, the microphone and WebRTC).
-const CallStage = dynamic(() => import('./call-stage'), { ssr: false })
+const CallStage = dynamic(() => import('./call-stage'), { ssr: false, loading: CallStageSkeleton })
 
 const positive = (value: string | null) => (value && /^[1-9]\d{0,9}$/.test(value) ? Number(value) : null)
 
@@ -33,14 +34,6 @@ function NotFound() {
         description="This interview does not exist, or you are not part of it."
         action={<ButtonLink href="/">Back home</ButtonLink>}
       />
-    </div>
-  )
-}
-
-function CallLoading() {
-  return (
-    <div className="flex min-h-dvh items-center justify-center" role="status" aria-label="Loading the call">
-      <Skeleton className="h-24 w-64 rounded-xl" />
     </div>
   )
 }
@@ -89,6 +82,11 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
   const [connection, setConnection] = useState<CallConnection>('connecting')
   const [confirmOpen, setConfirmOpen] = useState(false)
   const queryClient = useQueryClient()
+
+  // Start downloading the LiveKit video bundle as soon as the interview detail loads, in parallel with the call pass.
+  useEffect(() => {
+    if (detail.data) void import('./call-stage')
+  }, [detail.data])
   const complete = useMutation({
     mutationFn: () => pipelineApi.completeInterview(interviewId),
     onSuccess: (done) => {
@@ -107,7 +105,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
     ? (application.viewerRole ?? (application.applicantId === user?.id ? 'candidate' : 'recruiter'))
     : fromSession
 
-  if (!user) return null
+  if (!user) return <CallLoading />
   // Only a real "not found" or "not yours" answer says so. Any other failure keeps Leave and Skip on the page.
   if (isMissing(upcoming.error) || isMissing(detail.error)) return <NotFound />
   const lookupFailed = upcoming.isError || detail.isError
@@ -154,21 +152,26 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
         {otherName ? <p className="truncate text-sm text-muted">with {otherName}</p> : null}
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col p-3 sm:p-4" aria-label="Video call">
+      <main className="relative flex min-h-0 flex-1 flex-col p-3 sm:p-4" aria-label="Video call">
         {state === 'unavailable' ? (
           <div className="flex flex-1 items-center justify-center">
             <p role="alert" className="text-center text-base">The call could not start.</p>
           </div>
         ) : (
           <>
+            {/* Overlay the preparing pill so mounting/removing it never shifts the video tiles below. */}
             {state === 'preparing' ? (
-              <p role="status" className="flex items-center justify-center gap-2 py-2 text-sm text-muted">
-                <Spinner className="h-4 w-4" /> Getting the call ready
-              </p>
+              <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center">
+                <p role="status" className="flex items-center gap-2 rounded-full border border-border bg-surface/95 px-3.5 py-1.5 text-sm text-muted shadow-sm">
+                  <Spinner decorative className="h-4 w-4" /> Getting the call ready
+                </p>
+              </div>
             ) : null}
             {tokenQuery.data ? (
               <CallStage url={tokenQuery.data.url} token={tokenQuery.data.token} state={state} onConnection={setConnection} />
-            ) : null}
+            ) : (
+              <CallStageSkeleton />
+            )}
           </>
         )}
       </main>

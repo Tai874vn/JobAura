@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { RoleHomePage } from '@/features/feed/role-home-page'
+import { FeedPage } from '@/features/feed/feed-page'
 
 export const metadata: Metadata = {
   title: 'Home',
@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   },
 }
 
+// FeedLayout's RequireAuth already restricts "/" to candidates and admins (employers redirect to /my-hiring-posts),
+// so this page renders FeedPage directly without a dynamic(..., { ssr: false }) waterfall.
 export default function Page() {
-  return <RoleHomePage />
+  return <FeedPage />
 }

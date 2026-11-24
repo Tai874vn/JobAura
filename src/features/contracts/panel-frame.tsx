@@ -23,14 +23,34 @@ export function PanelFrame({ backHref, labelledBy, children }: { backHref: strin
   )
 }
 
-/** What the panel shows while the proposal or contract is being read: no buttons, so nothing can be pressed too early. */
+/** Mirrors ProposalPanel & ContractPanel (48px avatar row above h2, 4 figures, milestones) with no live buttons. */
 export function PanelLoading({ backHref, title }: { backHref: string; title?: string }) {
   return (
     <PanelFrame backHref={backHref}>
       <div aria-busy="true" aria-label="Loading">
-        {title ? <h2 className="break-words font-display text-xl font-medium leading-tight">{title}</h2> : <Skeleton className="h-7 w-2/3" />}
-        <Skeleton className="mt-4 h-5 w-1/3" />
-        <Skeleton className="mt-6 h-32 w-full rounded-lg" />
+        <div className="flex flex-wrap items-center gap-3" aria-hidden="true">
+          <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
+          <div className="min-w-0 flex-1 basis-40 space-y-2">
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-3.5 w-48 max-w-full" />
+          </div>
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+        {title ? (
+          <h2 className="mt-4 break-words font-display text-xl font-medium leading-tight">{title}</h2>
+        ) : (
+          <Skeleton className="mt-4 h-7 w-2/3" />
+        )}
+        <Skeleton className="mt-2 h-4 w-44" />
+        <div className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4" aria-hidden="true">
+          {[0, 1, 2, 3].map((item) => (
+            <div key={item} className="space-y-1.5 bg-surface p-3">
+              <Skeleton className="h-3 w-14" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          ))}
+        </div>
+        <Skeleton className="mt-6 h-28 w-full rounded-lg" />
         <Skeleton className="mt-4 h-24 w-full rounded-lg" />
       </div>
     </PanelFrame>

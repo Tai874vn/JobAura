@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints/users'
@@ -27,13 +27,15 @@ export function useProfileSettings(profile: UserProfile) {
     headline: profile.headline ?? '', bio: profile.bio ?? '', location: profile.location ?? '', website: profile.website ?? '',
     candidateDiscoverable: profile.candidateDiscoverable ?? false,
   }))
-  const serverSkills = skillDrafts(profile)
+  const serverSkills = useMemo(() => skillDrafts(profile), [profile])
+  const serverSkillsJson = useMemo(() => JSON.stringify(serverSkills), [serverSkills])
   const [skills, setSkills] = useState<Array<Omit<ProfileSkill, 'id'>>>(serverSkills)
+  const skillsJson = useMemo(() => JSON.stringify(skills), [skills])
   // The resume edits the same skill list. When it changes there, follow it, unless this list has unsaved edits.
-  const [skillsBase, setSkillsBase] = useState(() => JSON.stringify(serverSkills))
-  if (JSON.stringify(serverSkills) !== skillsBase) {
-    if (JSON.stringify(skills) === skillsBase) setSkills(serverSkills)
-    setSkillsBase(JSON.stringify(serverSkills))
+  const [skillsBase, setSkillsBase] = useState(serverSkillsJson)
+  if (serverSkillsJson !== skillsBase) {
+    if (skillsJson === skillsBase) setSkills(serverSkills)
+    setSkillsBase(serverSkillsJson)
   }
   const [certifications, setCertifications] = useState<CertificationDraft[]>(() => (profile.profileCertifications ?? profile.certifications ?? []).map(certificationDraft))
   const [portfolio, setPortfolio] = useState<ProfilePortfolioItem[]>(() => profile.portfolio ?? profile.portfolioItems ?? [])
@@ -46,20 +48,23 @@ export function useProfileSettings(profile: UserProfile) {
     void client.invalidateQueries({ queryKey: queryKeys.me })
     void refreshMyProfilePage().catch(() => {})
   }
+  // Memoize each serialized slice independently so typing in one section never re-serializes the others.
+  const basicJson = useMemo(() => JSON.stringify(basic), [basic])
+  const certificationsJson = useMemo(() => JSON.stringify(certifications), [certifications])
   // One Save for the whole profile: it sends only the parts that changed since they were last saved.
-  const [basicBase, setBasicBase] = useState(() => JSON.stringify(basic))
-  const [certificationsBase, setCertificationsBase] = useState(() => JSON.stringify(certifications))
-  const changed = {
-    basic: JSON.stringify(basic) !== basicBase,
-    skills: JSON.stringify(skills) !== skillsBase,
-    certifications: JSON.stringify(certifications) !== certificationsBase,
-  }
+  const [basicBase, setBasicBase] = useState(basicJson)
+  const [certificationsBase, setCertificationsBase] = useState(certificationsJson)
+  const changed = useMemo(() => ({
+    basic: basicJson !== basicBase,
+    skills: skillsJson !== skillsBase,
+    certifications: certificationsJson !== certificationsBase,
+  }), [basicBase, basicJson, certificationsBase, certificationsJson, skillsBase, skillsJson])
   const hasChanges = changed.basic || changed.skills || changed.certifications
   const saveAll = useMutation({
     scope,
     mutationFn: async () => {
       const parts = { ...changed }
-      const snapshot = { basic: JSON.stringify(basic), skills: JSON.stringify(skills), certifications: JSON.stringify(certifications) }
+      const snapshot = { basic: basicJson, skills: skillsJson, certifications: certificationsJson }
       const problems = parts.certifications ? allCertificationProblems(certifications) : []
       if (problems.length) throw new Error(problems[0])
       if (parts.basic) await usersApi.updateMyProfile(cleanObject(basic))

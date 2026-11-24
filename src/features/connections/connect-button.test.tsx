@@ -4,14 +4,30 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '@/shared/api/query-keys'
 import { ConnectionActions } from './connect-button'
 
-const session = vi.hoisted(() => ({ user: null as { id: number } | null }))
+const session = vi.hoisted(() => ({ user: null as { id: number } | null, isLoading: false }))
 
 vi.mock('@/features/auth/use-session', () => ({
-  useSession: () => ({ user: session.user, isLoading: false, isAuthenticated: Boolean(session.user) }),
+  useSession: () => ({ user: session.user, isLoading: session.isLoading, isAuthenticated: Boolean(session.user) }),
 }))
 
 describe('ConnectionActions', () => {
-  beforeEach(() => { session.user = null })
+  beforeEach(() => {
+    session.user = null
+    session.isLoading = false
+  })
+
+  it('reserves button height with a skeleton while the session is still loading', () => {
+    session.isLoading = true
+    const client = new QueryClient()
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <ConnectionActions userId={42} userName="Ava" />
+      </QueryClientProvider>
+    )
+
+    expect(html).toContain('motion-safe:animate-pulse')
+    expect(html).toContain('h-8')
+  })
 
   it('offers guests a sign-in link instead of hiding the connect action', () => {
     const client = new QueryClient()

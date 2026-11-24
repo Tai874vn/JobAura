@@ -378,18 +378,38 @@ export function ApplicantPanelLoading({ row, backHref }: { row?: ApplicationDeta
   const name = row?.applicant?.name ?? 'Applicant'
   return (
     <article className="flex max-h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface max-lg:h-full max-lg:rounded-none max-lg:border-0" aria-busy="true" aria-label={`${name}, loading`}>
-      <div className="p-4 sm:p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
         <Link href={backHref} scroll={false} className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-primary lg:hidden">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           All applicants
         </Link>
         <div className="flex flex-wrap items-center gap-3">
-          <Avatar name={name} src={row?.applicant?.avatar} size="lg" />
-          <h2 className="min-w-0 flex-1 basis-40 truncate font-display text-xl font-medium leading-tight">{name}</h2>
-          {row ? <StatusBadge status={row.status} viewer="recruiter" reason={row.statusReason} /> : null}
+          {row ? (
+            <Avatar name={name} src={row.applicant?.avatar} size="lg" />
+          ) : (
+            <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
+          )}
+          <div className="min-w-0 flex-1 basis-40">
+            {row ? (
+              <h2 className="truncate font-display text-xl font-medium leading-tight">{name}</h2>
+            ) : (
+              <Skeleton className="h-6 w-44" />
+            )}
+            <Skeleton className="mt-1.5 h-3.5 w-52 max-w-full" />
+          </div>
+          {row ? <StatusBadge status={row.status} viewer="recruiter" reason={row.statusReason} /> : <Skeleton className="h-6 w-20 rounded-full" />}
         </div>
-        <Skeleton className="mt-6 h-24 rounded-lg" />
-        <Skeleton className="mt-4 h-16 rounded-lg" />
+        <Skeleton className="mt-6 h-5 w-20" />
+        <Skeleton className="mt-2 h-28 w-full rounded-lg" />
+        <Skeleton className="mt-6 h-5 w-28" />
+        <Skeleton className="mt-2 h-20 w-full rounded-lg" />
+      </div>
+      {/* Non-interactive footer skeleton reserves the sticky action bar height without live buttons. */}
+      <div className="border-t border-border bg-surface py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] pl-4 pr-28 sm:pl-6 sm:pr-28 lg:pb-3" aria-hidden="true">
+        <div className="flex flex-wrap items-center gap-2">
+          <Skeleton className="h-10 w-32 rounded-lg" />
+          <Skeleton className="ml-auto h-10 w-24 rounded-lg" />
+        </div>
       </div>
     </article>
   )

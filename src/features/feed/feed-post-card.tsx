@@ -3,14 +3,15 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Bookmark, Heart, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import type { FeedPost, PostComment } from '@/shared/schemas'
 import { cn, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 import { timeAgo } from './time-ago'
 
-export function FeedPostCard({
+/** Memoized so liking/opening one post or typing in the composer does not re-render every post in the feed. */
+export const FeedPostCard = memo(function FeedPostCard({
   post,
   currentUserId,
   index,
@@ -146,7 +147,7 @@ export function FeedPostCard({
       </article>
     </Card>
   )
-}
+})
 
 export function CommentRow({ comment, actions }: { comment: PostComment; actions?: React.ReactNode }) {
   const edited = Boolean(comment.updatedAt && comment.updatedAt !== comment.createdAt)

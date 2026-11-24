@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useId, useRef, useState } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Plus, X } from 'lucide-react'
 import { skillsApi, type DictionarySkill, type FoundSkill } from '@/shared/api/endpoints/users'
 import { cn } from '@/shared/lib/utils'
@@ -54,18 +54,31 @@ export function SkillPicker({
   const search = useDebounced(query.trim(), 250)
   const listId = useId()
   const inputId = useId()
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const chosen = new Set(value.map((name) => name.toLowerCase()))
   const results = useQuery({
     queryKey: ['skills', 'search', field ?? '', search],
     queryFn: () => skillsApi.search(search, field, 10),
     enabled: search.length > 0,
+    // Keep previous matches visible while the next debounced search loads so the dropdown does not collapse.
+    placeholderData: keepPreviousData,
     staleTime: 300_000,
   })
   const options = (results.data?.content ?? []).filter((skill) => !chosen.has(skill.name.toLowerCase()))
   const full = value.length >= max
   const pending = suggestions.filter((skill) => !chosen.has(skill.name.toLowerCase()))
 
+  function clearBlurTimer() {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current)
+      blurTimerRef.current = null
+    }
+  }
+
+  useEffect(() => clearBlurTimer, [])
+
   function choose(skill: DictionarySkill) {
+    clearBlurTimer()
     onChange(max === 1 ? [skill.name] : [...value, skill.name])
     setQuery('')
     setOpen(false)
@@ -126,8 +139,8 @@ export function SkillPicker({
             value={query}
             placeholder={max === 1 && value[0] ? 'Search to replace' : placeholder}
             onChange={(event) => { setQuery(event.target.value); setOpen(true); setActive(0) }}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 120)}
+            onFocus={() => { clearBlurTimer(); setOpen(true) }}
+            onBlur={() => { clearBlurTimer(); blurTimerRef.current = setTimeout(() => setOpen(false), 120) }}
             onKeyDown={(event) => {
               if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.min(i + 1, options.length - 1)) }
               else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }

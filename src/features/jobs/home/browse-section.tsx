@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { Suspense } from 'react'
 import { Section } from '@/shared/ui'
 import { CategoryGrid } from './category-grid'
+import { CategoryGridSkeleton } from './home-skeletons'
 import { OccupationLinks } from './trending-skills'
 
 /** One place to start browsing: open roles for candidates, portfolio posts for recruiters. */
@@ -21,7 +23,10 @@ export function BrowseSection() {
           <h2 className="font-display text-2xl font-medium">Portfolios by expertise</h2>
           <p className="mt-2 text-sm text-muted">Candidates’ work, grouped by specialty</p>
           <div className="mt-6">
-            <CategoryGrid />
+            {/* Stream categories independently so the static landing hero paints right away. */}
+            <Suspense fallback={<CategoryGridSkeleton />}>
+              <CategoryGrid />
+            </Suspense>
           </div>
           <BrowseLink href="/jobs">All portfolios</BrowseLink>
         </div>

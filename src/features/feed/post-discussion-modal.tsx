@@ -3,18 +3,85 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MessageCircle, RefreshCw, Send, X } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { MessageCircle, Send, X } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { postsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import type { FeedPost } from '@/shared/schemas'
-import { Button } from '@/shared/ui'
+import type { FeedPost, PostComment } from '@/shared/schemas'
+import { Button, Skeleton } from '@/shared/ui'
 import { CommentThread } from './comment-thread'
 import { mergeComments } from './feed-data'
 import { FeedAvatar } from './feed-avatar'
 import { timeAgo } from './time-ago'
 import { useDiscussionMutations } from './use-discussion-mutations'
+
+export type DiscussionScrollStage = 'idle' | 'preview' | 'settled'
+
+export type DiscussionScrollDecision = {
+  shouldScroll: boolean
+  behavior: 'auto' | 'smooth'
+  nextStage: DiscussionScrollStage
+  clearPendingOwnComment: boolean
+}
+
+/**
+ * Decides whether PostDiscussionModal should scroll to the newest comment.
+ * Scrolls on initial preview, again when the first fetched page arrives (even if preview
+ * comments already scrolled), and when the user submits their own comment — never when
+ * "View earlier comments" prepends additional pages after the first page has settled.
+ */
+export function decideDiscussionScroll({
+  open,
+  commentCount,
+  hasLoadedFirstPage,
+  stage,
+  pendingOwnComment,
+  prefersReducedMotion,
+}: {
+  open: boolean
+  commentCount: number
+  hasLoadedFirstPage: boolean
+  stage: DiscussionScrollStage
+  pendingOwnComment: boolean
+  prefersReducedMotion: boolean
+}): DiscussionScrollDecision {
+  if (!open) {
+    return { shouldScroll: false, behavior: 'auto', nextStage: 'idle', clearPendingOwnComment: false }
+  }
+
+  if (commentCount === 0) {
+    return {
+      shouldScroll: false,
+      behavior: 'auto',
+      nextStage: hasLoadedFirstPage ? 'settled' : stage,
+      clearPendingOwnComment: false,
+    }
+  }
+
+  if (pendingOwnComment) {
+    return {
+      shouldScroll: true,
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      nextStage: hasLoadedFirstPage ? 'settled' : 'preview',
+      clearPendingOwnComment: true,
+    }
+  }
+
+  if (stage === 'settled') {
+    return { shouldScroll: false, behavior: 'auto', nextStage: 'settled', clearPendingOwnComment: false }
+  }
+
+  if (hasLoadedFirstPage) {
+    return { shouldScroll: true, behavior: 'auto', nextStage: 'settled', clearPendingOwnComment: false }
+  }
+
+  if (stage === 'idle') {
+    return { shouldScroll: true, behavior: 'auto', nextStage: 'preview', clearPendingOwnComment: false }
+  }
+
+  return { shouldScroll: false, behavior: 'auto', nextStage: 'preview', clearPendingOwnComment: false }
+}
 
 export function PostDiscussionModal({
   post,
@@ -34,7 +101,8 @@ export function PostDiscussionModal({
   const busy = createComment.isPending || createReply.isPending || editComment.isPending || deleteComment.isPending
   const inputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const didInitialScroll = useRef(false)
+  const scrollStageRef = useRef<DiscussionScrollStage>('idle')
+  const pendingOwnCommentScroll = useRef(false)
   const image = resolveAssetUrl(post.imageUrl)
   const commentsQuery = useInfiniteQuery({
     queryKey: queryKeys.postComments(post.id),
@@ -61,17 +129,52 @@ export function PostDiscussionModal({
     }
   }, [onClose, open])
 
-  const loadedGroups = commentsQuery.data?.pages.map((page) => page.data) ?? []
-  const comments = mergeComments([...loadedGroups, post.recentComments])
+  const comments = useMemo(() => {
+    const loadedGroups = commentsQuery.data?.pages.map((page) => page.data) ?? []
+    return mergeComments([...loadedGroups, post.recentComments])
+  }, [commentsQuery.data?.pages, post.recentComments])
+  const hasLoadedFirstPage = (commentsQuery.data?.pages.length ?? 0) > 0
 
   useEffect(() => {
-    if (!open || !comments.length) return
+    const prefersReducedMotion = open && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const decision = decideDiscussionScroll({
+      open,
+      commentCount: comments.length,
+      hasLoadedFirstPage,
+      stage: scrollStageRef.current,
+      pendingOwnComment: pendingOwnCommentScroll.current,
+      prefersReducedMotion,
+    })
+
+    if (!decision.shouldScroll) {
+      scrollStageRef.current = decision.nextStage
+      if (!open) pendingOwnCommentScroll.current = false
+      return
+    }
+
     const frame = window.requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({ behavior: didInitialScroll.current ? 'smooth' : 'auto', block: 'end' })
-      didInitialScroll.current = true
+      bottomRef.current?.scrollIntoView({
+        behavior: decision.behavior,
+        block: 'end',
+      })
+      scrollStageRef.current = decision.nextStage
+      if (decision.clearPendingOwnComment) pendingOwnCommentScroll.current = false
     })
     return () => window.cancelAnimationFrame(frame)
-  }, [comments.length, open])
+  }, [comments.length, hasLoadedFirstPage, open])
+
+  const { mutateAsync: replyAsync } = createReply
+  const { mutateAsync: editAsync } = editComment
+  const { mutateAsync: deleteAsync } = deleteComment
+  const handleReply = useCallback(async (rootId: number, content: string) => {
+    await replyAsync({ rootId, content })
+  }, [replyAsync])
+  const handleEdit = useCallback(async (target: PostComment, content: string) => {
+    await editAsync({ comment: target, content })
+  }, [editAsync])
+  const handleDelete = useCallback(async (target: PostComment) => {
+    await deleteAsync(target)
+  }, [deleteAsync])
 
   if (!open) return null
 
@@ -80,9 +183,11 @@ export function PostDiscussionModal({
     const content = comment.trim()
     if (busy || !content) return
     try {
+      pendingOwnCommentScroll.current = true
       await createComment.mutateAsync(content)
       setComment((current) => current.trim() === content ? '' : current)
     } catch {
+      pendingOwnCommentScroll.current = false
       // Mutation errors are presented by the feed toast and the draft stays intact.
     }
   }
@@ -157,8 +262,17 @@ export function PostDiscussionModal({
             ) : null}
 
             {commentsQuery.isPending && !comments.length ? (
-              <div className="flex items-center gap-2 py-3 text-sm text-muted">
-                <RefreshCw className="h-4 w-4 animate-spin" /> Loading comments
+              <div role="status" aria-label="Loading comments" className="space-y-3 py-2">
+                <span className="sr-only">Loading comments</span>
+                {[0, 1, 2].map((item) => (
+                  <div key={item} className="flex items-start gap-2" aria-hidden="true">
+                    <Skeleton className="h-8 w-8 shrink-0 rounded-full" />
+                    <div className="space-y-1.5 rounded-xl bg-surface-muted px-3 py-2">
+                      <Skeleton className="h-3 w-28" />
+                      <Skeleton className="h-3.5 w-56 max-w-full" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : null}
             {commentsQuery.isError ? (
@@ -180,9 +294,9 @@ export function PostDiscussionModal({
                 busy={busy} replying={createReply.isPending && createReply.variables?.rootId === item.id}
                 editingCommentId={editComment.isPending ? editComment.variables?.comment.id : undefined}
                 deletingCommentId={deleteComment.isPending ? deleteComment.variables?.id : undefined}
-                onReply={async (rootId, content) => { await createReply.mutateAsync({ rootId, content }) }}
-                onEdit={async (comment, content) => { await editComment.mutateAsync({ comment, content }) }}
-                onDelete={async (comment) => { await deleteComment.mutateAsync(comment) }}
+                onReply={handleReply}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
             ))}
             <div ref={bottomRef} aria-hidden="true" className="h-px" />

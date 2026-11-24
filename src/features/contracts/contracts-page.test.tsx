@@ -129,4 +129,16 @@ describe('ContractsPage', () => {
   it('says so when a list is empty', () => {
     expect(render('')).toContain('Nothing here yet')
   })
+
+  it('renders list and detail panel skeletons while the initial list is pending', () => {
+    mocks.search = ''
+    const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <ContractsPage />
+      </QueryClientProvider>,
+    )
+    expect(html).toContain('Loading contracts')
+    expect(html).toContain('aria-label="Loading"')
+  })
 })

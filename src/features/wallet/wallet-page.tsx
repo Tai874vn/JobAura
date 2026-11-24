@@ -48,17 +48,25 @@ export function WalletPage() {
         </div>
       ) : null}
 
-      {/* Shown only when the server says VNPay is set up (topUp.enabled). */}
+      {/* Shown while loading (keeps height steady) and whenever the server says VNPay is set up (topUp.enabled). */}
       <section id="top-up" aria-label="Top up" data-slot="top-up" className="mt-4 empty:hidden">
-        {data?.topUp.enabled ? <TopUpButton info={data.topUp} /> : null}
+        {summary.isPending ? <Skeleton className="h-10 w-24 rounded-lg" /> : data?.topUp.enabled ? <TopUpButton info={data.topUp} /> : null}
       </section>
 
       <section className="mt-8" aria-labelledby="ledger-title">
         <h2 id="ledger-title" className="font-display text-lg font-medium text-foreground">History</h2>
         {ledger.isPending ? (
-          <div className="mt-3 grid gap-3" aria-busy="true">
-            {[0, 1, 2].map((n) => <Skeleton key={n} className="h-12 w-full" />)}
-          </div>
+          <ul className="mt-2 divide-y divide-border rounded-lg border border-border bg-surface px-4" aria-busy="true" aria-label="Loading history">
+            {[0, 1, 2, 3, 4].map((n) => (
+              <li key={n} className="flex items-center justify-between gap-4 py-3.5" aria-hidden="true">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-52 max-w-full" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-4 w-24 shrink-0" />
+              </li>
+            ))}
+          </ul>
         ) : ledger.isError ? (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger/25 bg-surface px-4 py-3 text-sm" role="alert">
             <p className="text-danger">The history could not be loaded.</p>
@@ -98,7 +106,7 @@ function Figure({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="rounded-lg border border-border bg-surface p-3">
       <dt className="text-xs text-muted">{label}</dt>
-      <dd className="mt-1 text-lg font-medium text-foreground">{value ?? <Skeleton className="h-6 w-20" />}</dd>
+      <dd className="mt-1 text-lg font-medium text-foreground">{value ?? <Skeleton className="h-7 w-24" />}</dd>
     </div>
   )
 }

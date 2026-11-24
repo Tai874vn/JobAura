@@ -67,4 +67,18 @@ describe('RequireAuth', () => {
 
     expect(mocks.replace).toHaveBeenCalledWith('/auth/login?next=%2Fcontracts%3Fcontract%3D42')
   })
+
+  it('renders a custom layout skeleton fallback while session is loading instead of a nested main spinner', () => {
+    mocks.session = { user: null, isLoading: true, isAuthenticated: false }
+
+    const html = renderToStaticMarkup(
+      <RequireAuth fallback={<div data-testid="custom-skeleton">Skeleton frame</div>}>
+        <p>Protected</p>
+      </RequireAuth>,
+    )
+
+    expect(html).toContain('Skeleton frame')
+    expect(html).toContain('aria-busy="true"')
+    expect(html).not.toContain('<main')
+  })
 })

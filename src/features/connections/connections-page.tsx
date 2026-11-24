@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { chatApi, connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { getErrorMessage } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { Connection, ConnectionProfile, ConnectionSuggestion } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Card, ConfirmationDialog, EmptyState, Input, PageHeader, Skeleton } from '@/shared/ui'
@@ -143,7 +143,11 @@ export function ConnectionsPage() {
             />
           ) : (
             <>
-              <PeopleGrid loading={connectionsQuery.isPending} empty="No connections yet. Discover people to start building your network.">
+              <PeopleGrid
+                loading={connectionsQuery.isPending}
+                stale={connectionsQuery.isPlaceholderData}
+                empty="No connections yet. Discover people to start building your network."
+              >
                 {connections.map((connection) => <ConnectionCard key={connection.id} connection={connection} messaging={messageMutation.isPending && messageMutation.variables === connection.user.id} onMessage={() => messageMutation.mutate(connection.user.id)} onRemove={() => setConnectionToRemove(connection)} />)}
               </PeopleGrid>
               <PaginationControls
@@ -170,10 +174,10 @@ export function ConnectionsPage() {
             />
           ) : (
             <div className="grid gap-8 lg:grid-cols-2">
-              <RequestSection title="Incoming" empty="No incoming requests.">
+              <RequestSection title="Incoming" loading={requestsQuery.isPending} empty="No incoming requests.">
                 {(requests?.incoming ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} incoming accepting={acceptMutation.isPending && acceptMutation.variables === connection.id} removing={removeMutation.isPending && removeMutation.variables === connection.id} onAccept={() => acceptMutation.mutate(connection.id)} onRemove={() => removeMutation.mutate(connection.id)} />)}
               </RequestSection>
-              <RequestSection title="Sent" empty="No sent requests.">
+              <RequestSection title="Sent" loading={requestsQuery.isPending} empty="No sent requests.">
                 {(requests?.outgoing ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} removing={removeMutation.isPending && removeMutation.variables === connection.id} onRemove={() => removeMutation.mutate(connection.id)} />)}
               </RequestSection>
             </div>
@@ -194,7 +198,11 @@ export function ConnectionsPage() {
             />
           ) : (
             <>
-              <PeopleGrid loading={suggestionsQuery.isPending} empty="No new suggestions match this search.">
+              <PeopleGrid
+                loading={suggestionsQuery.isPending}
+                stale={suggestionsQuery.isPlaceholderData}
+                empty="No new suggestions match this search."
+              >
                 {suggestions.map((person) => <SuggestionCard key={person.id} person={person} pending={sendMutation.isPending && sendMutation.variables === person.id} onConnect={() => sendMutation.mutate(person.id)} />)}
               </PeopleGrid>
               <PaginationControls
@@ -226,11 +234,40 @@ function Tab({ active, label, onClick }: { active: boolean; label: string; onCli
   return <button type="button" onClick={onClick} className={`h-11 shrink-0 border-b-2 px-5 text-sm font-medium ${active ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-foreground'}`}>{label}</button>
 }
 
-function PeopleGrid({ loading, empty, children }: { loading: boolean; empty: string; children: React.ReactNode }) {
+function PeopleGrid({ loading, stale = false, empty, children }: { loading: boolean; stale?: boolean; empty: string; children: React.ReactNode }) {
   const count = Array.isArray(children) ? children.length : children ? 1 : 0
-  if (loading) return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{[1, 2, 3].map((id) => <Skeleton key={id} className="h-48" />)}</div>
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" role="status" aria-label="Loading people" aria-busy="true">
+        <span className="sr-only">Loading people</span>
+        {Array.from({ length: 6 }, (_, index) => (
+          <Card key={index} className="p-4" aria-hidden="true">
+            <div className="flex gap-3">
+              <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3.5 w-full" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </div>
+            <div className="mt-4 flex min-h-7 gap-2">
+              <Skeleton className="h-6 w-16 rounded" />
+              <Skeleton className="h-6 w-20 rounded" />
+            </div>
+            <div className="mt-5 border-t border-border pt-4">
+              <Skeleton className="h-8 w-full rounded-lg" />
+            </div>
+          </Card>
+        ))}
+      </div>
+    )
+  }
   if (!count) return <EmptyState icon={<Users />} title="Nobody here yet" description={empty} />
-  return <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
+  return (
+    <div className={cn('grid gap-4 transition-opacity duration-200 md:grid-cols-2 xl:grid-cols-3', stale && 'opacity-60')} aria-busy={stale}>
+      {children}
+    </div>
+  )
 }
 
 function PaginationControls({
@@ -295,7 +332,32 @@ function SuggestionCard({ person, pending, onConnect }: { person: ConnectionSugg
   return <Card className="p-4"><ProfileSummary user={person} /><SkillList user={person} highlighted={person.sharedSkills} /><div className="mt-5 border-t border-border pt-4"><Button className="w-full" size="sm" onClick={onConnect} loading={pending}><UserPlus className="h-4 w-4" />Connect</Button></div></Card>
 }
 
-function RequestSection({ title, empty, children }: { title: string; empty: string; children: React.ReactNode }) {
+function RequestSection({ title, loading = false, empty, children }: { title: string; loading?: boolean; empty: string; children: React.ReactNode }) {
   const count = Array.isArray(children) ? children.length : children ? 1 : 0
-  return <section><h2 className="mb-3 font-display text-lg font-medium">{title}</h2><div className="space-y-3">{count ? children : <Card className="p-6 text-sm text-muted">{empty}</Card>}</div></section>
+  return (
+    <section aria-busy={loading}>
+      <h2 className="mb-3 font-display text-lg font-medium">{title}</h2>
+      <div className="space-y-3">
+        {loading ? (
+          Array.from({ length: 2 }, (_, index) => (
+            <Card key={index} className="p-4" aria-hidden="true">
+              <div className="flex gap-3">
+                <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3.5 w-48 max-w-full" />
+                </div>
+              </div>
+              <div className="mt-4 flex gap-2">
+                <Skeleton className="h-8 w-20 rounded-lg" />
+                <Skeleton className="h-8 w-20 rounded-lg" />
+              </div>
+            </Card>
+          ))
+        ) : count ? children : (
+          <Card className="p-6 text-sm text-muted">{empty}</Card>
+        )}
+      </div>
+    </section>
+  )
 }

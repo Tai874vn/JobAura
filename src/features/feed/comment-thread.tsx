@@ -1,14 +1,15 @@
 'use client'
 
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useId, useRef, useState } from 'react'
+import { memo, useId, useMemo, useRef, useState } from 'react'
 import { postsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { Button } from '@/shared/ui'
+import { Button, Skeleton } from '@/shared/ui'
 import { DiscussionComment, type DiscussionCommentProps } from './discussion-comment'
 import { mergeReplies } from './feed-data'
 
-export function CommentThread({ onReply, replying, ...props }: DiscussionCommentProps & {
+/** Memoized so typing in the modal's main comment box does not re-render every comment thread. */
+export const CommentThread = memo(function CommentThread({ onReply, replying, ...props }: DiscussionCommentProps & {
   onReply: (rootId: number, content: string) => Promise<void>
   replying?: boolean
 }) {
@@ -29,7 +30,10 @@ export function CommentThread({ onReply, replying, ...props }: DiscussionComment
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: expanded,
   })
-  const replies = mergeReplies(repliesQuery.data?.pages.map((page) => page.data) ?? [])
+  const replies = useMemo(
+    () => mergeReplies(repliesQuery.data?.pages.map((page) => page.data) ?? []),
+    [repliesQuery.data?.pages],
+  )
 
   function startReply() {
     setExpanded(true)
@@ -63,7 +67,20 @@ export function CommentThread({ onReply, replying, ...props }: DiscussionComment
       </DiscussionComment>
       {expanded ? (
         <div id={panelId} className="ml-4 space-y-3 border-l-2 border-border pl-3 sm:ml-9 sm:pl-4">
-          {repliesQuery.isPending ? <p role="status" className="text-xs text-muted">Loading replies…</p> : null}
+          {repliesQuery.isPending ? (
+            <div role="status" aria-label="Loading replies" className="space-y-2.5 py-1">
+              <span className="sr-only">Loading replies…</span>
+              {[0, 1].map((item) => (
+                <div key={item} className="flex items-start gap-2" aria-hidden="true">
+                  <Skeleton className="h-7 w-7 shrink-0 rounded-full" />
+                  <div className="space-y-1.5 rounded-xl bg-surface-muted px-3 py-2">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3.5 w-44" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
           {replies.map((reply) => (
             <DiscussionComment key={reply.id} {...props} comment={reply}>
               <Button type="button" variant="ghost" size="sm" disabled={busy} onClick={startReply}>Reply</Button>
@@ -102,4 +119,4 @@ export function CommentThread({ onReply, replying, ...props }: DiscussionComment
       ) : null}
     </div>
   )
-}
+})

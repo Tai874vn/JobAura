@@ -8,6 +8,7 @@ import {
   toHiringPostQueryParams,
 } from '@/features/hiring/hiring-posts-browse'
 import { HiringPostsPage } from '@/features/hiring/hiring-posts-page'
+import { HiringPostsPageSkeleton } from '@/features/hiring/hiring-posts-skeleton'
 import type { FacetCount, HiringPostFacets } from '@/shared/api/endpoints/hiring-posts'
 import { normalizePaginatedHiringPostsResponse } from '@/shared/api/normalizers'
 import { queryKeys } from '@/shared/api/query-keys'
@@ -16,7 +17,6 @@ import { toQueryString, toUrlSearchParams, type RawSearchParams } from '@/shared
 import { buildPageMetadata, JsonLd, organizationJsonLd, websiteJsonLd } from '@/shared/lib/seo'
 import { hiringPostsItemListJsonLd } from '@/shared/lib/seo-jsonld'
 import type { ApiResponse, HiringPost, PaginatedContent } from '@/shared/schemas'
-import { Card, CardContent } from '@/shared/ui'
 
 export const metadata: Metadata = buildPageMetadata({
   title: 'Hiring posts',
@@ -71,22 +71,10 @@ export default async function Page({
     <>
       <JsonLd data={[organizationJsonLd(), websiteJsonLd(), hiringPostsItemListJsonLd(posts)]} />
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <Suspense fallback={<HiringPostsLoading />}>
+        <Suspense fallback={<HiringPostsPageSkeleton />}>
           <HiringPostsPage />
         </Suspense>
       </HydrationBoundary>
     </>
-  )
-}
-
-function HiringPostsLoading() {
-  return (
-    <div className="container-page grid gap-4 py-8" aria-busy="true">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <Card key={index}>
-          <CardContent className="h-44 animate-pulse bg-surface-muted" />
-        </Card>
-      ))}
-    </div>
   )
 }

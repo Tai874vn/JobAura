@@ -5,10 +5,12 @@ import { AxiosError } from 'axios'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { useSession } from '@/features/auth/use-session'
-import { Button, ButtonLink, EmptyState, Pagination, Skeleton } from '@/shared/ui'
+import { cn } from '@/shared/lib/utils'
+import { Button, ButtonLink, EmptyState, Pagination } from '@/shared/ui'
 import { pipelineApi, pipelineKeys } from './api'
 import { MyApplicationListItem } from './my-application-list-item'
 import { MyApplicationPanel, MyApplicationPanelLoading } from './my-application-panel'
+import { PipelineListSkeleton } from './split-pane-skeletons'
 import { UpcomingStrip } from './upcoming-strip'
 
 export const myApplicationsPageSize = 20
@@ -99,13 +101,11 @@ export function MyApplicationsPage() {
         <div className="mt-4 grid min-h-0 flex-1 items-stretch gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="min-h-0 min-w-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-1.5">
             {list.isPending ? (
-              <div className="grid gap-2" aria-busy="true">
-                {[0, 1, 2].map((item) => <Skeleton key={item} className="h-24 rounded-xl" />)}
-              </div>
+              <PipelineListSkeleton />
             ) : list.isError ? (
               <EmptyState title="Could not load your applications" description="Check your connection and try again." action={<Button onClick={() => void list.refetch()}>Try again</Button>} />
             ) : rows.length ? (
-              <ul className="grid gap-2" role="listbox" aria-label="My applications">
+              <ul className={cn('grid gap-2 transition-opacity duration-200', list.isPlaceholderData && 'opacity-60')} role="listbox" aria-busy={list.isPlaceholderData} aria-label="My applications">
                 {rows.map((row) => (
                   <li key={row.id} role="option" aria-selected={row.id === selectedId}>
                     <MyApplicationListItem
@@ -136,7 +136,7 @@ export function MyApplicationsPage() {
               <EmptyState title="Could not open this application" description="It does not exist, or it is not yours." action={<ButtonLink href="/my-applications" variant="secondary">All applications</ButtonLink>} />
             ) : selectedId !== null && detail.isError ? (
               <EmptyState title="Could not open this application" description="Check your connection and try again." action={<Button onClick={() => void detail.refetch()}>Try again</Button>} />
-            ) : selectedId !== null ? (
+            ) : selectedId !== null || list.isPending ? (
               <MyApplicationPanelLoading row={rows.find((row) => row.id === selectedId)} backHref={backHref} />
             ) : null}
           </div>

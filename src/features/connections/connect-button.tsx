@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { chatApi } from '@/shared/api/endpoints'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { Button, ButtonLink, ConfirmationDialog } from '@/shared/ui'
+import { Button, ButtonLink, ConfirmationDialog, Skeleton } from '@/shared/ui'
 import type { ConnectionCommand } from './connections-data'
 import { useConnectionControls } from './use-connection-controls'
 
@@ -51,7 +51,10 @@ export function ConnectionActions({
     relationshipMutation.mutate(command.action)
   }
 
-  if (isSessionLoading) return null
+  // Keep the button slot height reserved while the session or connection status loads so actions below do not shift.
+  if (isSessionLoading) {
+    return <Skeleton className={cn('h-8 w-full min-w-32 rounded-lg', className)} />
+  }
   if (!user) {
     return (
       <ButtonLink

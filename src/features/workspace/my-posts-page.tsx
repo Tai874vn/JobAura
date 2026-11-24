@@ -13,7 +13,7 @@ import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from
 import { deleteJob } from '@/features/jobs/delete-job'
 import { servicePriceLabel } from '@/features/jobs/service-price'
 import type { Job } from '@/shared/schemas'
-import { Button, ButtonLink, Card, ConfirmationDialog, EmptyState, ListRowSkeleton } from '@/shared/ui'
+import { Button, ButtonLink, Card, ConfirmationDialog, EmptyState, Skeleton } from '@/shared/ui'
 
 export function MyPostsPage() {
   const { user } = useSession()
@@ -50,7 +50,7 @@ export function MyPostsPage() {
       </div>
 
       <div className="mt-6 grid gap-3" aria-busy={query.isPending} aria-live="polite">
-        {query.isPending ? Array.from({ length: 3 }).map((_, index) => <ListRowSkeleton key={index} />) : jobs.map((job) => (
+        {query.isPending ? Array.from({ length: 3 }).map((_, index) => <MyPostRowSkeleton key={index} />) : jobs.map((job) => (
           <MyPostRow key={job.id} job={job} onDelete={() => setPendingDelete({ id: job.id, title: job.title })} />
         ))}
         {query.isError ? (
@@ -82,6 +82,27 @@ export function MyPostsPage() {
         }}
       />
     </div>
+  )
+}
+
+function MyPostRowSkeleton() {
+  return (
+    <Card className="flex flex-wrap items-center gap-4 p-3.5" aria-hidden="true">
+      <Skeleton className="h-[63px] w-[84px] shrink-0 rounded-lg" />
+      <div className="min-w-48 flex-1 space-y-2">
+        <Skeleton className="h-5 w-3/5" />
+        <div className="flex flex-wrap gap-3">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-3.5 w-20" />
+          <Skeleton className="h-3.5 w-24" />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="h-8 w-14 rounded-lg" />
+        <Skeleton className="h-8 w-14 rounded-lg" />
+        <Skeleton className="h-8 w-20 rounded-lg" />
+      </div>
+    </Card>
   )
 }
 

@@ -91,8 +91,8 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
                       ))}
                       <td className="px-4 py-3">
                         <div className="flex justify-end gap-1">
-                          <Skeleton className="h-10 w-10" />
-                          <Skeleton className="h-10 w-10" />
+                          {config.viewHref ? <Skeleton className="h-10 w-10 rounded-lg" /> : null}
+                          <Skeleton className="h-10 w-10 rounded-lg" />
                         </div>
                       </td>
                     </tr>

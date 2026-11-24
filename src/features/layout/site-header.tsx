@@ -3,7 +3,7 @@
 import { LogOut, Menu, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/features/auth/use-session";
 import { PipelineLiveUpdates } from "@/features/hiring-pipeline/use-pipeline-live-updates";
 import { ContractLiveUpdates } from "@/features/contracts/use-contract-live-updates";
@@ -18,7 +18,33 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const accountTriggerRef = useRef<HTMLButtonElement>(null);
   const { user, isLoading: isSessionLoading } = useSession();
+
+  // Close menus on outside click or Escape so neither dropdown can stay stranded open.
+  useEffect(() => {
+    if (!accountMenuOpen && !mobileMenuOpen) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (accountMenuOpen && accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (accountMenuOpen) {
+        setAccountMenuOpen(false);
+        accountTriggerRef.current?.focus();
+      }
+      if (mobileMenuOpen) setMobileMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [accountMenuOpen, mobileMenuOpen]);
   // While the session loads (always on the server render) there is no user, so this is the visitor menu
   // (Hiring posts, Portfolios). The links are in the server HTML for crawlers, but the bar stays invisible
   // (visibility: hidden, so its space is kept) until the session is known: a visitor sees them right after the page
@@ -68,8 +94,9 @@ export function SiteHeader() {
           </div>
         ) : null}
         {user ? (
-          <div className="relative hidden shrink-0 items-center gap-2 md:flex">
+          <div ref={accountMenuRef} className="relative hidden shrink-0 items-center gap-2 md:flex">
             <button
+              ref={accountTriggerRef}
               type="button"
               className="interaction relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-primary text-sm font-medium text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2"
               onClick={() => setAccountMenuOpen((value) => !value)}

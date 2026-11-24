@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
@@ -41,6 +41,7 @@ export function SpecialtyPicker({
   const inputId = useId()
   const hintId = useId()
   const errorId = useId()
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const detail = useQuery(occupationQuery(occupation))
   const specialties = detail.data?.specialties ?? []
   const options = filterSpecialties(specialties, typing ? query : '')
@@ -52,6 +53,15 @@ export function SpecialtyPicker({
     : !options.length ? 'No matching specialty.'
     : `${options.length} ${options.length === 1 ? 'specialty' : 'specialties'} shown`
 
+  function clearBlurTimer() {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current)
+      blurTimerRef.current = null
+    }
+  }
+
+  useEffect(() => clearBlurTimer, [])
+
   function choose(name: string) {
     onChange(name)
     reset()
@@ -59,6 +69,7 @@ export function SpecialtyPicker({
 
   /** Back to showing the chosen specialty, with the list closed. */
   function reset() {
+    clearBlurTimer()
     setQuery('')
     setTyping(false)
     setOpen(false)
@@ -93,10 +104,10 @@ export function SpecialtyPicker({
             value={typing ? query : value}
             placeholder={occupation ? 'Search specialties, for example Full Stack' : 'Choose the occupation first'}
             onChange={(event) => { setQuery(event.target.value); setTyping(true); setOpen(true); setActive(0) }}
-            onFocus={(event) => { event.target.select(); setOpen(true) }}
+            onFocus={(event) => { clearBlurTimer(); event.target.select(); setOpen(true) }}
             // While it shows the chosen value, a click selects it all, so typing replaces it.
             onClick={(event) => { if (!typing) event.currentTarget.select() }}
-            onBlur={() => setTimeout(reset, 120)}
+            onBlur={() => { clearBlurTimer(); blurTimerRef.current = setTimeout(reset, 120) }}
             onKeyDown={(event) => {
               if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, options.length - 1))) }
               else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }

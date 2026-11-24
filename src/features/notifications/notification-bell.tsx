@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useMutation,
   useQuery,
@@ -43,11 +43,14 @@ export function NotificationBell() {
   const userId = user?.id;
   const openChatForRoom = useChatStore((state) => state.openChatForRoom);
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
+  // Only fetch the full list once the dropdown is opened; keep the unread count badge query always on.
   const listQuery = useQuery({
     queryKey: queryKeys.notifications(userId),
     queryFn: () => notificationsApi.list({ limit: previewLimit }),
-    enabled: Boolean(userId),
+    enabled: Boolean(userId && open),
   });
   const countQuery = useQuery({
     queryKey: queryKeys.notificationUnreadCount(userId),
@@ -55,6 +58,27 @@ export function NotificationBell() {
     enabled: Boolean(userId),
     staleTime: 30_000,
   });
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
 
   const markRead = useMutation({
     mutationFn: notificationsApi.markRead,
@@ -87,6 +111,8 @@ export function NotificationBell() {
     if (!userId || !connection) return;
     return connection.subscribe("/notifications", (socket) => {
       const onNotification = (raw: unknown) => {
+        // Only patch the cached list if it has already been loaded; otherwise opening the bell fetches the full page.
+        if (!queryClient.getQueryData(queryKeys.notifications(userId))) return;
         const notification = normalizeNotification(raw);
         prependNotification(queryClient, notification, previewLimit, userId);
       };
@@ -151,10 +177,11 @@ export function NotificationBell() {
   const badge = unreadCount > 99 ? "99+" : String(unreadCount);
 
   return (
-    <div className="relative">
-      <Button
-        variant="ghost"
-        size="icon"
+    <div ref={containerRef} className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        className="interaction relative inline-flex h-10 w-10 items-center justify-center rounded-lg text-foreground hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         onClick={() => setOpen((value) => !value)}
         title="Notifications"
         aria-label={open ? "Close notifications" : "Open notifications"}
@@ -167,7 +194,7 @@ export function NotificationBell() {
             {badge}
           </span>
         ) : null}
-      </Button>
+      </button>
 
       {open ? (
         <div id="notification-panel" className="motion-popover fixed inset-x-4 top-[4.5rem] z-50 overflow-hidden sm:absolute sm:inset-x-auto sm:right-0 sm:top-11 sm:w-[420px] sm:max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface shadow-overlay">

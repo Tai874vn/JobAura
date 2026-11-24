@@ -6,8 +6,70 @@ import { useSession } from '@/features/auth/use-session'
 import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, ButtonLink, EmptyState, ListRowSkeleton } from '@/shared/ui'
+import { Button, ButtonLink, Card, EmptyState, Skeleton } from '@/shared/ui'
 import { JobForm } from './job-form'
+
+/** Matches JobForm's 2-column layout (sections card on the left, sticky live preview card on the right). */
+function JobFormSkeleton() {
+  return (
+    <div className="container-page pt-10 pb-16" aria-busy="true" role="status" aria-label="Loading post editor">
+      <span className="sr-only">Loading post editor</span>
+      <Skeleton className="h-9 w-52" />
+      <Skeleton className="mt-2 h-4 w-96 max-w-full" />
+
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_360px]" aria-hidden="true">
+        <Card className="divide-y divide-border">
+          <div className="space-y-4 p-5">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+            <Skeleton className="h-10 w-full rounded-lg" />
+          </div>
+          <div className="space-y-4 p-5">
+            <Skeleton className="h-4 w-28" />
+            <div className="flex gap-4">
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-20" />
+              <Skeleton className="h-5 w-32" />
+            </div>
+            <Skeleton className="h-24 w-full rounded-lg" />
+          </div>
+          <div className="space-y-4 p-5">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <Skeleton className="h-28 w-full rounded-lg" />
+          </div>
+          <div className="flex justify-end gap-2.5 p-5">
+            <Skeleton className="h-10 w-20 rounded-lg" />
+            <Skeleton className="h-10 w-32 rounded-lg" />
+          </div>
+        </Card>
+
+        <aside className="grid content-start gap-2.5 lg:sticky lg:top-24">
+          <Skeleton className="h-4 w-48" />
+          <Card className="overflow-hidden">
+            <Skeleton className="aspect-[4/3] w-full rounded-none" />
+            <div className="space-y-3 p-3.5">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-[30px] w-[30px] rounded-full" />
+                <Skeleton className="h-4 w-24" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <div className="flex items-center justify-between pt-1">
+                <Skeleton className="h-5 w-12 rounded-full" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            </div>
+          </Card>
+        </aside>
+      </div>
+    </div>
+  )
+}
 
 /** Loads one post and opens the post form on it. Only the owner (or an admin) can edit. */
 export function JobEditPage({ jobId }: { jobId: number }) {
@@ -16,7 +78,7 @@ export function JobEditPage({ jobId }: { jobId: number }) {
   const job = query.data?.content
 
   if (query.isPending) {
-    return <div className="container-page pt-10"><ListRowSkeleton /></div>
+    return <JobFormSkeleton />
   }
   if (query.isError && !job) {
     const status = axios.isAxiosError(query.error) ? query.error.response?.status : undefined

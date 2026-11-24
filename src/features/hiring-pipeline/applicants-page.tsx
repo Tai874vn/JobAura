@@ -14,6 +14,7 @@ import { Badge, Button, ButtonLink, EmptyState, Pagination, Skeleton } from '@/s
 import { pipelineApi, pipelineKeys } from './api'
 import { ApplicantListItem } from './applicant-list-item'
 import { ApplicantPanel, ApplicantPanelLoading } from './applicant-panel'
+import { PipelineListSkeleton } from './split-pane-skeletons'
 
 export const applicantsPageSize = 20
 
@@ -160,9 +161,9 @@ export function ApplicantsPage({ postId }: { postId: number }) {
                   <span>{filledText(post)}</span>
                   <Badge tone={post.status === 'OPEN' ? 'primary' : 'neutral'}>{post.status === 'OPEN' ? 'Open' : 'Closed'}</Badge>
                 </p>
-              ) : (
+              ) : postQuery.isPending ? (
                 <Skeleton className="mt-2 h-5 w-48" />
-              )}
+              ) : null}
             </div>
             {post ? (
               <div className="flex gap-2">
@@ -202,13 +203,11 @@ export function ApplicantsPage({ postId }: { postId: number }) {
         <div className="mt-4 grid min-h-0 flex-1 items-stretch gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="min-h-0 min-w-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-1.5">
             {list.isPending ? (
-              <div className="grid gap-2" aria-busy="true">
-                {[0, 1, 2].map((item) => <Skeleton key={item} className="h-24 rounded-xl" />)}
-              </div>
+              <PipelineListSkeleton />
             ) : list.isError ? (
               <EmptyState title="Could not load applicants" description="Check your connection and try again." action={<Button onClick={() => void list.refetch()}>Try again</Button>} />
             ) : rows.length ? (
-              <ul className="grid gap-2" role="listbox" aria-label="Applicants">
+              <ul className={cn('grid gap-2 transition-opacity duration-200', list.isPlaceholderData && 'opacity-60')} role="listbox" aria-busy={list.isPlaceholderData} aria-label="Applicants">
                 {rows.map((row) => (
                   <li key={row.id} role="option" aria-selected={row.id === selectedId}>
                     <ApplicantListItem
@@ -239,7 +238,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
               />
             ) : selectedId !== null && (detail.isError || otherPost) ? (
               <EmptyState title="Could not open this applicant" description="They may belong to another post." />
-            ) : selectedId !== null ? (
+            ) : selectedId !== null || list.isPending ? (
               <ApplicantPanelLoading row={rows.find((row) => row.id === selectedId)} backHref={hrefFor({ application: null, outcome: null })} />
             ) : null}
           </div>

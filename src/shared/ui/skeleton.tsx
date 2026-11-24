@@ -2,7 +2,8 @@ import { cn } from '@/shared/lib/utils'
 import { Card } from './card'
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn('animate-pulse rounded bg-surface-muted', className)} aria-hidden="true" />
+  // motion-safe keeps the subtle pulse off for people who prefer reduced motion.
+  return <div className={cn('motion-safe:animate-pulse rounded bg-surface-muted', className)} aria-hidden="true" />
 }
 
 export function CardSkeleton({ className }: { className?: string } = {}) {

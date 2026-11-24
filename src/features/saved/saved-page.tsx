@@ -11,7 +11,7 @@ import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { FeedPost } from '@/shared/schemas'
-import { Button, ButtonLink, Card, EmptyState, Skeleton } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardSkeleton, EmptyState, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { JobCard } from '@/features/jobs/job-card'
 import { mergeSavedPages } from './saved-data'
@@ -72,8 +72,13 @@ export function SavedPage() {
       </div>
 
       {tab === 'posts' ? (
-        <section className="mx-auto mt-5 max-w-3xl" aria-busy={postsQuery.isPending} aria-live="polite">
-          {postsQuery.isPending ? <SavedSkeleton /> : posts.map((post) => (
+        <section className="mx-auto mt-5 max-w-3xl space-y-4" aria-busy={postsQuery.isPending} aria-live="polite">
+          {postsQuery.isPending ? (
+            <>
+              <SavedSkeleton />
+              <SavedSkeleton />
+            </>
+          ) : posts.map((post) => (
             <SavedPostCard key={post.id} post={post} removing={removePost.isPending && removePost.variables === post.id} onRemove={() => removePost.mutate(post.id)} />
           ))}
           {postsLoadFailed ? (
@@ -107,7 +112,12 @@ export function SavedPage() {
       ) : (
         <section className="mt-5" aria-busy={jobsQuery.isPending} aria-live="polite">
           {jobsQuery.isPending ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"><SavedSkeleton /><SavedSkeleton /><SavedSkeleton /><SavedSkeleton /></div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+              <CardSkeleton />
+            </div>
           ) : null}
           {jobs.length ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{jobs.map((job) => <JobCard key={job.id} job={job} initialSaved />)}</div>

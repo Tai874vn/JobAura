@@ -18,7 +18,7 @@ import { hasResumeDraftInput, resumeSkills, type ResumeDraft } from '@/features/
 import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { servicePriceLabel } from '@/features/jobs/service-price'
 import type { Job, UserProfile, UserResume } from '@/shared/schemas'
-import { Badge, ButtonLink, Card, CardContent } from '@/shared/ui'
+import { Badge, ButtonLink, Card, CardContent, Skeleton } from '@/shared/ui'
 import { InlineEditButton, ResumeSnippet } from './profile-editor'
 import { formatDate, formatFullDate, type MarketplaceProfile } from './model'
 
@@ -107,7 +107,34 @@ export function ResumeShowcase({
         />
 
         {isLoading ? (
-          <p className="mt-4 text-sm text-muted">Loading resume...</p>
+          <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_240px]" role="status" aria-label="Loading resume" aria-busy="true">
+            <span className="sr-only">Loading resume</span>
+            <div className="grid gap-4" aria-hidden="true">
+              <div className="space-y-3 rounded-lg border border-border bg-surface p-4">
+                <Skeleton className="h-7 w-48" />
+                <div className="flex flex-wrap gap-4">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-4 w-28" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-4/5" />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Skeleton className="h-28 w-full rounded-lg border border-border" />
+                <Skeleton className="h-28 w-full rounded-lg border border-border" />
+              </div>
+            </div>
+            <div className="space-y-3 rounded-lg border border-border bg-surface-muted p-4" aria-hidden="true">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3.5 w-36" />
+              <div className="flex flex-wrap gap-2 pt-1">
+                {[0, 1, 2, 3].map((chip) => (
+                  <Skeleton key={chip} className="h-6 w-16 rounded" />
+                ))}
+              </div>
+            </div>
+          </div>
         ) : hasResumeDraftInput(draft) ? (
           <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_240px]">
             <div className="grid gap-4">

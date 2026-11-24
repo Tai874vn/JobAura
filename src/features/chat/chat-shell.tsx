@@ -15,7 +15,7 @@ import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
 import { ChatProposalButton } from '@/features/contracts/chat-proposal-button'
 import { synchronizeChatConnection } from './chat-connection'
-import { openChatEventName, parseOpenChatRequest, shouldLoadRoomMessages, type OpenChatRequest } from './chat-data'
+import { mergeRoomMessages, openChatEventName, parseOpenChatRequest, type OpenChatRequest } from './chat-data'
 
 type SendMessageAcknowledgement = {
   status: 'success' | 'error' | 'rate_limited'
@@ -53,6 +53,8 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
   const onlineUserIds = useChatStore((state) => state.onlineUserIds)
   const socketRef = useRef<Socket | null>(null)
   const messageListRef = useRef<HTMLDivElement | null>(null)
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastTypingSentAtRef = useRef(0)
   const [draft, setDraft] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [readReceipts, setReadReceipts] = useState<Record<number, number[]>>({})
@@ -166,33 +168,48 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
     })
   }, [addMessage, connection, isSocketActive, setOnlineUserIds, userId])
 
+  const activeRoomMessages = activeRoomId ? messagesByRoom[activeRoomId] : undefined
   const activeMessages = useMemo(
-    () => activeRoomId ? messagesByRoom[activeRoomId] ?? [] : [],
-    [activeRoomId, messagesByRoom]
+    () => activeRoomMessages ?? [],
+    [activeRoomMessages]
   )
   const activeRoom = rooms.find((room) => room.id === activeRoomId)
 
+  // Load room history through React Query instead of an effect depending on messagesByRoom,
+  // so an incoming message in another room never cancels or re-fires the active room's fetch.
+  const messagesQuery = useQuery({
+    queryKey: queryKeys.chatMessages(activeRoomId ?? 0, userId),
+    queryFn: () => chatApi.messages(activeRoomId as number),
+    enabled: Boolean(userId && activeRoomId && isOpen),
+    staleTime: Infinity,
+  })
+
   useEffect(() => {
-    if (!shouldLoadRoomMessages(activeRoomId, messagesByRoom)) return
-    const roomId = activeRoomId
-    if (!roomId) return
+    if (!activeRoomId || !isSocketActive) return
+    socketRef.current?.emit('join-room', { roomId: activeRoomId })
+  }, [activeRoomId, isSocketActive])
 
-    let cancelled = false
-    socketRef.current?.emit('join-room', { roomId })
-    void chatApi.messages(roomId)
-      .then((result) => {
-        if (cancelled) return
-        setMessages(roomId, result.content ?? [])
-        socketRef.current?.emit('mark-as-read', { roomId })
-      })
-      .catch((error) => {
-        if (!cancelled) toast.error(getErrorMessage(error, 'Could not load this conversation'))
-      })
+  useEffect(() => {
+    if (!activeRoomId || !messagesQuery.data) return
+    const fetched = messagesQuery.data.content ?? []
+    const existing = useChatStore.getState().messagesByRoom[activeRoomId] ?? []
+    setMessages(activeRoomId, mergeRoomMessages(fetched, existing))
+    socketRef.current?.emit('mark-as-read', { roomId: activeRoomId })
+  }, [activeRoomId, messagesQuery.data, setMessages])
 
+  // Stop any outgoing typing indicator when switching rooms or closing/unmounting.
+  useEffect(() => {
     return () => {
-      cancelled = true
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current)
+        typingTimerRef.current = null
+      }
+      if (activeRoomId && lastTypingSentAtRef.current > 0) {
+        socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: false })
+        lastTypingSentAtRef.current = 0
+      }
     }
-  }, [activeRoomId, messagesByRoom, setMessages])
+  }, [activeRoomId])
 
   useEffect(() => {
     if (!activeRoomId || !userId || !activeMessages.length) return
@@ -223,6 +240,14 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
       return
     }
     setIsSending(true)
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current)
+      typingTimerRef.current = null
+    }
+    if (lastTypingSentAtRef.current > 0) {
+      socket.emit('typing', { roomId: activeRoomId, isTyping: false })
+      lastTypingSentAtRef.current = 0
+    }
     socket.timeout(10_000).emit(
       'send-message',
       { roomId: activeRoomId, content },
@@ -357,38 +382,55 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
             {/* A flex column, so each message can sit on its own side: yours on the right, theirs on the left. */}
             <div ref={messageListRef} className="flex flex-1 flex-col gap-2.5 overflow-y-auto bg-background p-4">
               {activeRoomId ? (
-                <>
-                  {activeMessages.map((message) => {
-                    const own = message.sender.id === user.id
-                    return (
-                      <div key={message.id} className={cn('flex min-w-0 max-w-[76%] flex-col', own ? 'self-end items-end' : 'self-start items-start')}>
-                        <div className={cn(
-                          'max-w-full whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-6 [overflow-wrap:anywhere]',
-                          own ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-border bg-surface'
-                        )}>
-                          {message.content}
+                activeRoomMessages === undefined && messagesQuery.isPending ? (
+                  <div className="flex flex-1 flex-col gap-3" role="status" aria-label="Loading conversation" aria-busy="true">
+                    <span className="sr-only">Loading conversation</span>
+                    <Skeleton className="h-10 w-48 max-w-[76%] self-start rounded-2xl rounded-bl-md" />
+                    <Skeleton className="h-10 w-40 max-w-[76%] self-end rounded-2xl rounded-br-md" />
+                    <Skeleton className="h-12 w-56 max-w-[76%] self-start rounded-2xl rounded-bl-md" />
+                    <Skeleton className="h-10 w-44 max-w-[76%] self-end rounded-2xl rounded-br-md" />
+                  </div>
+                ) : activeRoomMessages === undefined && messagesQuery.isError ? (
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center text-sm text-muted">
+                    <p>{getErrorMessage(messagesQuery.error, 'Could not load this conversation.')}</p>
+                    <Button type="button" size="sm" variant="secondary" loading={messagesQuery.isFetching} onClick={() => void messagesQuery.refetch()}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {activeMessages.map((message) => {
+                      const own = message.sender.id === user.id
+                      return (
+                        <div key={message.id} className={cn('flex min-w-0 max-w-[76%] flex-col', own ? 'self-end items-end' : 'self-start items-start')}>
+                          <div className={cn(
+                            'max-w-full whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-6 [overflow-wrap:anywhere]',
+                            own ? 'rounded-br-md bg-primary text-white' : 'rounded-bl-md border border-border bg-surface'
+                          )}>
+                            {message.content}
+                          </div>
+                          {message.createdAt ? <time className="mt-1 text-xs text-muted">{formatMessageTime(message.createdAt)}</time> : null}
+                          {own && message.id === latestOwnMessageId ? (
+                            <span className={cn('mt-0.5 flex items-center gap-1 text-xs font-medium', latestOwnMessageSeen ? 'text-primary' : 'text-muted')}>
+                              <CheckCheck className="h-3 w-3" />
+                              {latestOwnMessageSeen ? 'Seen' : 'Sent'}
+                            </span>
+                          ) : null}
                         </div>
-                        {message.createdAt ? <time className="mt-1 text-xs text-muted">{formatMessageTime(message.createdAt)}</time> : null}
-                        {own && message.id === latestOwnMessageId ? (
-                          <span className={cn('mt-0.5 flex items-center gap-1 text-xs font-medium', latestOwnMessageSeen ? 'text-primary' : 'text-muted')}>
-                            <CheckCheck className="h-3 w-3" />
-                            {latestOwnMessageSeen ? 'Seen' : 'Sent'}
-                          </span>
-                        ) : null}
+                      )
+                    })}
+                    {activeTypingUserIds.length ? (
+                      <div className="flex items-center gap-2 self-start rounded-md border border-border bg-surface px-3.5 py-2" aria-live="polite">
+                        <span className="flex gap-1">
+                          {[0, 1, 2].map((dot) => (
+                            <span key={dot} className="h-1.5 w-1.5 motion-safe:animate-pulse rounded-full bg-muted" style={{ animationDelay: `${dot * 0.15}s` }} />
+                          ))}
+                        </span>
+                        <span className="text-xs font-medium text-muted">{title || 'Someone'} is typing…</span>
                       </div>
-                    )
-                  })}
-                  {activeTypingUserIds.length ? (
-                    <div className="flex items-center gap-2 self-start rounded-md border border-border bg-surface px-3.5 py-2" aria-live="polite">
-                      <span className="flex gap-1">
-                        {[0, 1, 2].map((dot) => (
-                          <span key={dot} className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted" style={{ animationDelay: `${dot * 0.15}s` }} />
-                        ))}
-                      </span>
-                      <span className="text-xs font-medium text-muted">{title || 'Someone'} is typing…</span>
-                    </div>
-                  ) : null}
-                </>
+                    ) : null}
+                  </>
+                )
               ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-2 text-sm text-muted">
                   <MessageCircle className="h-6 w-6 text-primary/40" />
@@ -408,8 +450,31 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
                   value={draft}
                   maxLength={5000}
                   onChange={(event) => {
-                    setDraft(event.target.value)
-                    if (activeRoomId) socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
+                    const nextValue = event.target.value
+                    setDraft(nextValue)
+                    if (!activeRoomId) return
+                    const now = Date.now()
+                    if (nextValue.trim()) {
+                      // Throttle typing events to at most once every 1.5s and auto-clear after 2s of silence.
+                      if (now - lastTypingSentAtRef.current >= 1500) {
+                        socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: true })
+                        lastTypingSentAtRef.current = now
+                      }
+                      if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+                      const roomId = activeRoomId
+                      typingTimerRef.current = setTimeout(() => {
+                        socketRef.current?.emit('typing', { roomId, isTyping: false })
+                        lastTypingSentAtRef.current = 0
+                        typingTimerRef.current = null
+                      }, 2000)
+                    } else if (lastTypingSentAtRef.current > 0) {
+                      if (typingTimerRef.current) {
+                        clearTimeout(typingTimerRef.current)
+                        typingTimerRef.current = null
+                      }
+                      socketRef.current?.emit('typing', { roomId: activeRoomId, isTyping: false })
+                      lastTypingSentAtRef.current = 0
+                    }
                   }}
                   disabled={!activeRoomId || isSending}
                 />

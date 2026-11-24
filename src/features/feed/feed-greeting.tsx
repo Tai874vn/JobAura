@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { connectionsApi, recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { UserProfile } from '@/shared/schemas'
+import { Skeleton } from '@/shared/ui'
 import { useProfileStrength } from '@/features/users/profile-strength'
 
 export function FeedGreeting({ user }: { user: UserProfile }) {
@@ -23,11 +24,17 @@ export function FeedGreeting({ user }: { user: UserProfile }) {
   })
 
   const stats = [
-    { label: 'Profile strength', value: `${completeness}%`, href: '/settings' },
-    { label: 'Connections', value: String(connectionsQuery.data?.content?.totalRow ?? 0), href: '/connections' },
+    { label: 'Profile strength', value: `${completeness}%`, loading: false, href: '/settings' },
+    {
+      label: 'Connections',
+      value: connectionsQuery.data ? String(connectionsQuery.data.content?.totalRow ?? 0) : '—',
+      loading: connectionsQuery.isPending,
+      href: '/connections',
+    },
     {
       label: 'Matching runs left today',
       value: quotaQuery.data ? `${quotaQuery.data.content?.remaining ?? 0}/${quotaQuery.data.content?.limit ?? 0}` : '—',
+      loading: quotaQuery.isPending,
       href: '/recommendations/jobs',
     },
   ]
@@ -47,7 +54,7 @@ export function FeedGreeting({ user }: { user: UserProfile }) {
                 href={stat.href}
                 className="font-mono text-base font-medium tabular-nums transition-colors hover:text-primary"
               >
-                {stat.value}
+                {stat.loading ? <Skeleton className="inline-block h-5 w-10 align-middle" /> : stat.value}
               </Link>
             </dd>
           </div>

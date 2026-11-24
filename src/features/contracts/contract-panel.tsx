@@ -102,13 +102,14 @@ function run(contractId: number, act: Act): Promise<ContractDetail> {
   }
 }
 
-/** The time now, read again every minute so the "2 days left" lines stay right while the page is open. */
-function useNow(): Date {
+/** The time now, read again every minute only while the contract is active (completed/ended contracts need no timer). */
+function useNow(active: boolean): Date {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
+    if (!active) return
     const timer = window.setInterval(() => setNow(new Date()), 60_000)
     return () => window.clearInterval(timer)
-  }, [])
+  }, [active])
   return now
 }
 
@@ -135,15 +136,24 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
   const [dialogError, setDialogError] = useState<string | null>(null)
   // A sentence kept on the panel when a dialog had to close because the contract moved on.
   const [notice, setNotice] = useState<string | null>(null)
-  const now = useNow()
+  const active = contract.status === 'ACTIVE'
+  const now = useNow(active)
+
+  function closeDialog() {
+    setDialog(null)
+    setDialogError(null)
+  }
 
   const mutation = useContractMutation(detailKey, (act: Act) => run(contract.id, act), {
     // Every step runs from a dialog, which shows the refusal itself.
     quietErrors: () => true,
+    // Close the dialog in the same render batch as setQueryData so our own success never triggers the stale-dialog notice.
+    onSuccess: closeDialog,
   })
   const review = useMutation({
     mutationFn: (input: { rating: number; content: string }) => contractsApi.review({ contractId: contract.id, ...input }),
     onSuccess: (_answer, input) => {
+      closeDialog()
       // The answer is the comment, not the contract: show the review at once, then read the contract again.
       queryClient.setQueryData<ContractDetail>(detailKey, (old) => (old ? { ...old, canReview: false, review: { id: 0, ...input } } : old))
       void queryClient.invalidateQueries({ queryKey: ['contracts'] })
@@ -167,25 +177,19 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
   const reason = endReasonLine(contract)
   const action = nextAction(contract, viewerId)
   const submissions = allSubmissions(contract)
-  const active = contract.status === 'ACTIVE'
   const clock = current && active ? milestoneClock(contract, current, now) : null
 
   // The balance, for "after funding" in the fund dialog. Read only when the client can fund.
   const wallet = useQuery({ queryKey: walletKeys.summary(viewerId), queryFn: walletApi.summary, enabled: can('fund'), staleTime: 15_000 })
 
   // The contract changed under an open dialog (the other side or the deadline job acted): close it and say so.
-  // Not while a step is running: the fresh contract from our own step arrives just before the dialog closes itself.
-  // (React allows setting this component's own state while it renders; it redraws at once with the dialog closed.)
+  // Not while a step is running: our own success closes the dialog in onSuccess right beside setQueryData.
   if (dialog !== null && !pending && !dialogStillAllowed(dialog, contract, viewerId)) {
     setNotice(dialogError ?? 'This contract changed, so that step is no longer possible.')
     setDialog(null)
     setDialogError(null)
   }
 
-  function closeDialog() {
-    setDialog(null)
-    setDialogError(null)
-  }
   function open(next: ContractDialog) {
     setNotice(null)
     setDialogError(null)

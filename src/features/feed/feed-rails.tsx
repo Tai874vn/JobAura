@@ -10,7 +10,7 @@ import { connectionsApi, skillsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ConnectionSuggestion } from '@/shared/schemas'
-import { Button, Card } from '@/shared/ui'
+import { Button, Card, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 
 const desktopRailMedia = '(min-width: 1280px)'
@@ -44,9 +44,40 @@ function RightFeedRailContent() {
 
   return (
     <aside className="sticky top-20 hidden h-fit space-y-4 xl:block">
-      {suggestions.length ? <SuggestedPeople suggestions={suggestions} /> : null}
+      {suggestionsQuery.isPending ? (
+        <Card className="p-4" aria-busy="true" aria-label="Loading people you may know">
+          <div className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h2 className="text-sm font-medium">People you may know</h2>
+          </div>
+          <div className="mt-2 divide-y divide-border" aria-hidden="true">
+            {[0, 1].map((item) => (
+              <div key={item} className="flex items-center gap-2.5 py-2.5">
+                <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-[30px] w-20 shrink-0 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : suggestions.length ? <SuggestedPeople suggestions={suggestions} /> : null}
 
-      {skills.length ? (
+      {skillsQuery.isPending ? (
+        <Card className="p-4" aria-busy="true" aria-label="Loading trending skills">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h2 className="text-sm font-medium">Trending skills</h2>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2" aria-hidden="true">
+            {[0, 1, 2, 3, 4, 5].map((item) => (
+              <Skeleton key={item} className="h-7 w-20 rounded-md" />
+            ))}
+          </div>
+        </Card>
+      ) : skills.length ? (
         <Card className="p-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-primary" />

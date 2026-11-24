@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { RequireAuth } from '@/features/auth/require-auth'
 import { PublicShell } from '@/features/layout/public-shell'
+import { WorkspaceRequireAuth } from '@/features/workspace/workspace-require-auth'
 
 export const metadata: Metadata = {
   robots: {
@@ -11,8 +11,9 @@ export const metadata: Metadata = {
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (
-    <RequireAuth>
-      <PublicShell>{children}</PublicShell>
-    </RequireAuth>
+    // Keep the shared header and footer visible while RequireAuth checks the session.
+    <PublicShell>
+      <WorkspaceRequireAuth>{children}</WorkspaceRequireAuth>
+    </PublicShell>
   )
 }

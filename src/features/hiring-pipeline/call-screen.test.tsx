@@ -35,4 +35,34 @@ describe('CallScreen', () => {
     expect(html).toMatch(/<button[^>]*>Leave<\/button>/)
     expect(html).toMatch(/<button[^>]*>Skip<\/button>/)
   })
+
+  it('renders the full 3-part call loading shell while the interview detail is pending', () => {
+    const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } } })
+
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <CallScreen interviewId={5} />
+      </QueryClientProvider>,
+    )
+
+    expect(html).toContain('Loading the call')
+    expect(html).toContain('<header')
+    expect(html).toContain('<footer')
+  })
+
+  it('overlays the preparing pill without nested role="status" while the call pass loads', () => {
+    const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } } })
+    client.setQueryData(pipelineKeys.detail(2, 9), application)
+
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <CallScreen interviewId={5} />
+      </QueryClientProvider>,
+    )
+
+    expect(html).toContain('Getting the call ready')
+    expect(html).toContain('aria-hidden="true"')
+    // Only the <p role="status"> and CallStageSkeleton have role="status" — never a nested Spinner status inside <p>.
+    expect(html).not.toMatch(/<p[^>]*role="status"[^>]*>[^<]*<span[^>]*role="status"/)
+  })
 })

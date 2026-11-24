@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useId, useRef, useState } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import { Input, LiveStatus } from '@/shared/ui'
@@ -65,15 +65,27 @@ export function OccupationPicker({
   const listId = useId()
   const inputId = useId()
   const hintId = useId()
+  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const title = useOccupationTitle(value)
   const results = useQuery({
     queryKey: occupationKeys.search(search),
     queryFn: () => occupationsApi.search(search, 10),
     enabled: search.length > 0,
+    // Keep the previous hits visible while the next debounced search loads so the dropdown does not collapse.
+    placeholderData: keepPreviousData,
     staleTime: 300_000,
   })
   const hits = results.data ?? []
   const listShown = open && search.length > 0
+
+  function clearBlurTimer() {
+    if (blurTimerRef.current) {
+      clearTimeout(blurTimerRef.current)
+      blurTimerRef.current = null
+    }
+  }
+
+  useEffect(() => clearBlurTimer, [])
 
   function choose(hit: OccupationHit) {
     onPick(hit)
@@ -82,6 +94,7 @@ export function OccupationPicker({
 
   /** Back to showing the chosen title, with the list closed. */
   function reset() {
+    clearBlurTimer()
     setQuery('')
     setTyping(false)
     setOpen(false)
@@ -114,10 +127,10 @@ export function OccupationPicker({
           value={typing ? query : value ? title ?? '' : ''}
           placeholder={value && !title ? 'Loading…' : placeholder}
           onChange={(event) => { setQuery(event.target.value); setTyping(true); setOpen(true); setActive(0) }}
-          onFocus={(event) => { event.target.select(); if (typing) setOpen(true) }}
+          onFocus={(event) => { clearBlurTimer(); event.target.select(); if (typing) setOpen(true) }}
           // While it shows the chosen value, a click selects it all, so typing replaces it.
           onClick={(event) => { if (!typing) event.currentTarget.select() }}
-          onBlur={() => setTimeout(reset, 120)}
+          onBlur={() => { clearBlurTimer(); blurTimerRef.current = setTimeout(reset, 120) }}
           onKeyDown={(event) => {
             if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, hits.length - 1))) }
             else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }

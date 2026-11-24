@@ -15,9 +15,14 @@ import { deviceNotice, isDeviceError, type CallState } from './call-state'
 
 export type CallConnection = 'connecting' | 'connected' | 'failed' | 'disconnected'
 
+// Stable module-level options keep LiveKit hooks and controls from recreating references on every render.
+const cameraTracks = [{ source: Track.Source.Camera, withPlaceholder: true }]
+const roomStyle = { '--lk-accent-bg': '#006d43' } as React.CSSProperties
+const barControls = { microphone: true, camera: true, screenShare: false, chat: false, leave: false, settings: false }
+
 /** The two video tiles (one per person). A tile with the camera off shows a placeholder. */
 function Tiles() {
-  const tracks = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }])
+  const tracks = useTracks(cameraTracks)
   return (
     <GridLayout tracks={tracks} className="min-h-0 flex-1">
       <ParticipantTile />
@@ -65,7 +70,7 @@ export default function CallStage({
       audio={!failed.microphone}
       data-lk-theme="default"
       // The speaking border uses the brand green instead of LiveKit's blue.
-      style={{ '--lk-accent-bg': '#006d43' } as React.CSSProperties}
+      style={roomStyle}
       className="flex min-h-0 flex-1 flex-col"
       onConnected={handleConnected}
       onDisconnected={handleDisconnected}
@@ -79,7 +84,7 @@ export default function CallStage({
       <div className={state === 'live' ? '' : 'invisible'}>
         <ControlBar
           variation="minimal"
-          controls={{ microphone: true, camera: true, screenShare: false, chat: false, leave: false, settings: false }}
+          controls={barControls}
         />
       </div>
     </LiveKitRoom>

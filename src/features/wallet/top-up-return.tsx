@@ -23,11 +23,13 @@ export function TopUpReturn() {
   const { user } = useSession()
   // The query string only exists in the browser, so it is read after the page loads.
   const query = useSyncExternalStore(subscribeNothing, () => window.location.search, () => null)
+  const hasReturnParams = Boolean(query && query.length > 1)
 
   const check = useQuery({
     queryKey: walletKeys.topUpReturn(query, user?.id),
     queryFn: () => walletApi.topUpReturn(query ?? ''),
-    enabled: query !== null && Boolean(user),
+    // Avoid sending an empty return check when someone opens /wallet/top-up/return directly without VNPay params.
+    enabled: hasReturnParams && Boolean(user),
     retry: false,
     staleTime: Infinity,
   })
@@ -42,7 +44,12 @@ export function TopUpReturn() {
     <div className="container-page max-w-xl py-10">
       <h1 className="font-display text-2xl font-medium text-foreground">Top up</h1>
       <div className="mt-4 rounded-lg border border-border bg-surface p-5" aria-live="polite">
-        {check.isError ? (
+        {query !== null && !hasReturnParams ? (
+          <>
+            <p className="text-base font-medium text-foreground">No payment details found</p>
+            <p className="mt-1 text-sm text-muted">Return here from VNPay after a top up to check its status.</p>
+          </>
+        ) : check.isError ? (
           <p role="alert" className="text-sm text-danger">{getErrorMessage(check.error)}</p>
         ) : outcome ? (
           <>
@@ -50,7 +57,10 @@ export function TopUpReturn() {
             {outcome.detail ? <p className="mt-1 text-sm text-muted">{outcome.detail}</p> : null}
           </>
         ) : (
-          <Skeleton className="h-6 w-64" />
+          <div className="space-y-2" aria-busy="true">
+            <Skeleton className="h-6 w-64 max-w-full" />
+            <Skeleton className="h-4 w-48 max-w-full" />
+          </div>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
           {status === 'PENDING' ? <Button variant="secondary" onClick={() => check.refetch()} loading={check.isFetching}>Check again</Button> : null}

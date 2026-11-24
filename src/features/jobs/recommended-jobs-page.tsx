@@ -3,31 +3,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, ListOrdered, Zap } from 'lucide-react'
-import { useMemo, useState, type FocusEvent as ReactFocusEvent, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type FocusEvent as ReactFocusEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { RecommendationContent, RecommendedJob } from '@/shared/schemas'
-import { Button, ButtonLink, Card, CardContent, EmptyState, PageHeader, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, Card, CardContent, EmptyState, PageHeader, Skeleton } from '@/shared/ui'
 import { HiringPostCard } from '@/features/hiring/hiring-post-card'
 import { MatchBadge } from './recommendation-ui'
 
 const recommendationParams = { topK: 12, poolSize: 50 }
 type SkillGapRecommendation = RecommendedJob['recommendation']
-type SkillGapTooltipState = {
-  x: number
-  y: number
-  recommendation: SkillGapRecommendation
-} | null
 
 export function RecommendedJobsPage() {
   const queryClient = useQueryClient()
   const { user } = useSession()
   const viewerId = user?.id
   const [lastContent, setLastContent] = useState<RecommendationContent<RecommendedJob> | null>(null)
-  const [skillGapTooltip, setSkillGapTooltip] = useState<SkillGapTooltipState>(null)
+  // Keep only which card is hovered/focused in React state; pointer coordinates move the tooltip ref directly
+  // so mousemove never triggers 60-120Hz full-page re-renders.
+  const [activeRecommendation, setActiveRecommendation] = useState<SkillGapRecommendation | null>(null)
+  const tooltipRef = useRef<HTMLDivElement | null>(null)
+  const pointerPosRef = useRef<{ x: number; y: number }>({ x: 12, y: 12 })
   const [applyingId, setApplyingId] = useState<number | null>(null)
   const quotaQuery = useQuery({
     queryKey: queryKeys.viewerRecommendationQuota(viewerId),
@@ -59,15 +58,35 @@ export function RecommendedJobsPage() {
   const quota = lastContent?.quota ?? quotaQuery.data?.content ?? cachedContent?.quota
   const jobs = useMemo(() => sortByFinalScore(content?.data ?? []), [content?.data])
   const canRun = (quota?.remaining ?? 0) > 0
-  const showSkillGapTooltip = (event: ReactMouseEvent<HTMLElement>, recommendation: SkillGapRecommendation) => {
-    setSkillGapTooltip(positionSkillGapTooltip(event.clientX, event.clientY, recommendation))
+
+  const placeTooltip = useCallback((clientX: number, clientY: number) => {
+    const pos = computeTooltipPosition(clientX, clientY, window.innerWidth, window.innerHeight)
+    pointerPosRef.current = pos
+    if (tooltipRef.current) {
+      tooltipRef.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`
+    }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!activeRecommendation || !tooltipRef.current) return
+    const { x, y } = pointerPosRef.current
+    tooltipRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`
+  }, [activeRecommendation])
+
+  const handleCardMouseEnter = (event: ReactMouseEvent<HTMLElement>, recommendation: SkillGapRecommendation) => {
+    placeTooltip(event.clientX, event.clientY)
+    setActiveRecommendation(recommendation)
   }
-  const showSkillGapTooltipFromFocus = (
+  const handleCardMouseMove = (event: ReactMouseEvent<HTMLElement>) => {
+    placeTooltip(event.clientX, event.clientY)
+  }
+  const handleCardFocus = (
     event: ReactFocusEvent<HTMLElement>,
     recommendation: SkillGapRecommendation,
   ) => {
     const rect = event.currentTarget.getBoundingClientRect()
-    setSkillGapTooltip(positionSkillGapTooltip(rect.left + 18, rect.top + 18, recommendation))
+    placeTooltip(rect.left, rect.top)
+    setActiveRecommendation(recommendation)
   }
 
   return (
@@ -83,97 +102,125 @@ export function RecommendedJobsPage() {
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="grid gap-5">
+          {/* Keep the action card mounted while cached matches load so the page never jumps. */}
+          <StartRecommendationCard
+            hasResults={Boolean(content)}
+            isLoadingQuota={quotaQuery.isPending}
+            isRunning={runMutation.isPending}
+            canRun={canRun}
+            remaining={quota?.remaining ?? 0}
+            limit={quota?.limit ?? 0}
+            resetAt={quota?.resetAt}
+            onRun={() => runMutation.mutate(Boolean(content))}
+          />
           {!content && cachedQuery.isPending ? (
-            <Card>
-              <CardContent className="flex min-h-64 items-center justify-center gap-3 p-8 text-sm font-medium text-muted">
-                <Spinner className="h-5 w-5" />
-                Loading your previous matches...
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <StartRecommendationCard
-                hasResults={Boolean(content)}
-                isLoadingQuota={quotaQuery.isPending}
-                isRunning={runMutation.isPending}
-                canRun={canRun}
-                remaining={quota?.remaining ?? 0}
-                limit={quota?.limit ?? 0}
-                resetAt={quota?.resetAt}
-                onRun={() => runMutation.mutate(Boolean(content))}
-              />
-              {content ? jobs.length ? (
-                <div className="grid gap-4">
-                  {jobs.map((job) => (
-                    <div
-                      key={job.id}
-                      className="group/recommendation relative"
-                      onMouseMove={(event) => showSkillGapTooltip(event, job.recommendation)}
-                      onMouseLeave={() => setSkillGapTooltip(null)}
-                      onFocus={(event) => showSkillGapTooltipFromFocus(event, job.recommendation)}
-                      onBlur={(event) => {
-                        if (!event.currentTarget.contains(event.relatedTarget)) {
-                          setSkillGapTooltip(null)
-                        }
-                      }}
-                    >
-                      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
-                        <MatchBadge label={job.recommendation.label} score={job.recommendation.finalScore} />
-                        {job.recommendation.missingSkills.length
-                          ? <span>Missing: {job.recommendation.missingSkills.slice(0, 3).join(', ')}</span>
-                          : null}
-                      </div>
-                      <HiringPostCard
-                        post={job}
-                        viewer="candidate"
-                        active={applyingId === job.id}
-                        onToggleApply={() => setApplyingId((current) => (current === job.id ? null : job.id))}
-                        onApplied={() => {
-                          setApplyingId(null)
-                          void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
-                        }}
-                      />
-                    </div>
-                  ))}
+            <RecommendedJobsSkeleton />
+          ) : content ? jobs.length ? (
+            <div className="grid gap-4">
+              {jobs.map((job) => (
+                <div
+                  key={job.id}
+                  className="group/recommendation relative"
+                  onMouseEnter={(event) => handleCardMouseEnter(event, job.recommendation)}
+                  onMouseMove={handleCardMouseMove}
+                  onMouseLeave={() => setActiveRecommendation(null)}
+                  onFocus={(event) => handleCardFocus(event, job.recommendation)}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                      setActiveRecommendation(null)
+                    }
+                  }}
+                >
+                  <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+                    <MatchBadge label={job.recommendation.label} score={job.recommendation.finalScore} />
+                    {job.recommendation.missingSkills.length
+                      ? <span>Missing: {job.recommendation.missingSkills.slice(0, 3).join(', ')}</span>
+                      : null}
+                  </div>
+                  <HiringPostCard
+                    post={job}
+                    viewer="candidate"
+                    active={applyingId === job.id}
+                    onToggleApply={() => setApplyingId((current) => (current === job.id ? null : job.id))}
+                    onApplied={() => {
+                      setApplyingId(null)
+                      void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
+                    }}
+                  />
                 </div>
-              ) : (
-                <EmptyState
-                  icon={<ListOrdered />}
-                  title="No matching roles yet"
-                  description="Add your resume and skills so roles can be ranked for you, or browse all hiring posts."
-                  action={
-                    <ButtonLink href="/settings?section=resume" variant="secondary">
-                      Update resume
-                    </ButtonLink>
-                  }
-                />
-              ) : null}
-            </>
-          )}
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<ListOrdered />}
+              title="No matching roles yet"
+              description="Add your resume and skills so roles can be ranked for you, or browse all hiring posts."
+              action={
+                <ButtonLink href="/settings?section=resume" variant="secondary">
+                  Update resume
+                </ButtonLink>
+              }
+            />
+          ) : null}
         </section>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <QuotaCard quota={quota} loading={quotaQuery.isPending} />
         </aside>
       </div>
-      {skillGapTooltip ? (
+      {activeRecommendation ? (
         <SkillGapTooltip
-          x={skillGapTooltip.x}
-          y={skillGapTooltip.y}
-          recommendation={skillGapTooltip.recommendation}
+          tooltipRef={tooltipRef}
+          recommendation={activeRecommendation}
         />
       ) : null}
     </div>
   )
 }
 
+function RecommendedJobsSkeleton() {
+  return (
+    <div className="grid gap-4" role="status" aria-label="Loading your previous matches" aria-busy="true">
+      <span className="sr-only">Loading your previous matches</span>
+      {[0, 1, 2].map((item) => (
+        <div key={item} aria-hidden="true">
+          <div className="mb-2 flex items-center gap-2">
+            <Skeleton className="h-5 w-28 rounded-full" />
+            <Skeleton className="h-4 w-44" />
+          </div>
+          <Card>
+            <CardContent className="p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <div className="flex min-w-0 flex-1 gap-4">
+                  <Skeleton className="h-12 w-12 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1 space-y-2.5">
+                    <div className="flex flex-wrap gap-2">
+                      <Skeleton className="h-5 w-28 rounded-full" />
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
+                    <Skeleton className="h-7 w-2/3" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-2 sm:w-40 sm:flex-col">
+                  <Skeleton className="h-10 w-full rounded-lg" />
+                  <Skeleton className="h-10 w-full rounded-lg" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function SkillGapTooltip({
-  x,
-  y,
+  tooltipRef,
   recommendation,
 }: {
-  x: number
-  y: number
+  tooltipRef: React.RefObject<HTMLDivElement | null>
   recommendation: SkillGapRecommendation
 }) {
   const hasMatched = recommendation.matchedSkills.length > 0
@@ -181,8 +228,8 @@ function SkillGapTooltip({
 
   return (
     <div
-      className="pointer-events-none fixed z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 opacity-100 shadow-overlay backdrop-blur-sm"
-      style={{ left: x, top: y }}
+      ref={tooltipRef}
+      className="pointer-events-none fixed left-0 top-0 z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 opacity-100 shadow-overlay backdrop-blur-sm will-change-transform"
     >
       <div className="flex items-center gap-2 text-xs font-medium text-primary">
         <Lightbulb className="h-3.5 w-3.5" />
@@ -265,7 +312,7 @@ function StartRecommendationCard({
         <div className="rounded-lg border border-border bg-surface-muted p-4">
           <p className="text-xs font-medium text-primary">Available today</p>
           {isLoadingQuota ? (
-            <div className="mt-4 h-10 w-28 animate-pulse rounded bg-surface" />
+            <Skeleton className="mt-4 h-10 w-28 bg-surface" />
           ) : (
             <p className="mt-2 font-display text-4xl font-medium tabular-nums">{remaining}<span className="text-lg text-muted">/{limit}</span></p>
           )}
@@ -291,7 +338,7 @@ function QuotaCard({ quota, loading }: { quota?: { limit: number; used: number; 
         <p className="text-xs font-medium text-primary">AI usage</p>
         <h2 className="mt-1 font-display text-xl font-medium">Daily recommendation runs</h2>
         {loading ? (
-          <div className="mt-4 h-20 animate-pulse rounded bg-surface-muted" />
+          <Skeleton className="mt-4 h-20 w-full" />
         ) : (
           <>
             <div className="mt-4 flex items-end justify-between gap-3">
@@ -337,17 +384,22 @@ function sortByFinalScore<T extends { recommendation: { finalScore: number; rank
   })
 }
 
-function positionSkillGapTooltip(clientX: number, clientY: number, recommendation: SkillGapRecommendation): Exclude<SkillGapTooltipState, null> {
+/** Clamps the floating skill-gap tooltip inside the viewport edges. */
+export function computeTooltipPosition(
+  clientX: number,
+  clientY: number,
+  viewportWidth: number,
+  viewportHeight: number,
+): { x: number; y: number } {
   const tooltipWidth = 332
   const tooltipHeight = 260
   const margin = 12
   const offset = 18
-  const maxX = Math.max(margin, window.innerWidth - tooltipWidth - margin)
-  const maxY = Math.max(margin, window.innerHeight - tooltipHeight - margin)
+  const maxX = Math.max(margin, viewportWidth - tooltipWidth - margin)
+  const maxY = Math.max(margin, viewportHeight - tooltipHeight - margin)
 
   return {
     x: Math.min(Math.max(clientX + offset, margin), maxX),
     y: Math.min(Math.max(clientY + offset, margin), maxY),
-    recommendation,
   }
 }

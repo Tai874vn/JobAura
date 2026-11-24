@@ -5,6 +5,17 @@ export function shouldLoadRoomMessages(
   return Boolean(activeRoomId && !messagesByRoom[activeRoomId])
 }
 
+/**
+ * Merges freshly loaded room history with any live messages already received over Socket.IO.
+ * Deduplicates by message id while keeping history first and newly arrived messages at the end.
+ */
+export function mergeRoomMessages<T extends { id: number }>(fetched: T[], existing: T[] = []): T[] {
+  if (!existing.length) return fetched
+  const seen = new Set(fetched.map((message) => message.id))
+  const appended = existing.filter((message) => !seen.has(message.id))
+  return appended.length ? [...fetched, ...appended] : fetched
+}
+
 /** What `jobaura:open-chat` asks for: a room, or the direct room with one person. */
 export type OpenChatRequest = { roomId?: number; userId?: number }
 

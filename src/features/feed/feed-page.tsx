@@ -3,7 +3,7 @@
 import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { MessagesSquare, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { postsApi } from '@/shared/api/endpoints'
@@ -29,7 +29,7 @@ export function FeedPage() {
   const queryClient = useQueryClient()
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null)
-  const [pendingDeletePost, setPendingDeletePost] = useState<FeedPost | null>(null)
+  const [pendingDeletePostId, setPendingDeletePostId] = useState<number | null>(null)
   const closeDiscussion = useCallback(() => setSelectedPostId(null), [])
 
   const feedQuery = useInfiniteQuery({
@@ -53,13 +53,15 @@ export function FeedPage() {
 
   const likeMutation = useMutation(postLikeOptions(queryClient, user.id))
   const saveMutation = useMutation(postSaveOptions(queryClient, user.id))
+  const { mutate: toggleLike } = likeMutation
+  const { mutate: toggleSave } = saveMutation
 
   const deleteMutation = useMutation({
     mutationFn: postsApi.delete,
     onSuccess: (_response, postId) => {
       queryClient.setQueryData<FeedCache>(queryKeys.feed(user.id), (current) => removePost(current, postId))
       queryClient.invalidateQueries({ queryKey: queryKeys.feedStats(user.id) })
-      setPendingDeletePost(null)
+      setPendingDeletePostId(null)
       toast.success('Post deleted')
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not delete this post')),
@@ -77,8 +79,22 @@ export function FeedPage() {
     return () => observer.disconnect()
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
-  const posts = mergeFeedPages(feedQuery.data?.pages)
-  const selectedPost = posts.find((post) => post.id === selectedPostId) ?? null
+  const posts = useMemo(() => mergeFeedPages(feedQuery.data?.pages), [feedQuery.data?.pages])
+  const selectedPost = useMemo(() => posts.find((post) => post.id === selectedPostId) ?? null, [posts, selectedPostId])
+
+  // Stable callbacks keep memoized FeedPostCard instances from re-rendering on unrelated feed state updates.
+  const handleLike = useCallback((item: FeedPost) => {
+    toggleLike({ id: item.id, liked: !item.viewerHasLiked })
+  }, [toggleLike])
+  const handleOpenComments = useCallback((item: FeedPost) => {
+    setSelectedPostId(item.id)
+  }, [])
+  const handleDelete = useCallback((postId: number) => {
+    setPendingDeletePostId(postId)
+  }, [])
+  const handleSave = useCallback((item: FeedPost) => {
+    toggleSave({ id: item.id, saved: !item.viewerHasSaved })
+  }, [toggleSave])
 
   return (
     <div className="container-page py-5">
@@ -125,14 +141,14 @@ export function FeedPage() {
               currentUserId={user.id}
               liking={likeMutation.isPending && likeMutation.variables?.id === post.id}
               saving={saveMutation.isPending && saveMutation.variables?.id === post.id}
-              onLike={(item) => likeMutation.mutate({ id: item.id, liked: !item.viewerHasLiked })}
-              onOpenComments={(item) => setSelectedPostId(item.id)}
-              onDelete={() => setPendingDeletePost(post)}
-              onSave={(item) => saveMutation.mutate({ id: item.id, saved: !item.viewerHasSaved })}
+              onLike={handleLike}
+              onOpenComments={handleOpenComments}
+              onDelete={handleDelete}
+              onSave={handleSave}
             />
           ))}
-          <div ref={sentinelRef} className="flex h-16 items-center justify-center" aria-hidden="true">
-            {feedQuery.isFetchingNextPage ? <RefreshCw className="h-5 w-5 animate-spin text-primary" /> : null}
+          <div ref={sentinelRef} className="min-h-4" aria-hidden={!feedQuery.isFetchingNextPage}>
+            {feedQuery.isFetchingNextPage ? <FeedPostCardSkeleton /> : null}
           </div>
         </main>
         <RightFeedRail />
@@ -148,14 +164,14 @@ export function FeedPage() {
         />
       ) : null}
       <ConfirmationDialog
-        open={Boolean(pendingDeletePost)}
+        open={pendingDeletePostId !== null}
         title="Delete this post?"
         description="This post and its discussion will be permanently removed. This action cannot be undone."
         confirmLabel="Delete post"
         pending={deleteMutation.isPending}
-        onCancel={() => setPendingDeletePost(null)}
+        onCancel={() => setPendingDeletePostId(null)}
         onConfirm={() => {
-          if (pendingDeletePost) deleteMutation.mutate(pendingDeletePost.id)
+          if (pendingDeletePostId !== null) deleteMutation.mutate(pendingDeletePostId)
         }}
       />
     </div>
@@ -166,8 +182,30 @@ function MobileTab({ href, label }: { href: string; label: string }) {
   return <Link href={href} className="shrink-0 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium">{label}</Link>
 }
 
+function FeedPostCardSkeleton() {
+  return (
+    <Card className="space-y-4 p-4" aria-hidden="true">
+      <div className="flex gap-3">
+        <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-3 w-48 max-w-full" />
+        </div>
+      </div>
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-56 w-full" />
+    </Card>
+  )
+}
+
 function FeedSkeleton() {
-  return <div className="space-y-4">{[1, 2].map((item) => <Card key={item} className="space-y-4 p-4"><div className="flex gap-3"><Skeleton className="h-10 w-10 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-3 w-48" /></div></div><Skeleton className="h-4 w-full" /><Skeleton className="h-64 w-full" /></Card>)}</div>
+  return (
+    <div className="space-y-4" role="status" aria-label="Loading feed" aria-busy="true">
+      <span className="sr-only">Loading feed</span>
+      <FeedPostCardSkeleton />
+      <FeedPostCardSkeleton />
+    </div>
+  )
 }
 
 function prependPost(cache: FeedCache | undefined, post: FeedPost): FeedCache {

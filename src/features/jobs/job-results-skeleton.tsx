@@ -1,12 +1,48 @@
 import { Skeleton } from '@/shared/ui'
 
-/** Loading placeholders for the stacked portfolio result cards while a query is pending. */
+/** Loading placeholders mirroring JobResultCard (avatar, title, price, summary, footer actions). */
 export function JobResultsSkeleton() {
   return (
     <div role="status" aria-label="Loading portfolio posts" className="mt-4 grid gap-4">
       <span className="sr-only">Loading portfolio posts</span>
       {Array.from({ length: 3 }, (_, index) => (
-        <div key={index} className="h-56 animate-pulse rounded-xl border border-border bg-surface" aria-hidden="true" />
+        <div
+          key={index}
+          className="grid gap-3 rounded-xl border border-border bg-surface p-5 sm:p-6"
+          aria-hidden="true"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-start gap-3.5">
+              <Skeleton className="size-[46px] shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-4 w-36" />
+                <div className="flex gap-1.5 pt-0.5">
+                  <Skeleton className="h-6 w-24 rounded-md" />
+                  <Skeleton className="h-6 w-28 rounded-md" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1.5 sm:flex sm:w-[212px] sm:shrink-0 sm:flex-col sm:items-end">
+              <Skeleton className="h-6 w-28" />
+              <Skeleton className="h-3.5 w-20" />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+
+          <div className="flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center">
+            <Skeleton className="h-4 w-28 sm:mr-auto" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-[42px] w-20 rounded-lg" />
+              <Skeleton className="h-[42px] w-28 rounded-lg" />
+              <Skeleton className="h-[42px] w-36 rounded-lg" />
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   )

@@ -1,11 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { parseOpenChatRequest, shouldLoadRoomMessages } from './chat-data'
+import { mergeRoomMessages, parseOpenChatRequest, shouldLoadRoomMessages } from './chat-data'
 
 describe('chat message loading', () => {
   it('loads history only for an active room that is not cached', () => {
     expect(shouldLoadRoomMessages(null, {})).toBe(false)
     expect(shouldLoadRoomMessages(7, {})).toBe(true)
     expect(shouldLoadRoomMessages(7, { 7: [] })).toBe(false)
+  })
+
+  it('merges fetched room history with live messages without duplicating ids', () => {
+    const fetched = [{ id: 1, content: 'Hi' }, { id: 2, content: 'Hello' }]
+    const existing = [{ id: 2, content: 'Hello' }, { id: 3, content: 'Live msg' }]
+    expect(mergeRoomMessages(fetched, existing)).toEqual([
+      { id: 1, content: 'Hi' },
+      { id: 2, content: 'Hello' },
+      { id: 3, content: 'Live msg' },
+    ])
+    expect(mergeRoomMessages(fetched, [])).toBe(fetched)
   })
 })
 

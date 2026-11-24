@@ -15,6 +15,7 @@ import { cn } from "@/shared/lib/utils";
 import { occupationLabel } from "@/features/occupations/api";
 import { employmentTypes, hiringPostLevels } from "./hiring-post-form";
 import { HiringPostResultCard } from "./hiring-post-result-card";
+import { HiringPostResultSkeleton } from "./hiring-posts-skeleton";
 import { hiringPostViewer } from "./hiring-post-viewer";
 import {
   hiringPostFilterKeys as filterKeys,
@@ -236,9 +237,7 @@ export function HiringPostsPage() {
       }
       results={
         query.isPending ? (
-          <div className="mt-4 grid gap-4">
-            {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-64 animate-pulse rounded-xl bg-surface" />)}
-          </div>
+          <HiringPostResultSkeleton />
         ) : query.isError ? (
           <EmptyState icon={<BriefcaseBusiness />} title="Hiring posts could not be loaded" description="Check your connection and try again."
             action={<button type="button" onClick={() => void query.refetch()} className="text-sm font-semibold text-primary hover:underline">Try again</button>} />

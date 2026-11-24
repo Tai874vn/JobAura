@@ -3,13 +3,15 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useMemo } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { cn } from '@/shared/lib/utils'
 import type { ContractStatus, ProposalStatus, Side } from '@/shared/schemas'
-import { Button, ButtonLink, EmptyState, Skeleton } from '@/shared/ui'
+import { Button, ButtonLink, EmptyState } from '@/shared/ui'
 import { contractKeys, contractsApi } from './api'
 import { ContractListItem } from './contract-list-item'
 import { ContractPanel } from './contract-panel'
+import { ContractsListSkeleton } from './contracts-skeleton'
 import {
   buildRows,
   hrefWith,
@@ -58,8 +60,8 @@ export function ContractsPage() {
   const { user } = useSession()
   const viewerId = user?.id ?? 0
 
-  const params = parsePageParams(searchParams)
-  const { filter } = params
+  const params = useMemo(() => parsePageParams(searchParams), [searchParams])
+  const filter = params.filter
   const fromAddress = params.selection
 
   const hrefFor = (next: Record<string, string | null>) => hrefWith(pathname, searchParams.toString(), next)
@@ -102,14 +104,25 @@ export function ContractsPage() {
     staleTime: 15_000,
   })
 
-  const rows: Row[] = buildRows(filter, plan.proposals !== null ? (proposalsList.data?.data ?? []) : [], plan.contracts !== null ? (contractsList.data?.data ?? []) : [])
+  const proposalsData = proposalsList.data?.data
+  const contractsData = contractsList.data?.data
+  const rows: Row[] = useMemo(() => {
+    const activePlan = listPlan(params.filter)
+    return buildRows(
+      params.filter,
+      activePlan.proposals !== null ? (proposalsData ?? []) : [],
+      activePlan.contracts !== null ? (contractsData ?? []) : [],
+    )
+  }, [params, proposalsData, contractsData])
   const queries = [plan.proposals !== null ? proposalsList : null, plan.contracts !== null ? contractsList : null].filter((q) => q !== null)
   const isPending = queries.some((q) => q.isPending)
+  const isPlaceholderData = queries.some((q) => q.isPlaceholderData)
   const isError = queries.some((q) => q.isError)
   const capped = (proposalsList.data && plan.proposals !== null && proposalsList.data.total > contractsPageSize) || (contractsList.data && plan.contracts !== null && contractsList.data.total > contractsPageSize)
 
   // Wide screens always have one open; phones only open a view after a tap (an id in the address).
-  const selection = resolveSelection(fromAddress, rows)
+  // Skip auto-selecting stale rows from the previous tab/filter while placeholder data is still settling.
+  const selection = resolveSelection(fromAddress, isPlaceholderData && fromAddress === null ? [] : rows)
   const phoneView = fromAddress !== null
   const selectedProposal = useQuery({
     queryKey: contractKeys.proposal(selection?.kind === 'proposal' ? selection.id : 0, user?.id),
@@ -131,7 +144,10 @@ export function ContractsPage() {
   const contractHref = (id: number) => hrefFor({ contract: String(id), proposal: null, tab })
 
   function panel() {
-    if (!selection || !user) return null
+    if (!user) return null
+    if (!selection) {
+      return isPending || isPlaceholderData ? <PanelLoading backHref={backHref} /> : null
+    }
     const detail = selection.kind === 'proposal' ? selectedProposal : selectedContract
     const row = rows.find((r) => r.kind === selection.kind && r.id === selection.id)
     const rowTitle = row ? (row.kind === 'proposal' ? row.item.job.title : row.item.title) : undefined
@@ -211,9 +227,7 @@ export function ContractsPage() {
         <div className="mt-4 grid min-h-0 flex-1 items-stretch gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="min-h-0 min-w-0 lg:overflow-y-auto lg:overscroll-contain lg:pr-1.5">
             {isPending ? (
-              <div className="grid gap-2" aria-busy="true">
-                {[0, 1, 2].map((item) => <Skeleton key={item} className="h-24 rounded-xl" />)}
-              </div>
+              <ContractsListSkeleton />
             ) : isError ? (
               <EmptyState
                 title="Could not load your contracts"
@@ -221,7 +235,7 @@ export function ContractsPage() {
                 action={<Button onClick={() => { void proposalsList.refetch(); void contractsList.refetch() }}>Try again</Button>}
               />
             ) : rows.length ? (
-              <ul className="grid gap-2" role="listbox" aria-label="Proposals and contracts">
+              <ul className={cn('grid gap-2 transition-opacity duration-200', isPlaceholderData && 'opacity-60')} role="listbox" aria-busy={isPlaceholderData} aria-label="Proposals and contracts">
                 {rows.map((row) => (
                   <li key={`${row.kind}-${row.id}`} role="option" aria-selected={selection?.kind === row.kind && selection.id === row.id}>
                     <ContractListItem

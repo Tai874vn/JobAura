@@ -18,6 +18,7 @@ import { ConfirmActionDialog } from "@/features/hiring-pipeline/confirm-action-d
 import { isHiringPostAiPending } from "./hiring-post-ai";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
 import { activeApplicationCount, closePostQuestion } from "./hiring-pipeline-summary";
+import { MyHiringPostResultSkeleton } from "./hiring-posts-skeleton";
 import { MyHiringPostResultCard } from "./my-hiring-post-result-card";
 import { refreshHiringPostPages } from "./refresh-hiring-post-pages";
 import {
@@ -45,7 +46,13 @@ export function MyHiringPostsPage() {
   const searchParams = useSearchParams();
   const { user } = useSession();
   const applied = readMyPostsFilters(searchParams);
+  // Keep the keyword input synced with the URL whenever Reset or browser Back/Forward changes it.
   const [keyword, setKeyword] = useState(applied.keyword);
+  const [syncedKeyword, setSyncedKeyword] = useState(applied.keyword);
+  if (syncedKeyword !== applied.keyword) {
+    setSyncedKeyword(applied.keyword);
+    setKeyword(applied.keyword);
+  }
   const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
   // The post the recruiter is about to close; closing tells everyone still in progress.
@@ -56,7 +63,8 @@ export function MyHiringPostsPage() {
   const all = useQuery({
     queryKey: queryKeys.myHiringPosts(allParams, user?.id),
     queryFn: () => hiringPostsApi.mine(allParams),
-    refetchInterval: pollWhileAiWorks,
+    // Only poll on the active list when searching, so two queries do not double-poll every 3 seconds.
+    refetchInterval: applied.keyword ? false : pollWhileAiWorks,
   });
   const matchParams = myPostsRequest(applied.keyword);
   const matches = useQuery({
@@ -186,9 +194,7 @@ export function MyHiringPostsPage() {
         }
         results={
           matches.isPending ? (
-            <div className="mt-4 grid gap-4" aria-hidden="true">
-              {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-56 animate-pulse rounded-xl bg-surface" />)}
-            </div>
+            <MyHiringPostResultSkeleton />
           ) : matches.isError ? (
             <div className="mt-4">
               <EmptyState icon={<BriefcaseBusiness />} title="Your posts could not be loaded" description="Check your connection and try again."

@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { AlignLeft, ImagePlus, Info, MapPin, Send, Trash2, UploadCloud } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch, type Control, type UseFormRegister } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 import { useSession } from '@/features/auth/use-session'
@@ -60,24 +60,19 @@ export function JobForm({ job }: { job?: Job }) {
       rating: job?.rating ?? 0,
     },
   })
-  const workMode = form.watch('workMode') ?? 'REMOTE'
-  const serviceArea = form.watch('serviceArea') ?? ''
-  const areaError = serviceAreaError(workMode, serviceArea)
-  const saveBlocked = templateErrors(templateRows).length > 0 || Boolean(areaError)
-  const title = form.watch('title')
-  const price = form.watch('price')
+  const templateBlocked = templateErrors(templateRows).length > 0
   // Pick the field first (37 of them), then the kind of work inside it, instead of one list of 400+ entries.
   const categoriesQuery = useQuery({ queryKey: queryKeys.categories, queryFn: categoriesApi.all })
   const categories = categoriesQuery.data?.content ?? []
   const categoriesUnavailable = categoriesQuery.isError && !categories.length
   // The field the person picked; until they pick one, it follows the saved kind of work (when editing).
   const [pickedCategoryId, setPickedCategoryId] = useState<number | null>(null)
-  const savedSubcategoryId = form.watch('subcategoryId')
+  const initialSubcategoryId = job?.subcategoryId ?? 0
   const categoryId =
     pickedCategoryId ??
     job?.subcategory?.categoryId ??
     job?.subcategory?.category?.id ??
-    categories.find((category) => category.subcategories?.some((sub) => sub.id === Number(savedSubcategoryId)))?.id ??
+    categories.find((category) => category.subcategories?.some((sub) => sub.id === initialSubcategoryId))?.id ??
     0
   const subcategories = categories.find((category) => category.id === categoryId)?.subcategories ?? []
 
@@ -142,9 +137,6 @@ export function JobForm({ job }: { job?: Job }) {
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  const previewTitle = (typeof title === 'string' ? title.trim() : '') || 'Checkout redesign for an online store'
-  const previewPrice = servicePriceLabel(Number(price))
-
   return (
     <div className="container-page pt-10 pb-16">
       <PageHeader
@@ -171,7 +163,7 @@ export function JobForm({ job }: { job?: Job }) {
                 <Info className="h-3.5 w-3.5 text-primary" /> Basics
               </h2>
               <div className="grid gap-4">
-                <Field id="post-title" label="Title" counter={`${(title ?? '').length}/${titleLimit}`} error={form.formState.errors.title?.message}>
+                <Field id="post-title" label="Title" counter={<FieldCounter control={form.control} name="title" limit={titleLimit} />} error={form.formState.errors.title?.message}>
                   <Input id="post-title" {...form.register('title')} maxLength={titleLimit} placeholder="Checkout redesign for an online store" />
                   <p className="mt-1.5 text-xs font-normal text-muted">Name the project or the work you do, the way a recruiter would search for it.</p>
                 </Field>
@@ -225,11 +217,7 @@ export function JobForm({ job }: { job?: Job }) {
                     ))}
                   </div>
                 </fieldset>
-                {workMode !== 'REMOTE' ? (
-                  <Field id="post-area" label="Service area" counter={`${serviceArea.length}/160`} error={serviceArea.length ? areaError : undefined}>
-                    <Input id="post-area" {...form.register('serviceArea')} maxLength={160} placeholder="Hanoi, or within 30 km of Da Nang" />
-                  </Field>
-                ) : null}
+                <ServiceAreaField control={form.control} register={form.register} />
                 <MilestoneTemplateField rows={templateRows} onChange={setTemplateRows} />
               </div>
             </section>
@@ -239,10 +227,10 @@ export function JobForm({ job }: { job?: Job }) {
                 <AlignLeft className="h-3.5 w-3.5 text-primary" /> Descriptions
               </h2>
               <div className="grid gap-4">
-                <Field id="post-summary" label="Summary" counter={`${(form.watch('shortDescription') ?? '').length}/${shortLimit}`} error={form.formState.errors.shortDescription?.message}>
+                <Field id="post-summary" label="Summary" counter={<FieldCounter control={form.control} name="shortDescription" limit={shortLimit} />} error={form.formState.errors.shortDescription?.message}>
                   <Input id="post-summary" {...form.register('shortDescription')} maxLength={shortLimit} placeholder="One line shown on cards and in search" />
                 </Field>
-                <Field id="post-description" label="Description" counter={`${(form.watch('description') ?? '').length}/${descriptionLimit}`} error={form.formState.errors.description?.message}>
+                <Field id="post-description" label="Description" counter={<FieldCounter control={form.control} name="description" limit={descriptionLimit} />} error={form.formState.errors.description?.message}>
                   <Textarea id="post-description" {...form.register('description')} maxLength={descriptionLimit} placeholder="What you built, your part in it, the tools you used, and the result." />
                   <p className="mt-1.5 text-xs font-normal text-muted">Concrete results help recruiters most: numbers, links, what changed.</p>
                 </Field>
@@ -299,44 +287,118 @@ export function JobForm({ job }: { job?: Job }) {
 
             <section className="flex flex-wrap items-center justify-end gap-2.5 border-t border-border p-5">
               <ButtonLink href={job ? `/jobs/${job.id}` : '/my-posts'} variant="secondary">Cancel</ButtonLink>
-              <Button type="submit" loading={mutation.isPending} disabled={saveBlocked}>
-                <Send className="h-4 w-4" />
-                {editing ? 'Save changes' : 'Publish post'}
-              </Button>
+              <JobSubmitButton control={form.control} templateBlocked={templateBlocked} loading={mutation.isPending} editing={editing} />
             </section>
           </form>
         </Card>
 
-        <aside className="grid content-start gap-2.5 lg:sticky lg:top-24" aria-label="Live preview">
-          <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
-            <Send className="h-3 w-3 rotate-180 text-primary" /> Live preview — how recruiters see it
-          </p>
-          <Card className="overflow-hidden transition hover:shadow-float">
-            <div className="relative aspect-[4/3] bg-surface-muted">
-              {previewUrl ? (
-                <Image src={previewUrl} alt="Cover preview" fill unoptimized className="object-cover" sizes="360px" />
-              ) : (
-                <span className="font-display text-5xl font-medium text-primary/30">JA</span>
-              )}
-            </div>
-            <div className="p-3.5">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
-                  {user?.name?.trim() ? user.name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() : 'JA'}
-                </span>
-                <span className="truncate text-sm font-medium">{user?.name ?? 'You'}</span>
-              </div>
-              <p className="line-clamp-2 min-h-10 text-sm font-medium leading-snug">{previewTitle}</p>
-              <div className="mt-3 flex items-center justify-between">
-                <Badge tone="rating">New</Badge>
-                <span className="text-sm text-muted">{previewPrice ?? 'Portfolio'}</span>
-              </div>
-            </div>
-          </Card>
-          <p className="text-center text-xs text-muted">Your post appears in Portfolios, search, and on your profile once published.</p>
-        </aside>
+        <JobLivePreview control={form.control} previewUrl={previewUrl} userName={user?.name} />
       </div>
     </div>
+  )
+}
+
+/** Isolated character counter using useWatch so typing only re-renders this tiny span. */
+function FieldCounter({
+  control,
+  name,
+  limit,
+}: {
+  control: Control<CreateJobInput>
+  name: 'title' | 'shortDescription' | 'description'
+  limit: number
+}) {
+  const value = useWatch({ control, name })
+  const length = typeof value === 'string' ? value.length : 0
+  return <>{`${length}/${limit}`}</>
+}
+
+/** Isolated service area input using useWatch so switching work mode or typing an area does not re-render the whole form. */
+function ServiceAreaField({
+  control,
+  register,
+}: {
+  control: Control<CreateJobInput>
+  register: UseFormRegister<CreateJobInput>
+}) {
+  const workMode = useWatch({ control, name: 'workMode' }) ?? 'REMOTE'
+  const serviceArea = useWatch({ control, name: 'serviceArea' }) ?? ''
+  if (workMode === 'REMOTE') return null
+  const areaError = serviceAreaError(workMode, serviceArea)
+  return (
+    <Field id="post-area" label="Service area" counter={`${serviceArea.length}/160`} error={serviceArea.length ? areaError : undefined}>
+      <Input id="post-area" {...register('serviceArea')} maxLength={160} placeholder="Hanoi, or within 30 km of Da Nang" />
+    </Field>
+  )
+}
+
+/** Isolated submit button watching only workMode & serviceArea for its disabled check. */
+function JobSubmitButton({
+  control,
+  templateBlocked,
+  loading,
+  editing,
+}: {
+  control: Control<CreateJobInput>
+  templateBlocked: boolean
+  loading: boolean
+  editing: boolean
+}) {
+  const workMode = useWatch({ control, name: 'workMode' }) ?? 'REMOTE'
+  const serviceArea = useWatch({ control, name: 'serviceArea' }) ?? ''
+  const saveBlocked = templateBlocked || Boolean(serviceAreaError(workMode, serviceArea))
+  return (
+    <Button type="submit" loading={loading} disabled={saveBlocked}>
+      <Send className="h-4 w-4" />
+      {editing ? 'Save changes' : 'Publish post'}
+    </Button>
+  )
+}
+
+/** Isolated live preview card watching only title & price so edits do not re-render the entire form. */
+function JobLivePreview({
+  control,
+  previewUrl,
+  userName,
+}: {
+  control: Control<CreateJobInput>
+  previewUrl: string | null
+  userName?: string | null
+}) {
+  const title = useWatch({ control, name: 'title' })
+  const price = useWatch({ control, name: 'price' })
+  const previewTitle = (typeof title === 'string' ? title.trim() : '') || 'Checkout redesign for an online store'
+  const previewPrice = servicePriceLabel(Number(price))
+
+  return (
+    <aside className="grid content-start gap-2.5 lg:sticky lg:top-24" aria-label="Live preview">
+      <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
+        <Send className="h-3 w-3 rotate-180 text-primary" /> Live preview — how recruiters see it
+      </p>
+      <Card className="overflow-hidden transition hover:shadow-float">
+        <div className="relative aspect-[4/3] bg-surface-muted">
+          {previewUrl ? (
+            <Image src={previewUrl} alt="Cover preview" fill unoptimized className="object-cover" sizes="360px" />
+          ) : (
+            <span className="font-display text-5xl font-medium text-primary/30">JA</span>
+          )}
+        </div>
+        <div className="p-3.5">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+              {userName?.trim() ? userName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase() : 'JA'}
+            </span>
+            <span className="truncate text-sm font-medium">{userName ?? 'You'}</span>
+          </div>
+          <p className="line-clamp-2 min-h-10 text-sm font-medium leading-snug">{previewTitle}</p>
+          <div className="mt-3 flex items-center justify-between">
+            <Badge tone="rating">New</Badge>
+            <span className="text-sm text-muted">{previewPrice ?? 'Portfolio'}</span>
+          </div>
+        </div>
+      </Card>
+      <p className="text-center text-xs text-muted">Your post appears in Portfolios, search, and on your profile once published.</p>
+    </aside>
   )
 }
 
@@ -351,7 +413,7 @@ function Field({
   /** The id of the input inside, so the label names it for screen readers. */
   id: string
   label: string
-  counter?: string
+  counter?: React.ReactNode
   error?: string
   hint?: React.ReactNode
   children: React.ReactNode
