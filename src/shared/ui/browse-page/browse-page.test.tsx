@@ -2,12 +2,12 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { BrowseHero, BrowsePage, FilterChoice, FilterGroup, FilterPanel, FiltersToggle, ResultsHeader } from './browse-page'
 
-const page = (change: { filtersOpen?: boolean; pagination?: boolean } = {}) => renderToStaticMarkup(
+const page = (change: { filtersOpen?: boolean; pagination?: boolean; noExplore?: boolean } = {}) => renderToStaticMarkup(
   <BrowsePage
     resultsKey="" resultsReady
     hero={<BrowseHero title="Find a role" intro="Open roles." action={<a href="/mine">Mine</a>} />}
     search={<form role="search" aria-label="Search" />}
-    explore={<span>Explore row</span>}
+    explore={change.noExplore ? undefined : <span>Explore row</span>}
     filtersOpen={change.filtersOpen ?? false}
     filters={
       <FilterPanel intro="Narrow it down." onReset={() => undefined} canReset={false}>
@@ -53,5 +53,12 @@ describe('BrowsePage', () => {
   it('adds the pagination block only when pagination is given', () => {
     expect(page()).not.toContain('mt-6 grid gap-3')
     expect(page({ pagination: true })).toContain('<div class="mt-6 grid gap-3"><nav aria-label="Pages"></nav></div>')
+  })
+
+  it('draws no empty strip when there is no Explore row; the search band takes the bottom border', () => {
+    const html = page({ noExplore: true })
+    expect(html).not.toContain('pb-4 lg:pb-6')
+    expect(html).toContain('class="sticky top-16 z-20 bg-surface-muted border-b border-border"><div class="container-page py-3 lg:py-5"><form')
+    expect(page()).toContain('pb-4 lg:pb-6')
   })
 })

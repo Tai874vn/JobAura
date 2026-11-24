@@ -8,14 +8,13 @@ import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi, hiringPostSorts, type HiringPostFilters } from "@/shared/api/endpoints/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
-  BrowseHero, BrowsePage, ButtonLink, countOf, EmptyState, ExploreChip, ExploreRow, FilterChoice, FilterGroup, FilterPanel,
+  BrowseHero, BrowsePage, ButtonLink, ChoiceMenu, countOf, EmptyState, ExploreChip, ExploreRow, FilterChoice, FilterGroup, FilterPanel,
   FiltersToggle, listOf, Pagination, ResultsHeader, shownRange, toggleListValue,
 } from "@/shared/ui";
 import { cn } from "@/shared/lib/utils";
 import { occupationLabel } from "@/features/occupations/api";
 import { employmentTypes, hiringPostLevels } from "./hiring-post-form";
 import { HiringPostResultCard } from "./hiring-post-result-card";
-import { ChoiceMenu } from "./choice-menu";
 import { hiringPostViewer } from "./hiring-post-viewer";
 
 const pageSize = 10;

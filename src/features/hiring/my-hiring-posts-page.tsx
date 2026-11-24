@@ -1,46 +1,100 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BriefcaseBusiness, Eye, Lock, LockOpen, Pencil, Plus, ListOrdered, Users } from "lucide-react";
-import Link from "next/link";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowDownWideNarrow, BriefcaseBusiness, Plus, Search } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
-import { getErrorMessage } from "@/shared/lib/utils";
+import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
-import { Badge, Button, ButtonLink, Card, CardContent, EmptyState, PageHeader } from "@/shared/ui";
-import { hiringPostAiState, isHiringPostAiPending } from "./hiring-post-ai";
-import { formatDate, formatYearsRequired } from "./hiring-post-card";
-import { usePostOccupation } from "./use-post-occupation";
+import {
+  BrowseHero, BrowsePage, ChoiceMenu, EmptyState, FilterChoice, FilterGroup, FilterPanel, FiltersToggle, Pagination,
+  ResultsHeader, shownRange,
+} from "@/shared/ui";
 import { ConfirmActionDialog } from "@/features/hiring-pipeline/confirm-action-dialog";
+import { isHiringPostAiPending } from "./hiring-post-ai";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
-import { activeApplicationCount, closePostQuestion, pipelineSummary } from "./hiring-pipeline-summary";
+import { activeApplicationCount, closePostQuestion } from "./hiring-pipeline-summary";
+import { MyHiringPostResultCard } from "./my-hiring-post-result-card";
+import {
+  arrangeMyPosts, myPostsHref, myPostsLoadLimit, myPostsPage, myPostsPageSize, myPostsRequest, myPostsSortLabels,
+  myPostsStatsLine, readMyPostsFilters, statusCounts, type MyPostsFilters, type MyPostsSort, type MyPostsStatus,
+} from "./my-hiring-posts-view";
 
-const params = { page: 1, pageSize: 50 };
+const newPostButton = "interaction inline-flex h-[42px] items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 
-/** The recruiter's workspace: their own posts, with status, applicants, the AI level, and the next actions. */
+type MinePage = Awaited<ReturnType<typeof hiringPostsApi.mine>>;
+// While the backend's AI queue works on a post, check back until it finishes.
+const pollWhileAiWorks = (query: { state: { data?: MinePage } }) =>
+  query.state.data?.content?.data.some(isHiringPostAiPending) ? 3000 : false;
+
+/**
+ * The recruiter's own posts (employers and admins alike; the backend returns only the caller's posts), in the
+ * hiring posts layout: a hero with the stats line and New hiring post, a keyword search, a Status filter, and one
+ * card per post with its pipeline and actions. Keyword, status, sort and page live in the address; ?edit=ID opens
+ * a post's form so other pages can link straight to editing it.
+ */
 export function MyHiringPostsPage() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const applied = readMyPostsFilters(searchParams);
+  const [keyword, setKeyword] = useState(applied.keyword);
+  const [showFilters, setShowFilters] = useState(false);
   const [creating, setCreating] = useState(false);
   // The post the recruiter is about to close; closing tells everyone still in progress.
   const [closing, setClosing] = useState<HiringPost | null>(null);
-  const query = useQuery({
-    queryKey: queryKeys.myHiringPosts(params),
-    queryFn: () => hiringPostsApi.mine(params),
-    // While the backend's AI queue works on a post, check back until it finishes.
-    refetchInterval: (current) =>
-      current.state.data?.content?.data.some(isHiringPostAiPending) ? 3000 : false,
+
+  // Every post (for the stats line and ?edit=), and the posts the keyword finds (the same request when no keyword).
+  const allParams = myPostsRequest("");
+  const all = useQuery({
+    queryKey: queryKeys.myHiringPosts(allParams),
+    queryFn: () => hiringPostsApi.mine(allParams),
+    refetchInterval: pollWhileAiWorks,
   });
-  const posts = query.data?.content?.data ?? [];
-  // ?edit=ID opens a post's form, so other pages can link straight to editing it.
+  const matchParams = myPostsRequest(applied.keyword);
+  const matches = useQuery({
+    queryKey: queryKeys.myHiringPosts(matchParams),
+    queryFn: () => hiringPostsApi.mine(matchParams),
+    refetchInterval: pollWhileAiWorks,
+    // Keep the last list on screen while a new keyword loads, instead of flashing a skeleton.
+    placeholderData: keepPreviousData,
+  });
+  const allPosts = all.data?.content?.data ?? [];
+  const found = matches.data?.content?.data ?? [];
+  const foundTotal = matches.data?.content?.totalRow ?? found.length;
+  const counts = statusCounts(found);
+  const arranged = arrangeMyPosts(found, applied);
+  const shownPage = myPostsPage(arranged, applied.page);
+  const shown = shownRange(shownPage.page, myPostsPageSize, arranged.length);
+  const searching = Boolean(applied.keyword || applied.status);
+
   const editId = Number(searchParams.get("edit")) || null;
-  const editing = editId ? posts.find((post) => post.id === editId) ?? null : null;
-  const closeEdit = () => router.replace(pathname, { scroll: false });
+  const editing = editId ? allPosts.find((post) => post.id === editId) ?? found.find((post) => post.id === editId) ?? null : null;
+
+  function go(next: Partial<MyPostsFilters>, page = 1) {
+    router.replace(myPostsHref(pathname, { ...applied, ...next }, page), { scroll: false });
+  }
+  function reset() {
+    setKeyword("");
+    go({ keyword: "", status: "" });
+  }
+  // Open and Closed replace each other; ticking the chosen one again shows all posts.
+  function setStatusFilter(status: MyPostsStatus) {
+    go({ status: applied.status === status ? "" : status });
+  }
+  // Opening the form keeps the filters and page; closing it drops only ?edit.
+  function openEdit(id: number) {
+    const url = new URLSearchParams(searchParams.toString());
+    url.set("edit", String(id));
+    router.replace(`${pathname}?${url.toString()}`, { scroll: false });
+  }
+  function closeEdit() {
+    router.replace(myPostsHref(pathname, applied, applied.page), { scroll: false });
+  }
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
   const setStatus = useMutation({
@@ -64,79 +118,108 @@ export function MyHiringPostsPage() {
     onError: (error) => toast.error(getErrorMessage(error, "Could not queue this post for its AI level")),
   });
 
-  const open = posts.filter((post) => post.status === "OPEN");
-  const applicants = posts.reduce((sum, post) => sum + post.applicationCount, 0);
+  const stats = myPostsStatsLine(allPosts);
+  const newPost = (
+    <button type="button" onClick={() => setCreating(true)} className={newPostButton}>
+      <Plus className="h-4 w-4" aria-hidden="true" />New hiring post
+    </button>
+  );
 
   return (
-    <div className="container-page py-8">
-      <PageHeader
-        title="My hiring posts"
-        description="Publish roles, keep them up to date, and match candidates to each one."
-        actions={<Button type="button" onClick={() => setCreating(true)}><Plus className="h-4 w-4" />New hiring post</Button>}
-      />
-
-      {posts.length ? (
-        <dl className="mt-6 grid gap-3 sm:grid-cols-3">
-          <Stat label="Open posts" value={open.length} />
-          <Stat label="Closed posts" value={posts.length - open.length} />
-          <Stat label="Applicants" value={applicants} />
-        </dl>
-      ) : null}
-
-      <div className="mt-6 grid gap-4">
-        {query.isPending ? (
-          Array.from({ length: 2 }).map((_, index) => <Card key={index}><CardContent className="h-36 animate-pulse bg-surface-muted" /></Card>)
-        ) : query.isError ? (
-          <EmptyState icon={<BriefcaseBusiness />} title="Your posts could not be loaded" description="Check your connection and try again."
-            action={<Button type="button" variant="secondary" onClick={() => void query.refetch()}>Try again</Button>} />
-        ) : posts.length ? (
-          posts.map((post) => {
-            const summary = pipelineSummary(post);
-            return (
-            <Card key={post.id}>
-              <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center">
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone={post.status === "OPEN" ? "primary" : "neutral"}>{post.status === "OPEN" ? "Open" : "Closed"}</Badge>
-                    <OccupationBadge post={post} />
-                    <LevelBadge post={post} />
-                  </div>
-                  <h2 className="mt-2 font-display text-xl font-medium">
-                    <Link href={`/hiring-posts/${post.id}`} className="hover:text-primary">{post.title}</Link>
-                  </h2>
-                  <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-                    <span className="inline-flex items-center gap-1 font-medium text-foreground"><Users className="h-4 w-4" aria-hidden="true" />{post.applicationCount === 1 ? "1 applicant" : `${post.applicationCount} applicants`}</span>
-                    {post.yearsRequired != null ? <span>{formatYearsRequired(post.yearsRequired)}</span> : <span>Years required not set</span>}
-                    <span>{post.location || "Location flexible"}</span>
-                    {post.closesAt ? <span>Closes {formatDate(post.closesAt)}</span> : null}
-                  </p>
-                  {summary ? <p className="mt-2 text-sm font-medium text-foreground">{summary}</p> : null}
-                  <AiLevelStatus post={post} />
-                </div>
-                <div className="flex flex-wrap gap-2 lg:w-72 lg:justify-end">
-                  <ButtonLink href={`/my-hiring-posts/${post.id}/applicants`} size="sm" variant="secondary"><Users className="h-4 w-4" />Applicants</ButtonLink>
-                  <ButtonLink href={`/recommendations/candidates?hiringPostId=${post.id}`} size="sm"><ListOrdered className="h-4 w-4" />Match candidates</ButtonLink>
-                  <Button type="button" size="sm" variant="secondary" onClick={() => router.replace(`${pathname}?edit=${post.id}`, { scroll: false })}><Pencil className="h-4 w-4" />Edit</Button>
-                  {hiringPostAiState(post).action ? (
-                    <Button type="button" size="sm" variant="secondary" loading={predict.isPending && predict.variables === post.id} disabled={predict.isPending} onClick={() => predict.mutate(post.id)}>
-                      {hiringPostAiState(post).action}
-                    </Button>
-                  ) : null}
-                  <Button type="button" size="sm" variant="ghost" loading={setStatus.isPending && setStatus.variables?.id === post.id}
-                    onClick={() => (post.status === "OPEN" ? (setStatus.reset(), setClosing(post)) : setStatus.mutate({ id: post.id, status: "OPEN" }))}>
-                    {post.status === "OPEN" ? <><Lock className="h-4 w-4" />Close</> : <><LockOpen className="h-4 w-4" />Reopen</>}
-                  </Button>
-                  <ButtonLink href={`/hiring-posts/${post.id}`} size="sm" variant="ghost"><Eye className="h-4 w-4" />View</ButtonLink>
-                </div>
-              </CardContent>
-            </Card>
-          );})
-        ) : (
-          <EmptyState icon={<BriefcaseBusiness />} title="No hiring posts yet"
-            description="Publish your first role. Candidates find it on Hiring posts, and AI matching ranks candidates for it."
-            action={<Button type="button" onClick={() => setCreating(true)}><Plus className="h-4 w-4" />New hiring post</Button>} />
-        )}
-      </div>
+    <>
+      <BrowsePage
+        resultsKey={searchParams.toString()}
+        resultsReady={Boolean(matches.data)}
+        hero={
+          <BrowseHero title="My hiring posts" action={newPost}
+            intro={all.isPending ? "Loading your posts…" : stats || "Publish roles, keep them up to date, and follow each one's applicants."} />
+        }
+        search={
+          <form role="search" aria-label="Search my hiring posts"
+            onSubmit={(event) => { event.preventDefault(); go({ keyword }); }}
+            className="field-shell flex min-w-0 items-center gap-2 rounded-xl border border-[#d1ddd1] bg-surface p-2 sm:h-[68px] sm:pl-3">
+            <label className="flex min-w-0 flex-1 items-center gap-2.5 px-2">
+              <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+              <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Title, skill, or location" aria-label="Keyword"
+                className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none" />
+            </label>
+            <button type="submit" className="interaction inline-flex h-[42px] shrink-0 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-32">
+              Search
+            </button>
+          </form>
+        }
+        filtersOpen={showFilters}
+        filters={
+          <FilterPanel intro="Show the posts you are working on." onReset={reset} canReset={searching}>
+            {/* Counts are of the posts the keyword finds, worked out here: the backend sends no facet counts for them. */}
+            <FilterGroup title="Status" last>
+              <FilterChoice label="All posts" checked={!applied.status} count={matches.data ? found.length : undefined} onChange={() => go({ status: "" })} />
+              <FilterChoice label="Open" checked={applied.status === "open"} count={matches.data ? counts.open : undefined} onChange={() => setStatusFilter("open")} />
+              <FilterChoice label="Closed" checked={applied.status === "closed"} count={matches.data ? counts.closed : undefined} onChange={() => setStatusFilter("closed")} />
+            </FilterGroup>
+          </FilterPanel>
+        }
+        toolbar={
+          <ResultsHeader
+            title={matches.isPending ? "Loading posts…" : `${arranged.length.toLocaleString("en-US")} ${applied.status ? `${applied.status} ` : ""}${arranged.length === 1 ? "post" : "posts"}`}
+            actions={
+              <>
+                <FiltersToggle open={showFilters} onToggle={() => setShowFilters((value) => !value)} count={applied.status ? 1 : 0} />
+                <ChoiceMenu label="Sort" prefix="Sort:" value={applied.sort} align="right"
+                  buttonClassName="h-[42px] rounded-lg border border-transparent bg-surface px-3.5 text-sm font-semibold text-muted transition-colors hover:border-border focus-visible:ring-2 focus-visible:ring-primary"
+                  icon={<ArrowDownWideNarrow className="h-4 w-4 shrink-0" aria-hidden="true" />}
+                  options={(Object.keys(myPostsSortLabels) as MyPostsSort[]).map((sort) => ({ value: sort, label: myPostsSortLabels[sort] }))}
+                  onChange={(next) => go({ sort: next as MyPostsSort })} />
+              </>
+            }
+            summary={arranged.length ? (
+              <>
+                Showing {shown.first}–{shown.last} of {arranged.length}
+                {foundTotal > myPostsLoadLimit ? ` (your ${myPostsLoadLimit} most recently updated posts; search to find older ones)` : ""}
+              </>
+            ) : null} />
+        }
+        results={
+          matches.isPending ? (
+            <div className="mt-4 grid gap-4" aria-hidden="true">
+              {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-56 animate-pulse rounded-xl bg-surface" />)}
+            </div>
+          ) : matches.isError ? (
+            <div className="mt-4">
+              <EmptyState icon={<BriefcaseBusiness />} title="Your posts could not be loaded" description="Check your connection and try again."
+                action={<button type="button" onClick={() => void matches.refetch()} className="text-sm font-semibold text-primary hover:underline">Try again</button>} />
+            </div>
+          ) : shownPage.items.length ? (
+            <ul className={cn("mt-4 grid gap-4 transition-opacity duration-200", matches.isPlaceholderData && "opacity-60")}
+              aria-busy={matches.isPlaceholderData} aria-label="My hiring posts">
+              {shownPage.items.map((post) => (
+                <li key={post.id}>
+                  <MyHiringPostResultCard post={post}
+                    onEdit={() => openEdit(post.id)}
+                    onToggleStatus={() => (post.status === "OPEN" ? (setStatus.reset(), setClosing(post)) : setStatus.mutate({ id: post.id, status: "OPEN" }))}
+                    statusPending={setStatus.isPending && setStatus.variables?.id === post.id}
+                    onPredict={() => predict.mutate(post.id)}
+                    predictPending={predict.isPending && predict.variables === post.id}
+                    predictDisabled={predict.isPending} />
+                </li>
+              ))}
+            </ul>
+          ) : searching ? (
+            <div className="mt-4">
+              <EmptyState icon={<BriefcaseBusiness />} title="No posts match" description="Try another keyword or show all posts."
+                action={<button type="button" onClick={reset} className="text-sm font-semibold text-primary hover:underline">Clear filters</button>} />
+            </div>
+          ) : (
+            <div className="mt-4">
+              <EmptyState icon={<BriefcaseBusiness />} title="No hiring posts yet"
+                description="Publish your first role. Candidates find it on Hiring posts, and AI matching ranks candidates for it."
+                action={newPost} />
+            </div>
+          )
+        }
+        pagination={!matches.isPending && !matches.isError && shownPage.items.length ? (
+          <Pagination page={shownPage.page} totalPages={shownPage.totalPages} onPage={(next) => go({}, next)} label="My hiring post pages" boxed />
+        ) : undefined} />
 
       <ConfirmActionDialog
         open={Boolean(closing)}
@@ -151,44 +234,6 @@ export function MyHiringPostsPage() {
       />
       <HiringPostFormDialog open={creating} onClose={() => setCreating(false)} />
       <HiringPostFormDialog open={Boolean(editing)} post={editing} onClose={closeEdit} />
-    </div>
+    </>
   );
-}
-
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <dt className="text-xs font-medium text-muted">{label}</dt>
-        <dd className="mt-1 font-display text-2xl font-medium">{value}</dd>
-      </CardContent>
-    </Card>
-  );
-}
-
-function AiLevelStatus({ post }: { post: HiringPost }) {
-  const state = hiringPostAiState(post);
-  if (state.label) {
-    return <p role="status" className="mt-2 text-sm text-muted">{state.label}</p>;
-  }
-  if (state.message) {
-    return <p className="mt-2 text-sm text-muted">{state.message}</p>;
-  }
-  return null;
-}
-
-function LevelBadge({ post }: { post: HiringPost }) {
-  // No percentage: the model applies fixed rules, so its "confidence" is near 100% and reads as certainty.
-  return post.predictedSeniority
-    ? <Badge tone="accent">AI level: {post.predictedSeniority}</Badge>
-    : <Badge tone="neutral">AI level not set</Badge>;
-}
-
-/** The post's occupation; a post saved before occupations shows its old field and that it needs an occupation. */
-function OccupationBadge({ post }: { post: HiringPost }) {
-  const occupation = usePostOccupation(post);
-  if (!occupation) return null;
-  return occupation.legacy
-    ? <Badge tone="neutral">Previously: {occupation.label} · choose the occupation</Badge>
-    : <Badge tone="neutral">{occupation.label}{post.specialty ? ` · ${post.specialty}` : ""}</Badge>;
 }

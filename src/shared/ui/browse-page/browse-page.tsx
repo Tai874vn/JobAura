@@ -6,7 +6,7 @@ import { cn } from '@/shared/lib/utils'
 
 /**
  * The browse layout of /hiring-posts, shared by the pages that look like it: a hero, a search bar that stays under
- * the site header while the page scrolls, an optional "Explore:" row, a filter column on the left (shown by a
+ * the site header while the page scrolls, an optional "Explore:" row (left out, nothing is drawn for it), a filter column on the left (shown by a
  * button on phones), and the results on the right with their header, list and pagination.
  *
  * When `resultsKey` changes (a search, a filter, another page) and `resultsReady` is true, the results go back to
@@ -45,12 +45,15 @@ export function BrowsePage({ hero, search, explore, filters, filtersOpen, toolba
 
       {/* The one search bar stays under the site header while the list scrolls, so searching again never means
           scrolling back up. */}
-      <div className="sticky top-16 z-20 bg-surface-muted">
-        <div className="container-page py-3 lg:pt-5">{search}</div>
+      <div className={cn('sticky top-16 z-20 bg-surface-muted', !explore && 'border-b border-border')}>
+        <div className={cn('container-page py-3', explore ? 'lg:pt-5' : 'lg:py-5')}>{search}</div>
       </div>
-      <div className="border-b border-border bg-surface-muted">
-        <div className="container-page pb-4 lg:pb-6">{explore}</div>
-      </div>
+      {/* Without an Explore row the search band closes the hero itself, so no empty strip is left under it. */}
+      {explore ? (
+        <div className="border-b border-border bg-surface-muted">
+          <div className="container-page pb-4 lg:pb-6">{explore}</div>
+        </div>
+      ) : null}
 
       <div className="container-page grid gap-8 py-8 lg:grid-cols-[256px_minmax(0,1fr)] lg:py-10">
         <aside className={cn('lg:block', filtersOpen ? 'motion-popover block' : 'hidden')} aria-label="Filters">
