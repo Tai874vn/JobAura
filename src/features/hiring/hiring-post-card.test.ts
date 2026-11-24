@@ -29,10 +29,10 @@ describe("required years", () => {
 });
 
 describe("hiringPostViewer", () => {
-  it("lets candidates apply, asks visitors to sign in, and lets recruiters read", () => {
+  it("lets candidates and admins apply, asks visitors to sign in, and lets recruiters read", () => {
     expect(hiringPostViewer("user")).toBe("candidate");
     expect(hiringPostViewer(undefined)).toBe("visitor");
     expect(hiringPostViewer("employer")).toBe("recruiter");
-    expect(hiringPostViewer("admin")).toBe("recruiter");
+    expect(hiringPostViewer("admin")).toBe("candidate");
   });
 });

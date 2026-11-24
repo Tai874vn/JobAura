@@ -106,7 +106,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
     staleTime: 15_000,
   })
   const post = postQuery.data?.content
-  const allowed = Boolean(post && user && (user.role === 'admin' || user.id === post.recruiterId))
+  const allowed = Boolean(post && user && user.id === post.recruiterId)
 
   const listParams = applicantsListParams(status, page)
   const list = useQuery({
