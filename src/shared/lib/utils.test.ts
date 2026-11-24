@@ -1,13 +1,11 @@
 import { AxiosError } from 'axios'
 import { describe, expect, it } from 'vitest'
-import { cn, currency, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from './utils'
+import { cn, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from './utils'
 import { safeExternalUrl } from './urls'
 
 describe('utils', () => {
-  it('merges class names and formats currency', () => {
+  it('merges class names', () => {
     expect(cn('px-2', 'px-4', 'text-sm')).toBe('px-4 text-sm')
-    expect(currency(2500)).toBe('$2,500')
-    expect(currency(undefined)).toBe('$0')
   })
 
   it('extracts error messages from axios and generic errors', () => {

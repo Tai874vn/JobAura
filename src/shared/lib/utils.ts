@@ -8,14 +8,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function currency(value: number | undefined) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(value ?? 0)
-}
-
 export function getErrorMessage(error: unknown, fallback = 'Something went wrong') {
   if (error instanceof AxiosError) {
     const data = error.response?.data as { message?: unknown } | undefined

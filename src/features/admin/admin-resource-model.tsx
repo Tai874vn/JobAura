@@ -1,11 +1,12 @@
 import Image from 'next/image'
-import { commentsApi, hiresApi, subcategoriesApi, categoriesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
-import { currency, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import type { Comment, Hire, Job, Subcategory, Category, User } from '@/shared/schemas'
+import { commentsApi, subcategoriesApi, categoriesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
+import { credits } from '@/shared/lib/credits'
+import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import type { Comment, Job, Subcategory, Category, User } from '@/shared/schemas'
 import { Badge } from '@/shared/ui'
 
-export type Resource = 'jobs' | 'users' | 'categories' | 'subcategories' | 'hires' | 'comments'
-export type ResourceRow = Job | User | Category | Subcategory | Hire | Comment
+export type Resource = 'jobs' | 'users' | 'categories' | 'subcategories' | 'comments'
+export type ResourceRow = Job | User | Category | Subcategory | Comment
 export type CreateValues = { name: string; parentTypeId?: number }
 export type ResourceConfig = {
   title: string
@@ -62,13 +63,6 @@ const resourceConfigs: Record<Resource, ResourceConfig> = {
       needsParentType: true,
     },
   },
-  'hires': {
-    title: 'Hires',
-    columns: ['ID', 'Job', 'User', 'Completed'],
-    load: async () => (await hiresApi.all()).content ?? [],
-    remove: hiresApi.delete,
-    renderCells: renderHireCells,
-  },
   comments: {
     title: 'Comments',
     columns: ['ID', 'Job ID', 'User', 'Rating', 'Comment'],
@@ -92,7 +86,7 @@ function renderJobCells(row: ResourceRow) {
       <td className="px-4 py-3"><Thumb src={job.image ?? undefined} label={job.title} /></td>
       <td className="max-w-xs px-4 py-3 font-medium">{job.title}</td>
       <td className="px-4 py-3">{job.user?.name ?? job.creatorId ?? 'Unknown'}</td>
-      <td className="px-4 py-3 font-medium">{currency(job.price)}</td>
+      <td className="px-4 py-3 font-medium">{job.price > 0 ? credits(job.price) : '—'}</td>
       <td className="px-4 py-3 text-rating">{(job.rating ?? 0).toFixed(1)}</td>
       <td className="px-4 py-3"><Badge tone="primary">Active</Badge></td>
     </>
@@ -120,11 +114,6 @@ function renderCategoryCells(row: ResourceRow) {
 function renderSubcategoryCells(row: ResourceRow) {
   const detail = row as Subcategory
   return <><td className="px-4 py-3 font-mono text-xs">#{detail.id}</td><td className="px-4 py-3 font-medium">{detail.name}</td><td className="px-4 py-3">{detail.categoryId ?? '-'}</td></>
-}
-
-function renderHireCells(row: ResourceRow) {
-  const hire = row as Hire
-  return <><td className="px-4 py-3 font-mono text-xs">#{hire.id}</td><td className="px-4 py-3">{hire.jobId}</td><td className="px-4 py-3">{hire.hirerId ?? '-'}</td><td className="px-4 py-3"><Badge tone={hire.completed ? 'primary' : 'neutral'}>{hire.completed ? 'Done' : 'Open'}</Badge></td></>
 }
 
 function renderCommentCells(row: ResourceRow) {

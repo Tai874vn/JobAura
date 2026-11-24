@@ -20,7 +20,6 @@ export default function robots(): MetadataRoute.Robots {
         '/connections',
         '/jobs/new',
         '/logout',
-        '/my-jobs',
         '/my-posts',
         '/recommendations',
         '/saved',

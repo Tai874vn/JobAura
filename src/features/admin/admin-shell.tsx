@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Settings, Tags, Users } from 'lucide-react'
+import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Tags, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession } from '@/features/auth/use-session'
@@ -13,7 +13,6 @@ const nav = [
   { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/categories', label: 'Categories', icon: Tags },
   { href: '/admin/subcategories', label: 'Subcategories', icon: BarChart3 },
-  { href: '/admin/hires', label: 'Hires', icon: Settings },
   { href: '/admin/comments', label: 'Comments', icon: MessageSquare },
   { href: '/settings?section=resume', activePath: '/settings', label: 'My resume', icon: FileJson },
 ]

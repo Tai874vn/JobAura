@@ -7,7 +7,7 @@ export const adminApi = {
       await apiClient.get<ApiResponse<{
         users: number
         jobs: number
-        hires: number
+        contracts: number
         comments: number
       }>>('/api/admin/stats')
     ).data,

@@ -7,7 +7,7 @@ import {
 } from './users'
 import {
   applyHiringPostSchema, candidateProfileSchema, commentSchema, createCommentSchema, createHiringPostSchema,
-  createJobSchema, hireSchema, hiringApplicationSchema, hiringPostSchema, subcategorySchema, jobSchema,
+  createJobSchema, hiringApplicationSchema, hiringPostSchema, subcategorySchema, jobSchema,
   categorySchema, recommendationLabelSchema, recommendationScoreSchema, recommendedCandidateSchema,
   recommendedJobSchema, updateJobSchema, hiringApplicationStatusSchema, hiringStatusReasonSchema,
   hiringPipelineCountsSchema, interviewSchema, applicationEventSchema, applicationDetailSchema,
@@ -109,7 +109,6 @@ export type Category = z.infer<typeof categorySchema>;
 export type Subcategory = z.infer<typeof subcategorySchema>;
 export type Comment = z.infer<typeof commentSchema>;
 export type CreateComment = z.infer<typeof createCommentSchema>;
-export type Hire = z.infer<typeof hireSchema>;
 export type FeedAuthor = z.infer<typeof feedAuthorSchema>;
 export type PostComment = z.infer<typeof postCommentSchema>;
 export type FeedPost = z.infer<typeof feedPostSchema>;

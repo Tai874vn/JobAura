@@ -22,7 +22,6 @@ export const queryKeys = {
   notifications: ['notifications', 'list'] as const,
   notificationUnreadCount: ['notifications', 'unread-count'] as const,
   comments: ['comments'] as const,
-  hires: ['hires'] as const,
   feed: ['posts', 'feed'] as const,
   feedStats: ['posts', 'me', 'stats'] as const,
   postComments: (postId: number) => ['posts', postId, 'comments'] as const,

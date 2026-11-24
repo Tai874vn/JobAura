@@ -13,6 +13,7 @@ import { cn } from '@/shared/lib/utils'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
+import { ChatProposalButton } from '@/features/contracts/chat-proposal-button'
 import { synchronizeChatConnection } from './chat-connection'
 import { openChatEventName, parseOpenChatRequest, shouldLoadRoomMessages, type OpenChatRequest } from './chat-data'
 
@@ -395,6 +396,10 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
                 </div>
               )}
             </div>
+            {/* Only in a direct chat (one other person); the button hides itself when that person sells nothing. */}
+            {activeRoom && !activeRoom.isGroup && peer && user ? (
+              <ChatProposalButton key={peer.id} otherUserId={peer.id} viewerId={user.id} onSent={closeChat} />
+            ) : null}
             <form className="flex gap-2 border-t border-border p-2.5" onSubmit={sendMessage}>
               <div className="flex min-w-0 flex-1 items-center field-shell rounded-md border border-border bg-surface px-4">
                 <input

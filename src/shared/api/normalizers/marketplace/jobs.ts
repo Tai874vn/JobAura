@@ -1,5 +1,5 @@
-import type { ApiResponse, Comment, CreateComment, CreateJob, Hire, Job, Subcategory, Category, PaginatedContent, UpdateJob } from '@/shared/schemas'
-import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickString, pickUser } from '../core'
+import type { ApiResponse, Comment, CreateComment, CreateJob, Job, Subcategory, Category, PaginatedContent, UpdateJob } from '@/shared/schemas'
+import { asRecord, mapApiResponse, pickNumber, pickString, pickUser } from '../core'
 
 export function normalizeCategory(raw: unknown): Category {
   const record = asRecord(raw);
@@ -72,19 +72,6 @@ export function normalizeComment(raw: unknown): Comment {
   };
 }
 
-export function normalizeHire(raw: unknown): Hire {
-  const record = asRecord(raw);
-  return {
-    ...(record as Partial<Hire>),
-    id: pickNumber(record, "id") ?? 0,
-    jobId: pickNumber(record, "jobId") ?? 0,
-    hirerId: pickNumber(record, "hirerId", "userId"),
-    hiredAt: pickString(record, "hiredAt", "createdAt"),
-    completed: pickBoolean(record, "completed"),
-    job: record.job ? normalizeJob(record.job) : undefined,
-  };
-}
-
 export function normalizePaginatedJobsResponse(
   response: ApiResponse<PaginatedContent<Job>>,
 ): ApiResponse<PaginatedContent<Job>> {
@@ -142,12 +129,6 @@ export function normalizeCommentsResponse(
   response: ApiResponse<Comment[]>,
 ): ApiResponse<Comment[]> {
   return mapApiResponse(response, (content) => content.map(normalizeComment));
-}
-
-export function normalizeHiresResponse(
-  response: ApiResponse<Hire[]>,
-): ApiResponse<Hire[]> {
-  return mapApiResponse(response, (content) => content.map(normalizeHire));
 }
 
 export function toJobPayload(data: CreateJob | UpdateJob) {

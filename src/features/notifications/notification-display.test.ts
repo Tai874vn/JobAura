@@ -4,6 +4,7 @@ import {
   notificationContext,
   notificationDetail,
   notificationHeadline,
+  notificationTarget,
   roomIdFromNotification,
   safeInternalActionUrl,
 } from './notification-display'
@@ -92,6 +93,71 @@ describe('notification display model', () => {
       expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview booked', body: 'x', metadata: { kind: 'interview', scheduledAt: 'soon' } }))).toBe('Interview booked')
       // New times or a request carry proposedTimes, not scheduledAt: the server title stays.
       expect(notificationHeadline(pipeline({ type: 'INTERVIEW_UPDATE', title: 'Interview request', body: 'x', metadata: { kind: 'interview', proposedTimes: [new Date().toISOString()] } }))).toBe('Interview request')
+    })
+  })
+
+  describe('proposal and contract notifications', () => {
+    const isProposalStep = (step: string) => step.startsWith('proposal_') && step !== 'proposal_accepted'
+    const contract = (step: string, extra: Record<string, unknown> = {}, overrides: Partial<AppNotification> = {}) => notification({
+      type: isProposalStep(step) ? 'PROPOSAL_UPDATE' : 'CONTRACT_UPDATE',
+      title: 'Server title',
+      body: 'Server body.',
+      actor: { id: 5, name: 'Hai Vu' },
+      metadata: { kind: isProposalStep(step) ? 'proposal' : 'contract', step, proposalId: null, contractId: null, milestoneId: null, actorName: 'Hai Vu', title: 'Logo design', ...extra },
+      ...overrides,
+    })
+
+    it.each([
+      ['proposal_sent', 'Hai Vu sent you a proposal'],
+      ['proposal_countered', 'New version of the proposal for Logo design'],
+      ['proposal_declined', 'Hai Vu declined the proposal for Logo design'],
+      ['proposal_withdrawn', 'Hai Vu withdrew the proposal for Logo design'],
+      ['proposal_expired', 'The proposal for Logo design expired'],
+      ['proposal_accepted', 'Hai Vu accepted the proposal for Logo design'],
+      ['milestone_funded', 'Milestone funded'],
+      ['work_submitted', 'Work submitted'],
+      ['changes_requested', 'Changes requested'],
+      ['milestone_approved', 'Milestone approved'],
+      ['contract_completed', 'Contract completed'],
+      ['contract_ended', 'Contract ended'],
+    ])('writes the headline for %s', (step, expected) => {
+      expect(notificationHeadline(contract(step))).toBe(expected)
+    })
+
+    it('adds the milestone number and amount when the server sends them', () => {
+      expect(notificationHeadline(contract('milestone_funded', { position: 2 }))).toBe('Milestone 2 funded')
+      expect(notificationHeadline(contract('work_submitted', { position: 1 }))).toBe('Work submitted for milestone 1')
+      expect(notificationHeadline(contract('changes_requested', { position: 1 }))).toBe('Changes requested on milestone 1')
+      expect(notificationHeadline(contract('milestone_approved', { position: 1, amount: 300 }))).toBe('Milestone 1 approved · 300 credits released')
+      expect(notificationHeadline(contract('warning_sent', { position: 2, rule: 'FREELANCER_LATE' }))).toBe('Milestone 2 is past its due date')
+    })
+
+    it('keeps the headline once read, and falls back to the server title', () => {
+      expect(notificationHeadline(contract('proposal_sent', {}, { readAt: '2026-11-24T00:00:00.000Z' }))).toBe('Hai Vu sent you a proposal')
+      expect(notificationHeadline(contract('some_new_step'))).toBe('Server title')
+      expect(notificationHeadline(notification({ type: 'CONTRACT_UPDATE', title: 'Old title', metadata: {} }))).toBe('Old title')
+    })
+
+    it('names the context and shows the server body as detail', () => {
+      expect(notificationContext(contract('proposal_sent'))).toBe('Proposal')
+      expect(notificationContext(contract('milestone_funded'))).toBe('Contract')
+      expect(notificationDetail(contract('milestone_funded'))).toBe('Server body.')
+    })
+
+    it('old hire notifications still read sensibly and open the contracts page', () => {
+      const hire = notification({ type: 'HIRE_CREATED', title: 'New hire', actor: { id: 5, name: 'Hai Vu' }, actionUrl: '/my-jobs' })
+      expect(notificationHeadline(hire)).toBe('Hai Vu created a hire update')
+      expect(notificationContext(hire)).toBe('Hiring')
+      expect(notificationTarget(hire)).toBe('/contracts')
+      expect(notificationTarget({ ...hire, type: 'HIRE_COMPLETED', actionUrl: null })).toBe('/contracts')
+    })
+
+    it('opens the action URL, or builds the contracts link from the metadata', () => {
+      expect(notificationTarget(contract('proposal_sent', {}, { actionUrl: '/contracts?tab=freelancer&proposal=7' }))).toBe('/contracts?tab=freelancer&proposal=7')
+      expect(notificationTarget(contract('proposal_sent', { proposalId: 7 }, { actionUrl: 'https://evil.example/x' }))).toBe('/contracts?proposal=7')
+      expect(notificationTarget(contract('milestone_funded', { contractId: 3 }, { actionUrl: null }))).toBe('/contracts?contract=3')
+      expect(notificationTarget(contract('proposal_accepted', { proposalId: 7, contractId: 3 }, { actionUrl: null }))).toBe('/contracts?contract=3')
+      expect(notificationTarget(notification({ type: 'POST_LIKE', actionUrl: '/?postId=4' }))).toBe('/?postId=4')
     })
   })
 })

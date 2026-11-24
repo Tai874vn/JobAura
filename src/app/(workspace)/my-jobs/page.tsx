@@ -1,13 +1,6 @@
-import type { Metadata } from 'next'
-import { RequireAuth } from '@/features/auth/require-auth'
-import { MyJobsPage } from '@/features/workspace/my-jobs-page'
+import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'My hired jobs' }
-
+// "My jobs and hires" is gone: service work now lives on the contracts page. Old links and bookmarks land there.
 export default function Page() {
-  return (
-    <RequireAuth allowedRoles={['user', 'admin']}>
-      <MyJobsPage />
-    </RequireAuth>
-  )
+  redirect('/contracts')
 }

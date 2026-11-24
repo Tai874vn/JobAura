@@ -162,7 +162,8 @@ const nextConfig: NextConfig = {
     return [
       { source: '/admin/job-types', destination: '/admin/categories', permanent: true },
       { source: '/admin/job-detail-types', destination: '/admin/subcategories', permanent: true },
-      { source: '/admin/hired-jobs', destination: '/admin/hires', permanent: true },
+      { source: '/admin/hired-jobs', destination: '/admin', permanent: true },
+      { source: '/admin/hires', destination: '/admin', permanent: true },
     ]
   },
   turbopack: {

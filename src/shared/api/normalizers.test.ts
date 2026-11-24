@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeCategory,
   normalizeComment,
-  normalizeHire,
   normalizeFeedResponse,
   normalizePostComment,
   normalizeConnectionRequestsResponse,
@@ -194,7 +193,7 @@ describe("normalizers", () => {
     });
   });
 
-  it("normalizes jobs, comments, and hired jobs", () => {
+  it("normalizes jobs and comments", () => {
     const job = normalizeJob({
       id: 10,
       title: "Landing page",
@@ -255,16 +254,6 @@ describe("normalizers", () => {
     expect(backendComment.commentedAt).toBe("2026-06-16T03:03:00.216Z");
     expect(backendComment.user?.name).toBe("Tai");
 
-    const hiredJob = normalizeHire({
-      id: 4,
-      jobId: 10,
-      userId: 9,
-      completed: true,
-      job: { id: 10, title: "Landing page", price: 120 },
-    });
-    expect(hiredJob.jobId).toBe(10);
-    expect(hiredJob.completed).toBe(true);
-    expect(hiredJob.job?.title).toBe("Landing page");
   });
 
   it("normalizes list and paginated responses while preserving metadata", () => {

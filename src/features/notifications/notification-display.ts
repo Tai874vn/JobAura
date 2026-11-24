@@ -1,5 +1,6 @@
 import type { AppNotification } from '@/shared/schemas'
 import { safeInternalPath } from '@/shared/lib/session-routing'
+import { credits } from '@/shared/lib/credits'
 import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
 
 export function roomIdFromNotification(notification: AppNotification) {
@@ -39,8 +40,57 @@ function pipelineHeadline(notification: AppNotification) {
   return notification.title
 }
 
+function isContractNotification(notification: AppNotification) {
+  return notification.type === 'PROPOSAL_UPDATE' || notification.type === 'CONTRACT_UPDATE'
+}
+
+function metadataNumber(notification: AppNotification, key: string) {
+  const value = notification.metadata?.[key]
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  if (typeof value === 'string' && value.trim() && Number.isFinite(Number(value))) return Number(value)
+  return null
+}
+
+/**
+ * Headline of a proposal or contract notification, from `metadata.step` (the event name), `actorName` and `title`
+ * (the service or proposal title). The milestone number and the amount are added when the server sends them
+ * (`position`, `amount`); without them the headline stays general and the body (detail line) has the number.
+ * A step this app does not know shows the server's title.
+ */
+function contractHeadline(notification: AppNotification) {
+  const step = metadataString(notification, 'step')
+  const actor = metadataString(notification, 'actorName') ?? notification.actor?.name?.trim() ?? 'Someone'
+  const title = metadataString(notification, 'title')
+  const forTitle = title ? ` for ${title}` : ''
+  const position = metadataNumber(notification, 'position')
+  const amount = metadataNumber(notification, 'amount')
+  switch (step) {
+    case 'proposal_sent': return `${actor} sent you a proposal`
+    case 'proposal_countered': return `New version of the proposal${forTitle}`
+    case 'proposal_declined': return `${actor} declined the proposal${forTitle}`
+    case 'proposal_withdrawn': return `${actor} withdrew the proposal${forTitle}`
+    case 'proposal_expired': return `The proposal${forTitle} expired`
+    case 'proposal_accepted': return `${actor} accepted the proposal${forTitle}`
+    case 'milestone_funded': return position ? `Milestone ${position} funded` : 'Milestone funded'
+    case 'work_submitted': return position ? `Work submitted for milestone ${position}` : 'Work submitted'
+    case 'changes_requested': return position ? `Changes requested on milestone ${position}` : 'Changes requested'
+    case 'milestone_approved': {
+      if (!position) return 'Milestone approved'
+      return amount !== null ? `Milestone ${position} approved · ${credits(amount)} released` : `Milestone ${position} approved`
+    }
+    case 'contract_completed': return 'Contract completed'
+    case 'contract_ended': return 'Contract ended'
+    case 'warning_sent':
+      // Only the "work is late" warning is about a due date; the other two keep the server's title.
+      if (metadataString(notification, 'rule') === 'FREELANCER_LATE') return position ? `Milestone ${position} is past its due date` : 'A milestone is past its due date'
+      return notification.title
+    default: return notification.title
+  }
+}
+
 export function notificationHeadline(notification: AppNotification) {
   if (isPipelineNotification(notification)) return pipelineHeadline(notification)
+  if (isContractNotification(notification)) return contractHeadline(notification)
   const actorName = notification.actor?.name?.trim()
   if (!actorName) return notification.title
   if (notification.readAt) return actorName
@@ -58,6 +108,25 @@ export function notificationHeadline(notification: AppNotification) {
   if (notification.type === 'HIRE_CREATED') return `${actorName} created a hire update`
   if (notification.type === 'HIRE_COMPLETED') return `${actorName} completed a hire update`
   return actorName
+}
+
+/**
+ * Where a click on the notification goes. A proposal or contract notification opens that proposal or contract on the
+ * contracts page (the server's `actionUrl`, or one built from the ids when it is missing or not an internal link). Old
+ * hire notifications point to the removed My jobs page, so they open the contracts page.
+ */
+export function notificationTarget(notification: AppNotification) {
+  if (notification.type === 'HIRE_CREATED' || notification.type === 'HIRE_COMPLETED') return '/contracts'
+  const safe = safeInternalActionUrl(notification.actionUrl)
+  if (safe && !(isContractNotification(notification) && !safe.startsWith('/contracts'))) return safe
+  if (isContractNotification(notification)) {
+    const contractId = metadataNumber(notification, 'contractId')
+    if (contractId) return `/contracts?contract=${contractId}`
+    const proposalId = metadataNumber(notification, 'proposalId')
+    if (proposalId) return `/contracts?proposal=${proposalId}`
+    return '/contracts'
+  }
+  return safe
 }
 
 export function notificationContext(notification: AppNotification) {

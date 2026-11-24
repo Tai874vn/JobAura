@@ -12,7 +12,7 @@ export function AdminDashboard() {
   const metrics = [
     { label: 'Users', value: stats.isError ? '—' : stats.data?.content?.users ?? 0, loading: stats.isPending },
     { label: 'Active jobs', value: stats.isError ? '—' : stats.data?.content?.jobs ?? 0, loading: stats.isPending },
-    { label: 'Hires', value: stats.isError ? '—' : stats.data?.content?.hires ?? 0, loading: stats.isPending },
+    { label: 'Contracts', value: stats.isError ? '—' : stats.data?.content?.contracts ?? 0, loading: stats.isPending },
     { label: 'Comments', value: stats.isError ? '—' : stats.data?.content?.comments ?? 0, loading: stats.isPending },
   ]
 

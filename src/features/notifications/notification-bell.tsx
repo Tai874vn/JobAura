@@ -28,7 +28,7 @@ import {
 } from "./notification-cache";
 import {
   roomIdFromNotification,
-  safeInternalActionUrl,
+  notificationTarget,
 } from "./notification-display";
 import { NotificationSection, NotificationSkeleton } from "./notification-list";
 
@@ -131,7 +131,7 @@ export function NotificationBell() {
       }
     }
 
-    const actionUrl = safeInternalActionUrl(notification.actionUrl);
+    const actionUrl = notificationTarget(notification);
     if (actionUrl) router.push(actionUrl);
     else if (notification.actionUrl)
       toast.error("This notification link is unavailable");
