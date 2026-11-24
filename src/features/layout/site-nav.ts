@@ -23,6 +23,7 @@ export function siteNav(role?: string | null): SiteNav {
         { href: '/admin', label: 'Admin' },
         { href: '/', label: 'Home', wide: true },
         { href: '/hiring-posts', label: 'Hiring posts' },
+        { href: '/my-hiring-posts', label: 'My hiring posts', wide: true },
         { href: '/jobs', label: 'Portfolios' },
         { href: '/jobs/new', label: 'Post portfolio', wide: true },
         { href: '/candidates', label: 'Find candidates' },

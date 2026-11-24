@@ -35,7 +35,9 @@ describe('siteNav', () => {
 
   it('gives admins every area: admin pages, both public lists, and both roles\' tools', () => {
     expect(siteNav('admin').home).toBe('/')
-    expect(labels('admin')).toEqual(['Admin', 'Home', 'Hiring posts', 'Portfolios', 'Post portfolio', 'Find candidates', 'AI matching', 'Connections'])
+    expect(labels('admin')).toEqual(['Admin', 'Home', 'Hiring posts', 'My hiring posts', 'Portfolios', 'Post portfolio', 'Find candidates', 'AI matching', 'Connections'])
+    expect(siteNav('admin').main).toContainEqual({ href: '/my-hiring-posts', label: 'My hiring posts', wide: true })
+    expect(labels('user')).not.toContain('My hiring posts')
     const account = siteNav('admin').account.map((link) => link.label)
     expect(account).toEqual(expect.arrayContaining(['Home feed', 'My hiring posts', 'Post portfolio', 'My portfolio posts', 'Settings']))
   })
