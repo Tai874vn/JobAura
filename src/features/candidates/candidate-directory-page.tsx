@@ -1,493 +1,612 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
-import {
-  ArrowUpRight,
-  Award,
-  BriefcaseBusiness,
-  ChevronDown,
-  Clock3,
-  FolderOpen,
-  MapPin,
-  Search,
-  SearchX,
-  SlidersHorizontal,
-  ListOrdered,
-  Star,
-  Users,
-  X,
-} from 'lucide-react'
-import {
-  formatCandidateCareer,
-  formatCandidateRating,
-  getCandidateLocation,
-  getCandidateSkillNames,
-  getCandidateSummary,
-  minYearsChip,
-  minYearsLabel,
-  occupationParams,
-} from './candidate-directory'
+import { ListOrdered, MapPin, Search, SearchX, Users, X } from 'lucide-react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useSession } from '@/features/auth/use-session'
 import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
-import { ConnectionActions } from '@/features/connections/connect-button'
-import { FeedAvatar } from '@/features/feed/feed-avatar'
 import { skillsApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn } from '@/shared/lib/utils'
-import type { CandidateProfile } from '@/shared/schemas'
-import { Badge, Button, ButtonLink, Card, CardContent, CardSkeleton, EmptyState, InfoTip, Input, Select } from '@/shared/ui'
+import {
+  BrowseHero,
+  BrowsePage,
+  ButtonLink,
+  EmptyState,
+  ExploreChip,
+  ExploreRow,
+  FilterChoice,
+  FilterGroup,
+  FilterPanel,
+  FiltersToggle,
+  InfoTip,
+  Pagination,
+  ResultsHeader,
+  shownRange,
+} from '@/shared/ui'
+import { CandidateConnectButton } from './candidate-connect-button'
+import {
+  buildCandidatesHref,
+  candidateLevels,
+  candidateMinYearsPresets,
+  candidatesPageSize,
+  countActiveCandidateFilters,
+  minYearsLabel,
+  readCandidateFilters,
+  resolveOutOfRangePage,
+  toCandidateSearchParams,
+  type CandidateListFilters,
+} from './candidate-directory'
+import { CandidateResultCard } from './candidate-result-card'
 
-const pageSize = 12
+const EXPLORE_SKILLS_LIMIT = 6
 
+/**
+ * Discoverable candidates (/candidates, employers and admins) on the shared BrowsePage shell:
+ * a hero with AI matching, a sticky search bar (keyword + location), an optional Explore row of popular skills,
+ * a left filter sidebar (popover on phones), stacked candidate result cards, and prev/next pagination.
+ * Every filter lives in the URL so filtered searches can be shared or restored with Back/Forward.
+ */
 export function CandidateDirectoryPage() {
+  const router = useRouter()
+  const pathname = usePathname() || '/candidates'
   const searchParams = useSearchParams()
-  const initialKeyword = searchParams.get('keyword') ?? ''
+  const { user } = useSession()
 
-  return <CandidateDirectoryContent key={initialKeyword} initialKeyword={initialKeyword} />
-}
+  const parsed = readCandidateFilters(searchParams)
+  const { page, ...applied } = parsed
 
-function CandidateDirectoryContent({ initialKeyword }: { initialKeyword: string }) {
-  const [keyword, setKeyword] = useState(initialKeyword)
-  const [skill, setSkill] = useState('')
-  const [location, setLocation] = useState('')
-  const [debouncedKeyword, setDebouncedKeyword] = useState(initialKeyword.trim())
-  const [debouncedSkill, setDebouncedSkill] = useState('')
-  const [debouncedLocation, setDebouncedLocation] = useState('')
-  const [occupation, setOccupation] = useState('')
-  const [includeRelated, setIncludeRelated] = useState(false)
-  const [level, setLevel] = useState('')
-  const [minYears, setMinYears] = useState('')
-  const [page, setPage] = useState(1)
-  const [panelOpen, setPanelOpen] = useState(false)
+  // Keep text inputs synced with the URL when a chip, Reset, or browser Back/Forward updates the address.
+  const [keyword, setKeyword] = useState(applied.keyword)
+  const [syncedKeyword, setSyncedKeyword] = useState(applied.keyword)
+  if (syncedKeyword !== applied.keyword) {
+    setSyncedKeyword(applied.keyword)
+    setKeyword(applied.keyword)
+  }
 
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
-      setDebouncedKeyword(keyword.trim())
-      setDebouncedSkill(skill.trim())
-      setDebouncedLocation(location.trim())
-    }, 400)
+  const [location, setLocation] = useState(applied.location)
+  const [syncedLocation, setSyncedLocation] = useState(applied.location)
+  if (syncedLocation !== applied.location) {
+    setSyncedLocation(applied.location)
+    setLocation(applied.location)
+  }
 
-    return () => window.clearTimeout(timeoutId)
-  }, [keyword, location, skill])
+  const [skillDraft, setSkillDraft] = useState(applied.skill)
+  const [syncedSkill, setSyncedSkill] = useState(applied.skill)
+  if (syncedSkill !== applied.skill) {
+    setSyncedSkill(applied.skill)
+    setSkillDraft(applied.skill)
+  }
 
-  const params = useMemo(
-    () => ({
-      page,
-      pageSize,
-      keyword: debouncedKeyword || undefined,
-      skill: debouncedSkill || undefined,
-      location: debouncedLocation || undefined,
-      ...occupationParams(occupation, includeRelated),
-      level: level || undefined,
-      minYears: Number(minYears) > 0 ? Number(minYears) : undefined,
-    }),
-    [debouncedKeyword, debouncedLocation, debouncedSkill, includeRelated, level, minYears, occupation, page]
-  )
+  const appliedMinYearsText = applied.minYears !== undefined ? String(applied.minYears) : ''
+  const [minYearsDraft, setMinYearsDraft] = useState(appliedMinYearsText)
+  const [syncedMinYears, setSyncedMinYears] = useState(appliedMinYearsText)
+  if (syncedMinYears !== appliedMinYearsText) {
+    setSyncedMinYears(appliedMinYearsText)
+    setMinYearsDraft(appliedMinYearsText)
+  }
+
+  const [showFilters, setShowFilters] = useState(false)
+
+  const apiParams = toCandidateSearchParams(applied, page)
   const query = useQuery({
-    queryKey: queryKeys.candidates(params),
-    queryFn: () => usersApi.candidates(params),
+    queryKey: queryKeys.candidates(apiParams),
+    queryFn: () => usersApi.candidates(apiParams),
+    // Keep the current cards on screen while the next filter or page loads instead of flashing a skeleton.
     placeholderData: keepPreviousData,
-    staleTime: 1000 * 60,
+    staleTime: 60_000,
   })
   const skillsQuery = useQuery({
     queryKey: ['skills', 'candidates'],
     queryFn: skillsApi.all,
     staleTime: 5 * 60 * 1000,
+    retry: false,
   })
+
+  const occupationTitle = useOccupationTitle(applied.occupation)
   const content = query.data?.content
   const candidates = content?.data ?? []
   const total = content?.totalRow ?? 0
-  const totalPages = content?.totalPages ?? 1
-  const popularSkills = skillsQuery.data?.content?.slice(0, 8) ?? []
+  const totalPages = Math.max(1, content?.totalPages ?? (Math.ceil(total / candidatesPageSize) || 1))
+  const shown = shownRange(page, candidatesPageSize, total)
 
-  function clearFilters() {
-    setKeyword('')
-    setSkill('')
-    setLocation('')
-    setOccupation('')
-    setIncludeRelated(false)
-    setLevel('')
-    setMinYears('')
-    setDebouncedKeyword('')
-    setDebouncedSkill('')
-    setDebouncedLocation('')
-    setPage(1)
+  // If the user opened a ?page= past the last page and we know the total, jump to the last page.
+  const pageStatus =
+    !query.isPending && !query.isError && !query.isPlaceholderData
+      ? resolveOutOfRangePage({
+          page,
+          itemCount: candidates.length,
+          totalRow: content?.totalRow,
+          totalPages: content?.totalPages,
+        })
+      : { action: 'ok' as const }
+  const clampedHref =
+    pageStatus.action === 'clamp'
+      ? buildCandidatesHref(pathname, applied, pageStatus.targetPage)
+      : null
+
+  useEffect(() => {
+    if (!clampedHref) return
+    router.replace(clampedHref, { scroll: false })
+  }, [clampedHref, router])
+
+  const popularSkills = (skillsQuery.data?.content ?? []).slice(0, EXPLORE_SKILLS_LIMIT)
+  const sidebarSkills = applied.skill && !popularSkills.some((item) => item.toLowerCase() === applied.skill.toLowerCase())
+    ? [...popularSkills, applied.skill]
+    : popularSkills
+
+  const activeFilterCount = countActiveCandidateFilters(applied)
+  const searching = activeFilterCount > 0 || Boolean(applied.keyword)
+  const isCustomMinYears =
+    applied.minYears !== undefined &&
+    !(candidateMinYearsPresets as readonly number[]).includes(applied.minYears)
+
+  function go(next: Partial<CandidateListFilters>, nextPage = 1) {
+    const merged: CandidateListFilters = { ...applied, ...next }
+    if (!merged.occupation.trim()) merged.includeRelated = false
+    router.replace(buildCandidatesHref(pathname, merged, nextPage), { scroll: false })
   }
 
-  function updateKeyword(value: string) {
-    setKeyword(value)
-    setPage(1)
-  }
-
-  function updateSkill(value: string) {
-    setSkill(value)
-    setPage(1)
-  }
-
-  function updateLocation(value: string) {
-    setLocation(value)
-    setPage(1)
-  }
-
-  function submitKeyword(event: React.FormEvent<HTMLFormElement>) {
+  function submitSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setDebouncedKeyword(keyword.trim())
-    setPage(1)
+    go({ keyword, location })
   }
 
-  const occupationTitle = useOccupationTitle(occupation)
-  const activeFilters = [
-    skill.trim() ? { key: 'skill' as const, label: skill.trim(), onRemove: () => updateSkill('') } : null,
-    location.trim() ? { key: 'location' as const, label: location.trim(), onRemove: () => updateLocation('') } : null,
-    occupation ? {
-      key: 'occupation' as const,
-      label: `${occupationTitle ?? occupation}${includeRelated ? ' and related' : ''}`,
-      onRemove: () => { setOccupation(''); setIncludeRelated(false); setPage(1) },
-    } : null,
-    level ? { key: 'level' as const, label: level, onRemove: () => { setLevel(''); setPage(1) } } : null,
-    Number(minYears) > 0 ? { key: 'minYears' as const, label: minYearsChip(minYears, occupation ? occupationTitle : null), onRemove: () => { setMinYears(''); setPage(1) } } : null,
-  ].filter((filter): filter is NonNullable<typeof filter> => Boolean(filter))
+  function applySkillDraft() {
+    const trimmed = skillDraft.trim()
+    if (trimmed !== applied.skill) go({ skill: trimmed })
+  }
+
+  function applyLocationDraft() {
+    const trimmed = location.trim()
+    if (trimmed !== applied.location) go({ location: trimmed })
+  }
+
+  function applyMinYearsDraft() {
+    const trimmed = minYearsDraft.trim()
+    if (!trimmed) {
+      if (applied.minYears !== undefined) go({ minYears: undefined })
+      return
+    }
+    const parsedYears = Number(trimmed)
+    if (!Number.isFinite(parsedYears) || parsedYears <= 0) {
+      setMinYearsDraft('')
+      if (applied.minYears !== undefined) go({ minYears: undefined })
+      return
+    }
+    const clamped = Math.min(40, Math.floor(parsedYears))
+    setMinYearsDraft(String(clamped))
+    if (clamped !== applied.minYears) go({ minYears: clamped })
+  }
+
+  function reset() {
+    setKeyword('')
+    setLocation('')
+    setSkillDraft('')
+    setMinYearsDraft('')
+    go({
+      keyword: '',
+      location: '',
+      skill: '',
+      occupation: '',
+      includeRelated: false,
+      level: '',
+      minYears: undefined,
+      hasPortfolio: false,
+      hasCertification: false,
+    })
+  }
 
   return (
-    <div className="container-page pt-10 pb-16">
-      <p className="flex items-center gap-1.5 text-xs font-medium text-primary">
-        <Users className="h-3.5 w-3.5" /> Employer workspace
-      </p>
-      <h1 className="mt-1.5 font-display text-3xl font-medium tracking-tight">Find candidates</h1>
-
-      <form
-        onSubmit={submitKeyword}
-        className="mt-5 flex max-w-2xl items-stretch overflow-hidden rounded-lg border border-border bg-surface shadow-sm field-shell"
-      >
-        <div className="flex min-w-0 flex-1 items-center gap-2.5 px-4">
-          <Search className="h-5 w-5 shrink-0 text-muted" />
-          <Input
-            className="h-[52px] border-0 bg-transparent px-0 shadow-none ring-0 focus:border-0 focus:ring-0"
-            placeholder="Search by name, role, or project type…"
-            aria-label="Search candidates"
-            value={keyword}
-            onChange={(event) => updateKeyword(event.target.value)}
-          />
-        </div>
-        <button type="submit" className="flex shrink-0 items-center gap-2 bg-primary px-5 text-sm font-medium text-white transition hover:bg-primary-strong">
-          <Search className="h-4 w-4" />
-          Search
-        </button>
-      </form>
-
-      <nav className="mt-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]" aria-label="Popular skills">
-        <SkillChip label="All skills" active={!skill.trim()} onClick={() => updateSkill('')} />
-        {popularSkills.map((popularSkill) => (
-          <SkillChip
-            key={popularSkill}
-            label={popularSkill}
-            active={skill.trim().toLowerCase() === popularSkill.toLowerCase()}
-            onClick={() => updateSkill(skill.trim().toLowerCase() === popularSkill.toLowerCase() ? '' : popularSkill)}
-          />
-        ))}
-      </nav>
-
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <p className="text-sm text-muted" aria-live="polite">
-          <b className="font-medium text-foreground">{query.isPending && !content ? '…' : total}</b> discoverable candidates
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {activeFilters.map((filter) => (
-            <button
-              key={filter.key}
-              type="button"
-              onClick={filter.onRemove}
-              title="Remove filter"
-              className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-foreground transition hover:border-danger hover:text-danger"
+    <BrowsePage
+      resultsKey={searchParams.toString()}
+      resultsReady={Boolean(query.data)}
+      hero={
+        <BrowseHero
+          title="Find candidates"
+          intro="Discoverable talent on JobAura. Search by name, role, skill, or location, then narrow by occupation, AI level, and experience."
+          action={
+            <ButtonLink
+              href="/recommendations/candidates"
+              variant="secondary"
+              className="h-[42px] border-[#c5d8c8] px-5 font-semibold text-primary"
             >
-              {filter.label}
-              <X className="h-3 w-3 text-muted" />
-            </button>
-          ))}
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
+              <ListOrdered className="h-4 w-4" aria-hidden="true" />
+              AI matching
+            </ButtonLink>
+          }
+        />
+      }
+      search={
+        <form
+          onSubmit={submitSearch}
+          role="search"
+          aria-label="Search candidates"
+          className="field-shell flex min-w-0 items-center gap-2 rounded-xl border border-[#d1ddd1] bg-surface p-2 sm:h-[68px] sm:pl-3"
+        >
+          <label className="flex min-w-0 flex-[3] items-center gap-2.5 px-2">
+            <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+            <input
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="Name, role, skill, or project"
+              aria-label="Keyword"
+              className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none"
+            />
+          </label>
+          <span className="hidden h-7 w-px bg-border md:block" aria-hidden="true" />
+          <label className="hidden min-w-0 flex-[2] items-center gap-2 px-2 md:flex">
+            <MapPin className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+            <input
+              value={location}
+              onChange={(event) => setLocation(event.target.value)}
+              placeholder="Location (e.g. Ho Chi Minh, Remote)"
+              aria-label="Location"
+              className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none"
+            />
+          </label>
           <button
-            type="button"
-            onClick={() => setPanelOpen((open) => !open)}
-            aria-expanded={panelOpen}
-            aria-controls="candidate-filter-panel"
-            className={cn(
-              'inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3.5 text-[13px] font-medium transition',
-              panelOpen ? 'border-primary text-primary' : 'text-foreground hover:border-primary hover:text-primary'
-            )}
+            type="submit"
+            className="interaction inline-flex h-[42px] shrink-0 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-32"
           >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters
-            {activeFilters.length ? (
-              <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-xs font-medium text-white">
-                {activeFilters.length}
-              </span>
-            ) : null}
-            <ChevronDown className={cn('h-4 w-4 transition-transform', panelOpen && 'rotate-180')} />
+            Search
           </button>
-          <ButtonLink href="/recommendations/candidates">
-            <ListOrdered className="h-4 w-4" />
-            AI matching
-          </ButtonLink>
-        </div>
-      </div>
+        </form>
+      }
+      explore={
+        popularSkills.length ? (
+          <ExploreRow>
+            {popularSkills.map((popularSkill) => {
+              const active = applied.skill.toLowerCase() === popularSkill.toLowerCase()
+              return (
+                <ExploreChip
+                  key={popularSkill}
+                  active={active}
+                  onClick={() => go({ skill: active ? '' : popularSkill })}
+                >
+                  {popularSkill}
+                </ExploreChip>
+              )
+            })}
+          </ExploreRow>
+        ) : undefined
+      }
+      filtersOpen={showFilters}
+      filters={
+        <FilterPanel intro="Narrow down candidates by occupation, level, and skills." onReset={reset} canReset={searching}>
+          <FilterGroup title="Occupation">
+            <OccupationPicker
+              compact
+              hideLabel
+              label="Main occupation"
+              value={applied.occupation}
+              emptyLabel="Any occupation"
+              placeholder="e.g. web developer"
+              onPick={(hit) => go({ occupation: hit.code })}
+              onClear={() => go({ occupation: '', includeRelated: false })}
+            />
+            <div className="flex items-center gap-1.5">
+              <label
+                className={cn(
+                  'inline-flex cursor-pointer items-center gap-2 text-[13px]',
+                  applied.occupation ? 'text-foreground' : 'cursor-not-allowed text-muted',
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-primary"
+                  checked={applied.includeRelated}
+                  disabled={!applied.occupation}
+                  onChange={(event) => go({ includeRelated: event.target.checked })}
+                />
+                Include related occupations
+              </label>
+              <InfoTip
+                label="What related occupations are"
+                text="Also candidates whose main occupation shares many ESCO skill groups with this one (at least 25%), for example software developer for web developer."
+              />
+            </div>
+          </FilterGroup>
 
-      {panelOpen ? (
-        <Card id="candidate-filter-panel" className="mt-3 p-4 sm:p-5">
-          <form
-            onSubmit={(event) => {
-              event.preventDefault()
-              setPanelOpen(false)
-            }}
-          >
-            <div className="mb-4 grid gap-2">
-              <OccupationPicker compact label="Main occupation" value={occupation} emptyLabel="Any occupation"
-                placeholder="Search occupations, for example web developer"
-                onPick={(hit) => { setOccupation(hit.code); setPage(1) }}
-                onClear={() => { setOccupation(''); setIncludeRelated(false); setPage(1) }} />
-              <div className="flex items-center gap-1.5">
-                <label className={cn('inline-flex items-center gap-2 text-sm font-medium', !occupation && 'text-muted')}>
-                  <input type="checkbox" className="h-4 w-4 accent-primary" checked={includeRelated} disabled={!occupation}
-                    onChange={(event) => { setIncludeRelated(event.target.checked); setPage(1) }} />
-                  Include related occupations
-                </label>
-                <InfoTip label="What related occupations are"
-                  text="Also candidates whose main occupation shares many ESCO skill groups with this one (at least 25%), for example software developer for web developer." />
-              </div>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-muted">AI level</span>
-                <Select value={level} onChange={(event) => { setLevel(event.target.value); setPage(1) }}>
-                  <option value="">Any level</option>
-                  <option value="Junior">Junior</option>
-                  <option value="Mid">Mid</option>
-                  <option value="Senior">Senior</option>
-                </Select>
-              </label>
-              <label className="block">
-                <span className="mb-1.5 block text-xs font-medium text-muted">{minYearsLabel(occupation ? occupationTitle : null)}, at least</span>
-                <Input type="number" min={0} max={40} inputMode="numeric" value={minYears} placeholder="0"
-                  onChange={(event) => { setMinYears(event.target.value); setPage(1) }} />
-              </label>
-            </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <PanelField label="Skill">
-                <Input
-                  className="h-8 border-0 bg-transparent px-0 shadow-none ring-0 focus:border-0 focus:ring-0"
+          {/* The backend matches one AI seniority level at a time and does not return facet counts. */}
+          <FilterGroup title="AI level">
+            <FilterChoice
+              label="All levels"
+              checked={!applied.level}
+              onChange={() => go({ level: '' })}
+            />
+            {candidateLevels.map((level) => (
+              <FilterChoice
+                key={level}
+                label={level}
+                checked={applied.level === level}
+                onChange={() => go({ level: applied.level === level ? '' : level })}
+              />
+            ))}
+          </FilterGroup>
+
+          <FilterGroup title={minYearsLabel(applied.occupation ? occupationTitle : null)}>
+            <FilterChoice
+              label="Any experience"
+              checked={applied.minYears === undefined}
+              onChange={() => go({ minYears: undefined })}
+            />
+            {candidateMinYearsPresets.map((years) => (
+              <FilterChoice
+                key={years}
+                label={`${years}+ years`}
+                checked={applied.minYears === years}
+                onChange={() => go({ minYears: applied.minYears === years ? undefined : years })}
+              />
+            ))}
+            {isCustomMinYears ? (
+              <FilterChoice
+                label={`${applied.minYears}+ years`}
+                checked
+                onChange={() => go({ minYears: undefined })}
+              />
+            ) : null}
+            <label className="grid gap-1 pt-1">
+              <span className="text-xs text-muted">Minimum years (0–40)</span>
+              <input
+                type="number"
+                min={0}
+                max={40}
+                inputMode="numeric"
+                value={minYearsDraft}
+                placeholder="Any"
+                aria-label="Minimum years of experience"
+                onChange={(event) => setMinYearsDraft(event.target.value)}
+                onBlur={applyMinYearsDraft}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    applyMinYearsDraft()
+                  }
+                }}
+                className="h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </label>
+          </FilterGroup>
+
+          <div className={cn(!applied.hasPortfolio && !applied.hasCertification && '[&>fieldset]:md:pb-0')}>
+            <FilterGroup title="Skill">
+              <div className="relative">
+                <input
+                  value={skillDraft}
+                  onChange={(event) => setSkillDraft(event.target.value)}
+                  onBlur={applySkillDraft}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      applySkillDraft()
+                    }
+                  }}
                   placeholder="e.g. React, Figma, SEO"
                   aria-label="Filter by skill"
-                  value={skill}
-                  onChange={(event) => updateSkill(event.target.value)}
+                  className={cn(
+                    'h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
+                    skillDraft && 'pr-8',
+                  )}
                 />
-              </PanelField>
-              <PanelField label="Location">
-                <Input
-                  className="h-8 border-0 bg-transparent px-0 shadow-none ring-0 focus:border-0 focus:ring-0"
+                {skillDraft ? (
+                  <button
+                    type="button"
+                    aria-label="Clear skill filter"
+                    onClick={() => {
+                      setSkillDraft('')
+                      go({ skill: '' })
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:bg-surface-muted hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </div>
+              {sidebarSkills.length ? (
+                <>
+                  <FilterChoice
+                    label="All skills"
+                    checked={!applied.skill}
+                    onChange={() => go({ skill: '' })}
+                  />
+                  {sidebarSkills.map((item) => {
+                    const checked = applied.skill.toLowerCase() === item.toLowerCase()
+                    return (
+                      <FilterChoice
+                        key={item}
+                        label={item}
+                        checked={checked}
+                        onChange={() => go({ skill: checked ? '' : item })}
+                      />
+                    )
+                  })}
+                </>
+              ) : null}
+            </FilterGroup>
+          </div>
+
+          {/* Below md the search bar hides Location, so the phone filter popover shows it here instead. */}
+          <div className="md:hidden">
+            <FilterGroup title="Location" last={!applied.hasPortfolio && !applied.hasCertification}>
+              <div className="relative">
+                <input
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                  onBlur={applyLocationDraft}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      event.preventDefault()
+                      applyLocationDraft()
+                    }
+                  }}
                   placeholder="e.g. Ho Chi Minh, Remote"
                   aria-label="Filter by location"
-                  value={location}
-                  onChange={(event) => updateLocation(event.target.value)}
+                  className={cn(
+                    'h-9 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20',
+                    location && 'pr-8',
+                  )}
                 />
-              </PanelField>
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
-              <Button type="submit">Apply filters</Button>
-            </div>
-          </form>
-        </Card>
-      ) : null}
-
-      <section className="mt-6" aria-busy={query.isPending} aria-live="polite">
-        {query.isPending ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {Array.from({ length: 4 }).map((_, index) => <CardSkeleton key={index} />)}
+                {location ? (
+                  <button
+                    type="button"
+                    aria-label="Clear location filter"
+                    onClick={() => {
+                      setLocation('')
+                      go({ location: '' })
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:bg-surface-muted hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </div>
+            </FilterGroup>
           </div>
-        ) : candidates.length ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {candidates.map((candidate) => <CandidateCard key={candidate.id} candidate={candidate} />)}
-          </div>
-        ) : query.isError ? (
-          <EmptyState
-            icon={<SearchX />}
-            title="Unable to load candidates"
-            description="Refresh the page or try again after the backend is available."
-            action={<Button variant="secondary" onClick={() => query.refetch()}>Retry</Button>}
-          />
-        ) : debouncedSkill || debouncedLocation || debouncedKeyword ? (
-          <EmptyState
-            icon={<SearchX />}
-            title="No matching candidates"
-            description="Adjust the filters or clear them to return to the full candidate directory."
-            action={<Button variant="secondary" onClick={clearFilters}>Clear filters</Button>}
-          />
-        ) : (
-          <EmptyState
-            icon={<Users />}
-            title="No discoverable candidates yet"
-            description="Candidates choose to be discoverable in their Settings. Share JobAura with talent you trust, or try AI matching on your hiring posts."
-            action={<ButtonLink href="/recommendations/candidates">Open AI matching</ButtonLink>}
-          />
-        )}
 
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <Button type="button" variant="secondary" disabled={page <= 1 || query.isFetching} onClick={() => setPage((current) => Math.max(1, current - 1))}>
-            Previous
-          </Button>
-          <span className="text-sm font-medium text-muted">
-            Page {page} of {Math.max(totalPages, 1)}
-          </span>
-          <Button type="button" variant="secondary" disabled={page >= totalPages || query.isFetching} onClick={() => setPage((current) => current + 1)}>
-            Next
-          </Button>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function SkillChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-[13px] font-medium transition',
-        active ? 'border-foreground bg-foreground text-white' : 'border-border bg-surface text-muted hover:border-primary hover:text-primary'
-      )}
-    >
-      {label}
-    </button>
-  )
-}
-
-function PanelField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-xs font-medium text-muted">{label}</span>
-      <span className="flex h-10 items-center rounded-lg border border-border bg-surface px-3 field-shell">
-        {children}
-      </span>
-    </label>
-  )
-}
-
-function CandidateCard({ candidate }: { candidate: CandidateProfile }) {
-  const skills = getCandidateSkillNames(candidate)
-  const summary = getCandidateSummary(candidate)
-  const career = formatCandidateCareer(candidate)
-  // The backend's Profile strength; older responses only carry the match quality.
-  const strength = candidate.profileStrength ?? Math.round(candidate.match.qualityScore * 100)
-
-  return (
-    <Card className="transition-colors hover:border-foreground/20">
-      <CardContent className="flex flex-col gap-3 p-5">
-        <div className="flex items-start gap-3">
-          <FeedAvatar user={candidate} size="lg" />
-          <div className="min-w-0 flex-1">
-            <h2 className="truncate font-display text-lg font-medium">
-              <Link href={`/profile/${candidate.id}`} className="block truncate hover:text-primary">{candidate.name}</Link>
-            </h2>
-            <p className="mt-0.5 truncate text-sm font-medium text-muted">{candidate.headline}</p>
-          </div>
-          {candidate.career?.level ? (
-            <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-xs font-medium text-foreground" title="Level read by AI from the resume">
-              {candidate.career.level}
-            </span>
+          {applied.hasPortfolio || applied.hasCertification ? (
+            <FilterGroup title="Profile" last>
+              {applied.hasPortfolio ? (
+                <FilterChoice
+                  label="Has portfolio"
+                  checked
+                  onChange={() => go({ hasPortfolio: false })}
+                />
+              ) : null}
+              {applied.hasCertification ? (
+                <FilterChoice
+                  label="Has certifications"
+                  checked
+                  onChange={() => go({ hasCertification: false })}
+                />
+              ) : null}
+            </FilterGroup>
           ) : null}
-        </div>
-
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-medium text-muted">
-          <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {getCandidateLocation(candidate)}</span>
-          <span className="inline-flex items-center gap-1"><Star className="h-3.5 w-3.5 fill-rating text-rating" /> {formatCandidateRating(candidate)}</span>
-        </div>
-
-        <CareerLine career={career} />
-
-        {summary ? <p className="line-clamp-2 text-sm leading-6 text-muted">{summary}</p> : null}
-
-        {skills.length ? (
-          <div className="flex flex-wrap gap-1.5">
-            {skills.slice(0, 4).map((skill) => (
-              <Badge key={skill} tone="accent">{skill}</Badge>
+        </FilterPanel>
+      }
+      toolbar={
+        <ResultsHeader
+          title={
+            query.isPending
+              ? 'Loading candidates…'
+              : `${total.toLocaleString('en-US')} ${total === 1 ? 'candidate' : 'candidates'}`
+          }
+          // GET /api/users/candidates has no sort parameter (it ranks each page by match score), so no sort menu is shown.
+          actions={
+            <FiltersToggle
+              open={showFilters}
+              onToggle={() => setShowFilters((value) => !value)}
+              count={activeFilterCount}
+            />
+          }
+          summary={
+            candidates.length && total
+              ? `Showing ${shown.first.toLocaleString('en-US')}–${shown.last.toLocaleString('en-US')} of ${total.toLocaleString('en-US')} discoverable candidates`
+              : null
+          }
+        />
+      }
+      results={
+        query.isPending ? (
+          <div role="status" aria-label="Loading candidates" className="mt-4 grid gap-4">
+            <span className="sr-only">Loading candidates</span>
+            {Array.from({ length: 3 }, (_, index) => (
+              <div
+                key={index}
+                className="h-56 animate-pulse rounded-xl border border-border bg-surface"
+                aria-hidden="true"
+              />
             ))}
           </div>
-        ) : null}
-
-        <div className="grid grid-cols-2 gap-2 border-y border-border py-2.5">
-          <CardStat icon={<Award className="h-3.5 w-3.5" />} label="Certificates" value={String(candidate.stats.certifications)} />
-          <CardStat icon={<FolderOpen className="h-3.5 w-3.5" />} label="Portfolio" value={String(candidate.stats.portfolioItems + candidate.stats.listedServices)} />
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-medium text-muted">
-          Profile strength
-          <span
-            className="h-1 max-w-32 flex-1 overflow-hidden rounded-full bg-foreground/10"
-            role="progressbar"
-            aria-label="Profile strength"
-            aria-valuenow={strength}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          >
-            <span
-              className="block h-full rounded-full bg-primary"
-              style={{ width: `${strength}%` }}
+        ) : query.isError ? (
+          <div className="mt-4">
+            <EmptyState
+              icon={<SearchX />}
+              title="Candidates could not be loaded"
+              description="Check your connection and try again."
+              action={
+                <button
+                  type="button"
+                  onClick={() => void query.refetch()}
+                  className="text-sm font-semibold text-primary hover:underline"
+                >
+                  Try again
+                </button>
+              }
             />
-          </span>
-          <span className="font-mono tabular-nums text-foreground">{strength}%</span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <ButtonLink href={`/profile/${candidate.id}`} className="flex-1" variant="secondary">
-            View profile
-            <ArrowUpRight className="h-4 w-4" />
-          </ButtonLink>
-          <ConnectionActions className="flex-1" userId={candidate.id} userName={candidate.name} />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function CardStat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <div className="flex items-center gap-1.5 text-sm font-medium">
-        <span className="text-primary">{icon}</span>
-        {value}
-      </div>
-      <p className="mt-0.5 truncate text-xs font-medium text-muted">{label}</p>
-    </div>
-  )
-}
-
-/** Occupation and specialty, then years in the occupation and related years as separate facts. */
-function CareerLine({ career }: { career: ReturnType<typeof formatCandidateCareer> }) {
-  if (!career) return <p className="text-xs font-medium text-muted">No resume yet</p>
-  if (!career.occupation) {
-    return (
-      <p className="text-xs font-medium text-muted">
-        {career.previously ? `Previously: ${career.previously} · no occupation chosen yet` : 'No occupation chosen yet'}
-      </p>
-    )
-  }
-  return (
-    <div className="grid gap-1 text-xs font-medium text-muted">
-      <p className="flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5">
-        <BriefcaseBusiness className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-        <span className="text-foreground">{career.occupation}</span>
-        {career.specialty ? <span>· {career.specialty}</span> : null}
-      </p>
-      {career.years ? (
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-          <span className="inline-flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" aria-hidden="true" />{career.years}</span>
-          {career.related ? <span>{career.related}</span> : null}
-        </p>
-      ) : null}
-    </div>
+          </div>
+        ) : candidates.length ? (
+          <ul
+            className={cn(
+              'mt-4 grid gap-4 transition-opacity duration-200',
+              query.isPlaceholderData && 'opacity-60',
+            )}
+            aria-busy={query.isPlaceholderData}
+            aria-label="Candidates"
+          >
+            {candidates.map((candidate) => (
+              <li key={candidate.id}>
+                <CandidateResultCard
+                  candidate={candidate}
+                  viewer={user}
+                  connectAction={<CandidateConnectButton userId={candidate.id} userName={candidate.name} />}
+                />
+              </li>
+            ))}
+          </ul>
+        ) : page > 1 ? (
+          <div className="mt-4">
+            <EmptyState
+              icon={<SearchX />}
+              title="No candidates on this page."
+              description="This page is past the end of the results."
+              action={
+                <ButtonLink href={buildCandidatesHref(pathname, applied, 1)}>
+                  Back to page 1
+                </ButtonLink>
+              }
+            />
+          </div>
+        ) : searching ? (
+          <div className="mt-4">
+            <EmptyState
+              icon={<SearchX />}
+              title="No matching candidates"
+              description="Try fewer filters or a different keyword."
+              action={
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="text-sm font-semibold text-primary hover:underline"
+                >
+                  Clear filters
+                </button>
+              }
+            />
+          </div>
+        ) : (
+          <div className="mt-4">
+            <EmptyState
+              icon={<Users />}
+              title="No discoverable candidates yet"
+              description="Candidates choose to be discoverable in their Settings. Share JobAura with talent you trust, or try AI matching on your hiring posts."
+              action={<ButtonLink href="/recommendations/candidates">Open AI matching</ButtonLink>}
+            />
+          </div>
+        )
+      }
+      pagination={
+        !query.isPending && !query.isError && candidates.length ? (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPage={(next) => go({}, next)}
+            label="Candidate pages"
+            boxed
+          />
+        ) : undefined
+      }
+    />
   )
 }

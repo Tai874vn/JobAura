@@ -132,6 +132,14 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
     : [];
   const statsRecord = asRecord(record.stats);
   const careerRecord = record.career && typeof record.career === "object" ? asRecord(record.career) : null;
+  const educationRecord = record.education && typeof record.education === "object" ? asRecord(record.education) : null;
+  const educationDegree = educationRecord ? pickString(educationRecord, "degree") : undefined;
+  const education = educationDegree
+    ? {
+        degree: educationDegree,
+        fieldOfStudy: pickString(educationRecord!, "fieldOfStudy") ?? null,
+      }
+    : undefined;
   const matchRecord = asRecord(record.match);
   const label = pickString(matchRecord, "label");
   const validLabel: CandidateProfile["match"]["label"] =
@@ -165,6 +173,7 @@ export function normalizeCandidateProfile(raw: unknown): CandidateProfile {
           legacyField: pickString(careerRecord, "legacyField") ?? null,
         }
       : null,
+    ...(education ? { education } : {}),
     profileStrength: pickNumber(record, "profileStrength") ?? null,
     match: {
       score: pickNumber(matchRecord, "score") ?? 0,

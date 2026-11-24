@@ -1,16 +1,14 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { Check, Clock3, MessageCircle, UserMinus, UserPlus, X } from 'lucide-react'
-import { useState } from 'react'
 import { toast } from 'sonner'
-import { useSession } from '@/features/auth/use-session'
-import { chatApi, connectionsApi } from '@/shared/api/endpoints'
-import { queryKeys } from '@/shared/api/query-keys'
+import { chatApi } from '@/shared/api/endpoints'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, ButtonLink, ConfirmationDialog } from '@/shared/ui'
-import { connectionControlsFor, type ConnectionCommand } from './connections-data'
+import type { ConnectionCommand } from './connections-data'
+import { useConnectionControls } from './use-connection-controls'
 
 export function ConnectionActions({
   userId,
@@ -21,47 +19,17 @@ export function ConnectionActions({
   userName: string
   className?: string
 }) {
-  const [confirmingUnfriend, setConfirmingUnfriend] = useState(false)
-  const queryClient = useQueryClient()
-  const { user, isLoading: isSessionLoading } = useSession()
+  const {
+    user,
+    isSessionLoading,
+    isSelf,
+    statusQuery,
+    controls,
+    relationshipMutation,
+    confirmingUnfriend,
+    setConfirmingUnfriend,
+  } = useConnectionControls(userId, userName)
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
-  const statusQuery = useQuery({
-    queryKey: queryKeys.connectionStatus(userId),
-    queryFn: () => connectionsApi.status(userId),
-    enabled: Boolean(user),
-  })
-  const status = statusQuery.data?.content
-  const controls = status ? connectionControlsFor(status.state) : null
-
-  const refreshConnections = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.connectionStatus(userId) }),
-      queryClient.invalidateQueries({ queryKey: ['connections'] }),
-    ])
-  }
-
-  const relationshipMutation = useMutation({
-    mutationFn: async (action: Exclude<ConnectionCommand['action'], 'message'>) => {
-      if (action === 'send') return connectionsApi.send(userId)
-      if (!status?.connectionId) throw new Error('Connection could not be found')
-      if (action === 'accept') return connectionsApi.accept(status.connectionId)
-      return connectionsApi.remove(status.connectionId)
-    },
-    onSuccess: async (_response, action) => {
-      await refreshConnections()
-      if (action === 'unfriend') {
-        setConfirmingUnfriend(false)
-        toast.success(`You and ${userName} are no longer connected`)
-      } else if (action === 'send') {
-        toast.success('Connection request sent')
-      } else if (action === 'accept') {
-        toast.success('Connection request accepted')
-      } else {
-        toast.success(action === 'cancel' ? 'Connection request cancelled' : 'Connection request declined')
-      }
-    },
-    onError: (error) => toast.error(getErrorMessage(error, 'Could not update connection')),
-  })
 
   const messageMutation = useMutation({
     mutationFn: () => chatApi.start(userId),
@@ -96,6 +64,7 @@ export function ConnectionActions({
       </ButtonLink>
     )
   }
+  if (isSelf) return null
   if (statusQuery.isPending) {
     return <Button className={className} size="sm" variant="secondary" loading>Loading connection</Button>
   }

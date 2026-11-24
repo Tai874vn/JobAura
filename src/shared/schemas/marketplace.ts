@@ -345,6 +345,14 @@ export const candidateProfileSchema = z.object({
     })
     .nullable()
     .optional(),
+  /** Highest degree from the candidate's resume, when the backend includes it. */
+  education: z
+    .object({
+      degree: z.string(),
+      fieldOfStudy: z.string().nullable().optional(),
+    })
+    .nullable()
+    .optional(),
   /** Profile strength, 0-100: the same number the candidate sees in Settings. */
   profileStrength: z.number().nullable().optional(),
   match: candidateDirectoryMatchSchema,
