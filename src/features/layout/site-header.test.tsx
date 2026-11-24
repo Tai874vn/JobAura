@@ -1,6 +1,10 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { walletKeys } from '@/features/wallet/api'
 import { SiteHeader } from './site-header'
+
+const mocks = vi.hoisted(() => ({ session: { user: null as null | { id: number; name: string; role: string; avatar: null }, isLoading: true } }))
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -8,18 +12,43 @@ vi.mock('next/navigation', () => ({
 }))
 
 vi.mock('@/features/auth/use-session', () => ({
-  useSession: () => ({
-    user: null,
-    isLoading: true,
-    isAuthenticated: false,
-  }),
+  useSession: () => ({ ...mocks.session, isAuthenticated: Boolean(mocks.session.user) }),
 }))
 
+// The live-update and bell parts open sockets and read other queries; they are not under test here.
+vi.mock('@/features/hiring-pipeline/use-pipeline-live-updates', () => ({ PipelineLiveUpdates: () => null }))
+vi.mock('@/features/contracts/use-contract-live-updates', () => ({ ContractLiveUpdates: () => null }))
+vi.mock('@/features/notifications/notification-bell', () => ({ NotificationBell: () => null }))
+
+function render() {
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
+  client.setQueryData(walletKeys.summary, { available: 1250, held: 0, paidOut: 0, earned: 0, topUp: { enabled: false, minCredits: 1, maxCredits: 2, vndPerCredit: 1 } })
+  return renderToStaticMarkup(<QueryClientProvider client={client}><SiteHeader /></QueryClientProvider>)
+}
+
 describe('SiteHeader', () => {
+  beforeEach(() => { mocks.session = { user: null, isLoading: true } })
+
   it('keeps a disabled Sign in control visible while the session is loading', () => {
-    const html = renderToStaticMarkup(<SiteHeader />)
+    const html = render()
 
     expect(html).toContain('>Sign in</button>')
     expect(html).toContain('aria-busy="true"')
+  })
+
+  it('shows the balance chip linking to /wallet for a signed-in user', () => {
+    mocks.session = { user: { id: 1, name: 'Ann', role: 'user', avatar: null }, isLoading: false }
+    const html = render()
+
+    expect(html).toContain('href="/wallet"')
+    expect(html).toContain('>1,250 credits<')
+  })
+
+  it('shows no balance chip for a visitor', () => {
+    mocks.session = { user: null, isLoading: false }
+    const html = render()
+
+    expect(html).not.toContain('href="/wallet"')
+    expect(html).not.toContain('credits')
   })
 })

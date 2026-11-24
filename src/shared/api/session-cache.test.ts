@@ -1,6 +1,6 @@
 import { QueryClient, QueryObserver } from '@tanstack/react-query'
 import { describe, expect, it, vi } from 'vitest'
-import { queryKeys } from './query-keys'
+import { queryKeys, walletKeys } from './query-keys'
 import { resetClientSession, setCachedSession } from './session-cache'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'
 
@@ -26,6 +26,17 @@ describe('session cache', () => {
     expect(client.getQueryData(queryKeys.savedPosts)).toBeUndefined()
     expect(client.getQueryData(queryKeys.notifications)).toBeUndefined()
     expect(client.getQueryData<ApiResponse<UserProfile>>(queryKeys.me)?.content).toBeUndefined()
+  })
+
+  it('removes the wallet balance and ledger when the client session ends', () => {
+    const client = new QueryClient()
+    client.setQueryData(walletKeys.summary, { available: 1250 })
+    client.setQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }), { pages: [] })
+
+    resetClientSession(client)
+
+    expect(client.getQueryData(walletKeys.summary)).toBeUndefined()
+    expect(client.getQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }))).toBeUndefined()
   })
 
   it('removes cached mutation results when the client session ends', async () => {

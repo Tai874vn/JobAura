@@ -8,6 +8,7 @@ import { useSession } from "@/features/auth/use-session";
 import { PipelineLiveUpdates } from "@/features/hiring-pipeline/use-pipeline-live-updates";
 import { ContractLiveUpdates } from "@/features/contracts/use-contract-live-updates";
 import { NotificationBell } from "@/features/notifications/notification-bell";
+import { WalletChip } from "@/features/wallet/wallet-chip";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, Button } from "@/shared/ui";
 import { siteNav } from "./site-nav";
@@ -53,9 +54,10 @@ export function SiteHeader() {
           ))}
         </nav>
         {user ? (
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
             <PipelineLiveUpdates />
             <ContractLiveUpdates />
+            <WalletChip />
             <NotificationBell />
           </div>
         ) : null}
