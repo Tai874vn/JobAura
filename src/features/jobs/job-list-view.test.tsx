@@ -3,22 +3,49 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '@/shared/api/query-keys'
 import { JobListView } from './job-list-view'
+import { readJobListFilters, toJobSearchParams } from './jobs-browse-view'
 
-const navigation = vi.hoisted(() => ({ search: '', push: vi.fn() }))
+const navigation = vi.hoisted(() => ({ search: '', replace: vi.fn(), push: vi.fn() }))
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: navigation.push }),
+  usePathname: () => '/jobs',
+  useRouter: () => ({ replace: navigation.replace, push: navigation.push }),
   useSearchParams: () => new URLSearchParams(navigation.search),
 }))
 
 function renderList(categoryNames: string[], loaded = true) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
-  client.setQueryData(queryKeys.categories, { content: categoryNames.map((name, index) => ({ id: index + 1, name: name, subcategories: [] })) })
-  if (loaded) client.setQueryData(queryKeys.jobs({ page: 1, pageSize: 12, categoryId: Number(new URLSearchParams(navigation.search).get('category')) || undefined }), { content: { data: [], totalRow: 0, totalPages: 1 } })
-  return renderToStaticMarkup(<QueryClientProvider client={client}><JobListView /></QueryClientProvider>)
+  client.setQueryData(queryKeys.categories, {
+    content: categoryNames.map((name, index) => ({ id: index + 1, name, subcategories: [] })),
+  })
+  const parsed = readJobListFilters(new URLSearchParams(navigation.search))
+  const { page, ...filters } = parsed
+  if (loaded) {
+    client.setQueryData(queryKeys.jobs(toJobSearchParams(filters, page)), {
+      content: { data: [], totalRow: 0, totalPages: 1 },
+    })
+  }
+  return renderToStaticMarkup(
+    <QueryClientProvider client={client}>
+      <JobListView />
+    </QueryClientProvider>,
+  )
 }
 
 describe('Portfolio list feedback', () => {
-  beforeEach(() => { navigation.search = '' })
+  beforeEach(() => {
+    navigation.search = ''
+  })
+
+  it('renders the BrowsePage hero, popular Explore chips and credit price filters', () => {
+    const html = renderList(['Design', 'Development'])
+    expect(html).toContain('Candidate portfolios')
+    expect(html).toContain('Software Engineer')
+    expect(html).toContain('Data Analyst')
+    expect(html).toContain('Product Designer')
+    expect(html).toContain('Portfolio posts')
+    expect(html).toContain('Up to 500 credits')
+    expect(html).not.toContain('$')
+  })
 
   it('collapses a long category list behind an accessible expansion control', () => {
     const html = renderList(Array.from({ length: 12 }, (_, index) => `Specialty ${index + 1}`))
@@ -43,6 +70,6 @@ describe('Portfolio list feedback', () => {
   it('announces initial loading instead of presenting an empty result', () => {
     const html = renderList([], false)
     expect(html).toContain('Loading portfolio posts')
-    expect(html).not.toContain('No portfolio posts found')
+    expect(html).not.toContain('No portfolio posts match')
   })
 })
