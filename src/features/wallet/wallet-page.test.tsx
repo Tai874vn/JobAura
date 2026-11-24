@@ -41,6 +41,17 @@ describe('WalletPage', () => {
     expect(html).not.toMatch(/[$€₫]|USD|VND/)
   })
 
+  it('shows the Top up button only when the server enables it', () => {
+    const seed = (enabled: boolean) => (c: QueryClient) => {
+      c.setQueryData(walletKeys.summary, { ...summary, topUp: { ...summary.topUp, enabled } })
+    }
+    const on = render(<WalletPage />, seed(true))
+    expect(on).toContain('>Top up</button>')
+    expect(on).not.toMatch(/[$€₫]|VND/)
+    const off = render(<WalletPage />, seed(false))
+    expect(off).not.toContain('Top up</button>')
+  })
+
   it('offers Load more while there is a next page', () => {
     const html = render(<WalletPage />, (c) => {
       c.setQueryData(walletKeys.summary, summary)

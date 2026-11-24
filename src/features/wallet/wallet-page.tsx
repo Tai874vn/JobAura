@@ -2,11 +2,13 @@
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { credits } from '@/shared/lib/credits'
 import { Button, Skeleton } from '@/shared/ui'
 import { walletApi, walletKeys } from './api'
 import { LedgerRow } from './ledger-row'
+import { TopUpDialog } from './top-up-dialog'
 
 const PAGE_SIZE = 20
 
@@ -38,8 +40,10 @@ export function WalletPage() {
       </dl>
       {summary.isError ? <p className="mt-3 text-sm text-danger" role="alert">Your balance could not be loaded. Please try again.</p> : null}
 
-      {/* Task 8 puts the Top up form here (it reads data.topUp for enabled, min, max and rate). */}
-      <section id="top-up" aria-label="Top up" data-slot="top-up" className="mt-4 empty:hidden" />
+      {/* Shown only when the server says VNPay is set up (topUp.enabled). */}
+      <section id="top-up" aria-label="Top up" data-slot="top-up" className="mt-4 empty:hidden">
+        {data?.topUp.enabled ? <TopUpButton info={data.topUp} /> : null}
+      </section>
 
       <section className="mt-8" aria-labelledby="ledger-title">
         <h2 id="ledger-title" className="font-display text-lg font-medium text-foreground">History</h2>
@@ -64,6 +68,16 @@ export function WalletPage() {
         ) : null}
       </section>
     </div>
+  )
+}
+
+function TopUpButton({ info }: { info: { minCredits: number; maxCredits: number; vndPerCredit: number } }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button type="button" onClick={() => setOpen(true)}>Top up</Button>
+      {open ? <TopUpDialog info={info} onClose={() => setOpen(false)} /> : null}
+    </>
   )
 }
 
