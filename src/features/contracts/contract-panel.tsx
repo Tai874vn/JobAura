@@ -9,6 +9,7 @@ import { openChatEventName } from '@/features/chat/chat-data'
 import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
 import { runDialogAction } from '@/features/hiring-pipeline/run-dialog-action'
 import { walletApi, walletKeys } from '@/features/wallet/api'
+import { queryKeys } from '@/shared/api/query-keys'
 import { credits } from '@/shared/lib/credits'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ContractDetail, EndChoice, MilestoneView } from '@/shared/schemas'
@@ -35,6 +36,7 @@ import { FundError, FundWaysOut } from './fund-error'
 import { MilestoneStepper } from './milestone-stepper'
 import { nextAction } from './next-action'
 import { PanelFrame } from './panel-frame'
+import { refreshServicePageAfterReview } from './refresh-service-page'
 import { ReviewDialog } from './review-dialog'
 import { contractLabel, endReasonLine, milestoneLabel } from './status-labels'
 import { SubmissionCard } from './submission-card'
@@ -145,6 +147,10 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
       // The answer is the comment, not the contract: show the review at once, then read the contract again.
       queryClient.setQueryData<ContractDetail>(detailKey, (old) => (old ? { ...old, canReview: false, review: { id: 0, ...input } } : old))
       void queryClient.invalidateQueries({ queryKey: ['contracts'] })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.comments })
+      // The service page keeps a 5-minute server cache; clear it so the review shows there at once.
+      // A failure here only means the old list shows a little longer, so it is ignored.
+      refreshServicePageAfterReview(contract.id).catch(() => undefined)
     },
     onError: () => void queryClient.invalidateQueries({ queryKey: detailKey }),
   })
@@ -302,7 +308,7 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
           {clock ? <p className={cn('mt-1 text-sm', clock.warn ? 'font-medium text-danger' : 'text-muted')}>{clock.text}</p> : null}
 
           {can('fund') || can('submit') || can('requestChanges') || can('approve') ? (
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap gap-2 pr-24 lg:pr-0">
               {can('fund') ? (
                 <Button type="button" className="h-auto min-h-10 whitespace-normal py-2" disabled={pending} onClick={() => open({ type: 'fund', milestoneId: current.id })}>
                   Fund milestone {current.position} ({credits(current.amount)})
@@ -345,7 +351,7 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
       ) : null}
 
       {party ? (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2 pr-24 lg:pr-0">
           {can('proposeAmendment') ? (
             <Button type="button" variant="secondary" size="sm" disabled={pending} onClick={() => open({ type: 'proposeAmendment' })}>Propose a change</Button>
           ) : null}
