@@ -1,8 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
-import { DialogPortal } from '@/features/hiring-pipeline/dialog-portal'
+import { useId, useState } from 'react'
+import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import type { ContractDetail } from '@/shared/schemas'
 import { Button, Textarea } from '@/shared/ui'
 import { amendmentStart, buildAmendment, type AmendmentBody } from './amendment-changes'
@@ -34,18 +34,14 @@ export function AmendmentDialog({
   onClose: () => void
 }) {
   const titleId = useId()
+  const descId = useId()
   // Read once, so the typed values stay when the contract is read again behind the dialog.
   const [start] = useState(() => amendmentStart(contract, preset))
   const [note, setNote] = useState('')
   const [localError, setLocalError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !pending) onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose, pending])
+  // Focus moves into the dialog, Tab stays inside, Escape closes (not while sending), focus goes back on close.
+  const dialogRef = useDialogFocus(onClose, !pending)
 
   return (
     <DialogPortal>
@@ -55,12 +51,12 @@ export function AmendmentDialog({
           if (event.target === event.currentTarget && !pending) onClose()
         }}
       >
-        <section role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+        <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
           <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} disabled={pending} aria-label="Close">
             <X className="h-5 w-5" />
           </Button>
           <h2 id={titleId} className="pr-10 font-display text-lg font-medium">Propose a change</h2>
-          <p className="mt-1 text-sm leading-6 text-muted">
+          <p id={descId} className="mt-1 text-sm leading-6 text-muted">
             Move due dates, change the amount of a milestone that is not funded yet, add milestones at the end, or set a new
             deadline. {otherName} accepts or declines. Deadlines keep running meanwhile.
           </p>

@@ -1,8 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
-import { DialogPortal } from '@/features/hiring-pipeline/dialog-portal'
+import { useId, useState } from 'react'
+import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import type { EndChoice } from '@/shared/schemas'
 import { Button, Textarea } from '@/shared/ui'
 
@@ -35,17 +35,13 @@ export function EndDialog({
   onClose: () => void
 }) {
   const titleId = useId()
+  const descId = useId()
   const [note, setNote] = useState('')
   const [choice, setChoice] = useState<EndChoice | null>(null)
   const blocked = submittedWork !== null && choice === null
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !pending) onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose, pending])
+  // Focus moves into the dialog, Tab stays inside, Escape closes (not while sending), focus goes back on close.
+  const dialogRef = useDialogFocus(onClose, !pending)
 
   const title = mode === 'request' ? 'Ask to end the contract?' : 'End the contract together?'
   const description =
@@ -61,12 +57,12 @@ export function EndDialog({
           if (event.target === event.currentTarget && !pending) onClose()
         }}
       >
-        <section role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+        <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
           <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} disabled={pending} aria-label="Close">
             <X className="h-5 w-5" />
           </Button>
           <h2 id={titleId} className="pr-10 font-display text-lg font-medium">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
+          <p id={descId} className="mt-1 text-sm leading-6 text-muted">{description}</p>
 
           {submittedWork ? (
             <fieldset className="mt-4 min-w-0">
@@ -93,7 +89,7 @@ export function EndDialog({
           {error ? <p role="alert" className="mt-4 break-words text-sm text-danger">{error}</p> : null}
 
           <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button>
+            <Button data-dialog-cancel type="button" variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button>
             <Button
               type="button"
               variant="danger"

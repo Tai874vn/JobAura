@@ -1,8 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useId, useState, type ReactNode } from 'react'
-import { DialogPortal } from '@/features/hiring-pipeline/dialog-portal'
+import { useId, useState, type ReactNode } from 'react'
+import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import { Button, Textarea } from '@/shared/ui'
 
 type Props = {
@@ -54,17 +54,13 @@ function ConfirmBody({
   onCancel,
 }: Props) {
   const titleId = useId()
+  const descId = useId()
   const [note, setNote] = useState('')
   const trimmed = note.trim()
   const blocked = Boolean(noteLabel && noteRequired && !trimmed)
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !pending) onCancel()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onCancel, pending])
+  // Focus moves into the dialog, Tab stays inside, Escape closes (not while sending), focus goes back on close.
+  const dialogRef = useDialogFocus(onCancel, !pending)
 
   return (
     <DialogPortal>
@@ -74,12 +70,12 @@ function ConfirmBody({
           if (event.target === event.currentTarget && !pending) onCancel()
         }}
       >
-        <section role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+        <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
           <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onCancel} disabled={pending} aria-label="Close">
             <X className="h-5 w-5" />
           </Button>
           <h2 id={titleId} className="pr-10 font-display text-lg font-medium">{title}</h2>
-          <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
+          <p id={descId} className="mt-1 text-sm leading-6 text-muted">{description}</p>
           {children}
           {noteLabel ? (
             <label className="mt-4 block text-sm font-medium">
@@ -94,7 +90,7 @@ function ConfirmBody({
             </div>
           ) : null}
           <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={pending}>Cancel</Button>
+            <Button data-dialog-cancel type="button" variant="secondary" onClick={onCancel} disabled={pending}>Cancel</Button>
             <Button type="button" variant={tone === 'danger' ? 'danger' : 'primary'} loading={pending} disabled={blocked} onClick={() => onConfirm(trimmed || undefined)}>
               {confirmLabel}
             </Button>

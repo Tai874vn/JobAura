@@ -5,9 +5,9 @@ import { AxiosError } from 'axios'
 import { X } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { toast } from 'sonner'
-import { DialogPortal } from '@/features/hiring-pipeline/dialog-portal'
+import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { Job } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
@@ -37,6 +37,7 @@ export function NewProposalDialog({ job, onSent, onClose }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const titleId = useId()
+  const descId = useId()
   const [initial] = useState<EditorState>(() => {
     const today = todayString()
     const deadline = addDays(today, DEFAULT_DEADLINE_DAYS)
@@ -59,13 +60,8 @@ export function NewProposalDialog({ job, onSent, onClose }: Props) {
     },
   })
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !mutation.isPending) onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose, mutation.isPending])
+  // Focus moves into the dialog, Tab stays inside, Escape closes (not while sending), focus goes back on close.
+  const dialogRef = useDialogFocus(onClose, !mutation.isPending)
 
   const error = mutation.error
   // The server sentence is shown here, in the dialog. For "already open" the client can go and read that proposal.
@@ -80,12 +76,12 @@ export function NewProposalDialog({ job, onSent, onClose }: Props) {
           if (event.target === event.currentTarget && !mutation.isPending) onClose()
         }}
       >
-        <section role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+        <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
           <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} disabled={mutation.isPending} aria-label="Close">
             <X className="h-5 w-5" />
           </Button>
           <h2 id={titleId} className="pr-10 font-display text-lg font-medium">Send a proposal</h2>
-          <p className="mt-1 mb-4 text-sm leading-6 text-muted">
+          <p id={descId} className="mt-1 mb-4 text-sm leading-6 text-muted">
             For &ldquo;{job.title}&rdquo;. The steps and amounts start from the seller&rsquo;s usual split; change anything before you send.
           </p>
           <ProposalEditor
