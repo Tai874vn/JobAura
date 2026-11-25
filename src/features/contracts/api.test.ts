@@ -204,15 +204,15 @@ describe('walletApi', () => {
     expect(get).toHaveBeenNthCalledWith(2, '/api/wallet/ledger', { params: { page: 1, pageSize: 20 } })
   })
 
-  it('starts a top up and passes the VNPay query string through unchanged', async () => {
-    post.mockResolvedValue(wrap({ topUpId: 4, payUrl: 'https://pay.example/x' }) as never)
-    expect(await walletApi.startTopUp(100)).toEqual({ topUpId: 4, payUrl: 'https://pay.example/x' })
+  it('starts a top up (signed SePay form) and reads a top up status', async () => {
+    const checkout = { action: 'https://pay-sandbox.sepay.vn/v1/checkout/init', fields: { order_amount: '100000', signature: 's' } }
+    post.mockResolvedValue(wrap({ topUpId: 4, checkout }) as never)
+    expect(await walletApi.startTopUp(100)).toEqual({ topUpId: 4, checkout })
     expect(post).toHaveBeenCalledWith('/api/wallet/top-ups', { credits: 100 })
 
-    get.mockResolvedValue(wrap({ status: 'PAID', credits: 100, available: 5100 }) as never)
-    const query = '?vnp_Amount=10000000&vnp_SecureHash=a%2Bb'
-    expect((await walletApi.topUpReturn(query)).status).toBe('PAID')
-    expect(get).toHaveBeenCalledWith('/api/wallet/top-ups/vnpay-return?vnp_Amount=10000000&vnp_SecureHash=a%2Bb')
+    get.mockResolvedValue(wrap({ topUpId: 4, status: 'PAID', credits: 100, available: 5100 }) as never)
+    expect((await walletApi.topUpStatus(4)).status).toBe('PAID')
+    expect(get).toHaveBeenCalledWith('/api/wallet/top-ups/4')
   })
 })
 

@@ -75,5 +75,5 @@ export const contractKeys = {
 export const walletKeys = {
   summary: (viewerId?: number | null) => ['wallet', 'summary', viewerScope(viewerId)] as const,
   ledger: (p: object, viewerId: number | null | undefined) => ['wallet', 'ledger', viewerScope(viewerId), p] as const,
-  topUpReturn: (query: string | null, viewerId?: number | null) => ['wallet', 'top-up-return', viewerScope(viewerId), query] as const,
+  topUpStatus: (topUpId: number | null, viewerId?: number | null) => ['wallet', 'top-up-status', viewerScope(viewerId), topUpId] as const,
 } as const

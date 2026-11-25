@@ -93,7 +93,7 @@ describe('query keys', () => {
     expect(walletKeys.ledger({ pageSize: 20 }, 1)).toEqual(['wallet', 'ledger', 1, { pageSize: 20 }])
     expect(walletKeys.ledger({ pageSize: 20 }, 1)).not.toEqual(walletKeys.ledger({ pageSize: 20 }, 2))
     expect(walletKeys.ledger({ pageSize: 20 }, undefined)).toEqual(['wallet', 'ledger', 'anon', { pageSize: 20 }])
-    expect(walletKeys.topUpReturn('?vnp_Amount=1', 1)).not.toEqual(walletKeys.topUpReturn('?vnp_Amount=1', 2))
+    expect(walletKeys.topUpStatus(7, 1)).not.toEqual(walletKeys.topUpStatus(7, 2))
   })
 
   it('uses empty objects for missing params', () => {
