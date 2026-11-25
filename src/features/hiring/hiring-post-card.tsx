@@ -176,8 +176,9 @@ export function formatPostedAgo(value: string | undefined, now = new Date()) {
   return formatDate(value);
 }
 
+// UTC so the server render and the browser print the same day (no hydration mismatch).
 export function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(value));
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(value));
 }
 
 type SalaryFields = Pick<HiringPost, "salaryMin" | "salaryMax"> & Partial<Pick<HiringPost, "salaryCurrency" | "salaryPeriod">>;

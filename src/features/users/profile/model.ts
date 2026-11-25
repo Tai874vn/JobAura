@@ -80,16 +80,18 @@ export function sortByOrder<T extends { sortOrder?: number | null }>(items: T[])
   return [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 }
 
+// Dates use UTC on purpose: the server renders in UTC, so a local time zone in the browser
+// would print a different day near midnight and break hydration (React error #418).
 export function formatDate(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' }).format(date)
+  return new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(date)
 }
 
 export function formatFullDate(value: string) {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(date)
+  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(date)
 }
 
 export function humanize(value: string) {
