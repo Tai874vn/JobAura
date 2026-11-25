@@ -27,7 +27,7 @@ import {
   safeInternalPath,
   storeOAuthNextPath,
 } from "@/shared/lib/session-routing";
-import { getErrorMessage } from "@/shared/lib/utils";
+import { getErrorCode, getErrorMessage } from "@/shared/lib/utils";
 import {
   signInSchema,
   signUpSchema,
@@ -38,6 +38,7 @@ import { useChatStore } from "@/shared/stores/chat-store";
 import { Button, Input } from "@/shared/ui";
 import { AuthCard, AuthPageGate, FieldError } from "./auth-form-layout";
 import { GoogleSignupRoleModal } from "./google-signup-role-modal";
+import { CheckEmailPanel, ResendVerificationButton } from "./email-flows";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -69,6 +70,8 @@ function LoginFormFields({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: "", password: "" },
   });
+  // Set when the password was right but the address is not confirmed yet.
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   const roleModalOpen =
     notice === "google-role-required" && !roleModalDismissed;
   const apiBaseUrl = resolveClientOrigin(
@@ -98,8 +101,13 @@ function LoginFormFields({
       queryClient.invalidateQueries({ queryKey: queryKeys.me });
       router.push(getSignedInRedirect(user, safeNextPath));
     },
-    onError: (error) =>
-      toast.error(getErrorMessage(error, "Unable to sign in")),
+    onError: (error, values) => {
+      if (getErrorCode(error) === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(values.email);
+        return;
+      }
+      toast.error(getErrorMessage(error, "Unable to sign in"));
+    },
   });
 
   function continueWithGoogle() {
@@ -148,6 +156,20 @@ function LoginFormFields({
             </button>
           </div>
         </FieldError>
+        <div className="-mt-1 text-right">
+          <Link className="text-sm font-medium text-primary hover:text-primary-strong" href="/auth/forgot-password">
+            Forgot password?
+          </Link>
+        </div>
+        {unverifiedEmail ? (
+          <div className="space-y-3 rounded-lg border border-primary/20 bg-primary/5 p-3" role="alert">
+            <p className="text-sm leading-6">
+              Please confirm <span className="font-medium break-all">{unverifiedEmail}</span> first. Open the link we
+              mailed you, or get a new one.
+            </p>
+            <ResendVerificationButton email={unverifiedEmail} />
+          </div>
+        ) : null}
         <Button className="w-full" type="submit" loading={mutation.isPending}>
           Sign in
         </Button>
@@ -207,8 +229,6 @@ function RegisterFormFields({
   notice?: string | null;
   role?: "user" | "employer";
 }) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
   const safeNextPath = safeInternalPath(nextPath);
   const loginHref = safeNextPath
     ? `/auth/login?next=${encodeURIComponent(safeNextPath)}`
@@ -228,21 +248,15 @@ function RegisterFormFields({
     typeof window === "undefined" ? undefined : window.location.origin,
   );
 
+  // Sign-up does not sign in: the user confirms the address from the mail first.
+  const [signedUp, setSignedUp] = useState<{ email: string; mailSent: boolean } | null>(null);
   const mutation = useMutation({
     mutationFn: authApi.signUp,
-    onSuccess: (res) => {
-      const user = res.content?.user;
-      useChatStore.getState().reset();
-      resetClientSession(queryClient, { broadcast: false });
-      if (user) {
-        setCachedSession(user, queryClient);
-        broadcastSessionChange("signin", user.id);
-      } else {
-        broadcastSessionChange("signin");
-      }
-      queryClient.invalidateQueries({ queryKey: queryKeys.me });
-      router.push(getSignedInRedirect(user, safeNextPath));
-    },
+    onSuccess: (res, values) =>
+      setSignedUp({
+        email: res.content?.user?.email ?? values.email,
+        mailSent: res.content?.mailSent ?? false,
+      }),
     onError: (error) =>
       toast.error(getErrorMessage(error, "Unable to create account")),
   });
@@ -271,6 +285,14 @@ function RegisterFormFields({
     storeOAuthNextPath(safeNextPath);
     window.location.assign(
       `${apiBaseUrl}/api/auth/google?role=${encodeURIComponent(role)}`,
+    );
+  }
+
+  if (signedUp) {
+    return (
+      <AuthCard title="Check your email">
+        <CheckEmailPanel email={signedUp.email} mailSent={signedUp.mailSent} />
+      </AuthCard>
     );
   }
 

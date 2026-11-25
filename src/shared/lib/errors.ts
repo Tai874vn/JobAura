@@ -347,3 +347,13 @@ export function toUserError(error: unknown, fallback?: string): UserError {
 export function getErrorMessage(error: unknown, fallback = DEFAULT_SERVER_MESSAGE): string {
   return toUserError(error, fallback).message
 }
+
+/**
+ * The backend's machine code for an error (e.g. "EMAIL_NOT_VERIFIED"), when it sent one.
+ * For branching the UI only; never shown to the user.
+ */
+export function getErrorCode(error: unknown): string | undefined {
+  if (!axios.isAxiosError(error)) return undefined
+  const code = (error.response?.data as { code?: unknown } | undefined)?.code
+  return typeof code === 'string' ? code : undefined
+}

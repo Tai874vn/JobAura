@@ -4,6 +4,7 @@ import { env } from '@/shared/config/env'
 import { resolveHttpUrl } from './urls'
 
 export {
+  getErrorCode,
   getErrorMessage,
   isSafeUserMessage,
   RequestError,

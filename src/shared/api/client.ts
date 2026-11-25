@@ -146,6 +146,9 @@ function shouldSkipRefresh(request: RetryConfig) {
     url.endsWith('/api/auth/logout') ||
     url.includes('/api/auth/signin') ||
     url.includes('/api/auth/signup') ||
+    url.includes('/api/auth/verify-email') ||
+    url.includes('/api/auth/forgot-password') ||
+    url.includes('/api/auth/reset-password') ||
     url.includes('/api/auth/google')
   )
 }
