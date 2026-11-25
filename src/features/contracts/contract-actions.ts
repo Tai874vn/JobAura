@@ -1,4 +1,5 @@
 import type { ContractDetail, MilestoneView } from '@/shared/schemas'
+import { viewerRoleFor, visibleMilestoneActions } from './milestone-actions'
 
 /** Every button the contract panel can show. */
 export type ContractAction =
@@ -63,22 +64,17 @@ export function freelancerCanAcceptEnd(c: ContractDetail): boolean {
  * admin as the client) but every action answers 403, so the panel is read-only for them.
  */
 export function contractActions(c: ContractDetail, viewerId: number): ContractAction[] {
-  const isClient = viewerId === c.client.id
-  const isFreelancer = viewerId === c.freelancer.id
-  if (!isClient && !isFreelancer) return []
+  const role = viewerRoleFor(c, viewerId)
+  if (role === 'observer') return []
+  const isClient = role === 'client'
 
   const out = new Set<ContractAction>(['message'])
   if (isClient && c.canReview && !c.review) out.add('review')
   if (c.status !== 'ACTIVE') return ORDER.filter((a) => out.has(a))
 
   const current = currentMilestone(c)
-  if (current) {
-    if (isClient && current.status === 'PENDING') out.add('fund')
-    if (isClient && current.status === 'SUBMITTED') {
-      out.add('requestChanges')
-      out.add('approve')
-    }
-    if (isFreelancer && (current.status === 'FUNDED' || current.status === 'CHANGES_REQUESTED')) out.add('submit')
+  for (const action of visibleMilestoneActions(role, c.status, current?.status ?? null)) {
+    out.add(action)
   }
 
   const change = openAmendment(c)
