@@ -37,3 +37,6 @@ documentation/
 
 # Sentry Config File
 .env.sentry-build-plugin
+
+# Bot run outputs
+bot/results/
