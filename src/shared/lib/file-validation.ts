@@ -4,10 +4,9 @@ const imageUploadMimeTypes = new Set([
   'image/jpeg',
   'image/png',
   'image/webp',
-  'image/gif',
 ])
 
-const imageUploadExtensions = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif'])
+const imageUploadExtensions = new Set(['jpg', 'jpeg', 'png', 'webp'])
 
 export const imageUploadAccept = Array.from(imageUploadMimeTypes).join(',')
 export const imageUploadMaxSizeBytes = 5 * 1024 * 1024
@@ -31,7 +30,7 @@ export function validateImageFile(
   }
 
   if (!isSupportedImageFile(file)) {
-    return { valid: false, message: `${label} must be a JPEG, PNG, WEBP, or GIF image.` }
+    return { valid: false, message: `${label} must be a JPEG, PNG or WEBP image.` }
   }
 
   return { valid: true }

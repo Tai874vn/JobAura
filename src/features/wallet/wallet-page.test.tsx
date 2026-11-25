@@ -26,7 +26,7 @@ describe('WalletPage', () => {
   it('shows the four figures, the note and the ledger rows linking to the contract', () => {
     const html = render(<WalletPage />, (c) => {
       c.setQueryData(walletKeys.summary(1), summary)
-      c.setQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }), {
+      c.setQueryData(walletKeys.ledger({ pageSize: 20 }, 1), {
         pages: [{ data: [row(2), row(1, { type: 'SEED', availableDelta: 5000, heldDelta: 0, availableAfter: 5000, heldAfter: 0, contract: null, milestone: null })], total: 2, page: 1, pageSize: 20, totalPages: 1 }],
         pageParams: [1],
       })
@@ -55,7 +55,7 @@ describe('WalletPage', () => {
   it('offers Load more while there is a next page', () => {
     const html = render(<WalletPage />, (c) => {
       c.setQueryData(walletKeys.summary(1), summary)
-      c.setQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }), {
+      c.setQueryData(walletKeys.ledger({ pageSize: 20 }, 1), {
         pages: [{ data: [row(1)], total: 30, page: 1, pageSize: 20, totalPages: 2 }], pageParams: [1],
       })
     })
@@ -71,7 +71,7 @@ describe('WalletPage', () => {
       queryFn: async () => { throw new Error('Server offline') },
     }).catch(() => {})
     await client.fetchInfiniteQuery({
-      queryKey: walletKeys.ledger({ viewerId: 1, pageSize: 20 }),
+      queryKey: walletKeys.ledger({ pageSize: 20 }, 1),
       queryFn: async () => { throw new Error('Ledger offline') },
       initialPageParam: 1,
     }).catch(() => {})

@@ -27,7 +27,7 @@ describe('image file validation', () => {
 
     expect(validateImageFile(unsupported)).toEqual({
       valid: false,
-      message: 'Image must be a JPEG, PNG, WEBP, or GIF image.',
+      message: 'Image must be a JPEG, PNG or WEBP image.',
     })
     expect(validateImageFile(oversized, { label: 'Avatar' })).toEqual({
       valid: false,
@@ -45,7 +45,7 @@ describe('image file validation', () => {
     }
 
     expect(caught).toBeInstanceOf(UserValidationError)
-    expect((caught as Error).message).toBe('Cover must be a JPEG, PNG, WEBP, or GIF image.')
+    expect((caught as Error).message).toBe('Cover must be a JPEG, PNG or WEBP image.')
   })
 
   it('surfaces image-validation messages through toUserError while keeping plain Error text hidden', () => {
@@ -73,7 +73,7 @@ describe('image file validation', () => {
       kind: 'validation',
     })
     expect(getErrorMessage(unsupportedError, 'Could not upload this image.')).toBe(
-      'Image must be a JPEG, PNG, WEBP, or GIF image.',
+      'Image must be a JPEG, PNG or WEBP image.',
     )
     expect(getErrorMessage(new Error('Internal uploader bug'), 'Could not upload this image.')).toBe(
       'Could not upload this image.',

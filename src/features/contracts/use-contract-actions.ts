@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { runDialogAction } from '@/features/hiring-pipeline/run-dialog-action'
@@ -76,6 +76,30 @@ function runContractAct(contractId: number, act: ContractAct): Promise<ContractD
 }
 
 /**
+ * Updates client caches and triggers server revalidation right after a contract review succeeds.
+ */
+export function handleReviewSuccess({
+  queryClient,
+  detailKey,
+  contractId,
+  input,
+}: {
+  queryClient: QueryClient
+  detailKey: QueryKey
+  contractId: number
+  input: { rating: number; content: string }
+}) {
+  // The answer is the comment, not the contract: show the review at once, then read the contract again.
+  queryClient.setQueryData<ContractDetail>(detailKey, (old) => (old ? { ...old, canReview: false, review: { id: 0, ...input } } : old))
+  void queryClient.invalidateQueries({ queryKey: ['contracts'] })
+  void queryClient.invalidateQueries({ queryKey: queryKeys.comments })
+  void queryClient.invalidateQueries({ queryKey: ['jobs'] })
+  // The service, marketplace, and freelancer profile pages keep a server cache; clear them so the review shows at once.
+  // A failure here only means the old list shows a little longer, so report it in the background.
+  void refreshServicePageAfterReview(contractId).catch((error) => reportNonFatalError(error, 'cache:revalidate-service'))
+}
+
+/**
  * Owns all contract mutations, the review mutation, the wallet balance check, and the open dialog state.
  * Keeping dialog state alongside the mutations ensures a dialog closes in the same render batch as
  * `setQueryData`, so our own successful step never triggers the stale-dialog notice.
@@ -104,13 +128,7 @@ export function useContractActions(contract: ContractDetail, viewerId: number, c
     mutationFn: (input: { rating: number; content: string }) => contractsApi.review({ contractId: contract.id, ...input }),
     onSuccess: (_answer, input) => {
       closeDialog()
-      // The answer is the comment, not the contract: show the review at once, then read the contract again.
-      queryClient.setQueryData<ContractDetail>(detailKey, (old) => (old ? { ...old, canReview: false, review: { id: 0, ...input } } : old))
-      void queryClient.invalidateQueries({ queryKey: ['contracts'] })
-      void queryClient.invalidateQueries({ queryKey: queryKeys.comments })
-      // The service page keeps a 5-minute server cache; clear it so the review shows there at once.
-      // A failure here only means the old list shows a little longer, so report it in the background.
-      void refreshServicePageAfterReview(contract.id).catch((error) => reportNonFatalError(error, 'cache:revalidate-service'))
+      handleReviewSuccess({ queryClient, detailKey, contractId: contract.id, input })
     },
     onError: () => void queryClient.invalidateQueries({ queryKey: detailKey }),
   })

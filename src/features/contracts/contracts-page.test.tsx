@@ -48,12 +48,12 @@ function render(search: string, seed: Seed = {}) {
   const tab = search.includes('tab=freelancer') ? 'freelancer' : 'client'
   const filter = new URLSearchParams(search).get('filter') ?? 'all'
   if (filter === 'all') {
-    client.setQueryData(contractKeys.proposals(contractsListParams(1, tab, 'OPEN')), page(seed.proposals))
-    client.setQueryData(contractKeys.contracts(contractsListParams(1, tab, undefined)), page(seed.contracts))
+    client.setQueryData(contractKeys.proposals(contractsListParams(tab, 'OPEN'), 1), page(seed.proposals))
+    client.setQueryData(contractKeys.contracts(contractsListParams(tab, undefined), 1), page(seed.contracts))
   } else if (filter === 'proposals') {
-    client.setQueryData(contractKeys.proposals(contractsListParams(1, tab, undefined)), page(seed.proposals))
+    client.setQueryData(contractKeys.proposals(contractsListParams(tab, undefined), 1), page(seed.proposals))
   } else if (filter === 'active') {
-    client.setQueryData(contractKeys.contracts(contractsListParams(1, tab, 'ACTIVE')), page(seed.contracts))
+    client.setQueryData(contractKeys.contracts(contractsListParams(tab, 'ACTIVE'), 1), page(seed.contracts))
   }
   if (seed.proposal) client.setQueryData(contractKeys.proposal(5, 1), seed.proposal)
   if (seed.contract) client.setQueryData(contractKeys.contract(7, 1), seed.contract)

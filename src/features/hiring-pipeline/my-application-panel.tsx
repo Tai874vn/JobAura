@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { formatHiringPostSalary } from '@/features/hiring/hiring-post-card'
+import { refreshHiringPostPages } from '@/features/hiring/refresh-hiring-post-pages'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
@@ -23,11 +25,22 @@ import { StatusBadge } from './status-badge'
 import { usePipelineMutation } from './use-pipeline-mutation'
 
 /** One thing the candidate can ask the server to do on this application. */
-type PanelAction =
+export type PanelAction =
   | { type: 'withdraw' }
   | { type: 'accept' }
   | { type: 'decline'; note?: string }
   | { type: 'interview'; interviewId: number; action: InterviewAction }
+
+/**
+ * Clears the server cache for `/hiring-posts` and the post page when accepting an offer
+ * fills the last opening and closes the post.
+ */
+export function refreshClosedPostAfterAccept(act: PanelAction, updated: ApplicationDetail) {
+  if (act.type !== 'accept' || updated.hiringPost?.status !== 'CLOSED') return
+  void refreshHiringPostPages(updated.hiringPost.id, { applicationId: updated.id }).catch((error) =>
+    reportNonFatalError(error, 'cache:revalidate-hiring-post'),
+  )
+}
 
 const doneText: Record<PanelAction['type'], string> = {
   withdraw: 'Application withdrawn.',
@@ -106,7 +119,8 @@ export function MyApplicationPanel({ application, backHref }: { application: App
 
   async function perform(act: PanelAction) {
     setNotice(null)
-    await mutation.mutateAsync(act)
+    const updated = await mutation.mutateAsync(act)
+    refreshClosedPostAfterAccept(act, updated)
     if (act.type === 'interview' && act.action.type === 'pick') toast.success(bookedToastText(act.action.startsAt), { duration: 4000 })
     else toast.success(doneText[act.type])
   }

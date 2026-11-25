@@ -151,7 +151,12 @@ export function NotificationBell() {
       if (roomId) {
         try {
           const room = (await chatApi.room(roomId)).content;
-          if (room) openChatForRoom(room);
+          if (room) {
+            openChatForRoom(room);
+            void queryClient.invalidateQueries({
+              queryKey: queryKeys.chatRooms(userId),
+            });
+          }
           return;
         } catch (error) {
           reportServerError(error, "notifications:open-chat");

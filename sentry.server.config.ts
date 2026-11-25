@@ -11,6 +11,7 @@ const config = resolveSentryConfig({
   publicDsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   appEnv: process.env.NEXT_PUBLIC_APP_ENV,
   nodeEnv: process.env.NODE_ENV,
+  tracesSampleRate: process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
 });
 
 Sentry.init({

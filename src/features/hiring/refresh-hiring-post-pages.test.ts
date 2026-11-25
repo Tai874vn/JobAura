@@ -74,4 +74,62 @@ describe('refreshHiringPostPages', () => {
       extra: { path: '/api/hiring-posts/42', status: 503, requestId: 'req-hp-503' },
     })
   })
+
+  it('lets the hired candidate clear the post pages when accepting an offer closed the post', async () => {
+    backend(
+      ok({ id: 25, role: 'user' }),
+      ok({
+        id: 77,
+        hiringPostId: 42,
+        applicantId: 25,
+        status: 'HIRED',
+        hiringPost: post,
+      }),
+    )
+
+    await refreshHiringPostPages(42, { applicationId: 77 })
+
+    expect(serverRequest).toHaveBeenCalledWith('/api/applications/77')
+    expect(revalidatePath.mock.calls.map(([path]) => path)).toEqual(['/hiring-posts', '/hiring-posts/42'])
+  })
+
+  it('ignores candidate revalidation when the post is still open, not hired, or owned by another applicant', async () => {
+    backend(
+      ok({ id: 25, role: 'user' }),
+      ok({
+        id: 77,
+        hiringPostId: 42,
+        applicantId: 25,
+        status: 'HIRED',
+        hiringPost: { ...post, status: 'OPEN' },
+      }),
+    )
+    await refreshHiringPostPages(42, { applicationId: 77 })
+
+    backend(
+      ok({ id: 26, role: 'user' }),
+      ok({
+        id: 77,
+        hiringPostId: 42,
+        applicantId: 25,
+        status: 'HIRED',
+        hiringPost: post,
+      }),
+    )
+    await refreshHiringPostPages(42, { applicationId: 77 })
+
+    backend(
+      ok({ id: 25, role: 'user' }),
+      ok({
+        id: 77,
+        hiringPostId: 42,
+        applicantId: 25,
+        status: 'OFFERED',
+        hiringPost: post,
+      }),
+    )
+    await refreshHiringPostPages(42, { applicationId: 77 })
+
+    expect(revalidatePath).not.toHaveBeenCalled()
+  })
 })

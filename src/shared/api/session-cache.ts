@@ -28,10 +28,11 @@ export function setCachedSession(
   user: UserProfile | null,
   client: QueryClient = getQueryClient(),
 ) {
-  client.setQueryData<ApiResponse<UserProfile>>(queryKeys.me, (current) => ({
-    ...current,
-    content: user ?? undefined,
-  }))
+  client.setQueryData<ApiResponse<UserProfile>>(queryKeys.me, (current) => (
+    user
+      ? { ...current, content: user }
+      : { content: undefined }
+  ))
 }
 
 export function resetClientSession(

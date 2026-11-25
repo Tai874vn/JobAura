@@ -2,26 +2,53 @@
 
 import { revalidatePath } from 'next/cache'
 import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
-import { contractDetailSchema } from '@/shared/schemas'
+import { contractDetailSchema, type ApiResponse, type UserProfile } from '@/shared/schemas'
+
+function positiveId(value: unknown): number | null {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 ? value : null
+}
 
 /**
- * Called after a review is sent from the contract panel. The service page (`/jobs/<id>`) keeps its data for
- * 5 minutes (a server cache), so without this the new review would not show there for up to 5 minutes.
+ * Called after a review is sent from the contract panel. Service pages, marketplace lists, and the
+ * freelancer's profile use a server cache, so clear them so the new review shows right away.
  *
- * This is a "server action" (a function the browser calls, which runs on the Next.js server). It reads the
- * contract again with the caller's own sign-in cookie, so only a person who can see the contract can use it,
- * and the service id comes from the server, not from the browser. It only clears the cache when the contract
- * really has a review. Clearing the cache changes no data; the next visit simply reads the page fresh.
+ * Reads both `/api/auth/me` and `/api/contracts/<id>` with the caller's sign-in cookies so only
+ * a signed-in contract member or admin can trigger revalidation, and every path comes from the
+ * server response rather than from browser input.
  */
 export async function refreshServicePageAfterReview(contractId: number): Promise<void> {
-  if (!Number.isInteger(contractId) || contractId < 1) return
-  const path = `/api/contracts/${contractId}`
-  const response = await serverRequest<{ content: unknown }>(path)
-  if (!response.ok) {
-    reportServerRequestFailure(response, 'cache:revalidate-service', path)
-    return
-  }
-  const parsed = contractDetailSchema.safeParse(response.data?.content)
+  const safeId = positiveId(contractId)
+  if (!safeId) return
+
+  const path = `/api/contracts/${safeId}`
+  const [meResponse, contractResponse] = await Promise.all([
+    serverRequest<ApiResponse<UserProfile>>('/api/auth/me'),
+    serverRequest<{ content: unknown }>(path),
+  ])
+
+  if (!meResponse.ok) reportServerRequestFailure(meResponse, 'cache:revalidate-service', '/api/auth/me')
+  if (!contractResponse.ok) reportServerRequestFailure(contractResponse, 'cache:revalidate-service', path)
+  if (!meResponse.ok || !contractResponse.ok) return
+
+  const viewer = meResponse.data?.content
+  const viewerId = positiveId(viewer?.id)
+  if (!viewer || !viewerId) return
+
+  const parsed = contractDetailSchema.safeParse(contractResponse.data?.content)
   if (!parsed.success || !parsed.data.review) return
-  revalidatePath(`/jobs/${parsed.data.job.id}`)
+
+  const contract = parsed.data
+  const canRefresh =
+    viewer.role === 'admin' ||
+    contract.client.id === viewerId ||
+    contract.freelancer.id === viewerId
+  if (!canRefresh) return
+
+  const jobId = positiveId(contract.job.id)
+  const freelancerId = positiveId(contract.freelancer.id)
+
+  revalidatePath('/jobs')
+  revalidatePath('/welcome')
+  if (jobId) revalidatePath(`/jobs/${jobId}`)
+  if (freelancerId) revalidatePath(`/profile/${freelancerId}`)
 }

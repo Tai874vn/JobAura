@@ -98,11 +98,12 @@ export function useChatRoomSelection({
 
   // Load room history through React Query instead of an effect depending on messagesByRoom,
   // so an incoming message in another room never cancels or re-fires the active room's fetch.
+  // Keep a short staleTime instead of Infinity so reopened rooms fetch any messages missed offline.
   const messagesQuery = useQuery({
     queryKey: queryKeys.chatMessages(activeRoomId ?? 0, userId),
     queryFn: () => chatApi.messages(activeRoomId as number),
     enabled: Boolean(userId && activeRoomId && isOpen),
-    staleTime: Infinity,
+    staleTime: 30_000,
   })
 
   const title = useMemo(

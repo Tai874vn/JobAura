@@ -52,6 +52,8 @@ export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: 
       void client.invalidateQueries({ queryKey: myResumeKey })
       // Resume skills are the profile's skill list, so the profile reloads too.
       void client.invalidateQueries({ queryKey: queryKeys.me })
+      // Job picks depend on the resume and skills, so clear cached recommendations.
+      void client.invalidateQueries({ queryKey: ['recommendations', 'jobs'] })
       void refreshMyProfilePage().catch((error) => reportNonFatalError(error, 'cache:revalidate-profile'))
       setDraft({}); setAttachedFile(null)
       toast.success(`${variables.file ? 'Resume file and details saved' : 'Resume saved'}. AI evaluation is queued.`)

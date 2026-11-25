@@ -93,7 +93,12 @@ export function ConnectionsPage() {
   })
   const messageMutation = useMutation({
     mutationFn: chatApi.start,
-    onSuccess: (response) => { if (response.content) openChatForRoom(response.content) },
+    onSuccess: (response) => {
+      if (response.content) {
+        openChatForRoom(response.content)
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms(viewerId) })
+      }
+    },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not open conversation')),
   })
 

@@ -91,7 +91,7 @@ export function CandidateDirectoryPage() {
 
   const apiParams = toCandidateSearchParams(applied, page)
   const query = useQuery({
-    queryKey: queryKeys.candidates(apiParams),
+    queryKey: queryKeys.candidates(apiParams, user?.id),
     queryFn: () => usersApi.candidates(apiParams),
     // Keep the current cards on screen while the next filter or page loads instead of flashing a skeleton.
     placeholderData: keepPreviousData,

@@ -22,7 +22,11 @@ export function proxy(request: NextRequest) {
   })
 
   if (redirectTarget) {
-    return NextResponse.redirect(new URL(redirectTarget, request.url))
+    const response = NextResponse.redirect(new URL(redirectTarget, request.url))
+    // Auth redirects depend on the session cookie, so never let shared caches store them.
+    response.headers.set('Cache-Control', 'private, no-store')
+    response.headers.set('Vary', 'Cookie')
+    return response
   }
 
   return NextResponse.next()

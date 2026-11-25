@@ -31,8 +31,8 @@ import { ProposalPanel } from './proposal-panel'
 export const contractsPageSize = 50
 
 /** What each list asks the server for. The page and its tests both build the query keys from this. */
-export function contractsListParams(viewerId: number, role: Side, status: string | undefined) {
-  return { viewerId, role, status, page: 1, pageSize: contractsPageSize }
+export function contractsListParams(role: Side, status: string | undefined) {
+  return { role, status, page: 1, pageSize: contractsPageSize }
 }
 
 function isMissing(error: unknown) {
@@ -86,18 +86,18 @@ export function ContractsPage() {
   const plan = listPlan(filter)
   const proposalStatus: ProposalStatus | undefined = plan.proposals === 'OPEN' ? 'OPEN' : undefined
   const contractStatus: ContractStatus | undefined = plan.contracts === 'any' || plan.contracts === null ? undefined : plan.contracts
-  const proposalParams = contractsListParams(viewerId, tab, proposalStatus)
-  const contractParams = contractsListParams(viewerId, tab, contractStatus)
+  const proposalParams = contractsListParams(tab, proposalStatus)
+  const contractParams = contractsListParams(tab, contractStatus)
   const proposalsList = useQuery({
-    // The keys carry the person and the side, so one person never sees another person's cached list.
-    queryKey: contractKeys.proposals(proposalParams),
+    // The keys carry the viewer id and the side, so one person never sees another person's cached list.
+    queryKey: contractKeys.proposals(proposalParams, user?.id),
     queryFn: () => contractsApi.proposals({ role: tab, status: proposalStatus, page: 1, pageSize: contractsPageSize }),
     enabled: Boolean(user) && plan.proposals !== null,
     placeholderData: keepPreviousData,
     staleTime: 15_000,
   })
   const contractsList = useQuery({
-    queryKey: contractKeys.contracts(contractParams),
+    queryKey: contractKeys.contracts(contractParams, user?.id),
     queryFn: () => contractsApi.contracts({ role: tab, status: contractStatus, page: 1, pageSize: contractsPageSize }),
     enabled: Boolean(user) && plan.contracts !== null,
     placeholderData: keepPreviousData,

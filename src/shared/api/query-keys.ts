@@ -67,13 +67,13 @@ export const pipelineKeys = {
 export const contractKeys = {
   proposal: (id: number, viewerId?: number | null) => ['contracts', 'proposal', viewerScope(viewerId), id] as const,
   contract: (id: number, viewerId?: number | null) => ['contracts', 'contract', viewerScope(viewerId), id] as const,
-  proposals: (p: object) => ['contracts', 'proposals', p] as const,
-  contracts: (p: object) => ['contracts', 'list', p] as const,
+  proposals: (p: object, viewerId: number | null | undefined) => ['contracts', 'proposals', viewerScope(viewerId), p] as const,
+  contracts: (p: object, viewerId: number | null | undefined) => ['contracts', 'list', viewerScope(viewerId), p] as const,
 } as const
 
 /** Keys for the credit wallet. Scoped by viewer id, and the whole ['wallet'] branch is cleared on sign-out. */
 export const walletKeys = {
   summary: (viewerId?: number | null) => ['wallet', 'summary', viewerScope(viewerId)] as const,
-  ledger: (p: object) => ['wallet', 'ledger', p] as const,
+  ledger: (p: object, viewerId: number | null | undefined) => ['wallet', 'ledger', viewerScope(viewerId), p] as const,
   topUpReturn: (query: string | null, viewerId?: number | null) => ['wallet', 'top-up-return', viewerScope(viewerId), query] as const,
 } as const

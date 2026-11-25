@@ -50,9 +50,16 @@ describe('resolveSentryConfig', () => {
     expect(resolveSentryConfig({ runtime: 'client' }).environment).toBe('development')
   })
 
+  it('reads the trace rate from env and ignores bad values', () => {
+    expect(resolveSentryConfig({ runtime: 'client', nodeEnv: 'production', tracesSampleRate: '0.25' }).tracesSampleRate).toBe(0.25)
+    expect(resolveSentryConfig({ runtime: 'client', nodeEnv: 'production', tracesSampleRate: 'abc' }).tracesSampleRate).toBe(1)
+    expect(resolveSentryConfig({ runtime: 'client', nodeEnv: 'production', tracesSampleRate: '2' }).tracesSampleRate).toBe(1)
+    expect(resolveSentryConfig({ runtime: 'client', nodeEnv: 'development', tracesSampleRate: '0.5' }).tracesSampleRate).toBe(0)
+  })
+
   it('keeps production sampling rates and lowers sampling in development', () => {
     const prod = resolveSentryConfig({ runtime: 'client', nodeEnv: 'production' })
-    expect(prod.tracesSampleRate).toBe(0.1)
+    expect(prod.tracesSampleRate).toBe(1)
     expect(prod.replaysSessionSampleRate).toBe(0.1)
     expect(prod.replaysOnErrorSampleRate).toBe(1)
 

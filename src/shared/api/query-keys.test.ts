@@ -22,7 +22,30 @@ describe('query keys', () => {
     expect(queryKeys.hiringPosts({ page: 1 }, 5)).toEqual(['hiring-posts', 5, { page: 1 }])
     expect(queryKeys.hiringPosts({ page: 1 }, 5)).not.toEqual(queryKeys.hiringPosts({ page: 1 }, 6))
 
+    expect(queryKeys.myHiringPosts({ page: 1 }, 5)).toEqual(['hiring-posts', 'mine', 5, { page: 1 }])
     expect(queryKeys.myHiringPosts({ page: 1 }, 5)).not.toEqual(queryKeys.myHiringPosts({ page: 1 }, 6))
+    expect(queryKeys.myHiringPosts({ page: 1 }, undefined)).toEqual(['hiring-posts', 'mine', 'anon', { page: 1 }])
+
+    expect(queryKeys.candidates({ page: 1 }, 5)).toEqual(['users', 'candidates', 5, { page: 1 }])
+    expect(queryKeys.candidates({ page: 1 }, 5)).not.toEqual(queryKeys.candidates({ page: 1 }, 6))
+    expect(queryKeys.candidates({ page: 1 }, null)).toEqual(['users', 'candidates', 'anon', { page: 1 }])
+
+    expect(queryKeys.viewerRecommendationQuota(5)).toEqual(['recommendations', 'quota', 5])
+    expect(queryKeys.viewerRecommendationQuota(5)).not.toEqual(queryKeys.viewerRecommendationQuota(6))
+    expect(queryKeys.viewerRecommendationQuota(undefined)).toEqual(['recommendations', 'quota', 'anon'])
+
+    expect(queryKeys.recommendedCandidates(12, { topK: 5 }, 5)).toEqual([
+      'recommendations',
+      'hiring-posts',
+      12,
+      'candidates',
+      5,
+      { topK: 5 },
+    ])
+    expect(queryKeys.recommendedCandidates(12, { topK: 5 }, 5)).not.toEqual(
+      queryKeys.recommendedCandidates(12, { topK: 5 }, 6),
+    )
+
     expect(queryKeys.feed(5)).not.toEqual(queryKeys.feed(6))
     expect(queryKeys.myResume(5)).not.toEqual(queryKeys.myResume(6))
     expect(queryKeys.savedPosts(5)).not.toEqual(queryKeys.savedPosts(6))
@@ -35,8 +58,41 @@ describe('query keys', () => {
 
     expect(contractKeys.proposal(5, 1)).not.toEqual(contractKeys.proposal(5, 2))
     expect(contractKeys.contract(7, 1)).not.toEqual(contractKeys.contract(7, 2))
+    expect(contractKeys.proposals({ role: 'client', page: 1 }, 1)).toEqual([
+      'contracts',
+      'proposals',
+      1,
+      { role: 'client', page: 1 },
+    ])
+    expect(contractKeys.proposals({ role: 'client', page: 1 }, 1)).not.toEqual(
+      contractKeys.proposals({ role: 'client', page: 1 }, 2),
+    )
+    expect(contractKeys.proposals({ role: 'client', page: 1 }, undefined)).toEqual([
+      'contracts',
+      'proposals',
+      'anon',
+      { role: 'client', page: 1 },
+    ])
+    expect(contractKeys.contracts({ role: 'client', page: 1 }, 1)).toEqual([
+      'contracts',
+      'list',
+      1,
+      { role: 'client', page: 1 },
+    ])
+    expect(contractKeys.contracts({ role: 'client', page: 1 }, 1)).not.toEqual(
+      contractKeys.contracts({ role: 'client', page: 1 }, 2),
+    )
+    expect(contractKeys.contracts({ role: 'client', page: 1 }, null)).toEqual([
+      'contracts',
+      'list',
+      'anon',
+      { role: 'client', page: 1 },
+    ])
 
     expect(walletKeys.summary(1)).not.toEqual(walletKeys.summary(2))
+    expect(walletKeys.ledger({ pageSize: 20 }, 1)).toEqual(['wallet', 'ledger', 1, { pageSize: 20 }])
+    expect(walletKeys.ledger({ pageSize: 20 }, 1)).not.toEqual(walletKeys.ledger({ pageSize: 20 }, 2))
+    expect(walletKeys.ledger({ pageSize: 20 }, undefined)).toEqual(['wallet', 'ledger', 'anon', { pageSize: 20 }])
     expect(walletKeys.topUpReturn('?vnp_Amount=1', 1)).not.toEqual(walletKeys.topUpReturn('?vnp_Amount=1', 2))
   })
 

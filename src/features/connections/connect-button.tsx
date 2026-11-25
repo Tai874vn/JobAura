@@ -1,9 +1,10 @@
 'use client'
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, Clock3, MessageCircle, UserMinus, UserPlus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { chatApi } from '@/shared/api/endpoints'
+import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, ButtonLink, ConfirmationDialog, Skeleton } from '@/shared/ui'
@@ -29,12 +30,16 @@ export function ConnectionActions({
     confirmingUnfriend,
     setConfirmingUnfriend,
   } = useConnectionControls(userId, userName)
+  const queryClient = useQueryClient()
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
 
   const messageMutation = useMutation({
     mutationFn: () => chatApi.start(userId),
     onSuccess: (response) => {
-      if (response.content) openChatForRoom(response.content)
+      if (response.content) {
+        openChatForRoom(response.content)
+        void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms(user?.id) })
+      }
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not open conversation')),
   })

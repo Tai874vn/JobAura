@@ -44,14 +44,14 @@ export function RecommendedCandidatesPage() {
   const [poolSize, setPoolSize] = useState(100);
 
   const quotaQuery = useQuery({
-    queryKey: queryKeys.recommendationQuota,
+    queryKey: queryKeys.viewerRecommendationQuota(user?.id),
     queryFn: recommendationsApi.quota,
     staleTime: 30 * 1000,
     retry: false,
   });
 
   const hiringPostsQuery = useQuery({
-    queryKey: queryKeys.myHiringPosts(hiringPostPageParams),
+    queryKey: queryKeys.myHiringPosts(hiringPostPageParams, user?.id),
     queryFn: () => hiringPostsApi.mine(hiringPostPageParams),
     enabled: Boolean(user),
     staleTime: 60 * 1000,
@@ -74,11 +74,15 @@ export function RecommendedCandidatesPage() {
   );
 
   const cachedQuery = useQuery({
-    queryKey: queryKeys.recommendedCandidates(selectedHiringPostId ?? 0, {
-      topK,
-      poolSize,
-      cacheOnly: true,
-    }),
+    queryKey: queryKeys.recommendedCandidates(
+      selectedHiringPostId ?? 0,
+      {
+        topK,
+        poolSize,
+        cacheOnly: true,
+      },
+      user?.id,
+    ),
     queryFn: () =>
       recommendationsApi.candidates(selectedHiringPostId!, {
         topK,
@@ -106,14 +110,18 @@ export function RecommendedCandidatesPage() {
       setResultRequest(variables);
       setLastContent(response.content ?? null);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.recommendationQuota,
+        queryKey: queryKeys.viewerRecommendationQuota(user?.id),
       });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.recommendedCandidates(variables.hiringPostId, {
-          topK: variables.topK,
-          poolSize: variables.poolSize,
-          cacheOnly: true,
-        }),
+        queryKey: queryKeys.recommendedCandidates(
+          variables.hiringPostId,
+          {
+            topK: variables.topK,
+            poolSize: variables.poolSize,
+            cacheOnly: true,
+          },
+          user?.id,
+        ),
       });
     },
     onError: (error) => {

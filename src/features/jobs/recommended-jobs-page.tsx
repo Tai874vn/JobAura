@@ -9,7 +9,7 @@ import { useSession } from '@/features/auth/use-session'
 import { recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
-import type { RecommendationContent, RecommendedJob } from '@/shared/schemas'
+import type { ApiResponse, RecommendationContent, RecommendedJob } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardContent, EmptyState, PageHeader, Skeleton } from '@/shared/ui'
 import { HiringPostCard } from '@/features/hiring/hiring-post-card'
 import { MatchBadge } from './recommendation-ui'
@@ -21,13 +21,13 @@ export function RecommendedJobsPage() {
   const queryClient = useQueryClient()
   const { user } = useSession()
   const viewerId = user?.id
-  const [lastContent, setLastContent] = useState<RecommendationContent<RecommendedJob> | null>(null)
   // Keep only which card is hovered/focused in React state; pointer coordinates move the tooltip ref directly
   // so mousemove never triggers 60-120Hz full-page re-renders.
   const [activeRecommendation, setActiveRecommendation] = useState<SkillGapRecommendation | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const pointerPosRef = useRef<{ x: number; y: number }>({ x: 12, y: 12 })
   const [applyingId, setApplyingId] = useState<number | null>(null)
+  const cachedQueryKey = queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId)
   const quotaQuery = useQuery({
     queryKey: queryKeys.viewerRecommendationQuota(viewerId),
     queryFn: recommendationsApi.quota,
@@ -35,7 +35,7 @@ export function RecommendedJobsPage() {
     retry: false,
   })
   const cachedQuery = useQuery({
-    queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId),
+    queryKey: cachedQueryKey,
     queryFn: () => recommendationsApi.jobs({ ...recommendationParams, cacheOnly: true }),
     staleTime: 15 * 1000,
     retry: false,
@@ -44,18 +44,36 @@ export function RecommendedJobsPage() {
     mutationFn: (forceRefresh?: boolean) =>
       recommendationsApi.jobs({ ...recommendationParams, forceRefresh: forceRefresh || undefined }),
     onSuccess: (response) => {
-      setLastContent(response.content ?? null)
-      queryClient.invalidateQueries({ queryKey: queryKeys.viewerRecommendationQuota(viewerId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId) })
+      if (response.content) {
+        // Put the new run right into React Query cache so later invalidations (apply, profile/resume save)
+        // replace it cleanly instead of being hidden by local component state.
+        queryClient.setQueryData<ApiResponse<RecommendationContent<RecommendedJob>>>(cachedQueryKey, {
+          ...response,
+          content: {
+            ...response.content,
+            cache: {
+              ttlSeconds: response.content.cache?.ttlSeconds ?? 300,
+              ...response.content.cache,
+              hit: true,
+            },
+          },
+        })
+        if (response.content.quota) {
+          queryClient.setQueryData(queryKeys.viewerRecommendationQuota(viewerId), {
+            content: response.content.quota,
+          })
+        }
+      }
+      void queryClient.invalidateQueries({ queryKey: queryKeys.viewerRecommendationQuota(viewerId) })
+      void queryClient.invalidateQueries({ queryKey: cachedQueryKey })
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, 'AI recommendations are unavailable'))
     },
   })
 
-  const cachedContent = cachedQuery.data?.content?.cache?.hit ? cachedQuery.data.content : null
-  const content = lastContent ?? cachedContent
-  const quota = lastContent?.quota ?? quotaQuery.data?.content ?? cachedContent?.quota
+  const content = cachedQuery.data?.content?.cache?.hit ? cachedQuery.data.content : null
+  const quota = quotaQuery.data?.content ?? cachedQuery.data?.content?.quota
   const jobs = useMemo(() => sortByFinalScore(content?.data ?? []), [content?.data])
   const canRun = (quota?.remaining ?? 0) > 0
 
@@ -145,6 +163,7 @@ export function RecommendedJobsPage() {
                     onApplied={() => {
                       setApplyingId(null)
                       void queryClient.invalidateQueries({ queryKey: ['hiring-posts'] })
+                      void queryClient.invalidateQueries({ queryKey: ['recommendations', 'jobs'] })
                     }}
                   />
                 </div>

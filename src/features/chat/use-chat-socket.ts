@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Socket } from 'socket.io-client'
 import { toast } from 'sonner'
 import { useRealtimeConnection } from '@/features/auth/realtime-provider'
 import { sanitizeUserMessage } from '@/shared/lib/errors'
 import type { ChatMessage } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { synchronizeChatConnection } from './chat-connection'
+import { createChatConnectHandler, handleIncomingChatMessage } from './chat-connection'
 import { mergeRoomMessages } from './chat-data'
 
 type SendMessageAcknowledgement = {
@@ -65,6 +66,7 @@ export function useChatSocket({
   activeMessages: ChatMessage[]
   messagesData: { content?: ChatMessage[] } | undefined
 }) {
+  const queryClient = useQueryClient()
   const connection = useRealtimeConnection()
   const setMessages = useChatStore((state) => state.setMessages)
   const addMessage = useChatStore((state) => state.addMessage)
@@ -80,11 +82,23 @@ export function useChatSocket({
   useEffect(() => {
     if (!userId || !isSocketActive || !connection) return
     return connection.subscribe('/chat', (nextSocket) => {
-      const onConnect = () => synchronizeChatConnection(nextSocket, useChatStore.getState().activeRoomId)
+      const onConnect = createChatConnectHandler({
+        socket: nextSocket,
+        userId,
+        queryClient,
+        getActiveRoomId: () => useChatStore.getState().activeRoomId,
+      })
       const onConnectError = (error: Error) => {
         console.error('Chat connection failed:', error.message)
       }
-      const onNewMessage = (message: ChatMessage) => addMessage(message, userId)
+      const onNewMessage = (message: ChatMessage) =>
+        handleIncomingChatMessage({
+          message,
+          userId,
+          rooms: useChatStore.getState().rooms,
+          addMessage,
+          queryClient,
+        })
       const onMessagesRead = ({ roomId, userId: readerId }: { roomId: number; userId: number }) => {
         setReadReceipts((current) => applyReadReceipt(current, roomId, readerId))
       }
@@ -127,7 +141,7 @@ export function useChatSocket({
         if (socketRef.current === nextSocket) socketRef.current = null
       }
     })
-  }, [addMessage, connection, isSocketActive, setOnlineUserIds, userId])
+  }, [addMessage, connection, isSocketActive, queryClient, setOnlineUserIds, userId])
 
   useEffect(() => {
     if (!activeRoomId || !isSocketActive) return

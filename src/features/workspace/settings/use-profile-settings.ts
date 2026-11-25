@@ -47,6 +47,8 @@ export function useProfileSettings(profile: UserProfile) {
   function refreshProfile(next?: UserProfile) {
     if (next) setCachedSession(next, client)
     void client.invalidateQueries({ queryKey: queryKeys.me })
+    // Job picks depend on profile skills and details, so clear cached recommendations.
+    void client.invalidateQueries({ queryKey: ['recommendations', 'jobs'] })
     void refreshMyProfilePage().catch((error) => reportNonFatalError(error, 'cache:revalidate-profile'))
   }
   // Memoize each serialized slice independently so typing in one section never re-serializes the others.

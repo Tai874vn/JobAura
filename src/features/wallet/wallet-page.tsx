@@ -18,11 +18,12 @@ export function WalletPage() {
   const { user } = useSession()
   const summary = useQuery({ queryKey: walletKeys.summary(user?.id), queryFn: walletApi.summary, staleTime: 15_000, enabled: Boolean(user) })
   const ledger = useInfiniteQuery({
-    // The person is part of the key, so another person never reads this list from the cache.
-    queryKey: walletKeys.ledger({ viewerId: user?.id ?? 0, pageSize: PAGE_SIZE }),
+    // The viewer id is an explicit segment of the key so another person never reads this list from cache.
+    queryKey: walletKeys.ledger({ pageSize: PAGE_SIZE }, user?.id),
     queryFn: ({ pageParam }) => walletApi.ledger({ page: pageParam, pageSize: PAGE_SIZE }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.page < last.totalPages ? last.page + 1 : undefined),
+    staleTime: 15_000,
     enabled: Boolean(user),
   })
   const rows = ledger.data?.pages.flatMap((page) => page.data) ?? []

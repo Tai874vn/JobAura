@@ -43,12 +43,12 @@ describe('session cache', () => {
   it('removes the wallet balance and ledger when the client session ends', () => {
     const client = new QueryClient()
     client.setQueryData(walletKeys.summary(1), { available: 1250 })
-    client.setQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }), { pages: [] })
+    client.setQueryData(walletKeys.ledger({ pageSize: 20 }, 1), { pages: [] })
 
     resetClientSession(client)
 
     expect(client.getQueryData(walletKeys.summary(1))).toBeUndefined()
-    expect(client.getQueryData(walletKeys.ledger({ viewerId: 1, pageSize: 20 }))).toBeUndefined()
+    expect(client.getQueryData(walletKeys.ledger({ pageSize: 20 }, 1))).toBeUndefined()
   })
 
   it('removes cached mutation results when the client session ends', async () => {

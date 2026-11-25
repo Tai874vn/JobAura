@@ -220,7 +220,7 @@ describe('contractKeys', () => {
   it('carries the viewer and id or the side so one person never reads the cache of another', () => {
     expect(contractKeys.proposal(5, 1)).toEqual(['contracts', 'proposal', 1, 5])
     expect(contractKeys.contract(8, 1)).toEqual(['contracts', 'contract', 1, 8])
-    expect(contractKeys.contracts({ role: 'client', page: 1 })).toEqual(['contracts', 'list', { role: 'client', page: 1 }])
-    expect(contractKeys.proposals({ role: 'freelancer' })).toEqual(['contracts', 'proposal' + 's', { role: 'freelancer' }])
+    expect(contractKeys.contracts({ role: 'client', page: 1 }, 1)).toEqual(['contracts', 'list', 1, { role: 'client', page: 1 }])
+    expect(contractKeys.proposals({ role: 'freelancer' }, 1)).toEqual(['contracts', 'proposals', 1, { role: 'freelancer' }])
   })
 })
