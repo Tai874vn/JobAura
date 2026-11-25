@@ -11,9 +11,10 @@ import { toast } from 'sonner'
 import type { z } from 'zod'
 import { useSession } from '@/features/auth/use-session'
 import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'
-import { getErrorMessage } from '@/shared/lib/utils'
+import { getErrorMessage, UserValidationError } from '@/shared/lib/utils'
 import { createJobSchema, type CreateJob, type Job } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, Card, Input, PageHeader, Select, Textarea } from '@/shared/ui'
 import { MilestoneTemplateField } from './milestone-template-field'
@@ -86,7 +87,7 @@ export function JobForm({ job }: { job?: Job }) {
     mutationFn: async (values: CreateJob) => {
       if (file) {
         const validation = validateImageFile(file, { label: 'Cover image' })
-        if (!validation.valid) throw new Error(validation.message)
+        if (!validation.valid) throw new UserValidationError(validation.message)
       }
 
       // Remote work has no area, and no steps means no template (null clears an old one).
@@ -105,7 +106,7 @@ export function JobForm({ job }: { job?: Job }) {
       void queryClient.invalidateQueries({ queryKey: ['jobs'] })
       // Clear the server's cached copies of the post page first, so the page we open next shows the saved post.
       // A failure here only means the old copy shows for a few minutes, so it never blocks the save.
-      if (res.savedId) await refreshJobPagesAfterSave(res.savedId).catch(() => {})
+      if (res.savedId) await refreshJobPagesAfterSave(res.savedId).catch((error) => reportNonFatalError(error, 'cache:revalidate-job'))
       router.push(res.savedId ? `/jobs/${res.savedId}` : '/my-posts')
       router.refresh()
     },
@@ -171,7 +172,7 @@ export function JobForm({ job }: { job?: Job }) {
                   <Field
                     id="post-field"
                     label="Field"
-                    hint={categoriesUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">Fields could not be loaded.<Button type="button" size="sm" variant="secondary" onClick={() => categoriesQuery.refetch()}>Retry</Button></span> : undefined}
+                    hint={categoriesUnavailable ? <span className="flex items-center gap-2 text-xs font-normal text-danger">{getErrorMessage(categoriesQuery.error, 'Fields could not be loaded.')}<Button type="button" size="sm" variant="secondary" onClick={() => categoriesQuery.refetch()}>Retry</Button></span> : undefined}
                   >
                     <Select
                       id="post-field"

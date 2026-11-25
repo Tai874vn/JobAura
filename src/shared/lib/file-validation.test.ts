@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { getErrorMessage, toUserError, UserValidationError } from './errors'
 import {
   assertValidImageFile,
   imageUploadMaxSizeBytes,
@@ -34,10 +35,48 @@ describe('image file validation', () => {
     })
   })
 
-  it('throws before an invalid file reaches an upload endpoint', () => {
+  it('throws UserValidationError before an invalid file reaches an upload endpoint', () => {
     const file = new File(['text'], 'notes.txt', { type: 'text/plain' })
-    expect(() => assertValidImageFile(file, { label: 'Cover' })).toThrow(
-      'Cover must be a JPEG, PNG, WEBP, or GIF image.',
+    let caught: unknown
+    try {
+      assertValidImageFile(file, { label: 'Cover' })
+    } catch (error) {
+      caught = error
+    }
+
+    expect(caught).toBeInstanceOf(UserValidationError)
+    expect((caught as Error).message).toBe('Cover must be a JPEG, PNG, WEBP, or GIF image.')
+  })
+
+  it('surfaces image-validation messages through toUserError while keeping plain Error text hidden', () => {
+    const oversized = new File(
+      [new Uint8Array(imageUploadMaxSizeBytes + 1)],
+      'deliverable.png',
+      { type: 'image/png' },
+    )
+    const unsupported = new File(['<svg/>'], 'diagram.svg', { type: 'image/svg+xml' })
+
+    const capture = (file: File) => {
+      try {
+        assertValidImageFile(file, { label: 'Image' })
+      } catch (error) {
+        return error
+      }
+      return undefined
+    }
+
+    const oversizedError = capture(oversized)
+    const unsupportedError = capture(unsupported)
+
+    expect(toUserError(oversizedError, 'Could not upload this image.')).toEqual({
+      message: 'Image must be 5.0 MB or smaller.',
+      kind: 'validation',
+    })
+    expect(getErrorMessage(unsupportedError, 'Could not upload this image.')).toBe(
+      'Image must be a JPEG, PNG, WEBP, or GIF image.',
+    )
+    expect(getErrorMessage(new Error('Internal uploader bug'), 'Could not upload this image.')).toBe(
+      'Could not upload this image.',
     )
   })
 })

@@ -49,7 +49,7 @@ describe('JobEditPage', () => {
         queryFn: async () => {
           throw new AxiosError('Server down', 'ERR_BAD_RESPONSE', undefined, undefined, {
             status: 503,
-            data: { message: 'Backend temporarily unavailable' },
+            data: { message: 'Backend temporarily unavailable', requestId: 'req-503' },
           } as never)
         },
       })
@@ -58,7 +58,8 @@ describe('JobEditPage', () => {
     const html = renderWithClient(client, 55)
 
     expect(html).toContain('Could not load this post')
-    expect(html).toContain('Backend temporarily unavailable')
+    expect(html).toContain('Something went wrong. Please try again. (ref: req-503)')
+    expect(html).not.toContain('Backend temporarily unavailable')
     expect(html).toContain('>Try again</button>')
     expect(html).not.toContain('JobForm:')
   })

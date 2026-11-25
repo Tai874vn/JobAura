@@ -9,14 +9,20 @@ vi.mock('@sentry/nextjs', () => ({
   captureException: captureExceptionMock,
 }))
 
+import { RequestError } from '@/shared/lib/errors'
 import {
   createQueryClient,
   getQueryClient,
+  reportNonFatalError,
+  reportServerError,
   shouldReportServerError,
   shouldRetryQuery,
 } from './query-client'
 
-function axiosErrorWithStatus(status?: number) {
+function axiosErrorWithStatus(
+  status?: number,
+  options: { data?: unknown; headers?: Record<string, string> } = {},
+) {
   const config = {} as InternalAxiosRequestConfig
   return new AxiosError(
     status ? `HTTP ${status}` : 'Network Error',
@@ -24,7 +30,13 @@ function axiosErrorWithStatus(status?: number) {
     config,
     undefined,
     status
-      ? { status, statusText: 'Error', data: {}, headers: {}, config }
+      ? {
+          status,
+          statusText: 'Error',
+          data: options.data ?? {},
+          headers: options.headers ?? {},
+          config,
+        }
       : undefined,
   )
 }
@@ -121,6 +133,97 @@ describe('shouldReportServerError', () => {
       }),
     ).rejects.toBe(notFoundError)
 
+    expect(captureExceptionMock).not.toHaveBeenCalled()
+  })
+
+  it('captures 5xx mutation failures once and deduplicates repeated reports of the same error', async () => {
+    const client = createQueryClient()
+    const serverError = axiosErrorWithStatus(500)
+    const wrappedError = new Error('Resume details were saved, but the file upload failed.', { cause: serverError })
+
+    const mutation = client.getMutationCache().build(client, {
+      mutationKey: ['resume', 'upload'],
+      mutationFn: async () => {
+        throw wrappedError
+      },
+    })
+
+    await expect(mutation.execute(undefined)).rejects.toBe(wrappedError)
+
+    // Reporting the same error again from outside the cache must not double-send to Sentry.
+    reportServerError(wrappedError, 'ui:duplicate-check')
+    reportServerError(serverError, 'ui:duplicate-check')
+
+    expect(captureExceptionMock).toHaveBeenCalledOnce()
+    expect(captureExceptionMock).toHaveBeenCalledWith(serverError, {
+      tags: { source: 'react-query:mutation' },
+      extra: { key: '["resume","upload"]' },
+    })
+
+    captureExceptionMock.mockClear()
+
+    const actionError = new RequestError('Something went wrong. Please try again.', 503, 'req-503')
+    reportServerError(actionError, 'server-action:delete')
+    expect(captureExceptionMock).toHaveBeenCalledOnce()
+    expect(captureExceptionMock).toHaveBeenCalledWith(actionError, {
+      tags: { source: 'server-action:delete', requestId: 'req-503' },
+      extra: undefined,
+    })
+
+    captureExceptionMock.mockClear()
+
+    // RequestErrors already reported server-side must not be double-reported by the browser cache.
+    const alreadyReported = new RequestError('', 500, 'req-server-500', undefined, { reported: true })
+    expect(shouldReportServerError(alreadyReported)).toBe(false)
+    reportServerError(alreadyReported, 'react-query:mutation')
+    expect(captureExceptionMock).not.toHaveBeenCalled()
+
+    // Axios 5xx errors include their backend requestId tag (body or Title-Case header).
+    const axiosWithRef = axiosErrorWithStatus(500, { headers: { 'X-Request-ID': 'hdr-500' } })
+    reportServerError(axiosWithRef, 'direct:axios')
+    expect(captureExceptionMock).toHaveBeenCalledOnce()
+    expect(captureExceptionMock).toHaveBeenCalledWith(axiosWithRef, {
+      tags: { source: 'direct:axios', requestId: 'hdr-500' },
+      extra: undefined,
+    })
+  })
+})
+
+describe('reportNonFatalError', () => {
+  it('skips Next.js server-action errors carrying a digest to avoid double-reporting with onRequestError', () => {
+    const nextActionError = Object.assign(new Error('Server action failed'), { digest: 'NEXT_12345' })
+
+    reportNonFatalError(nextActionError, 'cache:revalidate-job')
+
+    expect(captureExceptionMock).not.toHaveBeenCalled()
+  })
+
+  it('reports client transport failures once without swallowing them', () => {
+    const fetchError = new TypeError('Failed to fetch')
+
+    reportNonFatalError(fetchError, 'cache:revalidate-profile')
+    reportNonFatalError(fetchError, 'cache:revalidate-profile')
+
+    expect(captureExceptionMock).toHaveBeenCalledOnce()
+    expect(captureExceptionMock).toHaveBeenCalledWith(fetchError, {
+      tags: { source: 'cache:revalidate-profile' },
+      extra: undefined,
+    })
+  })
+
+  it('delegates unreported 5xx errors with requestId and skips 4xx or already-reported errors', () => {
+    const serverError = axiosErrorWithStatus(502, { data: { requestId: 'req-502' } })
+    reportNonFatalError(serverError, 'cache:revalidate-taxonomy')
+    expect(captureExceptionMock).toHaveBeenCalledOnce()
+    expect(captureExceptionMock).toHaveBeenCalledWith(serverError, {
+      tags: { source: 'cache:revalidate-taxonomy', requestId: 'req-502' },
+      extra: undefined,
+    })
+
+    captureExceptionMock.mockClear()
+
+    reportNonFatalError(axiosErrorWithStatus(403), 'cache:revalidate-taxonomy')
+    reportNonFatalError(new RequestError('', 500, 'req-done', undefined, { reported: true }), 'cache:revalidate-taxonomy')
     expect(captureExceptionMock).not.toHaveBeenCalled()
   })
 })

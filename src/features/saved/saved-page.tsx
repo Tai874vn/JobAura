@@ -88,7 +88,7 @@ export function SavedPage() {
                   className="mt-5"
                   icon={<SearchX />}
                   title="Saved posts could not be loaded"
-                  description="Check the backend connection and try again."
+                  description={getErrorMessage(postsQuery.error, 'Could not load your saved posts. Please try again.')}
                   action={<Button variant="secondary" onClick={() => postsQuery.refetch()}>Retry</Button>}
                 />
               ) : null}
@@ -133,7 +133,7 @@ export function SavedPage() {
                 <EmptyState
                   icon={<SearchX />}
                   title="Saved jobs could not be loaded"
-                  description="Check the backend connection and try again."
+                  description={getErrorMessage(jobsQuery.error, 'Could not load your saved jobs. Please try again.')}
                   action={<Button variant="secondary" onClick={() => jobsQuery.refetch()}>Retry</Button>}
                 />
               ) : null}

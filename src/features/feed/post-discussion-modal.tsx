@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { postsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { prefersReducedMotion } from '@/shared/lib/motion'
-import { resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
+import { getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { FeedPost, PostComment } from '@/shared/schemas'
 import { Button, DialogPortal, Skeleton, useDialogFocus } from '@/shared/ui'
 import { CommentThread } from './comment-thread'
@@ -278,7 +278,7 @@ export function PostDiscussionModal({
             ) : null}
             {commentsQuery.isError ? (
               <div className="flex items-center justify-between gap-3 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm">
-                <span>Comments could not be loaded.</span>
+                <span>{getErrorMessage(commentsQuery.error, 'Comments could not be loaded.')}</span>
                 <Button type="button" size="sm" variant="secondary" loading={commentsQuery.isFetching}
                   onClick={() => void (commentsQuery.isFetchNextPageError ? commentsQuery.fetchNextPage() : commentsQuery.refetch())}>Retry</Button>
               </div>

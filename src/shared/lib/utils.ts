@@ -1,32 +1,21 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import axios from 'axios'
 import { env } from '@/shared/config/env'
 import { resolveHttpUrl } from './urls'
 
+export {
+  getErrorMessage,
+  isSafeUserMessage,
+  RequestError,
+  sanitizeUserMessage,
+  toUserError,
+  UserValidationError,
+  type UserError,
+  type UserErrorKind,
+} from './errors'
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-}
-
-export function getErrorMessage(error: unknown, fallback = 'Something went wrong') {
-  if (axios.isAxiosError(error)) {
-    const data = error.response?.data as { message?: unknown } | undefined
-    // A validation error (400) sends a list of sentences; the first one is enough to show.
-    const message = Array.isArray(data?.message) ? data.message[0] : data?.message
-    if (typeof message === 'string' && message) return message
-
-    // Distinguish timeouts and offline/network errors (no server response) from generic server errors.
-    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-      return 'The request timed out. Please try again.'
-    }
-    if (!error.response) {
-      return 'Unable to reach the server. Check your connection and try again.'
-    }
-
-    return fallback
-  }
-
-  return error instanceof Error ? error.message : fallback
 }
 
 export function initials(name: string | undefined) {

@@ -5,7 +5,7 @@ import { AxiosError } from 'axios'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMemo } from 'react'
 import { useSession } from '@/features/auth/use-session'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ContractStatus, ProposalStatus, Side } from '@/shared/schemas'
 import { Button, ButtonLink, EmptyState } from '@/shared/ui'
 import { contractKeys, contractsApi } from './api'
@@ -155,7 +155,7 @@ export function ContractsPage() {
       return isMissing(detail.error) ? (
         <EmptyState title="Could not open this item" description="It does not exist, or it is not yours." action={<ButtonLink href="/contracts" variant="secondary">All contracts</ButtonLink>} />
       ) : (
-        <EmptyState title="Could not open this item" description="Check your connection and try again." action={<Button onClick={() => void detail.refetch()}>Try again</Button>} />
+        <EmptyState title="Could not open this item" description={getErrorMessage(detail.error, 'Check your connection and try again.')} action={<Button onClick={() => void detail.refetch()}>Try again</Button>} />
       )
     }
     const data = detail.data
@@ -231,7 +231,7 @@ export function ContractsPage() {
             ) : isError ? (
               <EmptyState
                 title="Could not load your contracts"
-                description="Check your connection and try again."
+                description={getErrorMessage(proposalsList.error ?? contractsList.error, 'Check your connection and try again.')}
                 action={<Button onClick={() => { void proposalsList.refetch(); void contractsList.refetch() }}>Try again</Button>}
               />
             ) : rows.length ? (

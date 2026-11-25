@@ -15,6 +15,9 @@ describe('hiring post AI state', () => {
     const state = hiringPostAiState(post('AI_UNAVAILABLE', { aiStatusMessage: 'The AI service is unavailable right now.' }))
     expect(state).toEqual({ label: null, message: 'The AI service is unavailable right now.', action: 'Try again' })
     expect(hiringPostAiState(post('FAILED')).action).toBe('Try again')
+    expect(
+      hiringPostAiState(post('FAILED', { aiStatusMessage: 'PrismaClientKnownRequestError at https://ai.local/predict' })),
+    ).toEqual({ label: null, message: 'The AI level could not be worked out.', action: 'Try again' })
   })
 
   it('asks for the missing input without a button', () => {

@@ -62,9 +62,6 @@ export function RouteError({
               {homeLabel}
             </ButtonLink>
           </div>
-          {error.digest ? (
-            <p className="mt-4 font-mono text-xs text-muted">Reference: {error.digest}</p>
-          ) : null}
         </CardContent>
       </Card>
     </div>

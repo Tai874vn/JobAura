@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSession } from '@/features/auth/use-session'
 import { adminApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { getErrorMessage } from '@/shared/lib/utils'
 import { Card, CardContent, PageHeader, Skeleton } from '@/shared/ui'
 import { AdminResourcePage } from './admin-resource-page'
 
@@ -36,7 +37,7 @@ export function AdminDashboard() {
       </div>
       {stats.isError ? (
         <div className="mb-6 rounded-lg border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
-          Dashboard totals are unavailable. The resource tables can still be managed below.
+          Dashboard totals are unavailable. {getErrorMessage(stats.error, 'The resource tables can still be managed below.')}
         </div>
       ) : null}
       <AdminResourcePage resource="jobs" embedded />

@@ -119,7 +119,7 @@ export function FeedPage() {
           {feedQuery.isPending ? <FeedSkeleton /> : null}
           {feedQuery.isError ? (
             <Card className="p-8 text-center">
-              <p className="text-sm text-muted">The feed could not be loaded.</p>
+              <p className="text-sm text-muted">{getErrorMessage(feedQuery.error, 'The feed could not be loaded.')}</p>
               <Button className="mt-4" variant="secondary" onClick={() => feedQuery.refetch()}>
                 <RefreshCw className="h-4 w-4" /> Retry
               </Button>

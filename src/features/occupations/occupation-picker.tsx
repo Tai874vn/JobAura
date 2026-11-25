@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Input, LiveStatus } from '@/shared/ui'
 import { occupationKeys, occupationLabel, occupationQuery, occupationsApi, type OccupationHit } from './api'
 
@@ -146,7 +146,9 @@ export function OccupationPicker({
         ) : null}
         {listShown ? (
           <OccupationResults listId={listId} hits={hits} active={active} searching={results.isFetching}
-            failed={results.isError} onActive={setActive} onChoose={choose} />
+            failed={results.isError}
+            errorMessage={results.isError ? getErrorMessage(results.error, 'Occupation search is unavailable. Try again.') : undefined}
+            onActive={setActive} onChoose={choose} />
         ) : null}
       </div>
     </div>
@@ -160,6 +162,7 @@ export function OccupationResults({
   active,
   searching = false,
   failed = false,
+  errorMessage,
   onActive = () => {},
   onChoose,
 }: {
@@ -168,11 +171,12 @@ export function OccupationResults({
   active: number
   searching?: boolean
   failed?: boolean
+  errorMessage?: string
   onActive?: (index: number) => void
   onChoose: (hit: OccupationHit) => void
 }) {
   const status = searching && !hits.length ? 'Searching…'
-    : failed ? 'Occupation search is unavailable. Try again.'
+    : failed ? (errorMessage ?? 'Occupation search is unavailable. Try again.')
     : !hits.length ? 'No matching occupation. Try another job title.'
     : `${hits.length} ${hits.length === 1 ? 'occupation' : 'occupations'} found`
   return (

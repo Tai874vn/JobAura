@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { revalidatePath, serverRequest } = vi.hoisted(() => ({ revalidatePath: vi.fn(), serverRequest: vi.fn() }))
+const { revalidatePath, serverRequest, captureException } = vi.hoisted(() => ({
+  revalidatePath: vi.fn(),
+  serverRequest: vi.fn(),
+  captureException: vi.fn(),
+}))
+vi.mock('@sentry/nextjs', () => ({ captureException }))
 vi.mock('next/cache', () => ({ revalidatePath }))
-vi.mock('@/shared/api/server', () => ({ serverRequest }))
+vi.mock('@/shared/api/server', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/api/server')>()
+  return { ...actual, serverRequest }
+})
 
 import { refreshMarketplaceTaxonomyPages } from '@/features/admin/refresh-taxonomy-pages'
 import { refreshMyProfilePage } from './refresh-profile-page'
@@ -13,6 +21,7 @@ const noSession = () => serverRequest.mockResolvedValue({ ok: false, status: 401
 beforeEach(() => {
   revalidatePath.mockReset()
   serverRequest.mockReset()
+  captureException.mockReset()
 })
 
 describe('refreshMyProfilePage', () => {
@@ -25,13 +34,33 @@ describe('refreshMyProfilePage', () => {
     expect(revalidatePath.mock.calls).toEqual([['/profile/11']])
   })
 
-  it('does nothing without a session or with a bad id', async () => {
+  it('does nothing without a session or with a bad id and skips 4xx Sentry reporting', async () => {
     noSession()
     await refreshMyProfilePage()
     me({ id: 0 })
     await refreshMyProfilePage()
 
     expect(revalidatePath).not.toHaveBeenCalled()
+    expect(captureException).not.toHaveBeenCalled()
+  })
+
+  it('reports backend 5xx failures to Sentry with source and requestId', async () => {
+    serverRequest.mockResolvedValueOnce({
+      ok: false,
+      status: 502,
+      statusText: 'Bad Gateway',
+      error: 'Upstream down',
+      requestId: 'req-prof-502',
+    })
+
+    await refreshMyProfilePage()
+
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(captureException).toHaveBeenCalledOnce()
+    expect(captureException.mock.calls[0]?.[1]).toEqual({
+      tags: { source: 'cache:revalidate-profile', requestId: 'req-prof-502' },
+      extra: { path: '/api/auth/me', status: 502, requestId: 'req-prof-502' },
+    })
   })
 })
 
@@ -51,5 +80,25 @@ describe('refreshMarketplaceTaxonomyPages', () => {
     await refreshMarketplaceTaxonomyPages()
 
     expect(revalidatePath).not.toHaveBeenCalled()
+    expect(captureException).not.toHaveBeenCalled()
+  })
+
+  it('reports backend 5xx failures to Sentry with source and requestId', async () => {
+    serverRequest.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error',
+      error: 'DB error',
+      requestId: 'req-tax-500',
+    })
+
+    await refreshMarketplaceTaxonomyPages()
+
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(captureException).toHaveBeenCalledOnce()
+    expect(captureException.mock.calls[0]?.[1]).toEqual({
+      tags: { source: 'cache:revalidate-taxonomy', requestId: 'req-tax-500' },
+      extra: { path: '/api/auth/me', status: 500, requestId: 'req-tax-500' },
+    })
   })
 })

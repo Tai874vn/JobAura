@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Input, LiveStatus } from '@/shared/ui'
 import { occupationQuery } from './api'
 
@@ -49,7 +49,7 @@ export function SpecialtyPicker({
   const none = Boolean(detail.data) && specialties.length === 0
   const listShown = open && Boolean(occupation)
   const status = detail.isPending ? 'Loading specialties…'
-    : detail.isError ? 'Specialties are unavailable. Try again.'
+    : detail.isError ? getErrorMessage(detail.error, 'Specialties are unavailable. Try again.')
     : !options.length ? 'No matching specialty.'
     : `${options.length} ${options.length === 1 ? 'specialty' : 'specialties'} shown`
 

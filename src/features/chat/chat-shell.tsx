@@ -8,7 +8,9 @@ import { toast } from 'sonner'
 import { useRealtimeConnection } from '@/features/auth/realtime-provider'
 import { useSession } from '@/features/auth/use-session'
 import { chatApi } from '@/shared/api/endpoints'
+import { reportServerError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
+import { sanitizeUserMessage } from '@/shared/lib/errors'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
@@ -71,7 +73,10 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
           openChatForRoom(room)
           void queryClient.invalidateQueries({ queryKey: queryKeys.chatRooms(userId) })
         })
-        .catch((error) => toast.error(getErrorMessage(error, 'Could not open the chat')))
+        .catch((error: unknown) => {
+          reportServerError(error, 'chat:open-room')
+          toast.error(getErrorMessage(error, 'Could not open the chat'))
+        })
     }
   })
   useEffect(() => {
@@ -254,10 +259,8 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
       (error: Error | null, acknowledgement?: SendMessageAcknowledgement) => {
         setIsSending(false)
         if (error || acknowledgement?.status !== 'success') {
-          const message = typeof acknowledgement?.message === 'string'
-            ? acknowledgement.message
-            : 'Your message was not sent. Please try again.'
-          toast.error(message)
+          const fallback = error ? 'The request timed out.' : 'Your message was not sent. Please try again.'
+          toast.error(sanitizeUserMessage(acknowledgement?.message, fallback))
           return
         }
         setDraft((current) => current.trim() === content ? '' : current)
@@ -314,7 +317,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
                 </div>
               )) : roomsQuery.isError && !roomsQuery.data ? (
                 <div className="p-4 text-center text-sm text-muted">
-                  Conversations could not be loaded.
+                  {getErrorMessage(roomsQuery.error, 'Conversations could not be loaded.')}
                   <Button className="mx-auto mt-3" size="sm" variant="secondary" onClick={() => roomsQuery.refetch()}>
                     Retry
                   </Button>

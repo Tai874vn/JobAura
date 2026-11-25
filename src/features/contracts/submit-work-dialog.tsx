@@ -4,6 +4,7 @@ import { ImagePlus, Plus, X } from 'lucide-react'
 import Image from 'next/image'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { reportServerError } from '@/shared/api/query-client'
 import { imageUploadAccept } from '@/shared/lib/file-validation'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, DialogPortal, Input, Textarea, useDialogFocus } from '@/shared/ui'
@@ -84,6 +85,7 @@ export function SubmitWorkDialog({
         try {
           urls.push((await contractsApi.uploadImage(file)).url)
         } catch (uploadError) {
+          reportServerError(uploadError, 'contracts:upload-image')
           toast.error(getErrorMessage(uploadError, 'Could not upload this image.'))
         }
       }

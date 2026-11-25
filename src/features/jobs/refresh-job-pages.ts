@@ -4,7 +4,11 @@ import { revalidatePath } from 'next/cache'
 import { cookies, headers } from 'next/headers'
 import { csrfTokenFromCookie } from '@/shared/api/csrf'
 import { normalizeJobResponse } from '@/shared/api/normalizers'
-import { serverRequest } from '@/shared/api/server'
+import {
+  reportServerRequestFailure,
+  serverRequest,
+  type ServerRequestFailure,
+} from '@/shared/api/server'
 import type { ApiResponse, Comment, Job, UserProfile } from '@/shared/schemas'
 
 function positiveId(value: unknown): number | null {
@@ -22,11 +26,14 @@ export async function refreshJobPagesAfterSave(jobId: number): Promise<void> {
   const safeId = positiveId(jobId)
   if (!safeId) return
 
+  const jobPath = `/api/jobs/details/${safeId}`
   const [meResponse, jobResponse] = await Promise.all([
     serverRequest<ApiResponse<UserProfile>>('/api/auth/me'),
-    serverRequest<ApiResponse<Job & { binhLuans?: Comment[] }>>(`/api/jobs/details/${safeId}`),
+    serverRequest<ApiResponse<Job & { binhLuans?: Comment[] }>>(jobPath),
   ])
 
+  if (!meResponse.ok) reportServerRequestFailure(meResponse, 'cache:revalidate-job', '/api/auth/me')
+  if (!jobResponse.ok) reportServerRequestFailure(jobResponse, 'cache:revalidate-job', jobPath)
   if (!meResponse.ok || !jobResponse.ok) return
   const viewer = meResponse.data?.content
   const viewerId = positiveId(viewer?.id)
@@ -46,11 +53,42 @@ export async function refreshJobPagesAfterSave(jobId: number): Promise<void> {
   if (creatorId) revalidatePath(`/profile/${creatorId}`)
 }
 
-export type DeleteJobResult = { ok: true } | { ok: false; status: number; message: string }
+export type DeleteJobResult =
+  | { ok: true }
+  | {
+      ok: false
+      status: number
+      message: string
+      requestId?: string
+      code?: string
+      reported?: boolean
+    }
 
-function errorText(error: string | string[], fallback: string): string {
-  const text = Array.isArray(error) ? error[0] : error
-  return typeof text === 'string' && text.trim() ? text : fallback
+function toDeleteFailure(
+  response: ServerRequestFailure,
+  source: string,
+  path: string,
+): Extract<DeleteJobResult, { ok: false }> {
+  const reported = reportServerRequestFailure(response, source, path)
+  // Redact 5xx and server-side network errors before crossing the Server Action boundary.
+  // Map server-to-backend connectivity outages (status 0) to 503 so an online user sees
+  // a server error rather than "You seem to be offline."
+  // The UI boundary runs toUserError once with the status, requestId, and code.
+  const raw = Array.isArray(response.error) ? response.error[0] : response.error
+  const message =
+    response.status >= 500 || response.status === 0
+      ? ''
+      : typeof raw === 'string'
+        ? raw
+        : ''
+  return {
+    ok: false,
+    status: response.status === 0 ? 503 : response.status,
+    message,
+    ...(response.requestId ? { requestId: response.requestId } : {}),
+    ...(response.code ? { code: response.code } : {}),
+    ...(reported ? { reported: true } : {}),
+  }
 }
 
 /**
@@ -65,13 +103,14 @@ export async function deleteJobAndRefresh(jobId: number): Promise<DeleteJobResul
   const safeId = positiveId(jobId)
   if (!safeId) return { ok: false, status: 400, message: 'This post id is not valid.' }
 
-  const jobResponse = await serverRequest<ApiResponse<Job & { binhLuans?: Comment[] }>>(`/api/jobs/details/${safeId}`)
+  const detailPath = `/api/jobs/details/${safeId}`
+  const jobResponse = await serverRequest<ApiResponse<Job & { binhLuans?: Comment[] }>>(detailPath)
   if (!jobResponse.ok) {
-    return { ok: false, status: jobResponse.status, message: errorText(jobResponse.error, 'Could not find this post.') }
+    return toDeleteFailure(jobResponse, 'server-action:delete-job', detailPath)
   }
   const job = normalizeJobResponse(jobResponse.data).content
   const verifiedJobId = positiveId(job?.id)
-  if (!job || !verifiedJobId) return { ok: false, status: 404, message: 'Could not find this post.' }
+  if (!job || !verifiedJobId) return { ok: false, status: 404, message: '' }
   const creatorId = positiveId(job.user?.id ?? job.creatorId)
 
   // The backend refuses a change without the X-CSRF-Token header (a copy of the csrf_token cookie), exactly as
@@ -85,12 +124,13 @@ export async function deleteJobAndRefresh(jobId: number): Promise<DeleteJobResul
     if (value) forwarded.set(name, value)
   }
 
-  const deleteResponse = await serverRequest<ApiResponse<void>>(`/api/jobs/${verifiedJobId}`, {
+  const deletePath = `/api/jobs/${verifiedJobId}`
+  const deleteResponse = await serverRequest<ApiResponse<void>>(deletePath, {
     method: 'DELETE',
     headers: forwarded,
   })
   if (!deleteResponse.ok) {
-    return { ok: false, status: deleteResponse.status, message: errorText(deleteResponse.error, 'Could not delete this post.') }
+    return toDeleteFailure(deleteResponse, 'server-action:delete-job', deletePath)
   }
 
   revalidatePath('/jobs')

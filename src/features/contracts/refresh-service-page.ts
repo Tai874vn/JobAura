@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { serverRequest } from '@/shared/api/server'
+import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import { contractDetailSchema } from '@/shared/schemas'
 
 /**
@@ -15,8 +15,12 @@ import { contractDetailSchema } from '@/shared/schemas'
  */
 export async function refreshServicePageAfterReview(contractId: number): Promise<void> {
   if (!Number.isInteger(contractId) || contractId < 1) return
-  const response = await serverRequest<{ content: unknown }>(`/api/contracts/${contractId}`)
-  if (!response.ok) return
+  const path = `/api/contracts/${contractId}`
+  const response = await serverRequest<{ content: unknown }>(path)
+  if (!response.ok) {
+    reportServerRequestFailure(response, 'cache:revalidate-service', path)
+    return
+  }
   const parsed = contractDetailSchema.safeParse(response.data?.content)
   if (!parsed.success || !parsed.data.review) return
   revalidatePath(`/jobs/${parsed.data.job.id}`)

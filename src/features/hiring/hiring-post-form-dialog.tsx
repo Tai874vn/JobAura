@@ -10,6 +10,7 @@ import { SpecialtyPicker } from "@/features/occupations/specialty-picker";
 import { isStillChoice, mainOccupationChange, matchedSpecialty } from "@/features/users/resume-career-fields";
 import { SkillPicker } from "@/features/users/skill-picker";
 import { hiringPostsApi } from "@/shared/api/endpoints";
+import { reportNonFatalError } from "@/shared/api/query-client";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
 import { Button, DialogPortal, Input, Select, Textarea, useDialogFocus } from "@/shared/ui";
@@ -84,7 +85,7 @@ function HiringPostForm({
       toast.success(post ? "Hiring post updated" : "Hiring post published");
       void queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
       const savedId = response.content?.id ?? post?.id;
-      if (savedId) void refreshHiringPostPages(savedId).catch(() => {});
+      if (savedId) void refreshHiringPostPages(savedId).catch((error) => reportNonFatalError(error, "cache:revalidate-hiring-post"));
       if (response.content) onSaved?.(response.content);
       onClose();
     },

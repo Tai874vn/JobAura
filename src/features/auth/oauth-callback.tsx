@@ -70,7 +70,7 @@ export function OAuthCallback() {
 
   if (error) {
     return (
-      <OAuthShell title="Google sign-in failed" description="The backend could not complete Google authentication.">
+      <OAuthShell title="Google sign-in failed" description="We could not complete Google sign-in.">
         <p className="rounded-lg border border-danger/20 bg-danger/5 px-3 py-2 text-sm font-medium text-danger">
           {getOAuthErrorMessage(error)}
         </p>

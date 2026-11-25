@@ -124,18 +124,6 @@ export default function GlobalError({
               Back home
             </a>
           </div>
-          {error.digest ? (
-            <p
-              style={{
-                margin: '16px 0 0',
-                fontSize: '12px',
-                color: '#5e5a52',
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-              }}
-            >
-              Reference: {error.digest}
-            </p>
-          ) : null}
         </main>
       </body>
     </html>

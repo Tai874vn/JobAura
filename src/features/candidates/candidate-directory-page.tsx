@@ -8,7 +8,7 @@ import { useSession } from '@/features/auth/use-session'
 import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
 import { skillsApi, usersApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import {
   BrowseHero,
   BrowsePage,
@@ -524,7 +524,7 @@ export function CandidateDirectoryPage() {
             <EmptyState
               icon={<SearchX />}
               title="Candidates could not be loaded"
-              description="Check your connection and try again."
+              description={getErrorMessage(query.error, 'Check your connection and try again.')}
               action={
                 <button
                   type="button"

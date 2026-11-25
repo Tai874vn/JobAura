@@ -51,7 +51,8 @@ describe('ConnectionsPage', () => {
     const html = renderWithClient(client)
 
     expect(html).toContain('Could not load connections')
-    expect(html).toContain('Connections service offline')
+    expect(html).toContain('Please try again in a moment.')
+    expect(html).not.toContain('Connections service offline')
     expect(html).toContain('>Try again</button>')
   })
 

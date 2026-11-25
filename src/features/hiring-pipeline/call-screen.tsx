@@ -153,8 +153,13 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
 
       <main className="relative flex min-h-0 flex-1 flex-col p-3 sm:p-4" aria-label="Video call">
         {state === 'unavailable' ? (
-          <div className="flex flex-1 items-center justify-center">
-            <p role="alert" className="text-center text-base">The call could not start.</p>
+          <div className="flex flex-1 flex-col items-center justify-center gap-1 text-center">
+            <p role="alert" className="text-base">The call could not start.</p>
+            {(upcoming.error ?? detail.error ?? tokenQuery.error) ? (
+              <p className="text-sm text-muted">
+                {getErrorMessage(upcoming.error ?? detail.error ?? tokenQuery.error)}
+              </p>
+            ) : null}
           </div>
         ) : (
           <>

@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { serverRequest } from '@/shared/api/server'
+import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'
 
 /**
@@ -13,7 +13,10 @@ import type { ApiResponse, UserProfile } from '@/shared/schemas'
  */
 export async function refreshMarketplaceTaxonomyPages(): Promise<void> {
   const response = await serverRequest<ApiResponse<UserProfile>>('/api/auth/me')
-  if (!response.ok) return
+  if (!response.ok) {
+    reportServerRequestFailure(response, 'cache:revalidate-taxonomy', '/api/auth/me')
+    return
+  }
   if (response.data?.content?.role !== 'admin') return
 
   revalidatePath('/welcome')

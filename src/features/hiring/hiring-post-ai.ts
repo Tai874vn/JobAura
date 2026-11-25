@@ -1,3 +1,4 @@
+import { sanitizeUserMessage } from '@/shared/lib/errors'
 import type { HiringPost } from '@/shared/schemas'
 
 /**
@@ -12,10 +13,18 @@ export function isHiringPostAiPending(post: Pick<HiringPost, 'aiStatus'>) {
 export function hiringPostAiState(post: Pick<HiringPost, 'aiStatus' | 'aiStatusMessage' | 'predictedSeniority'>) {
   if (isHiringPostAiPending(post)) return { label: 'Working out the AI level…', message: null, action: null }
   if (post.aiStatus === 'AI_UNAVAILABLE' || post.aiStatus === 'FAILED') {
-    return { label: null, message: post.aiStatusMessage ?? 'The AI level could not be worked out.', action: 'Try again' as const }
+    return {
+      label: null,
+      message: sanitizeUserMessage(post.aiStatusMessage, 'The AI level could not be worked out.'),
+      action: 'Try again' as const,
+    }
   }
   if (post.aiStatus === 'NEEDS_INPUT') {
-    return { label: null, message: post.aiStatusMessage ?? 'Add the field and required years to get an AI level.', action: null }
+    return {
+      label: null,
+      message: sanitizeUserMessage(post.aiStatusMessage, 'Add the field and required years to get an AI level.'),
+      action: null,
+    }
   }
   return { label: null, message: null, action: post.predictedSeniority ? null : ('Get AI level' as const) }
 }

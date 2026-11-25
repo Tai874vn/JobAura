@@ -57,7 +57,7 @@ export function MyPostsPage() {
           <EmptyState
             icon={<SearchX />}
             title="Services could not be loaded"
-            description="Check the backend connection and try again."
+            description={getErrorMessage(query.error, 'Could not load your services. Please try again.')}
             action={<Button variant="secondary" onClick={() => query.refetch()}>Retry</Button>}
           />
         ) : null}

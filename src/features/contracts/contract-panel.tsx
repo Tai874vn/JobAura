@@ -9,6 +9,7 @@ import { openChatEventName } from '@/features/chat/chat-data'
 import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
 import { runDialogAction } from '@/features/hiring-pipeline/run-dialog-action'
 import { walletApi, walletKeys } from '@/features/wallet/api'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
 import { credits } from '@/shared/lib/credits'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
@@ -159,8 +160,8 @@ export function ContractPanel({ contract, viewerId, backHref }: { contract: Cont
       void queryClient.invalidateQueries({ queryKey: ['contracts'] })
       void queryClient.invalidateQueries({ queryKey: queryKeys.comments })
       // The service page keeps a 5-minute server cache; clear it so the review shows there at once.
-      // A failure here only means the old list shows a little longer, so it is ignored.
-      refreshServicePageAfterReview(contract.id).catch(() => undefined)
+      // A failure here only means the old list shows a little longer, so report it in the background.
+      void refreshServicePageAfterReview(contract.id).catch((error) => reportNonFatalError(error, 'cache:revalidate-service'))
     },
     onError: () => void queryClient.invalidateQueries({ queryKey: detailKey }),
   })

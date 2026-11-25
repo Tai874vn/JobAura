@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { toUserError, UserValidationError } from '@/shared/lib/errors'
 import {
   extractedResumeFields,
   inferDegree,
@@ -164,5 +165,31 @@ describe('resume helpers', () => {
   it('keeps saved fields that an extraction did not find, such as skills', () => {
     const found = extractedResumeFields({ Name: 'Jane', Skills: '', Degree: '', Summary: 'Builds APIs' })
     expect(found).toEqual({ Name: 'Jane', Summary: 'Builds APIs' })
+  })
+
+  it('throws UserValidationError for intentional resume validation messages', () => {
+    let emptyTextError: unknown
+    try {
+      extractResumeFromText('   ')
+    } catch (error) {
+      emptyTextError = error
+    }
+    expect(emptyTextError).toBeInstanceOf(UserValidationError)
+    expect(toUserError(emptyTextError)).toEqual({
+      message: 'Resume file does not contain readable text.',
+      kind: 'validation',
+    })
+
+    let invalidJsonError: unknown
+    try {
+      parseResumeJson('[]')
+    } catch (error) {
+      invalidJsonError = error
+    }
+    expect(invalidJsonError).toBeInstanceOf(UserValidationError)
+    expect(toUserError(invalidJsonError)).toEqual({
+      message: 'Resume JSON must be an object.',
+      kind: 'validation',
+    })
   })
 })

@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { credits } from '@/shared/lib/credits'
+import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'
 import { walletApi, walletKeys } from './api'
 import { LedgerRow } from './ledger-row'
@@ -41,7 +42,7 @@ export function WalletPage() {
       </dl>
       {summary.isError ? (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger/25 bg-surface px-4 py-3 text-sm" role="alert">
-          <p className="text-danger">Your balance could not be loaded.</p>
+          <p className="text-danger">Your balance could not be loaded. {getErrorMessage(summary.error)}</p>
           <Button type="button" size="sm" variant="secondary" loading={summary.isFetching} onClick={() => summary.refetch()}>
             Try again
           </Button>
@@ -69,7 +70,7 @@ export function WalletPage() {
           </ul>
         ) : ledger.isError ? (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger/25 bg-surface px-4 py-3 text-sm" role="alert">
-            <p className="text-danger">The history could not be loaded.</p>
+            <p className="text-danger">The history could not be loaded. {getErrorMessage(ledger.error)}</p>
             <Button type="button" size="sm" variant="secondary" loading={ledger.isFetching} onClick={() => ledger.refetch()}>
               Try again
             </Button>

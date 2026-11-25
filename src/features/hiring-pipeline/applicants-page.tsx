@@ -8,7 +8,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { hiringPostsApi } from '@/shared/api/endpoints/hiring-posts'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationStatus } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, EmptyState, Pagination, Skeleton } from '@/shared/ui'
 import { pipelineApi, pipelineKeys } from './api'
@@ -205,7 +205,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
             {list.isPending ? (
               <PipelineListSkeleton />
             ) : list.isError ? (
-              <EmptyState title="Could not load applicants" description="Check your connection and try again." action={<Button onClick={() => void list.refetch()}>Try again</Button>} />
+              <EmptyState title="Could not load applicants" description={getErrorMessage(list.error, 'Check your connection and try again.')} action={<Button onClick={() => void list.refetch()}>Try again</Button>} />
             ) : rows.length ? (
               <ul className={cn('grid gap-2 transition-opacity duration-200', list.isPlaceholderData && 'opacity-60')} role="listbox" aria-busy={list.isPlaceholderData} aria-label="Applicants">
                 {rows.map((row) => (
@@ -237,7 +237,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
                 onOutcomeShown={onOutcomeShown}
               />
             ) : selectedId !== null && (detail.isError || otherPost) ? (
-              <EmptyState title="Could not open this applicant" description="They may belong to another post." />
+              <EmptyState title="Could not open this applicant" description={otherPost ? 'They may belong to another post.' : getErrorMessage(detail.error, 'They may belong to another post.')} />
             ) : selectedId !== null || list.isPending ? (
               <ApplicantPanelLoading row={rows.find((row) => row.id === selectedId)} backHref={hrefFor({ application: null, outcome: null })} />
             ) : null}

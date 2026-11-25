@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { serverRequest } from '@/shared/api/server'
+import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'
 
 /**
@@ -13,7 +13,10 @@ import type { ApiResponse, UserProfile } from '@/shared/schemas'
  */
 export async function refreshMyProfilePage(): Promise<void> {
   const response = await serverRequest<ApiResponse<UserProfile>>('/api/auth/me')
-  if (!response.ok) return
+  if (!response.ok) {
+    reportServerRequestFailure(response, 'cache:revalidate-profile', '/api/auth/me')
+    return
+  }
   const viewerId = response.data?.content?.id
   if (typeof viewerId !== 'number' || !Number.isInteger(viewerId) || viewerId < 1) return
 

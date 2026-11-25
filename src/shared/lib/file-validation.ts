@@ -1,3 +1,5 @@
+import { UserValidationError } from './errors'
+
 const imageUploadMimeTypes = new Set([
   'image/jpeg',
   'image/png',
@@ -40,7 +42,7 @@ export function assertValidImageFile(
   options?: Parameters<typeof validateImageFile>[1]
 ) {
   const validation = validateImageFile(file, options)
-  if (!validation.valid) throw new Error(validation.message)
+  if (!validation.valid) throw new UserValidationError(validation.message)
 }
 
 function isSupportedImageFile(file: File) {

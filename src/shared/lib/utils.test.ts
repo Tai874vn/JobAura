@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios'
 import { describe, expect, it } from 'vitest'
-import { cn, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer } from './utils'
+import { cn, getErrorMessage, initials, resolveAssetUrl, shouldBypassImageOptimizer, UserValidationError } from './utils'
 import { safeExternalUrl } from './urls'
 
 describe('utils', () => {
@@ -14,23 +14,24 @@ describe('utils', () => {
       undefined,
       undefined,
       undefined,
-      { data: { message: 'Server unavailable' } } as never
+      { status: 400, data: { message: 'Server unavailable' } } as never
     )
 
     expect(getErrorMessage(axiosError)).toBe('Server unavailable')
-    expect(getErrorMessage(new Error('Boom'))).toBe('Boom')
-    expect(getErrorMessage({})).toBe('Something went wrong')
-    const listError = new AxiosError('Bad', undefined, undefined, undefined, { data: { message: ['amount must be a number', 'second'] } } as never)
+    expect(getErrorMessage(new UserValidationError('Boom'))).toBe('Boom')
+    expect(getErrorMessage(new Error('Internal detail'))).toBe('Something went wrong. Please try again.')
+    expect(getErrorMessage({})).toBe('Something went wrong. Please try again.')
+    const listError = new AxiosError('Bad', undefined, undefined, undefined, { status: 400, data: { message: ['amount must be a number', 'second'] } } as never)
     expect(getErrorMessage(listError)).toBe('amount must be a number')
-    expect(getErrorMessage(new AxiosError('Bad', undefined, undefined, undefined, { data: { message: [] } } as never), 'Fallback')).toBe('Fallback')
+    expect(getErrorMessage(new AxiosError('Bad', undefined, undefined, undefined, { status: 400, data: { message: [] } } as never), 'Fallback')).toBe('Fallback')
 
     // Plain axios-like errors (e.g. across module boundaries) are detected by axios.isAxiosError.
-    expect(getErrorMessage({ isAxiosError: true, response: { data: { message: 'Cross-realm message' } } })).toBe('Cross-realm message')
+    expect(getErrorMessage({ isAxiosError: true, response: { status: 400, data: { message: 'Cross-realm message' } } })).toBe('Cross-realm message')
 
     // Timeout and offline/network errors return clear plain-English hints.
-    expect(getErrorMessage(new AxiosError('timeout of 10000ms exceeded', 'ECONNABORTED'))).toBe('The request timed out. Please try again.')
-    expect(getErrorMessage(new AxiosError('timeout', 'ETIMEDOUT'))).toBe('The request timed out. Please try again.')
-    expect(getErrorMessage(new AxiosError('Network Error', 'ERR_NETWORK'))).toBe('Unable to reach the server. Check your connection and try again.')
+    expect(getErrorMessage(new AxiosError('timeout of 10000ms exceeded', 'ECONNABORTED'))).toBe('The request timed out.')
+    expect(getErrorMessage(new AxiosError('timeout', 'ETIMEDOUT'))).toBe('The request timed out.')
+    expect(getErrorMessage(new AxiosError('Network Error', 'ERR_NETWORK'))).toBe('You seem to be offline.')
   })
 
   it('returns initials and resolves asset URLs safely', () => {

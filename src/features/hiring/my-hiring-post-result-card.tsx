@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { useSession } from "@/features/auth/use-session";
 import { pipelineApi, pipelineKeys, statusLabel } from "@/features/hiring-pipeline/api";
-import { cn } from "@/shared/lib/utils";
+import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
 import { Avatar, Button, ButtonLink } from "@/shared/ui";
 import { hiringPostAiState } from "./hiring-post-ai";
@@ -165,7 +165,7 @@ function PostDetails({ id, post, onPredict, predictPending, predictDisabled, aiA
             {Array.from({ length: 2 }).map((_, index) => <div key={index} className="h-9 animate-pulse rounded-md bg-surface" />)}
           </div>
         ) : recent.isError ? (
-          <p className="text-sm text-muted">The latest applicants could not be loaded.</p>
+          <p className="text-sm text-muted">{getErrorMessage(recent.error, "The latest applicants could not be loaded.")}</p>
         ) : recent.data.data.length ? (
           <ul className="grid gap-1">
             {recent.data.data.map((application) => (

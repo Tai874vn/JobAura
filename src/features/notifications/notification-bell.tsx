@@ -16,6 +16,7 @@ import { useRealtimeConnection } from "@/features/auth/realtime-provider";
 import { useSession } from "@/features/auth/use-session";
 import { chatApi, notificationsApi } from "@/shared/api/endpoints";
 import { normalizeNotification } from "@/shared/api/normalizers";
+import { reportServerError } from "@/shared/api/query-client";
 import { queryKeys } from "@/shared/api/query-keys";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { ApiResponse, AppNotification } from "@/shared/schemas";
@@ -153,6 +154,7 @@ export function NotificationBell() {
           if (room) openChatForRoom(room);
           return;
         } catch (error) {
+          reportServerError(error, "notifications:open-chat");
           toast.error(getErrorMessage(error, "Could not open chat"));
         }
       }
@@ -224,7 +226,7 @@ export function NotificationBell() {
               <NotificationSkeleton />
             ) : listQuery.isError ? (
               <div className="p-6 text-center text-sm text-muted">
-                Notifications could not be loaded.
+                {getErrorMessage(listQuery.error, "Notifications could not be loaded.")}
                 <Button className="mt-3" size="sm" variant="secondary" loading={listQuery.isFetching} onClick={() => listQuery.refetch()}>Retry</Button>
               </div>
             ) : notifications.length ? (

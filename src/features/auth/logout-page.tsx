@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { authApi } from '@/shared/api/endpoints'
+import { reportServerError } from '@/shared/api/query-client'
 import { resetClientSession } from '@/shared/api/session-cache'
+import { getErrorMessage } from '@/shared/lib/errors'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Spinner } from '@/shared/ui'
 import { useQueryClient } from '@tanstack/react-query'
 
 export function LogoutPage() {
   const hasRunRef = useRef(false)
-  const [failed, setFailed] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const queryClient = useQueryClient()
   const resetChat = useChatStore((state) => state.reset)
 
@@ -26,8 +28,9 @@ export function LogoutPage() {
         resetChat()
         resetClientSession(queryClient)
         window.location.replace('/auth/login')
-      } catch {
-        setFailed(true)
+      } catch (error) {
+        reportServerError(error, 'auth:logout')
+        setErrorMessage(getErrorMessage(error, 'Could not sign you out. Please try again.'))
       }
     }
 
@@ -37,19 +40,14 @@ export function LogoutPage() {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="max-w-sm px-4 text-center">
-        {failed ? null : <Spinner className="mx-auto h-7 w-7" />}
+        {errorMessage ? null : <Spinner className="mx-auto h-7 w-7" />}
         <p className="mt-4 text-sm font-medium text-muted">
-          {failed ? 'Could not reach the backend logout API.' : 'Signing out...'}
+          {errorMessage ?? 'Signing out...'}
         </p>
-        {failed ? (
-          <>
-            <p className="mt-2 text-xs leading-5 text-muted">
-              Restart the backend, then retry logout so the server can clear the auth cookies.
-            </p>
-            <Button className="mt-4" type="button" onClick={() => window.location.reload()}>
-              Retry logout
-            </Button>
-          </>
+        {errorMessage ? (
+          <Button className="mt-4" type="button" onClick={() => window.location.reload()}>
+            Retry logout
+          </Button>
         ) : null}
       </div>
     </div>

@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { revalidatePath, serverRequest } = vi.hoisted(() => ({ revalidatePath: vi.fn(), serverRequest: vi.fn() }))
+const { revalidatePath, serverRequest, captureException } = vi.hoisted(() => ({
+  revalidatePath: vi.fn(),
+  serverRequest: vi.fn(),
+  captureException: vi.fn(),
+}))
+vi.mock('@sentry/nextjs', () => ({ captureException }))
 vi.mock('next/cache', () => ({ revalidatePath }))
-vi.mock('@/shared/api/server', () => ({ serverRequest }))
+vi.mock('@/shared/api/server', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/shared/api/server')>()
+  return { ...actual, serverRequest }
+})
 
 import { refreshHiringPostPages } from './refresh-hiring-post-pages'
 
@@ -16,6 +24,7 @@ function backend(me: unknown, hiringPost: unknown) {
 beforeEach(() => {
   revalidatePath.mockReset()
   serverRequest.mockReset()
+  captureException.mockReset()
 })
 
 describe('refreshHiringPostPages', () => {
@@ -36,7 +45,7 @@ describe('refreshHiringPostPages', () => {
     expect(revalidatePath).toHaveBeenCalledTimes(2)
   })
 
-  it('does nothing for another recruiter, a visitor or a bad id', async () => {
+  it('does nothing for another recruiter, a visitor or a bad id and skips 4xx Sentry reporting', async () => {
     backend(ok({ id: 10, role: 'employer' }), ok(post))
     await refreshHiringPostPages(42)
     backend({ ok: false, status: 401, statusText: '', error: '' }, ok(post))
@@ -44,5 +53,25 @@ describe('refreshHiringPostPages', () => {
     await refreshHiringPostPages(0)
 
     expect(revalidatePath).not.toHaveBeenCalled()
+    expect(captureException).not.toHaveBeenCalled()
+  })
+
+  it('reports backend 5xx failures to Sentry with source and requestId', async () => {
+    backend(ok({ id: 9, role: 'employer' }), {
+      ok: false,
+      status: 503,
+      statusText: 'Service Unavailable',
+      error: 'DB timeout',
+      requestId: 'req-hp-503',
+    })
+
+    await refreshHiringPostPages(42)
+
+    expect(revalidatePath).not.toHaveBeenCalled()
+    expect(captureException).toHaveBeenCalledOnce()
+    expect(captureException.mock.calls[0]?.[1]).toEqual({
+      tags: { source: 'cache:revalidate-hiring-post', requestId: 'req-hp-503' },
+      extra: { path: '/api/hiring-posts/42', status: 503, requestId: 'req-hp-503' },
+    })
   })
 })

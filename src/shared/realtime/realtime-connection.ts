@@ -1,4 +1,5 @@
 import type { Manager, Socket } from 'socket.io-client'
+import { reportServerError } from '@/shared/api/query-client'
 
 type NamespaceEntry = {
   socket: Socket
@@ -71,7 +72,10 @@ export function createRealtimeConnection(
           // A late ticket must not authenticate a released or replaced socket.
           void fetchAuth()
             .then((auth) => { if (isCurrent()) callback(auth) })
-            .catch(() => { if (isCurrent()) callback({}) })
+            .catch((error: unknown) => {
+              reportServerError(error, 'realtime:auth')
+              if (isCurrent()) callback({})
+            })
         }
       }
 

@@ -5,7 +5,7 @@ import { AxiosError } from 'axios'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { useSession } from '@/features/auth/use-session'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, EmptyState, Pagination } from '@/shared/ui'
 import { pipelineApi, pipelineKeys } from './api'
 import { MyApplicationListItem } from './my-application-list-item'
@@ -103,7 +103,7 @@ export function MyApplicationsPage() {
             {list.isPending ? (
               <PipelineListSkeleton />
             ) : list.isError ? (
-              <EmptyState title="Could not load your applications" description="Check your connection and try again." action={<Button onClick={() => void list.refetch()}>Try again</Button>} />
+              <EmptyState title="Could not load your applications" description={getErrorMessage(list.error, 'Check your connection and try again.')} action={<Button onClick={() => void list.refetch()}>Try again</Button>} />
             ) : rows.length ? (
               <ul className={cn('grid gap-2 transition-opacity duration-200', list.isPlaceholderData && 'opacity-60')} role="listbox" aria-busy={list.isPlaceholderData} aria-label="My applications">
                 {rows.map((row) => (
@@ -135,7 +135,7 @@ export function MyApplicationsPage() {
             ) : selectedId !== null && (notMine || (detail.isError && isMissing(detail.error))) ? (
               <EmptyState title="Could not open this application" description="It does not exist, or it is not yours." action={<ButtonLink href="/my-applications" variant="secondary">All applications</ButtonLink>} />
             ) : selectedId !== null && detail.isError ? (
-              <EmptyState title="Could not open this application" description="Check your connection and try again." action={<Button onClick={() => void detail.refetch()}>Try again</Button>} />
+              <EmptyState title="Could not open this application" description={getErrorMessage(detail.error, 'Check your connection and try again.')} action={<Button onClick={() => void detail.refetch()}>Try again</Button>} />
             ) : selectedId !== null || list.isPending ? (
               <MyApplicationPanelLoading row={rows.find((row) => row.id === selectedId)} backHref={backHref} />
             ) : null}

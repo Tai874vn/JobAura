@@ -4,6 +4,7 @@ import { ArrowDown, ArrowUp, ImagePlus, Plus, Trash2, X } from 'lucide-react'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { reportServerError } from '@/shared/api/query-client'
 import { credits } from '@/shared/lib/credits'
 import { imageUploadAccept } from '@/shared/lib/file-validation'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
@@ -101,6 +102,7 @@ export function ProposalEditor({ initial, mode, lockedRows, pending = false, ser
         try {
           urls.push((await contractsApi.uploadImage(file)).url)
         } catch (error) {
+          reportServerError(error, 'contracts:upload-image')
           toast.error(getErrorMessage(error, 'Could not upload this image.'))
         }
       }

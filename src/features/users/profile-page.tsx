@@ -23,6 +23,7 @@ import {
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { usersApi } from '@/shared/api/endpoints'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
 import type { Job, UserProfile } from '@/shared/schemas'
@@ -92,7 +93,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
       setCachedSession(next, queryClient)
     }
     queryClient.invalidateQueries({ queryKey: queryKeys.me })
-    void refreshMyProfilePage().catch(() => {})
+    void refreshMyProfilePage().catch((error) => reportNonFatalError(error, 'cache:revalidate-profile'))
     router.refresh()
   }
 

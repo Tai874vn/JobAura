@@ -4,12 +4,13 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { usersApi } from '@/shared/api/endpoints/users'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
 import { cleanObject, toDateInput } from '@/features/users/profile-form-utils'
 import { refreshMyProfilePage } from '@/features/users/refresh-profile-page'
 import { useProfileUpload } from '@/features/users/use-profile-upload'
-import { getErrorMessage } from '@/shared/lib/utils'
+import { getErrorMessage, UserValidationError } from '@/shared/lib/utils'
 import type { ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
 import type { PortfolioDraft } from './settings-form-controls'
 import { allCertificationProblems, certificationDraft, certificationPayload, type CertificationDraft } from '@/features/users/certifications'
@@ -46,7 +47,7 @@ export function useProfileSettings(profile: UserProfile) {
   function refreshProfile(next?: UserProfile) {
     if (next) setCachedSession(next, client)
     void client.invalidateQueries({ queryKey: queryKeys.me })
-    void refreshMyProfilePage().catch(() => {})
+    void refreshMyProfilePage().catch((error) => reportNonFatalError(error, 'cache:revalidate-profile'))
   }
   // Memoize each serialized slice independently so typing in one section never re-serializes the others.
   const basicJson = useMemo(() => JSON.stringify(basic), [basic])
@@ -66,7 +67,7 @@ export function useProfileSettings(profile: UserProfile) {
       const parts = { ...changed }
       const snapshot = { basic: basicJson, skills: skillsJson, certifications: certificationsJson }
       const problems = parts.certifications ? allCertificationProblems(certifications) : []
-      if (problems.length) throw new Error(problems[0])
+      if (problems.length) throw new UserValidationError(problems[0])
       if (parts.basic) await usersApi.updateMyProfile(cleanObject(basic))
       if (parts.skills) await usersApi.replaceSkills(skills.map((skill, index) => cleanObject({ ...skill, sortOrder: index })).filter((skill) => skill.name))
       if (parts.certifications) await usersApi.replaceCertifications(certificationPayload(certifications))

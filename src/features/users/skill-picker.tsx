@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Plus, X } from 'lucide-react'
 import { skillsApi, type DictionarySkill, type FoundSkill } from '@/shared/api/endpoints/users'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Input } from '@/shared/ui'
 
 const kindLabel: Record<string, string> = { software: 'Tool', knowledge: 'Knowledge', skill: 'Skill' }
@@ -151,7 +151,7 @@ export function SkillPicker({
           {open && search ? (
             <ul id={listId} role="listbox" className="menu-drop absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
               {results.isFetching && !options.length ? <li className="px-3 py-2 text-sm text-muted">Searching…</li> : null}
-              {results.isError ? <li className="px-3 py-2 text-sm text-danger">Skill search is unavailable. Try again.</li> : null}
+              {results.isError ? <li className="px-3 py-2 text-sm text-danger">{getErrorMessage(results.error, 'Skill search is unavailable. Try again.')}</li> : null}
               {!results.isFetching && !results.isError && !options.length ? (
                 <li className="px-3 py-2 text-sm text-muted">No matching skill. Try another spelling.</li>
               ) : null}

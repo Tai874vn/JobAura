@@ -4,6 +4,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { memo, useId, useMemo, useRef, useState } from 'react'
 import { postsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'
 import { DiscussionComment, type DiscussionCommentProps } from './discussion-comment'
 import { mergeReplies } from './feed-data'
@@ -88,7 +89,7 @@ export const CommentThread = memo(function CommentThread({ onReply, replying, ..
           ))}
           {repliesQuery.isError ? (
             <div role="alert" className="space-y-2 rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm">
-              <p>Replies could not be loaded.</p>
+              <p>{getErrorMessage(repliesQuery.error, 'Replies could not be loaded.')}</p>
               <Button type="button" size="sm" variant="secondary" loading={repliesQuery.isFetching}
                 onClick={() => void (repliesQuery.isFetchNextPageError ? repliesQuery.fetchNextPage() : repliesQuery.refetch())}>Retry</Button>
             </div>

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
+import { reportNonFatalError } from "@/shared/api/query-client";
 import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
@@ -114,7 +115,7 @@ export function MyHiringPostsPage() {
       setClosing(null);
       toast.success(status === "CLOSED" ? "Post closed; candidates can no longer apply" : "Post reopened");
       void refresh();
-      void refreshHiringPostPages(id).catch(() => {});
+      void refreshHiringPostPages(id).catch((error) => reportNonFatalError(error, "cache:revalidate-hiring-post"));
     },
     onError: (error) => {
       // A closing dialog shows the server's sentence itself; a reopen has no dialog, so it is a toast.
@@ -126,7 +127,7 @@ export function MyHiringPostsPage() {
     onSuccess: (_, id) => {
       toast.success("Working out the AI level");
       void refresh();
-      void refreshHiringPostPages(id).catch(() => {});
+      void refreshHiringPostPages(id).catch((error) => reportNonFatalError(error, "cache:revalidate-hiring-post"));
     },
     onError: (error) => toast.error(getErrorMessage(error, "Could not queue this post for its AI level")),
   });
@@ -197,7 +198,7 @@ export function MyHiringPostsPage() {
             <MyHiringPostResultSkeleton />
           ) : matches.isError ? (
             <div className="mt-4">
-              <EmptyState icon={<BriefcaseBusiness />} title="Your posts could not be loaded" description="Check your connection and try again."
+              <EmptyState icon={<BriefcaseBusiness />} title="Your posts could not be loaded" description={getErrorMessage(matches.error, "Check your connection and try again.")}
                 action={<button type="button" onClick={() => void matches.refetch()} className="text-sm font-semibold text-primary hover:underline">Try again</button>} />
             </div>
           ) : shownPage.items.length ? (

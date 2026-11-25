@@ -5,6 +5,7 @@ import { CheckCircle2, FileText, ListOrdered } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea, UnsavedChangesBar } from '@/shared/ui'
 import { formatFileSize } from '@/features/users/profile-form-utils'
+import { sanitizeUserMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/utils'
 import {
   hasResumeDraftInput,
@@ -228,7 +229,10 @@ function ResumePreview({
                   <p role={retry ? 'alert' : undefined}
                     className={cn('mt-2 rounded border px-2 py-1 text-xs leading-5',
                       retry ? 'border-danger/30 bg-danger/5 text-danger' : 'border-border text-muted')}>
-                    {resume.aiStatusMessage}
+                    {sanitizeUserMessage(
+                      resume.aiStatusMessage,
+                      retry ? 'AI evaluation could not be completed. Please try again.' : 'Add the required career details to run AI evaluation.',
+                    )}
                   </p>
                 ) : null}
                 {unknownSkills.length ? (

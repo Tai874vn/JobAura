@@ -11,7 +11,7 @@ import {
   BrowseHero, BrowsePage, ButtonLink, ChoiceMenu, countOf, EmptyState, ExploreChip, ExploreRow, FilterChoice, FilterGroup, FilterPanel,
   FiltersToggle, listOf, Pagination, ResultsHeader, shownRange, toggleListValue,
 } from "@/shared/ui";
-import { cn } from "@/shared/lib/utils";
+import { cn, getErrorMessage } from "@/shared/lib/utils";
 import { occupationLabel } from "@/features/occupations/api";
 import { employmentTypes, hiringPostLevels } from "./hiring-post-form";
 import { HiringPostResultCard } from "./hiring-post-result-card";
@@ -239,7 +239,7 @@ export function HiringPostsPage() {
         query.isPending ? (
           <HiringPostResultSkeleton />
         ) : query.isError ? (
-          <EmptyState icon={<BriefcaseBusiness />} title="Hiring posts could not be loaded" description="Check your connection and try again."
+          <EmptyState icon={<BriefcaseBusiness />} title="Hiring posts could not be loaded" description={getErrorMessage(query.error, "Check your connection and try again.")}
             action={<button type="button" onClick={() => void query.refetch()} className="text-sm font-semibold text-primary hover:underline">Try again</button>} />
         ) : posts.length ? (
           <ul className={cn("results-in mt-4 grid gap-4 transition-opacity duration-200", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData} aria-label="Hiring posts">

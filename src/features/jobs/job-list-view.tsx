@@ -8,7 +8,7 @@ import { useSession } from '@/features/auth/use-session'
 import { NewProposalDialog } from '@/features/contracts/new-proposal-dialog'
 import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { cn } from '@/shared/lib/utils'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { Job } from '@/shared/schemas'
 import {
   BrowseHero,
@@ -352,7 +352,7 @@ export function JobListView() {
               <EmptyState
                 icon={<SearchX />}
                 title="Portfolio posts could not be loaded"
-                description="Check your connection and try again."
+                description={getErrorMessage(query.error, 'Check your connection and try again.')}
                 action={
                   <button
                     type="button"

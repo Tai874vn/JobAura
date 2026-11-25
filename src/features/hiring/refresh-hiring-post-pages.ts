@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { normalizeHiringPost } from '@/shared/api/normalizers'
-import { serverRequest } from '@/shared/api/server'
+import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import type { ApiResponse, HiringPost, UserProfile } from '@/shared/schemas'
 
 function positiveId(value: unknown): number | null {
@@ -20,11 +20,14 @@ export async function refreshHiringPostPages(postId: number): Promise<void> {
   const safeId = positiveId(postId)
   if (!safeId) return
 
+  const postPath = `/api/hiring-posts/${safeId}`
   const [meResponse, postResponse] = await Promise.all([
     serverRequest<ApiResponse<UserProfile>>('/api/auth/me'),
-    serverRequest<ApiResponse<HiringPost>>(`/api/hiring-posts/${safeId}`),
+    serverRequest<ApiResponse<HiringPost>>(postPath),
   ])
 
+  if (!meResponse.ok) reportServerRequestFailure(meResponse, 'cache:revalidate-hiring-post', '/api/auth/me')
+  if (!postResponse.ok) reportServerRequestFailure(postResponse, 'cache:revalidate-hiring-post', postPath)
   if (!meResponse.ok || !postResponse.ok) return
   const viewer = meResponse.data?.content
   const viewerId = positiveId(viewer?.id)

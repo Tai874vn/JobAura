@@ -1,5 +1,7 @@
+import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { getServerEnv } from '@/shared/config/env'
+import { RequestError } from '@/shared/lib/errors'
 
 type RequestOptions = Omit<RequestInit, 'body'> & {
   body?: BodyInit | object
@@ -7,9 +9,20 @@ type RequestOptions = Omit<RequestInit, 'body'> & {
   includeCookies?: boolean
 }
 
+export type ServerRequestFailure = {
+  ok: false
+  status: number
+  statusText: string
+  error: string | string[]
+  requestId?: string
+  code?: string
+}
+
 export type ServerRequestResult<T> =
   | { ok: true; status: number; data: T }
-  | { ok: false; status: number; statusText: string; error: string | string[] }
+  | ServerRequestFailure
+
+const reportedServerResults = new WeakSet<object>()
 
 function normalizeErrorMessage(error: unknown, fallback: string): string | string[] {
   if (typeof error === 'string' || Array.isArray(error)) return error
@@ -18,6 +31,59 @@ function normalizeErrorMessage(error: unknown, fallback: string): string | strin
     if (typeof message === 'string' || Array.isArray(message)) return message
   }
   return fallback
+}
+
+function extractRequestId(body: unknown, response: Response): string | undefined {
+  if (body && typeof body === 'object' && 'requestId' in body) {
+    const requestId = (body as { requestId?: unknown }).requestId
+    if (typeof requestId === 'string' && requestId.trim()) return requestId.trim()
+  }
+  const headerId = response.headers.get('x-request-id')?.trim()
+  return headerId || undefined
+}
+
+function extractErrorCode(body: unknown): string | undefined {
+  if (body && typeof body === 'object' && 'code' in body) {
+    const code = (body as { code?: unknown }).code
+    if (typeof code === 'string' && code.trim()) return code.trim()
+  }
+  return undefined
+}
+
+/**
+ * Reports an unexpected backend 5xx or server-to-backend connectivity outage (status 0)
+ * from a server-side request to Sentry once, tagged with the source and backend requestId.
+ * Returns true when reported.
+ */
+export function reportServerRequestFailure(
+  response: ServerRequestFailure,
+  source: string,
+  path: string,
+): boolean {
+  const isReportable = response.status === 0 || response.status >= 500
+  if (!isReportable || reportedServerResults.has(response)) return false
+  reportedServerResults.add(response)
+  const rawMessage = Array.isArray(response.error) ? response.error.join('; ') : response.error
+  const error = new RequestError(
+    rawMessage || response.statusText || (response.status === 0 ? 'Network error' : `HTTP ${response.status}`),
+    response.status,
+    response.requestId,
+    response.code,
+    { reported: true },
+  )
+  Sentry.captureException(error, {
+    tags: {
+      source,
+      ...(error.requestId ? { requestId: error.requestId } : {}),
+    },
+    extra: {
+      path,
+      status: response.status,
+      ...(error.requestId ? { requestId: error.requestId } : {}),
+      ...(response.code ? { code: response.code } : {}),
+    },
+  })
+  return true
 }
 
 async function readResponseBody(response: Response): Promise<unknown> {
@@ -74,11 +140,15 @@ export async function serverRequest<T>(path: string, options: RequestOptions = {
     const body = await readResponseBody(response)
 
     if (!response.ok) {
+      const requestId = extractRequestId(body, response)
+      const code = extractErrorCode(body)
       return {
         ok: false,
         status: response.status,
         statusText: response.statusText,
         error: normalizeErrorMessage(body, response.statusText || 'Request failed'),
+        ...(requestId ? { requestId } : {}),
+        ...(code ? { code } : {}),
       }
     }
 

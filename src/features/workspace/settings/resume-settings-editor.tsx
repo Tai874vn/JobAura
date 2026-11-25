@@ -7,8 +7,9 @@ import { useSession } from '@/features/auth/use-session'
 import { refreshMyProfilePage } from '@/features/users/refresh-profile-page'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { suggestedSkills } from '@/features/users/resume-ai'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
-import { getErrorMessage } from '@/shared/lib/utils'
+import { getErrorMessage, UserValidationError } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
 import {
   canExtractResumeFile, extractResumeFile, extractedResumeFields, hasResumeDraftInput, resumeDraftFromData,
@@ -31,16 +32,19 @@ export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: 
   const currentDraft = { ...resumeDraftFromData(resume?.data), ...draft }
   const save = useMutation({
     mutationFn: async ({ data, file }: { data: ResumeDraft; file: File | null }) => {
-      if (!hasResumeDraftInput(data)) throw new Error('Fill at least one resume field before saving.')
+      if (!hasResumeDraftInput(data)) throw new UserValidationError('Fill at least one resume field before saving.')
       const careerProblems = resumeCareerProblems(data)
-      if (careerProblems.length) throw new Error(careerProblems[0])
+      if (careerProblems.length) throw new UserValidationError(careerProblems[0])
       const response = await usersApi.importResume(resumeDraftToImportPayload(data))
       if (!file) return response
       try {
         return await usersApi.uploadResumeFile(file)
-      } catch {
+      } catch (uploadError) {
         void client.invalidateQueries({ queryKey: myResumeKey })
-        throw new Error('Resume details were saved, but the file upload failed. Your attachment is kept so you can retry.')
+        throw new UserValidationError(
+          'Resume details were saved, but the file upload failed. Your attachment is kept so you can retry.',
+          { cause: uploadError },
+        )
       }
     },
     onSuccess: (response, variables) => {
@@ -48,7 +52,7 @@ export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: 
       void client.invalidateQueries({ queryKey: myResumeKey })
       // Resume skills are the profile's skill list, so the profile reloads too.
       void client.invalidateQueries({ queryKey: queryKeys.me })
-      void refreshMyProfilePage().catch(() => {})
+      void refreshMyProfilePage().catch((error) => reportNonFatalError(error, 'cache:revalidate-profile'))
       setDraft({}); setAttachedFile(null)
       toast.success(`${variables.file ? 'Resume file and details saved' : 'Resume saved'}. AI evaluation is queued.`)
     },
@@ -93,13 +97,13 @@ export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: 
   if (resumeQuery.isError && !resumeQuery.data) return (
     <Card className="p-6" role="alert">
       <h2 className="font-display text-xl font-medium">Resume could not be loaded</h2>
-      <p className="mt-2 text-sm leading-6 text-muted">Check your connection and retry. Your existing resume will not be replaced with an empty form.</p>
+      <p className="mt-2 text-sm leading-6 text-muted">{getErrorMessage(resumeQuery.error, 'Check your connection and retry.')} Your existing resume will not be replaced with an empty form.</p>
       <Button className="mt-4" variant="secondary" loading={resumeQuery.isFetching} onClick={() => void resumeQuery.refetch()}>Retry</Button>
     </Card>
   )
   return (
     <div className="space-y-4">
-      {resumeQuery.isError ? <p role="alert" className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm">Could not refresh your resume. Showing the last loaded details. <Button size="sm" variant="ghost" loading={resumeQuery.isFetching} onClick={() => void resumeQuery.refetch()}>Retry</Button></p> : null}
+      {resumeQuery.isError ? <p role="alert" className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm">Could not refresh your resume. {getErrorMessage(resumeQuery.error, 'Please try again.')} Showing the last loaded details. <Button size="sm" variant="ghost" loading={resumeQuery.isFetching} onClick={() => void resumeQuery.refetch()}>Retry</Button></p> : null}
       {save.isError ? <p role="alert" className="rounded-lg border border-danger/20 bg-danger/5 p-3 text-sm text-danger">{getErrorMessage(save.error, 'Unable to save resume. Your draft is kept; try again.')}</p> : null}
       {extracting ? <p role="status" className="text-sm font-medium text-primary">Extracting your resume…</p> : null}
       <fieldset disabled={save.isPending || predict.isPending || extracting} className="min-w-0">

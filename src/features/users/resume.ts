@@ -1,3 +1,4 @@
+import { UserValidationError } from '@/shared/lib/errors'
 import type { ImportResume, ResumeData, UserResume } from '@/shared/schemas'
 import { parseResumeJobs, savedResumeJobs, serializeResumeJobs } from './resume-career'
 
@@ -111,7 +112,7 @@ export function parseResumeJson(value: string): ImportResume {
   const parsed = JSON.parse(value) as unknown
 
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new Error('Resume JSON must be an object.')
+    throw new UserValidationError('Resume JSON must be an object.')
   }
 
   const candidate = parsed as Partial<ImportResume> & Partial<ResumeData>
@@ -163,7 +164,7 @@ export function canExtractResumeFile(file: File) {
 export async function extractResumeFile(file: File): Promise<ImportResume> {
   const validation = validateResumeFile(file)
   if (!validation.valid) {
-    throw new Error(validation.message)
+    throw new UserValidationError(validation.message)
   }
 
   const extension = getFileExtension(file)
@@ -180,14 +181,14 @@ export async function extractResumeFile(file: File): Promise<ImportResume> {
     return extractResumeFromText(await extractDocxText(file), file.name)
   }
 
-  throw new Error('DOC files can be uploaded, but browser extraction supports PDF and DOCX.')
+  throw new UserValidationError('DOC files can be uploaded, but browser extraction supports PDF and DOCX.')
 }
 
 export function extractResumeFromText(text: string, sourceFileName?: string): ImportResume {
   const normalizedText = normalizeResumeText(text)
 
   if (!normalizedText) {
-    throw new Error('Resume file does not contain readable text.')
+    throw new UserValidationError('Resume file does not contain readable text.')
   }
 
   const lines = normalizedText
@@ -296,7 +297,7 @@ export function hasResumeDraftInput(draft: ResumeDraft) {
 
 function normalizeResumeData(data: ResumeData): ResumeData {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    throw new Error('Resume JSON must include a data object.')
+    throw new UserValidationError('Resume JSON must include a data object.')
   }
 
   return data

@@ -5,6 +5,7 @@ import { Eye, Plus, Search, Trash2 } from 'lucide-react'
 import { type FormEvent, useId, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { categoriesApi } from '@/shared/api/endpoints'
+import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, DialogPortal, EmptyState, Input, PageHeader, Select, Skeleton, useDialogFocus } from '@/shared/ui'
@@ -35,7 +36,7 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
       if (resource === 'categories' || resource === 'subcategories') {
         void queryClient.invalidateQueries({ queryKey: queryKeys.categories })
         void queryClient.invalidateQueries({ queryKey: queryKeys.subcategories })
-        void refreshMarketplaceTaxonomyPages().catch(() => {})
+        void refreshMarketplaceTaxonomyPages().catch((error) => reportNonFatalError(error, 'cache:revalidate-taxonomy'))
       } else if (resource === 'jobs') {
         void queryClient.invalidateQueries({ queryKey: ['jobs'] })
       }
@@ -131,7 +132,7 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
             </table>
             {query.isError ? (
               <div className="p-8 text-center">
-                <p className="text-sm text-muted">Records could not be loaded.</p>
+                <p className="text-sm text-muted">{getErrorMessage(query.error, 'Records could not be loaded.')}</p>
                 <Button className="mt-3" variant="secondary" onClick={() => query.refetch()}>Retry</Button>
               </div>
             ) : !query.isPending && !filtered.length ? (
@@ -225,7 +226,7 @@ function CreateResourceDialog({
       if (resource === 'categories' || resource === 'subcategories') {
         void queryClient.invalidateQueries({ queryKey: queryKeys.categories })
         void queryClient.invalidateQueries({ queryKey: queryKeys.subcategories })
-        void refreshMarketplaceTaxonomyPages().catch(() => {})
+        void refreshMarketplaceTaxonomyPages().catch((error) => reportNonFatalError(error, 'cache:revalidate-taxonomy'))
       }
       toast.success(`${config.title} created`)
       resetForm()
