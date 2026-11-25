@@ -1,8 +1,9 @@
 "use client";
 
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { replaceUrlInPlace } from "@/shared/lib/replace-url";
 import { ArrowDownWideNarrow, BriefcaseBusiness, ListChecks, ListOrdered, MapPin, Search } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useSession } from "@/features/auth/use-session";
 import { hiringPostsApi, hiringPostSorts } from "@/shared/api/endpoints/hiring-posts";
@@ -44,7 +45,6 @@ const sortLabels: Record<(typeof hiringPostSorts)[number], string> = {
  */
 export function HiringPostsPage() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useSession();
@@ -105,7 +105,7 @@ export function HiringPostsPage() {
     for (const key of filterKeys) if (merged[key].trim()) url.set(key, merged[key].trim());
     if (nextPage > 1) url.set("page", String(nextPage));
     const search = url.toString();
-    router.replace(search ? `${pathname}?${search}` : pathname, { scroll: false });
+    replaceUrlInPlace(search ? `${pathname}?${search}` : pathname);
   }
   function search(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

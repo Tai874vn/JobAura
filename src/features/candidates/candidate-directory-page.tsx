@@ -1,8 +1,9 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { replaceUrlInPlace } from '@/shared/lib/replace-url'
 import { ListOrdered, MapPin, Search, SearchX, Users, X } from 'lucide-react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
@@ -49,7 +50,6 @@ const EXPLORE_SKILLS_LIMIT = 6
  * Every filter lives in the URL so filtered searches can be shared or restored with Back/Forward.
  */
 export function CandidateDirectoryPage() {
-  const router = useRouter()
   const pathname = usePathname() || '/candidates'
   const searchParams = useSearchParams()
   const { user } = useSession()
@@ -128,8 +128,8 @@ export function CandidateDirectoryPage() {
 
   useEffect(() => {
     if (!clampedHref) return
-    router.replace(clampedHref, { scroll: false })
-  }, [clampedHref, router])
+    replaceUrlInPlace(clampedHref)
+  }, [clampedHref])
 
   const popularSkills = (skillsQuery.data?.content ?? []).slice(0, EXPLORE_SKILLS_LIMIT)
   const sidebarSkills = applied.skill && !popularSkills.some((item) => item.toLowerCase() === applied.skill.toLowerCase())
@@ -145,7 +145,7 @@ export function CandidateDirectoryPage() {
   function go(next: Partial<CandidateListFilters>, nextPage = 1) {
     const merged: CandidateListFilters = { ...applied, ...next }
     if (!merged.occupation.trim()) merged.includeRelated = false
-    router.replace(buildCandidatesHref(pathname, merged, nextPage), { scroll: false })
+    replaceUrlInPlace(buildCandidatesHref(pathname, merged, nextPage))
   }
 
   function submitSearch(event: React.FormEvent<HTMLFormElement>) {

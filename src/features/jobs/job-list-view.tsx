@@ -1,8 +1,9 @@
 'use client'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { replaceUrlInPlace } from '@/shared/lib/replace-url'
 import { ArrowDownWideNarrow, BriefcaseBusiness, ChevronDown, Plus, Search, SearchX } from 'lucide-react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { NewProposalDialog } from '@/features/contracts/new-proposal-dialog'
@@ -60,7 +61,6 @@ const SIDEBAR_CATEGORY_LIMIT = 8
  * (popover on phones), a results column of cards, and prev/next pagination.
  */
 export function JobListView() {
-  const router = useRouter()
   const pathname = usePathname() || '/jobs'
   const searchParams = useSearchParams()
   const { user } = useSession()
@@ -125,7 +125,7 @@ export function JobListView() {
 
   function go(next: Partial<JobListFilters>, nextPage = 1) {
     const merged: JobListFilters = { ...applied, ...next }
-    router.replace(buildJobsHref(pathname, merged, nextPage), { scroll: false })
+    replaceUrlInPlace(buildJobsHref(pathname, merged, nextPage))
   }
 
   function submitSearch(event: React.FormEvent<HTMLFormElement>) {

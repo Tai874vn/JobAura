@@ -1,8 +1,9 @@
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { replaceUrlInPlace } from "@/shared/lib/replace-url";
 import { ArrowDownWideNarrow, BriefcaseBusiness, Plus, Search } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/features/auth/use-session";
@@ -42,7 +43,6 @@ const pollWhileAiWorks = (query: { state: { data?: MinePage } }) =>
  */
 export function MyHiringPostsPage() {
   const queryClient = useQueryClient();
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useSession();
@@ -88,7 +88,7 @@ export function MyHiringPostsPage() {
   const editing = editId ? allPosts.find((post) => post.id === editId) ?? found.find((post) => post.id === editId) ?? null : null;
 
   function go(next: Partial<MyPostsFilters>, page = 1) {
-    router.replace(myPostsHref(pathname, { ...applied, ...next }, page), { scroll: false });
+    replaceUrlInPlace(myPostsHref(pathname, { ...applied, ...next }, page));
   }
   function reset() {
     setKeyword("");
@@ -102,10 +102,10 @@ export function MyHiringPostsPage() {
   function openEdit(id: number) {
     const url = new URLSearchParams(searchParams.toString());
     url.set("edit", String(id));
-    router.replace(`${pathname}?${url.toString()}`, { scroll: false });
+    replaceUrlInPlace(`${pathname}?${url.toString()}`);
   }
   function closeEdit() {
-    router.replace(myPostsHref(pathname, applied, applied.page), { scroll: false });
+    replaceUrlInPlace(myPostsHref(pathname, applied, applied.page));
   }
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
