@@ -202,7 +202,7 @@ export function MyHiringPostsPage() {
                 action={<button type="button" onClick={() => void matches.refetch()} className="text-sm font-semibold text-primary hover:underline">Try again</button>} />
             </div>
           ) : shownPage.items.length ? (
-            <ul className={cn("results-in mt-4 grid gap-4 transition-opacity duration-200", matches.isPlaceholderData && "opacity-60")}
+            <ul key={shownPage.items.map((post) => post.id).join(",")} className={cn("results-in mt-4 grid gap-4 transition-opacity duration-200", matches.isPlaceholderData && "opacity-60")}
               aria-busy={matches.isPlaceholderData} aria-label="My hiring posts">
               {shownPage.items.map((post) => (
                 <li key={post.id}>

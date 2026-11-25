@@ -366,6 +366,10 @@ export function JobListView() {
             </div>
           ) : jobs.length ? (
             <ul
+              // A new set of results is drawn fresh (key = the ids shown). Keeping and MOVING the cards that
+              // appear in both sets slid them across the screen, which counted as layout shift (CLS).
+              // Same idea in hiring-posts-page, my-hiring-posts-page and candidate-directory-page.
+              key={jobs.map((job) => job.id).join(',')}
               className={cn(
                 'results-in mt-4 grid gap-4 transition-opacity duration-200',
                 query.isPlaceholderData && 'opacity-60',

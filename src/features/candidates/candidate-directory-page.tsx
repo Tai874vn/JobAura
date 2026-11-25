@@ -538,6 +538,7 @@ export function CandidateDirectoryPage() {
           </div>
         ) : candidates.length ? (
           <ul
+            key={candidates.map((candidate) => candidate.id).join(',')}
             className={cn(
               'mt-4 grid gap-4 transition-opacity duration-200',
               query.isPlaceholderData && 'opacity-60',
