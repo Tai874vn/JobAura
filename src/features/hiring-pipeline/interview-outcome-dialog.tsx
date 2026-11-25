@@ -1,9 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useId } from 'react'
-import { Button } from '@/shared/ui'
-import { DialogPortal } from './dialog-portal'
+import { useId } from 'react'
+import { Button, DialogPortal, useDialogFocus } from '@/shared/ui'
 
 export type OutcomeChoice = 'offer' | 'round' | 'reject' | 'later'
 
@@ -30,13 +29,7 @@ export function InterviewOutcomeDialog({
 function OutcomeBody({ name, noOpeningsLeft, onChoose }: { name: string; noOpeningsLeft: boolean; onChoose: (choice: OutcomeChoice) => void }) {
   const titleId = useId()
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onChoose('later')
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onChoose])
+  const dialogRef = useDialogFocus(() => onChoose('later'))
 
   return (
     <DialogPortal>
@@ -46,7 +39,7 @@ function OutcomeBody({ name, noOpeningsLeft, onChoose }: { name: string; noOpeni
         if (event.target === event.currentTarget) onChoose('later')
       }}
     >
-      <section role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+      <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-sm overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
         <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={() => onChoose('later')} aria-label="Close">
           <X className="h-5 w-5" />
         </Button>
@@ -57,7 +50,7 @@ function OutcomeBody({ name, noOpeningsLeft, onChoose }: { name: string; noOpeni
           {noOpeningsLeft ? <p className="text-sm text-muted">No openings left · withdraw an offer to send another</p> : null}
           <Button type="button" variant="secondary" onClick={() => onChoose('round')}>Another round</Button>
           <Button type="button" variant="danger" onClick={() => onChoose('reject')}>Reject</Button>
-          <Button type="button" variant="ghost" onClick={() => onChoose('later')}>Decide later</Button>
+          <Button data-dialog-cancel type="button" variant="ghost" onClick={() => onChoose('later')}>Decide later</Button>
         </div>
       </section>
     </div>

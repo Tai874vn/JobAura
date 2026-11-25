@@ -7,9 +7,10 @@ import { MessageCircle, Send, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { postsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
+import { prefersReducedMotion } from '@/shared/lib/motion'
 import { resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { FeedPost, PostComment } from '@/shared/schemas'
-import { Button, Skeleton } from '@/shared/ui'
+import { Button, DialogPortal, Skeleton, useDialogFocus } from '@/shared/ui'
 import { CommentThread } from './comment-thread'
 import { mergeComments } from './feed-data'
 import { FeedAvatar } from './feed-avatar'
@@ -113,21 +114,19 @@ export function PostDiscussionModal({
     enabled: open,
   })
 
+  // Portal + dialog focus trap keeps Tab inside the modal, handles Escape only when topmost, and restores focus.
+  const dialogRef = useDialogFocus(onClose, !busy)
+
   useEffect(() => {
     if (!open) return
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     const frame = window.requestAnimationFrame(() => inputRef.current?.focus())
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', handleKeyDown)
     return () => {
       window.cancelAnimationFrame(frame)
       document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onClose, open])
+  }, [open])
 
   const comments = useMemo(() => {
     const loadedGroups = commentsQuery.data?.pages.map((page) => page.data) ?? []
@@ -136,14 +135,14 @@ export function PostDiscussionModal({
   const hasLoadedFirstPage = (commentsQuery.data?.pages.length ?? 0) > 0
 
   useEffect(() => {
-    const prefersReducedMotion = open && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = open && prefersReducedMotion()
     const decision = decideDiscussionScroll({
       open,
       commentCount: comments.length,
       hasLoadedFirstPage,
       stage: scrollStageRef.current,
       pendingOwnComment: pendingOwnCommentScroll.current,
-      prefersReducedMotion,
+      prefersReducedMotion: reduced,
     })
 
     if (!decision.shouldScroll) {
@@ -193,23 +192,25 @@ export function PostDiscussionModal({
   }
 
   return (
-    <div
-      className="motion-overlay fixed inset-0 z-70 flex items-center justify-center bg-black/55 p-0 sm:p-5"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !busy) onClose()
-      }}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="post-discussion-title"
-        className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-surface shadow-overlay sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
+    <DialogPortal>
+      <div
+        className="motion-overlay fixed inset-0 z-70 flex items-center justify-center bg-black/55 p-0 sm:p-5"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !busy) onClose()
+        }}
       >
+        <section
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="post-discussion-title"
+          className="motion-panel flex h-full w-full max-w-2xl flex-col overflow-hidden bg-surface shadow-overlay sm:h-[min(900px,calc(100vh-40px))] sm:rounded-lg"
+        >
         <header className="relative flex h-14 shrink-0 items-center justify-center border-b border-border px-14">
           <h2 id="post-discussion-title" className="truncate font-display text-lg font-medium">
             {post.author.name}&apos;s post
           </h2>
-          <Button className="absolute right-3" type="button" variant="ghost" size="icon" onClick={onClose} title="Close discussion">
+          <Button className="absolute right-3" type="button" variant="ghost" size="icon" onClick={onClose} disabled={busy} title="Close discussion">
             <X className="h-5 w-5" />
           </Button>
         </header>
@@ -327,5 +328,6 @@ export function PostDiscussionModal({
         </form>
       </section>
     </div>
+    </DialogPortal>
   )
 }

@@ -78,38 +78,44 @@ export function SavedPage() {
               <SavedSkeleton />
               <SavedSkeleton />
             </>
-          ) : posts.map((post) => (
-            <SavedPostCard key={post.id} post={post} removing={removePost.isPending && removePost.variables === post.id} onRemove={() => removePost.mutate(post.id)} />
-          ))}
-          {postsLoadFailed ? (
-            <EmptyState
-              className="mt-5"
-              icon={<SearchX />}
-              title="Saved posts could not be loaded"
-              description="Check the backend connection and try again."
-              action={<Button variant="secondary" onClick={() => postsQuery.refetch()}>Retry</Button>}
-            />
-          ) : null}
-          {!postsQuery.isPending && !postsLoadFailed && !posts.length ? (
-            <EmptyState
-              className="mt-5"
-              icon={<Bookmark />}
-              title="No saved posts yet"
-              description="Save posts from your home feed and they will appear here."
-              action={<ButtonLink href="/">Browse the feed</ButtonLink>}
-            />
-          ) : null}
-          {posts.length ? (
-            <p className="mt-4 text-center text-xs font-medium text-muted">Saved from your home feed — tap the bookmark on any post to remove it.</p>
-          ) : null}
-          {postsQuery.hasNextPage ? (
-            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} loading={postsQuery.isFetchingNextPage}>
-              <ChevronDown className="h-4 w-4" />
-              Load more posts
-            </Button>
-          ) : null}
+          ) : (
+            <div className="results-in space-y-4">
+              {posts.map((post) => (
+                <SavedPostCard key={post.id} post={post} removing={removePost.isPending && removePost.variables === post.id} onRemove={() => removePost.mutate(post.id)} />
+              ))}
+              {postsLoadFailed ? (
+                <EmptyState
+                  className="mt-5"
+                  icon={<SearchX />}
+                  title="Saved posts could not be loaded"
+                  description="Check the backend connection and try again."
+                  action={<Button variant="secondary" onClick={() => postsQuery.refetch()}>Retry</Button>}
+                />
+              ) : null}
+              {!postsLoadFailed && !posts.length ? (
+                <EmptyState
+                  className="mt-5"
+                  icon={<Bookmark />}
+                  title="No saved posts yet"
+                  description="Save posts from your home feed and they will appear here."
+                  action={<ButtonLink href="/">Browse the feed</ButtonLink>}
+                />
+              ) : null}
+              {posts.length ? (
+                <p className="mt-4 text-center text-xs font-medium text-muted">Saved from your home feed — tap the bookmark on any post to remove it.</p>
+              ) : null}
+              {postsQuery.hasNextPage ? (
+                <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => postsQuery.fetchNextPage()} loading={postsQuery.isFetchingNextPage}>
+                  <ChevronDown className="h-4 w-4" />
+                  Load more posts
+                </Button>
+              ) : null}
+            </div>
+          )}
         </section>
-      ) : (
+      ) : null}
+
+      {tab === 'jobs' ? (
         <section className="mt-5" aria-busy={jobsQuery.isPending} aria-live="polite">
           {jobsQuery.isPending ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -118,37 +124,40 @@ export function SavedPage() {
               <CardSkeleton />
               <CardSkeleton />
             </div>
-          ) : null}
-          {jobs.length ? (
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{jobs.map((job) => <JobCard key={job.id} job={job} initialSaved />)}</div>
-          ) : null}
-          {jobsLoadFailed ? (
-            <EmptyState
-              icon={<SearchX />}
-              title="Saved jobs could not be loaded"
-              description="Check the backend connection and try again."
-              action={<Button variant="secondary" onClick={() => jobsQuery.refetch()}>Retry</Button>}
-            />
-          ) : null}
-          {!jobsQuery.isPending && !jobsLoadFailed && !jobs.length ? (
-            <EmptyState
-              icon={<Bookmark />}
-              title="No saved jobs yet"
-              description="Tap the bookmark on any service in Explore and it will be waiting for you here."
-              action={<ButtonLink href="/hiring-posts">Browse hiring posts</ButtonLink>}
-            />
-          ) : null}
-          {jobs.length ? (
-            <p className="mt-4 text-center text-xs font-medium text-muted">Saved from Explore — the bookmark on each card removes it.</p>
-          ) : null}
-          {jobsQuery.hasNextPage ? (
-            <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} loading={jobsQuery.isFetchingNextPage}>
-              <ChevronDown className="h-4 w-4" />
-              Load more jobs
-            </Button>
-          ) : null}
+          ) : (
+            <div className="results-in">
+              {jobs.length ? (
+                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{jobs.map((job) => <JobCard key={job.id} job={job} initialSaved />)}</div>
+              ) : null}
+              {jobsLoadFailed ? (
+                <EmptyState
+                  icon={<SearchX />}
+                  title="Saved jobs could not be loaded"
+                  description="Check the backend connection and try again."
+                  action={<Button variant="secondary" onClick={() => jobsQuery.refetch()}>Retry</Button>}
+                />
+              ) : null}
+              {!jobsLoadFailed && !jobs.length ? (
+                <EmptyState
+                  icon={<Bookmark />}
+                  title="No saved jobs yet"
+                  description="Tap the bookmark on any service in Explore and it will be waiting for you here."
+                  action={<ButtonLink href="/jobs">Browse portfolios</ButtonLink>}
+                />
+              ) : null}
+              {jobs.length ? (
+                <p className="mt-4 text-center text-xs font-medium text-muted">Saved from Explore — the bookmark on each card removes it.</p>
+              ) : null}
+              {jobsQuery.hasNextPage ? (
+                <Button className="mx-auto mt-2 flex" variant="secondary" onClick={() => jobsQuery.fetchNextPage()} loading={jobsQuery.isFetchingNextPage}>
+                  <ChevronDown className="h-4 w-4" />
+                  Load more jobs
+                </Button>
+              ) : null}
+            </div>
+          )}
         </section>
-      )}
+      ) : null}
     </div>
   )
 }

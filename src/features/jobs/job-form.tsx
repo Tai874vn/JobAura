@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { AlignLeft, ImagePlus, Info, MapPin, Send, Trash2, UploadCloud } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { useForm, useWatch, type Control, type UseFormRegister } from 'react-hook-form'
+import { Controller, useForm, useWatch, type Control, type UseFormRegister } from 'react-hook-form'
 import { toast } from 'sonner'
 import type { z } from 'zod'
 import { useSession } from '@/features/auth/use-session'
@@ -187,11 +187,29 @@ export function JobForm({ job }: { job?: Job }) {
                     </Select>
                   </Field>
                   <Field id="post-kind" label="Kind of work" error={form.formState.errors.subcategoryId?.message}>
-                    {/* The key remounts the select when its options arrive, so the saved kind of work is shown instead of the placeholder. */}
-                    <Select key={`${categoryId}-${subcategories.length}`} id="post-kind" disabled={!subcategories.length} {...form.register('subcategoryId')}>
-                      <option value={0}>{categoryId ? 'Choose the kind of work' : 'Choose a field first'}</option>
-                      {subcategories.map((detail) => <option key={detail.id} value={detail.id}>{detail.name}</option>)}
-                    </Select>
+                    {/* Controlled via Controller so options arriving later select the saved value without remounting. */}
+                    <Controller
+                      control={form.control}
+                      name="subcategoryId"
+                      render={({ field }) => {
+                        const selectedId = Number(field.value) || 0
+                        const hasOption = subcategories.some((detail) => detail.id === selectedId)
+                        return (
+                          <Select
+                            id="post-kind"
+                            name={field.name}
+                            ref={field.ref}
+                            disabled={!subcategories.length}
+                            value={hasOption ? selectedId : 0}
+                            onBlur={field.onBlur}
+                            onChange={(event) => field.onChange(Number(event.target.value))}
+                          >
+                            <option value={0}>{categoryId ? 'Choose the kind of work' : 'Choose a field first'}</option>
+                            {subcategories.map((detail) => <option key={detail.id} value={detail.id}>{detail.name}</option>)}
+                          </Select>
+                        )
+                      }}
+                    />
                   </Field>
                 </div>
                 <Field id="post-rate" label="Rate in credits (optional)" error={form.formState.errors.price?.message}>

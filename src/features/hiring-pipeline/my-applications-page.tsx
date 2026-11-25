@@ -129,7 +129,7 @@ export function MyApplicationsPage() {
             </div>
           </div>
 
-          <div className={phoneView ? 'fixed inset-x-0 bottom-0 top-16 z-30 min-h-0 min-w-0 overflow-hidden bg-background lg:static lg:z-auto lg:bg-transparent' : 'hidden min-h-0 min-w-0 lg:block'}>
+          <div className={phoneView ? 'max-lg:motion-drawer fixed inset-x-0 bottom-0 top-16 z-30 min-h-0 min-w-0 overflow-hidden bg-background lg:static lg:z-auto lg:bg-transparent' : 'hidden min-h-0 min-w-0 lg:block'}>
             {selected ? (
               <MyApplicationPanel key={selected.id} application={selected} backHref={backHref} />
             ) : selectedId !== null && (notMine || (detail.isError && isMissing(detail.error))) ? (

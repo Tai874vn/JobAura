@@ -4,10 +4,9 @@ import { ImagePlus, Plus, X } from 'lucide-react'
 import Image from 'next/image'
 import { useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import { imageUploadAccept } from '@/shared/lib/file-validation'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, Input, Textarea } from '@/shared/ui'
+import { Button, DialogPortal, Input, Textarea, useDialogFocus } from '@/shared/ui'
 import { contractsApi } from './api'
 
 export const MAX_WORK_FILES = 10
@@ -142,7 +141,7 @@ export function SubmitWorkDialog({
                 <ul className="mt-2 flex flex-wrap gap-2">
                   {work.images.map((url, i) => (
                     <li key={url} className="relative">
-                      <Image src={url} alt={`Image ${i + 1}`} width={80} height={80} className="h-20 w-20 rounded-md border border-border object-cover" />
+                      <Image src={url} alt={`Submitted work image ${i + 1}`} width={80} height={80} className="h-20 w-20 rounded-md border border-border object-cover" />
                       <button
                         type="button"
                         aria-label={`Remove image ${i + 1}`}

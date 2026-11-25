@@ -22,7 +22,7 @@ export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<H
   )
 }
 
-export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({ className, ...props }: React.ComponentProps<'select'>) {
   return (
     <select
       className={cn(fieldClasses, 'h-10 px-3', className)}

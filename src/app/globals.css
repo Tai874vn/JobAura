@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --motion-fast: 140ms;
+  --motion-fast: 160ms;
   --motion-standard: 200ms;
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Warm paper neutrals: the page is a desk, cards are sheets on it. */
@@ -127,11 +127,6 @@ textarea::placeholder {
     transform: scale(0.98);
   }
 
-  .motion-overlay {
-    animation: overlay-in var(--motion-fast) ease-out;
-  }
-
-  .motion-panel,
   dialog.motion-panel[open] {
     animation: panel-in var(--motion-standard) var(--motion-ease);
   }
@@ -139,40 +134,68 @@ textarea::placeholder {
   dialog.motion-panel::backdrop {
     animation: overlay-in var(--motion-fast) ease-out;
   }
+}
 
-  .motion-popover {
-    animation: popover-in var(--motion-fast) var(--motion-ease);
+@utility motion-overlay {
+  animation: overlay-in var(--motion-fast) ease-out;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
+}
 
-  .motion-drawer {
-    animation: drawer-in 220ms var(--motion-ease);
+@utility motion-panel {
+  animation: panel-in var(--motion-standard) var(--motion-ease);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
+}
 
-  /* A dropdown list unfolds from its button. */
-  .menu-drop {
-    transform-origin: top;
-    animation: menu-drop 180ms var(--motion-ease);
+@utility motion-popover {
+  animation: popover-in var(--motion-fast) var(--motion-ease);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
+}
 
-  /* A ticked box's check pops in. */
-  .check-pop {
-    animation: check-pop 160ms var(--motion-ease);
+@utility motion-drawer {
+  animation: drawer-in 220ms var(--motion-ease);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
+}
 
-  /* A new page of results settles in instead of swapping abruptly. */
-  .results-in {
-    animation: results-in 220ms var(--motion-ease);
+/* A dropdown list unfolds from its button. */
+@utility menu-drop {
+  animation: menu-drop 180ms var(--motion-ease);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* A ticked box's check settles in. */
+@utility check-pop {
+  animation: check-pop 160ms var(--motion-ease);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/* A new page of results settles in instead of swapping abruptly. */
+@utility results-in {
+  animation: results-in 220ms var(--motion-ease);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 }
 
 @keyframes menu-drop {
-  from { opacity: 0; transform: translateY(-4px) scaleY(0.92); }
-  to { opacity: 1; transform: translateY(0) scaleY(1); }
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes check-pop {
-  from { transform: scale(0.4); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes results-in {
@@ -186,8 +209,8 @@ textarea::placeholder {
 }
 
 @keyframes panel-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes popover-in {
@@ -212,13 +235,31 @@ textarea::placeholder {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 
+  .interaction:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: none !important;
+  }
+
+  .motion-overlay,
+  .motion-panel,
+  dialog.motion-panel[open],
+  dialog.motion-panel::backdrop,
+  .motion-popover,
+  .motion-drawer,
+  .menu-drop,
+  .check-pop,
+  .results-in {
+    animation: none !important;
+  }
+
   *,
   *::before,
   *::after,
   dialog::backdrop {
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }

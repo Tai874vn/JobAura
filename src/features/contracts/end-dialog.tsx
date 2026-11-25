@@ -2,9 +2,8 @@
 
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
-import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import type { EndChoice } from '@/shared/schemas'
-import { Button, Textarea } from '@/shared/ui'
+import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
 
 export const endChoiceWords: Record<EndChoice, string> = {
   APPROVE: 'Approve and pay for the submitted work',

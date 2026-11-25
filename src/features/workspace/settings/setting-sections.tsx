@@ -68,7 +68,7 @@ export function SettingsOverview({
           <div className="flex flex-wrap items-center gap-4">
             <Avatar name={profile.name} src={profile.avatar} size="lg" className="h-14 w-14 text-lg" />
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-display text-xl font-medium">{profile.name}</h3>
+              <h2 className="truncate font-display text-xl font-medium">{profile.name}</h2>
               <p className="mt-0.5 break-words text-sm text-muted">{profile.headline || 'Add a headline that describes your work.'}</p>
             </div>
             <Button variant="secondary" size="sm" onClick={() => onSelect('profile')}>Edit profile <ArrowRight className="h-3.5 w-3.5" /></Button>
@@ -99,7 +99,7 @@ export function SettingsOverview({
         <Card>
           <CardContent className="flex h-full flex-col p-5 sm:p-6">
             <UserRound className="h-5 w-5 text-primary" />
-            <h3 className="mt-3 font-display text-lg font-medium">Public profile</h3>
+            <h2 className="mt-3 font-display text-lg font-medium">Public profile</h2>
             <p className="mt-1 flex-1 text-sm leading-6 text-muted">Edit your introduction, skills, certifications, and portfolio.</p>
             {profile.role === 'user' ? <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-muted"><Eye className="h-3.5 w-3.5" />{profile.candidateDiscoverable ? 'Visible to recruiters' : 'Hidden from recruiters'}</p> : null}
             <Button className="mt-4 w-full" variant="secondary" onClick={() => onSelect('profile')}>Manage profile <ArrowRight className="h-4 w-4" /></Button>
@@ -108,7 +108,7 @@ export function SettingsOverview({
         {hasResumeSection(profile.role) ? <Card>
           <CardContent className="flex h-full flex-col p-5 sm:p-6">
             <FileJson className="h-5 w-5 text-primary" />
-            <h3 className="mt-3 font-display text-lg font-medium">Resume</h3>
+            <h2 className="mt-3 font-display text-lg font-medium">Resume</h2>
             <p className="mt-1 flex-1 text-sm leading-6 text-muted">Add career details and a CV to support your AI job matches.</p>
             {resumeLoading ? (
               <p role="status" className="mt-3 text-xs text-muted">Checking resume…</p>

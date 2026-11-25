@@ -77,7 +77,7 @@ export function WalletPage() {
         ) : rows.length === 0 ? (
           <p className="mt-3 text-sm text-muted">Nothing here yet.</p>
         ) : (
-          <ul className="mt-2 rounded-lg border border-border bg-surface px-4">
+          <ul className="results-in mt-2 rounded-lg border border-border bg-surface px-4">
             {rows.map((entry) => <LedgerRow key={entry.id} entry={entry} />)}
           </ul>
         )}

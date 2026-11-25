@@ -10,7 +10,15 @@ import { SkillListEditor } from '@/features/users/skill-picker'
 import { CertificationFields } from '@/features/users/certification-fields'
 import { certificationProblems } from '@/features/users/certifications'
 
-export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
+export function ProfileSettingsEditor({
+  profile,
+  active = true,
+  onBlockedNavigation,
+}: {
+  profile: UserProfile
+  active?: boolean
+  onBlockedNavigation?: () => void
+}) {
   const {
     basic, setBasic, skills, setSkills, certifications, setCertifications, portfolio, setPortfolio, newPortfolio, setNewPortfolio,
     pendingPortfolioDelete, setPendingPortfolioDelete, saveAll, hasChanges, changed, resetChanges, createPortfolio, updatePortfolio,
@@ -22,9 +30,9 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
       <fieldset disabled={isSaving} className="min-w-0">
         {/* pb-28 keeps the last card clear of the save bar once scrolled to the end. */}
         <div className="grid gap-4 pb-28">
-          {/* One save for the profile; it hides with this section. */}
-          <UnsavedChangesBar dirty={hasChanges} saving={saveAll.isPending} saveLabel="Save profile"
-            onSave={() => saveAll.mutate()} onReset={resetChanges} />
+          {/* One save for the profile; leaving /settings from another tab switches back here so the warning is visible. */}
+          <UnsavedChangesBar dirty={hasChanges} active={active} saving={saveAll.isPending} saveLabel="Save profile"
+            onSave={() => saveAll.mutate()} onReset={resetChanges} onBlockedNavigation={onBlockedNavigation} />
 
           <Card data-focus="photo">
             <CardContent className="p-5">
@@ -138,5 +146,5 @@ export function ProfileSettingsEditor({ profile }: { profile: UserProfile }) {
 }
 
 function SectionTitle({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return <h3 className="mb-4 flex items-center gap-2 font-display text-lg font-medium"><span className="text-primary">{icon}</span>{children}</h3>
+  return <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-medium"><span className="text-primary">{icon}</span>{children}</h2>
 }

@@ -2,12 +2,12 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, Plus, Search, Trash2 } from 'lucide-react'
-import { type FormEvent, useMemo, useState } from 'react'
+import { type FormEvent, useId, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { categoriesApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
-import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, EmptyState, Input, PageHeader, Select, Skeleton } from '@/shared/ui'
+import { cn, getErrorMessage } from '@/shared/lib/utils'
+import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, DialogPortal, EmptyState, Input, PageHeader, Select, Skeleton, useDialogFocus } from '@/shared/ui'
 import { getResourceConfig, type Resource, type ResourceConfig, type ResourceRow } from './admin-resource-model'
 import { refreshMarketplaceTaxonomyPages } from './refresh-taxonomy-pages'
 
@@ -80,7 +80,7 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
                   <th className="px-4 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className={cn(!query.isPending && !query.isError && filtered.length > 0 && 'motion-overlay')}>
                 {query.isPending ? (
                   Array.from({ length: 6 }).map((_, rowIndex) => (
                     <tr key={`loading-${rowIndex}`} className="border-t border-border">
@@ -203,6 +203,7 @@ function CreateResourceDialog({
   resource: Resource
   onClose: () => void
 }) {
+  const titleId = useId()
   const [name, setName] = useState('')
   const [parentTypeId, setParentTypeId] = useState<number | undefined>()
   const queryClient = useQueryClient()
@@ -243,6 +244,8 @@ function CreateResourceDialog({
     onClose()
   }
 
+  const dialogRef = useDialogFocus(closeDialog, !createMutation.isPending)
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!name.trim()) {
@@ -259,44 +262,58 @@ function CreateResourceDialog({
   if (!open || !config.create) return null
 
   return (
-    <div className="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <form className="motion-panel w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-overlay" onSubmit={submit}>
-        <div className="mb-5">
-          <h2 className="font-display text-2xl font-medium">{config.create.label}</h2>
-          <p className="text-sm text-muted">Add a new marketplace classification.</p>
-        </div>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">Name</span>
-          <Input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} autoFocus />
-        </label>
-        {config.create.needsParentType ? (
-          <label className="mt-4 block">
-            <span className="mb-1.5 block text-xs font-medium text-muted">Parent category</span>
-            <Select
-              value={resolvedParentTypeId ?? ''}
-              onChange={(event) => setParentTypeId(Number(event.target.value))}
-              disabled={parentTypesQuery.isLoading}
-            >
-              <option value="" disabled>
-                Select parent type
-              </option>
-              {parentTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name}
-                </option>
-              ))}
-            </Select>
+    <DialogPortal>
+      <div
+        className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/40 px-4"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !createMutation.isPending) closeDialog()
+        }}
+      >
+        <form
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          className="motion-panel w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-overlay"
+          onSubmit={submit}
+        >
+          <div className="mb-5">
+            <h2 id={titleId} className="font-display text-2xl font-medium">{config.create.label}</h2>
+            <p className="text-sm text-muted">Add a new marketplace classification.</p>
+          </div>
+          <label className="block">
+            <span className="mb-1.5 block text-xs font-medium text-muted">Name</span>
+            <Input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} />
           </label>
-        ) : null}
-        <div className="mt-6 flex justify-end gap-2">
-          <Button type="button" variant="secondary" onClick={closeDialog}>
-            Cancel
-          </Button>
-          <Button type="submit" loading={createMutation.isPending} disabled={parentTypesQuery.isLoading}>
-            Create
-          </Button>
-        </div>
-      </form>
-    </div>
+          {config.create.needsParentType ? (
+            <label className="mt-4 block">
+              <span className="mb-1.5 block text-xs font-medium text-muted">Parent category</span>
+              <Select
+                value={resolvedParentTypeId ?? ''}
+                onChange={(event) => setParentTypeId(Number(event.target.value))}
+                disabled={parentTypesQuery.isLoading}
+              >
+                <option value="" disabled>
+                  Select parent type
+                </option>
+                {parentTypes.map((type) => (
+                  <option key={type.id} value={type.id}>
+                    {type.name}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          ) : null}
+          <div className="mt-6 flex justify-end gap-2">
+            <Button data-dialog-cancel type="button" variant="secondary" onClick={closeDialog} disabled={createMutation.isPending}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={createMutation.isPending} disabled={parentTypesQuery.isLoading}>
+              Create
+            </Button>
+          </div>
+        </form>
+      </div>
+    </DialogPortal>
   )
 }

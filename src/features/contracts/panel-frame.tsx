@@ -9,7 +9,17 @@ import { Skeleton } from '@/shared/ui'
  * Below the `lg` width the floating Chat button sits over the bottom right corner, so the frame leaves extra room at
  * the bottom, and the panels' button rows keep `pr-24 lg:pr-0` (room on the right), like the hiring panels' `pr-28`.
  */
-export function PanelFrame({ backHref, labelledBy, children }: { backHref: string; labelledBy?: string; children: ReactNode }) {
+export function PanelFrame({
+  backHref,
+  labelledBy,
+  animate = true,
+  children,
+}: {
+  backHref: string
+  labelledBy?: string
+  animate?: boolean
+  children: ReactNode
+}) {
   return (
     <article className="flex max-h-full min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-surface max-lg:h-full max-lg:rounded-none max-lg:border-0" aria-labelledby={labelledBy}>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 pb-24 sm:p-6 sm:pb-24 lg:pb-6">
@@ -17,7 +27,7 @@ export function PanelFrame({ backHref, labelledBy, children }: { backHref: strin
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           All contracts
         </Link>
-        {children}
+        <div className={animate ? 'lg:results-in' : undefined}>{children}</div>
       </div>
     </article>
   )
@@ -26,7 +36,7 @@ export function PanelFrame({ backHref, labelledBy, children }: { backHref: strin
 /** Mirrors ProposalPanel & ContractPanel (48px avatar row above h2, 4 figures, milestones) with no live buttons. */
 export function PanelLoading({ backHref, title }: { backHref: string; title?: string }) {
   return (
-    <PanelFrame backHref={backHref}>
+    <PanelFrame backHref={backHref} animate={false}>
       <div aria-busy="true" aria-label="Loading">
         <div className="flex flex-wrap items-center gap-3" aria-hidden="true">
           <Skeleton className="h-12 w-12 shrink-0 rounded-full" />

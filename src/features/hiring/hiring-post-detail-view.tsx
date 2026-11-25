@@ -42,7 +42,7 @@ export function HiringPostDetailView({ initialPost }: { initialPost: HiringPost 
             <h1 className="mt-3 font-display text-3xl font-medium leading-tight sm:text-4xl">{post.title}</h1>
             <HiringPostFacts post={post} />
 
-            <HiringPostBody post={post} />
+            <HiringPostBody post={post} headingAs="h2" />
           </CardContent>
         </Card>
 

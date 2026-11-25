@@ -145,11 +145,11 @@ export function SkillPicker({
               if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.min(i + 1, options.length - 1)) }
               else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
               else if (event.key === 'Enter' && open && options[active]) { event.preventDefault(); choose(options[active]) }
-              else if (event.key === 'Escape') setOpen(false)
+              else if (event.key === 'Escape') { if (open && search) event.preventDefault(); setOpen(false) }
             }}
           />
           {open && search ? (
-            <ul id={listId} role="listbox" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
+            <ul id={listId} role="listbox" className="menu-drop absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
               {results.isFetching && !options.length ? <li className="px-3 py-2 text-sm text-muted">Searching…</li> : null}
               {results.isError ? <li className="px-3 py-2 text-sm text-danger">Skill search is unavailable. Try again.</li> : null}
               {!results.isFetching && !results.isError && !options.length ? (

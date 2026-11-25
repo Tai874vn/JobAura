@@ -35,7 +35,7 @@ export function OwnerUploadButton({
   onChange: (file: File) => void
 }) {
   return (
-    <label aria-busy={loading} className={cn('interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground hover:border-primary hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright', className, loading && 'pointer-events-none !opacity-100')}>
+    <label aria-busy={loading} className={cn('interaction inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-foreground hover:border-primary hover:text-primary focus-within:ring-2 focus-within:ring-primary-bright', className, loading && 'pointer-events-none opacity-100!')}>
       {loading ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" /> : icon}
       {label}
       <input

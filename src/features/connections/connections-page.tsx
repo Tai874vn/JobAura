@@ -141,10 +141,18 @@ export function ConnectionsPage() {
                 </Button>
               }
             />
+          ) : connectionsQuery.isPending ? (
+            <PeopleGrid
+              loading
+              stale={false}
+              empty="No connections yet. Discover people to start building your network."
+            >
+              {null}
+            </PeopleGrid>
           ) : (
-            <>
+            <div className="results-in">
               <PeopleGrid
-                loading={connectionsQuery.isPending}
+                loading={false}
                 stale={connectionsQuery.isPlaceholderData}
                 empty="No connections yet. Discover people to start building your network."
               >
@@ -156,7 +164,7 @@ export function ConnectionsPage() {
                 isFetching={connectionsQuery.isFetching}
                 onPageChange={setConnectionsPage}
               />
-            </>
+            </div>
           )
         ) : null}
 
@@ -172,12 +180,21 @@ export function ConnectionsPage() {
                 </Button>
               }
             />
-          ) : (
+          ) : requestsQuery.isPending ? (
             <div className="grid gap-8 lg:grid-cols-2">
-              <RequestSection title="Incoming" loading={requestsQuery.isPending} empty="No incoming requests.">
+              <RequestSection title="Incoming" loading empty="No incoming requests.">
+                {null}
+              </RequestSection>
+              <RequestSection title="Sent" loading empty="No sent requests.">
+                {null}
+              </RequestSection>
+            </div>
+          ) : (
+            <div className="results-in grid gap-8 lg:grid-cols-2">
+              <RequestSection title="Incoming" loading={false} empty="No incoming requests.">
                 {(requests?.incoming ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} incoming accepting={acceptMutation.isPending && acceptMutation.variables === connection.id} removing={removeMutation.isPending && removeMutation.variables === connection.id} onAccept={() => acceptMutation.mutate(connection.id)} onRemove={() => removeMutation.mutate(connection.id)} />)}
               </RequestSection>
-              <RequestSection title="Sent" loading={requestsQuery.isPending} empty="No sent requests.">
+              <RequestSection title="Sent" loading={false} empty="No sent requests.">
                 {(requests?.outgoing ?? []).map((connection) => <RequestCard key={connection.id} connection={connection} removing={removeMutation.isPending && removeMutation.variables === connection.id} onRemove={() => removeMutation.mutate(connection.id)} />)}
               </RequestSection>
             </div>
@@ -196,10 +213,18 @@ export function ConnectionsPage() {
                 </Button>
               }
             />
+          ) : suggestionsQuery.isPending ? (
+            <PeopleGrid
+              loading
+              stale={false}
+              empty="No new suggestions match this search."
+            >
+              {null}
+            </PeopleGrid>
           ) : (
-            <>
+            <div className="results-in">
               <PeopleGrid
-                loading={suggestionsQuery.isPending}
+                loading={false}
                 stale={suggestionsQuery.isPlaceholderData}
                 empty="No new suggestions match this search."
               >
@@ -211,7 +236,7 @@ export function ConnectionsPage() {
                 isFetching={suggestionsQuery.isFetching}
                 onPageChange={setDiscoverPage}
               />
-            </>
+            </div>
           )
         ) : null}
       </div>

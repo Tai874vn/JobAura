@@ -99,7 +99,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
   const uploadAvatar = useProfileUpload(usersApi.uploadAvatar, 'Avatar uploaded', refreshProfile)
   const uploadCover = useProfileUpload(usersApi.uploadCover, 'Cover uploaded', refreshProfile)
   return (
-    <main className="pb-16">
+    <div className="pb-16">
       <div className="container-page pt-8">
         <figure className="group/cover relative m-0 aspect-[21/7] overflow-hidden rounded-lg border border-border bg-surface-muted md:aspect-[21/6]">
           {coverImageUrl ? (
@@ -109,7 +109,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
           )}
           {isOwner ? (
             <OwnerUploadButton
-              className="absolute right-4 top-4 opacity-0 shadow-sm transition group-hover/cover:opacity-100 focus-within:opacity-100"
+              className="absolute right-4 top-4 opacity-100 shadow-sm transition sm:opacity-0 sm:group-hover/cover:opacity-100 sm:focus-within:opacity-100"
               label="Edit cover"
               icon={<ImageUp className="h-4 w-4" />}
               loading={uploadCover.isPending}
@@ -128,7 +128,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               )}
               {isOwner ? (
                 <OwnerUploadButton
-                  className="absolute inset-0 h-full rounded-full border-0 bg-black/55 text-white opacity-0 transition hover:bg-black/65 group-hover/avatar:opacity-100 focus-within:opacity-100"
+                  className="absolute inset-0 h-full rounded-full border-0 bg-black/55 text-white opacity-100 transition hover:bg-black/65 sm:opacity-0 sm:group-hover/avatar:opacity-100 sm:focus-within:opacity-100"
                   label="Edit avatar"
                   icon={<Upload className="h-4 w-4" />}
                   loading={uploadAvatar.isPending}
@@ -368,6 +368,6 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
           )}
         </aside>
       </div>
-    </main>
+    </div>
   )
 }

@@ -2,9 +2,8 @@
 
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
-import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import type { ContractDetail } from '@/shared/schemas'
-import { Button, Textarea } from '@/shared/ui'
+import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
 import { amendmentStart, buildAmendment, type AmendmentBody } from './amendment-changes'
 import { ProposalEditor } from './proposal-editor'
 

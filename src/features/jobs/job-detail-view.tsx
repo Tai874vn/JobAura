@@ -121,7 +121,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <main>
+        <div className="min-w-0">
           <h1 className="max-w-4xl font-display text-3xl font-medium leading-tight tracking-tight sm:text-4xl">{job.title}</h1>
           <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
             <Badge tone="rating"><Star className="mr-1 h-3 w-3 fill-rating text-rating" /> {(job.rating ?? 0).toFixed(1)}</Badge>
@@ -169,7 +169,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
               </div>
             </CardContent>
           </Card>
-        </main>
+        </div>
         <aside className="grid content-start gap-4 lg:sticky lg:top-24">
           {portfolio ? (
             <Card>

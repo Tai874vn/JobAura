@@ -4,17 +4,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import dynamic from 'next/dynamic'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, ButtonLink, EmptyState, Spinner } from '@/shared/ui'
+import { Button, ButtonLink, DialogPortal, EmptyState, Spinner, useDialogFocus } from '@/shared/ui'
 import { pipelineApi, pipelineKeys } from './api'
 import { callExitHref, fallbackExitHref, isAlreadyCompleted } from './call-exit'
 import { CallLoading, CallStageSkeleton } from './call-loading'
 import { callState } from './call-state'
 import type { CallConnection } from './call-stage'
-import { DialogPortal } from './dialog-portal'
 
 // The video part is loaded in the browser only (LiveKit needs the camera, the microphone and WebRTC).
 const CallStage = dynamic(() => import('./call-stage'), { ssr: false, loading: CallStageSkeleton })
@@ -188,35 +187,25 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
 
 /** "Mark this interview as done?" with Yes and No. Focus starts on No, and Escape counts as No. */
 function LeaveDialog({ busy, onNo, onYes }: { busy: boolean; onNo: () => void; onYes: () => void }) {
-  const dialogRef = useRef<HTMLElement>(null)
-  useEffect(() => {
-    dialogRef.current?.querySelector<HTMLButtonElement>('[data-no]')?.focus()
-  }, [])
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !busy) onNo()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [busy, onNo])
+  const dialogRef = useDialogFocus(onNo, !busy)
 
   return (
     <DialogPortal>
-    <div className="fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4">
-      <section
-        ref={dialogRef}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="leave-call-title"
-        className="w-full max-w-sm rounded-lg bg-surface p-5 shadow-overlay"
-      >
-        <h2 id="leave-call-title" className="font-display text-lg font-medium">Mark this interview as done?</h2>
-        <div className="mt-5 flex justify-end gap-2">
-          <Button data-no type="button" variant="secondary" disabled={busy} onClick={onNo}>No</Button>
-          <Button type="button" loading={busy} onClick={onYes}>Yes</Button>
-        </div>
-      </section>
-    </div>
+      <div className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/55 p-4">
+        <section
+          ref={dialogRef}
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="leave-call-title"
+          className="motion-panel w-full max-w-sm rounded-lg bg-surface p-5 shadow-overlay"
+        >
+          <h2 id="leave-call-title" className="font-display text-lg font-medium">Mark this interview as done?</h2>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button data-no data-dialog-cancel type="button" variant="secondary" disabled={busy} onClick={onNo}>No</Button>
+            <Button type="button" loading={busy} onClick={onYes}>Yes</Button>
+          </div>
+        </section>
+      </div>
     </DialogPortal>
   )
 }

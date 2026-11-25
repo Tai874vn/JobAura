@@ -12,7 +12,7 @@ import { SkillPicker } from "@/features/users/skill-picker";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
-import { Button, Input, Select, Textarea } from "@/shared/ui";
+import { Button, DialogPortal, Input, Select, Textarea, useDialogFocus } from "@/shared/ui";
 import {
   draftFromPost,
   emptyHiringPostDraft,
@@ -91,6 +91,8 @@ function HiringPostForm({
     onError: (error) => toast.error(getErrorMessage(error, "Could not save the hiring post")),
   });
 
+  const dialogRef = useDialogFocus(onClose, !save.isPending);
+
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const result = hiringPostPayload(draft, new Date(), detail.data?.specialties);
@@ -102,19 +104,32 @@ function HiringPostForm({
   }
 
   return (
-    <div className="motion-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-      <div className="motion-panel max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-lg border border-border bg-surface shadow-overlay">
-        <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-surface p-5">
-          <div>
-            <p className="text-xs font-medium text-primary">Hiring post</p>
-            <h2 id={titleId} className="mt-1 font-display text-2xl font-medium">{post ? "Edit hiring post" : "New hiring post"}</h2>
+    <DialogPortal>
+      <div
+        className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/45 p-4"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !save.isPending) onClose();
+        }}
+      >
+        <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          className="motion-panel flex max-h-[calc(100vh-2rem)] w-full max-w-3xl flex-col rounded-lg border border-border bg-surface shadow-overlay"
+        >
+          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border p-5">
+            <div>
+              <p className="text-xs font-medium text-primary">Hiring post</p>
+              <h2 id={titleId} className="mt-1 font-display text-2xl font-medium">{post ? "Edit hiring post" : "New hiring post"}</h2>
+            </div>
+            <Button type="button" size="icon" variant="ghost" aria-label="Close" onClick={onClose} disabled={save.isPending}>
+              <X className="h-5 w-5" />
+            </Button>
           </div>
-          <Button type="button" size="icon" variant="ghost" aria-label="Close" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
 
-        <form className="grid gap-5 p-5" onSubmit={submit} noValidate>
+          <form className="min-h-0 flex-1 overflow-y-auto" onSubmit={submit} noValidate>
+            <div className="grid gap-5 p-5">
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Role title" required>
               <Input value={draft.title} maxLength={160} required onChange={(event) => set("title", event.target.value)} placeholder="Backend Engineer" />
@@ -191,15 +206,17 @@ function HiringPostForm({
           </div>
 
           <div className="flex flex-wrap justify-end gap-2 border-t border-border pt-4">
-            <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button data-dialog-cancel type="button" variant="secondary" onClick={onClose} disabled={save.isPending}>Cancel</Button>
             <Button type="submit" loading={save.isPending}>
               {post ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               {post ? "Save changes" : "Publish hiring post"}
             </Button>
           </div>
-        </form>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </DialogPortal>
   );
 }
 

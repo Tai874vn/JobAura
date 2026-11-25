@@ -100,7 +100,7 @@ export function FeedPage() {
     <div className="container-page py-5">
       <div className="grid w-full items-start gap-5 lg:grid-cols-[230px_minmax(0,1fr)] xl:grid-cols-[240px_minmax(0,1fr)_300px]">
         <LeftFeedRail user={user} />
-        <main className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
             <MobileTab href="/hiring-posts" label="Hiring posts" />
             <MobileTab href="/my-posts" label="My portfolio" />
@@ -127,7 +127,6 @@ export function FeedPage() {
           ) : null}
           {!feedQuery.isPending && !feedQuery.isError && !posts.length ? (
             <EmptyState
-              titleAs="h1"
               icon={<MessagesSquare />}
               title="Start the conversation"
               description="Share your work, an update, or something useful to the JobAura community."
@@ -150,7 +149,7 @@ export function FeedPage() {
           <div ref={sentinelRef} className="min-h-4" aria-hidden={!feedQuery.isFetchingNextPage}>
             {feedQuery.isFetchingNextPage ? <FeedPostCardSkeleton /> : null}
           </div>
-        </main>
+        </div>
         <RightFeedRail />
       </div>
       {selectedPost ? (

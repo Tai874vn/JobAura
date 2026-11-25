@@ -35,11 +35,16 @@ export function ResumeSettingsSection({
   onResumeFile,
   foundSkills = [],
   hasChanges = false,
+  active = true,
   onReset = () => {},
+  onBlockedNavigation,
 }: {
   /** Unsaved edits or an attached file: the save bar shows. */
   hasChanges?: boolean
+  /** False when this section is mounted inside a hidden Settings tab. */
+  active?: boolean
   onReset?: () => void
+  onBlockedNavigation?: () => void
   resume: UserResume | null
   draft: ResumeDraft
   attachedFile: File | null
@@ -67,7 +72,7 @@ export function ResumeSettingsSection({
           <CardContent className="grid gap-3 p-4 sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-lg font-medium">Career fields</h3>
+                <h2 className="font-display text-lg font-medium">Career fields</h2>
                 <p className="mt-1 text-sm text-muted">Fill the resume fields directly, or upload a CV file to extract the fields.</p>
               </div>
               <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
@@ -143,9 +148,9 @@ export function ResumeSettingsSection({
                 If a file is attached, the original document is uploaded with the reviewed resume data. Non-extractable files require manual fields before saving.
               </p>
             </div>
-            <UnsavedChangesBar dirty={hasChanges} saving={isImporting} canSave={canImport}
+            <UnsavedChangesBar dirty={hasChanges} active={active} saving={isImporting} canSave={canImport}
               blockedReason={careerProblems[0] ?? null} saveLabel={attachedFile ? 'Upload and save' : 'Save resume'}
-              onSave={onImport} onReset={onReset} />
+              onSave={onImport} onReset={onReset} onBlockedNavigation={onBlockedNavigation} />
           </CardContent>
         </Card>
 
@@ -192,7 +197,7 @@ function ResumePreview({
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-display text-lg font-medium">Preview</h3>
+            <h2 className="font-display text-lg font-medium">Preview</h2>
             <p className="mt-1 text-sm text-muted">{resume?.updatedAt ? `Last imported ${formatDate(resume.updatedAt)}` : 'Resume data preview'}</p>
           </div>
           {resume ? <CheckCircle2 className="h-5 w-5 text-primary" /> : null}
@@ -202,7 +207,7 @@ function ResumePreview({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-xs font-medium text-muted">AI seniority</p>
-              <h4 className="mt-1 font-display text-xl font-medium">{resume?.predictedSeniority ?? 'Not evaluated yet'}</h4>
+              <h3 className="mt-1 font-display text-xl font-medium">{resume?.predictedSeniority ?? 'Not evaluated yet'}</h3>
               {prediction.tier ? <p className="text-sm font-medium text-primary">{prediction.tier}</p> : null}
               <p className="mt-1 text-xs leading-5 text-muted">
                 {resume?.predictedSeniorityAt
@@ -244,7 +249,7 @@ function ResumePreview({
           <div className="mt-5 text-sm text-muted">Loading resume...</div>
         ) : hasResumeDraftInput(data) ? (
           <div className="mt-5 grid gap-4">
-            <h4 className="font-display text-2xl font-medium">{data.Name ?? 'Unnamed resume'}</h4>
+            <h3 className="font-display text-2xl font-medium">{data.Name ?? 'Unnamed resume'}</h3>
             <div className="grid gap-2 text-sm text-muted">
               <ResumeMeta label="Email" value={data.Email} />
               <ResumeMeta label="Phone" value={data.Phone} />

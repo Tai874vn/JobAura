@@ -196,7 +196,7 @@ export function ContractsPage() {
                   aria-selected={active}
                   onClick={() => go({ tab: key, proposal: null, contract: null })}
                   className={cn(
-                    'interaction -mb-px inline-flex shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright',
+                    '-mb-px inline-flex shrink-0 items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-bright',
                     active ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-foreground',
                   )}
                 >
@@ -254,7 +254,7 @@ export function ContractsPage() {
             {capped ? <p className="mt-3 text-center text-xs text-muted">Showing the newest {contractsPageSize} of each list.</p> : null}
           </div>
 
-          <div className={cn('min-h-0 min-w-0', phoneView ? 'fixed inset-x-0 bottom-0 top-16 z-30 overflow-hidden bg-background lg:static lg:z-auto lg:bg-transparent' : 'hidden lg:block')}>
+          <div className={cn('min-h-0 min-w-0', phoneView ? 'max-lg:motion-drawer fixed inset-x-0 bottom-0 top-16 z-30 overflow-hidden bg-background lg:static lg:z-auto lg:bg-transparent' : 'hidden lg:block')}>
             {panel()}
           </div>
         </div>

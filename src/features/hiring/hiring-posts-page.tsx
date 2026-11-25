@@ -242,7 +242,7 @@ export function HiringPostsPage() {
           <EmptyState icon={<BriefcaseBusiness />} title="Hiring posts could not be loaded" description="Check your connection and try again."
             action={<button type="button" onClick={() => void query.refetch()} className="text-sm font-semibold text-primary hover:underline">Try again</button>} />
         ) : posts.length ? (
-          <ul className={cn("mt-4 grid gap-4 transition-opacity duration-200", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData} aria-label="Hiring posts">
+          <ul className={cn("results-in mt-4 grid gap-4 transition-opacity duration-200", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData} aria-label="Hiring posts">
             {posts.map((post) => (
               <li key={post.id}>
                 <HiringPostResultCard post={post} viewer={viewer}

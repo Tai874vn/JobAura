@@ -229,23 +229,26 @@ function SkillGapTooltip({
   return (
     <div
       ref={tooltipRef}
-      className="pointer-events-none fixed left-0 top-0 z-[70] max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 opacity-100 shadow-overlay backdrop-blur-sm will-change-transform"
+      className="pointer-events-none fixed left-0 top-0 z-[70] will-change-transform"
     >
-      <div className="flex items-center gap-2 text-xs font-medium text-primary">
-        <Lightbulb className="h-3.5 w-3.5" />
-        Profile improvement
+      {/* Keep `.motion-popover` on an inner box so its translateY entrance never collides with the outer translate3d position. */}
+      <div className="motion-popover max-h-[min(320px,calc(100vh-24px))] w-[min(320px,calc(100vw-24px))] overflow-y-auto rounded-lg border border-border bg-surface/95 p-3 shadow-overlay backdrop-blur-sm">
+        <div className="flex items-center gap-2 text-xs font-medium text-primary">
+          <Lightbulb className="h-3.5 w-3.5" />
+          Profile improvement
+        </div>
+        <div className="mt-3 grid gap-3">
+          <SkillList label="Matched" empty="No explicit skill overlap found." skills={hasMatched ? recommendation.matchedSkills : []} tone="matched" />
+          <SkillList label="Missing" empty="No missing required skills detected." skills={hasMissing ? recommendation.missingSkills : []} tone="missing" />
+        </div>
+        {recommendation.improvementTips.length ? (
+          <ul className="mt-3 space-y-1 text-xs leading-5 text-muted">
+            {recommendation.improvementTips.slice(0, 2).map((tip) => (
+              <li key={tip}>{tip}</li>
+            ))}
+          </ul>
+        ) : null}
       </div>
-      <div className="mt-3 grid gap-3">
-        <SkillList label="Matched" empty="No explicit skill overlap found." skills={hasMatched ? recommendation.matchedSkills : []} tone="matched" />
-        <SkillList label="Missing" empty="No missing required skills detected." skills={hasMissing ? recommendation.missingSkills : []} tone="missing" />
-      </div>
-      {recommendation.improvementTips.length ? (
-        <ul className="mt-3 space-y-1 text-xs leading-5 text-muted">
-          {recommendation.improvementTips.slice(0, 2).map((tip) => (
-            <li key={tip}>{tip}</li>
-          ))}
-        </ul>
-      ) : null}
     </div>
   )
 }

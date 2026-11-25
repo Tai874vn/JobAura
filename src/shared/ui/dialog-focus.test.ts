@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { initialFocusIndex, nextFocusIndex } from './dialog-focus'
+import { initialFocusIndex, isTopmostDialog, nextFocusIndex } from './dialog-focus'
 
 describe('nextFocusIndex', () => {
   it('moves forward and wraps from the last to the first', () => {
@@ -37,5 +37,16 @@ describe('initialFocusIndex', () => {
 
   it('returns -1 when there is neither a field nor Cancel', () => {
     expect(initialFocusIndex([{ tagName: 'BUTTON' }])).toBe(-1)
+  })
+})
+
+describe('isTopmostDialog', () => {
+  it('returns true only for the last dialog in the stack', () => {
+    const discussion = { id: 'discussion' }
+    const confirm = { id: 'confirm' }
+    expect(isTopmostDialog([], discussion)).toBe(false)
+    expect(isTopmostDialog([discussion], discussion)).toBe(true)
+    expect(isTopmostDialog([discussion, confirm], discussion)).toBe(false)
+    expect(isTopmostDialog([discussion, confirm], confirm)).toBe(true)
   })
 })

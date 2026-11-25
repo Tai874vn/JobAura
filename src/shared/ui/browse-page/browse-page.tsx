@@ -56,7 +56,7 @@ export function BrowsePage({ hero, search, explore, filters, filtersOpen, toolba
       ) : null}
 
       <div className="container-page grid gap-8 py-8 lg:grid-cols-[256px_minmax(0,1fr)] lg:py-10">
-        <aside className={cn('lg:block', filtersOpen ? 'motion-popover block' : 'hidden')} aria-label="Filters">
+        <aside className={cn('lg:block', filtersOpen ? 'max-lg:motion-popover block' : 'hidden')} aria-label="Filters">
           <div className="grid grid-cols-1 gap-4 [&>*]:min-w-0 lg:sticky lg:top-[172px] lg:max-h-[calc(100dvh-188px)] lg:overflow-y-auto lg:overflow-x-hidden lg:overscroll-contain">
             {filters}
           </div>

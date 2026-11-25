@@ -30,7 +30,7 @@ export function EditorSection({
     <Card data-focus={focusId}>
       <CardContent className="p-5">
         <div className="mb-5 flex flex-wrap items-center gap-3">
-          <h3 className="font-display text-lg font-medium">{title}</h3>
+          <h2 className="font-display text-lg font-medium">{title}</h2>
           {!hideActions ? (
             <div className="ml-auto flex gap-2">
               {onAdd ? (

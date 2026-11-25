@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { closedTip, InfoTipView, tipReducer, type TipEvent, type TipState } from './info-tip'
+import { clampTipCenterX, closedTip, InfoTipView, tipReducer, type TipEvent, type TipState } from './info-tip'
 
 // The repo has no DOM test environment (no jsdom or happy-dom), so the interaction runs the events a browser fires,
 // in its order, through the same reducer InfoTip uses, and renders the result after each step.
@@ -54,5 +54,17 @@ describe('InfoTip', () => {
     const html = shown(closedTip)
     expect(visible(html)).toBe(false)
     expect(html).toContain('title="28% of ESCO skill groups shared × 0.3"')
+  })
+
+  it('animates the inner tooltip bubble separately from the horizontal centering wrapper', () => {
+    const html = shown(interact('hoverIn'))
+    expect(html).toContain('-translate-x-1/2')
+    expect(html).toMatch(/role="tooltip"[^>]*class="[^"]*motion-popover/)
+  })
+
+  it('clamps portaled tooltip center coordinates inside the viewport edges', () => {
+    expect(clampTipCenterX(10, 400, 112, 12)).toBe(124)
+    expect(clampTipCenterX(390, 400, 112, 12)).toBe(276)
+    expect(clampTipCenterX(200, 400, 112, 12)).toBe(200)
   })
 })

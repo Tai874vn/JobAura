@@ -2,11 +2,10 @@
 
 import { useMutation } from '@tanstack/react-query'
 import { X } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
-import { DialogPortal } from '@/features/hiring-pipeline/dialog-portal'
+import { useId, useState } from 'react'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { Button, Input } from '@/shared/ui'
+import { Button, DialogPortal, Input, useDialogFocus } from '@/shared/ui'
 import { walletApi } from './api'
 import { parseTopUpAmount, topUpErrors, vndText } from './top-up-validation'
 
@@ -29,13 +28,7 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
     onSuccess: ({ payUrl }) => window.location.assign(payUrl),
   })
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !start.isPending) onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose, start.isPending])
+  const dialogRef = useDialogFocus(onClose, !start.isPending)
 
   const submit = () => {
     setTouched(true)
@@ -53,6 +46,7 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
         }}
       >
         <form
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
@@ -76,7 +70,6 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
               className="mt-1 font-normal"
               inputMode="numeric"
               autoComplete="off"
-              autoFocus
               value={text}
               onChange={(event) => { setText(event.target.value); setTouched(true) }}
               aria-invalid={touched && Boolean(problem)}
@@ -101,7 +94,7 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
           {start.isError ? <p role="alert" className="mt-3 break-words text-sm text-danger">{getErrorMessage(start.error)}</p> : null}
 
           <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button type="button" variant="secondary" onClick={onClose} disabled={start.isPending}>Cancel</Button>
+            <Button data-dialog-cancel type="button" variant="secondary" onClick={onClose} disabled={start.isPending}>Cancel</Button>
             <Button type="submit" loading={start.isPending} disabled={touched && Boolean(problem)}>Continue</Button>
           </div>
         </form>

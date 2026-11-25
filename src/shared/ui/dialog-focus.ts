@@ -41,3 +41,12 @@ export function initialFocusIndex(candidates: FocusCandidate[]): number {
   if (field >= 0) return field
   return candidates.findIndex((c) => c.cancel === true)
 }
+
+/**
+ * Checks whether `dialog` is the topmost open dialog in `stack`.
+ * When one dialog opens over another (for example a delete confirmation over a discussion modal),
+ * only the topmost dialog handles Escape and Tab.
+ */
+export function isTopmostDialog<T>(stack: readonly T[], dialog: T): boolean {
+  return stack.length > 0 && stack[stack.length - 1] === dialog
+}

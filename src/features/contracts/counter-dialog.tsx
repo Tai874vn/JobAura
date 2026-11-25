@@ -2,9 +2,8 @@
 
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
-import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import type { ProposalVersionView, VersionBody } from '@/shared/schemas'
-import { Button } from '@/shared/ui'
+import { Button, DialogPortal, useDialogFocus } from '@/shared/ui'
 import { ProposalEditor } from './proposal-editor'
 import { fromVersion } from './proposal-editor-model'
 

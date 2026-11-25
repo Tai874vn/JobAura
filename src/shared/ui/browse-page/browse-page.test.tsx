@@ -38,7 +38,7 @@ describe('BrowsePage', () => {
 
   it('hides the filter column on phones until it is opened', () => {
     expect(page()).toMatch(/<aside class="lg:block hidden" aria-label="Filters">/)
-    expect(page({ filtersOpen: true })).toMatch(/<aside class="lg:block motion-popover block" aria-label="Filters">/)
+    expect(page({ filtersOpen: true })).toMatch(/<aside class="lg:block max-lg:motion-popover block" aria-label="Filters">/)
   })
 
   it('shows filter counts, the ticked choice, a disabled Reset and the number of filters on', () => {

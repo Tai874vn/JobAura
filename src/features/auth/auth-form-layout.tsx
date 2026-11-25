@@ -37,7 +37,7 @@ export function AuthCard({ title, children }: { title: string; children: React.R
       <div className="flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md rounded-2xl shadow-float">
           <CardContent className="p-8">
-            <Link href="/" className="block text-center font-display text-xl font-medium text-primary">JobAura</Link>
+            <Link href="/welcome" className="block text-center font-display text-xl font-medium text-primary">JobAura</Link>
             <h1 className="mt-6 text-center font-display text-2xl font-medium">{title}</h1>
             <div className="mt-6">{children}</div>
           </CardContent>

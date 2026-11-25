@@ -367,7 +367,7 @@ export function JobListView() {
           ) : jobs.length ? (
             <ul
               className={cn(
-                'mt-4 grid gap-4 transition-opacity duration-200',
+                'results-in mt-4 grid gap-4 transition-opacity duration-200',
                 query.isPlaceholderData && 'opacity-60',
               )}
               aria-busy={query.isPlaceholderData}

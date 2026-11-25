@@ -2,8 +2,7 @@
 
 import { X } from 'lucide-react'
 import { useId, useState, type ReactNode } from 'react'
-import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
-import { Button, Textarea } from '@/shared/ui'
+import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
 
 type Props = {
   open: boolean

@@ -182,6 +182,7 @@ export function ApplicantPanel({
           All applicants
         </Link>
 
+        <div className="lg:results-in">
         <div className="flex flex-wrap items-center gap-3">
           {applicant ? (
             <Link href={`/profile/${applicant.id}`} aria-label={`View ${name}'s profile`} className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright focus-visible:ring-offset-2">
@@ -288,6 +289,7 @@ export function ApplicantPanel({
         <h3 className="mt-6 font-display text-base font-medium">Timeline</h3>
         <div className="mt-2">
           <ApplicationTimeline events={application.events} />
+        </div>
         </div>
       </div>
 

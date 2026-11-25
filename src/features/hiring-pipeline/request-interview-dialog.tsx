@@ -1,10 +1,9 @@
 'use client'
 
 import { Plus, X } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
-import { Button, Input, Select, Textarea } from '@/shared/ui'
+import { useId, useState } from 'react'
+import { Button, DialogPortal, Input, Select, Textarea, useDialogFocus } from '@/shared/ui'
 import type { InterviewRequest } from './api'
-import { DialogPortal } from './dialog-portal'
 import { durationOptions, validateInterviewRequest, type InterviewDraft } from './request-interview-validation'
 
 type Props = {
@@ -40,13 +39,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
     setDraft((current) => ({ ...current, [key]: value }))
   }
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !pending) onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose, pending])
+  const dialogRef = useDialogFocus(onClose, !pending)
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
@@ -64,6 +57,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
       }}
     >
       <form
+        ref={dialogRef}
         onSubmit={submit}
         noValidate
         role="dialog"
@@ -148,7 +142,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
         {error ?? serverError ? <p role="alert" className="mt-4 break-words text-sm text-danger">{error ?? serverError}</p> : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button>
+          <Button data-dialog-cancel type="button" variant="secondary" onClick={onClose} disabled={pending}>Cancel</Button>
           <Button type="submit" loading={pending}>{timesOnly ? 'Send times' : 'Send request'}</Button>
         </div>
       </form>

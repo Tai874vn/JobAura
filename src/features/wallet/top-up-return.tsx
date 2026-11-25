@@ -52,10 +52,10 @@ export function TopUpReturn() {
         ) : check.isError ? (
           <p role="alert" className="text-sm text-danger">{getErrorMessage(check.error)}</p>
         ) : outcome ? (
-          <>
+          <div className="results-in">
             <p className="text-base font-medium text-foreground">{outcome.title}</p>
             {outcome.detail ? <p className="mt-1 text-sm text-muted">{outcome.detail}</p> : null}
-          </>
+          </div>
         ) : (
           <div className="space-y-2" aria-busy="true">
             <Skeleton className="h-6 w-64 max-w-full" />

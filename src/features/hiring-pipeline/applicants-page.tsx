@@ -188,7 +188,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
                   aria-selected={active}
                   onClick={() => go({ status: key === 'all' ? null : key, page: null, application: null })}
                   className={cn(
-                    'interaction -mb-px inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright',
+                    '-mb-px inline-flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-bright',
                     active ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-foreground',
                   )}
                 >
@@ -227,7 +227,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
             </div>
           </div>
 
-          <div className={cn('min-h-0 min-w-0', phoneView ? 'fixed inset-x-0 bottom-0 top-16 z-30 overflow-hidden bg-background lg:static lg:z-auto lg:bg-transparent' : 'hidden lg:block')}>
+          <div className={cn('min-h-0 min-w-0', phoneView ? 'max-lg:motion-drawer fixed inset-x-0 bottom-0 top-16 z-30 overflow-hidden bg-background lg:static lg:z-auto lg:bg-transparent' : 'hidden lg:block')}>
             {selected ? (
               <ApplicantPanel
                 key={selected.id}

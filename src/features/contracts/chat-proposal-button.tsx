@@ -37,7 +37,7 @@ export function ChatProposalButton({ otherUserId, viewerId, onSent }: { otherUse
         <FilePlus2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" /> Send a proposal
       </Button>
       {pickerOpen ? (
-        <ul className="mt-2 max-h-40 divide-y divide-border overflow-y-auto rounded-md border border-border" aria-label="Pick a service">
+        <ul className="menu-drop mt-2 max-h-40 divide-y divide-border overflow-y-auto rounded-md border border-border" aria-label="Pick a service">
           {services.map((service) => (
             <li key={service.id}>
               <button

@@ -2,9 +2,8 @@
 
 import { Star, X } from 'lucide-react'
 import { useId, useState } from 'react'
-import { DialogPortal, useDialogFocus } from '@/features/hiring-pipeline/dialog-portal'
 import { cn } from '@/shared/lib/utils'
-import { Button, Textarea } from '@/shared/ui'
+import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
 
 /** The client's review of a finished contract: 1 to 5 stars and a text (1 to 2000 characters). One per contract. */
 export function ReviewDialog({

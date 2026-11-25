@@ -112,7 +112,7 @@ export function ResumeCareerFields({
   return (
     <div data-focus="career" className="grid gap-3 rounded-lg border border-border p-3 sm:p-4">
       <div>
-        <h4 className="font-display text-base font-medium">Occupation and specialty</h4>
+        <h3 className="font-display text-base font-medium">Occupation and specialty</h3>
         <p className="mt-1 text-xs leading-5 text-muted">
           Required. The AI seniority preview judges your experience and skills in this occupation.
         </p>
@@ -128,7 +128,7 @@ export function ResumeCareerFields({
       <div data-focus="jobs" className="grid gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h4 className="font-display text-base font-medium">Jobs</h4>
+            <h3 className="font-display text-base font-medium">Jobs</h3>
             <p className="text-xs leading-5 text-muted">Add each job with its dates and occupation, so time in your occupation can be counted.</p>
           </div>
           <Button type="button" size="sm" variant="secondary" onClick={() => setJobs([...jobs, { ...emptyResumeJob, occupation }])}>

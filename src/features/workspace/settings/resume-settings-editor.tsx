@@ -19,7 +19,7 @@ import { ResumeSettingsSection } from '../resume-settings-section'
 import { SettingsPanelSkeleton } from './settings-loading'
 import { settingsResumeOptions } from './settings-resume-query'
 
-export function ResumeSettingsEditor({ active }: { active: boolean }) {
+export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: boolean; onBlockedNavigation?: () => void }) {
   const client = useQueryClient()
   const { user } = useSession()
   const myResumeKey = queryKeys.myResume(user?.id)
@@ -104,6 +104,8 @@ export function ResumeSettingsEditor({ active }: { active: boolean }) {
       {extracting ? <p role="status" className="text-sm font-medium text-primary">Extracting your resume…</p> : null}
       <fieldset disabled={save.isPending || predict.isPending || extracting} className="min-w-0">
         <ResumeSettingsSection resume={resume} draft={currentDraft} attachedFile={attachedFile} isLoading={false}
+          active={active}
+          onBlockedNavigation={onBlockedNavigation}
           isImporting={save.isPending} isPredicting={predict.isPending} onFieldChange={updateField}
           onClearAttachedFile={() => setAttachedFile(null)} onImport={() => save.mutate({ data: currentDraft, file: attachedFile })}
           onPredictSeniority={() => predict.mutate()} onResumeFile={loadFile} foundSkills={suggestedSkills(resume)}

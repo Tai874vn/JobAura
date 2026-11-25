@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Bookmark, Heart, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from 'lucide-react'
-import { memo, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import type { FeedPost, PostComment } from '@/shared/schemas'
 import { cn, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
@@ -33,13 +33,30 @@ export const FeedPostCard = memo(function FeedPostCard({
   onSave: (post: FeedPost) => void
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
   const image = resolveAssetUrl(post.imageUrl)
+
+  useEffect(() => {
+    if (!menuOpen) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [menuOpen])
 
   // The first two posts can be the largest image on screen (LCP), so they load right away.
   const isFirstVisible = index < 2
 
   return (
-    <Card className="overflow-hidden">
+    <Card>
       <article>
         <header className="flex items-start gap-3 p-4">
           <FeedAvatar user={post.author} />
@@ -52,16 +69,28 @@ export const FeedPostCard = memo(function FeedPostCard({
             </p>
           </div>
           {post.author.id === currentUserId ? (
-            <div className="relative">
-              <Button type="button" variant="ghost" size="icon" onClick={() => setMenuOpen((value) => !value)} title="Post options">
+            <div ref={menuRef} className="relative">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+                onClick={() => setMenuOpen((value) => !value)}
+                title="Post options"
+              >
                 <MoreHorizontal className="h-5 w-5" />
               </Button>
               {menuOpen ? (
-                <div className="motion-popover absolute right-0 top-10 z-10 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
+                <div role="menu" className="menu-drop absolute right-0 top-10 z-20 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
                   <button
                     type="button"
+                    role="menuitem"
                     className="flex w-full items-center gap-2 rounded px-3 py-2 text-sm font-medium text-danger hover:bg-danger/5"
-                    onClick={() => onDelete(post.id)}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      onDelete(post.id)
+                    }}
                   >
                     <Trash2 className="h-4 w-4" /> Delete post
                   </button>
@@ -73,7 +102,7 @@ export const FeedPostCard = memo(function FeedPostCard({
 
         {post.content ? <p className="whitespace-pre-wrap px-4 pb-4 text-sm leading-6">{post.content}</p> : null}
         {image ? (
-          <div className="border-y border-border bg-surface-muted">
+          <div className="overflow-hidden border-y border-border bg-surface-muted">
             <Image
               src={image}
               alt={`Post by ${post.author.name}`}

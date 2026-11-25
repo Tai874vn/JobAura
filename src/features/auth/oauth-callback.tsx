@@ -98,10 +98,10 @@ function OAuthShell({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <main className="flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md rounded-2xl shadow-float">
         <CardContent className="p-8">
-          <Link href="/" className="mb-8 inline-block font-display text-xl font-medium text-primary">
+          <Link href="/welcome" className="mb-8 inline-block font-display text-xl font-medium text-primary">
             JobAura
           </Link>
           <h1 className="font-display text-2xl font-medium">{title}</h1>
@@ -109,6 +109,6 @@ function OAuthShell({
           {children}
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

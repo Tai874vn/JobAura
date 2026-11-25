@@ -112,7 +112,7 @@ export function SpecialtyPicker({
               if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, options.length - 1))) }
               else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
               else if (event.key === 'Enter' && open && options[active]) { event.preventDefault(); choose(options[active]) }
-              else if (event.key === 'Escape') reset()
+              else if (event.key === 'Escape') { if (open || typing) event.preventDefault(); reset() }
             }}
           />
           {value ? (
@@ -122,7 +122,7 @@ export function SpecialtyPicker({
             </button>
           ) : null}
           {listShown ? (
-            <ul id={listId} role="listbox" aria-label="Specialties" className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
+            <ul id={listId} role="listbox" aria-label="Specialties" className="menu-drop absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
               {/* Status rows are not options. The live region inside announces the status and the result count. */}
               <li role="presentation"
                 className={cn('px-3 py-2 text-sm', options.length ? 'sr-only' : detail.isError ? 'text-danger' : 'text-muted')}>

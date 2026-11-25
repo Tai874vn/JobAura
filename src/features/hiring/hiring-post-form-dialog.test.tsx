@@ -1,9 +1,16 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { occupationKeys, type Occupation } from '@/features/occupations/api'
 import type { HiringPost } from '@/shared/schemas'
 import { HiringPostFormDialog } from './hiring-post-form-dialog'
+
+// DialogPortal renders into document.body in the browser and returns null during SSR; inline children for static markup tests.
+vi.mock('@/shared/ui/dialog-portal', () => ({
+  DialogPortal: ({ children }: { children: ReactNode }) => children,
+  useDialogFocus: () => () => undefined,
+}))
 
 const webDeveloper: Occupation = {
   code: '2513.5', isco: '2513', title: 'web developer', related: [],

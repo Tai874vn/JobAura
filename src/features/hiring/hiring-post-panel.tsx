@@ -18,22 +18,23 @@ import {
 } from "./hiring-post-card";
 
 /** The role's text: description, required skills, and other requirements. Shared by the panel and the post page. */
-export function HiringPostBody({ post }: { post: HiringPost }) {
+export function HiringPostBody({ post, headingAs = "h3" }: { post: HiringPost; headingAs?: "h2" | "h3" }) {
+  const Heading = headingAs;
   return (
     <>
       <section className="mt-6" aria-labelledby={`about-${post.id}`}>
-        <h3 id={`about-${post.id}`} className="font-display text-lg font-medium">About the role</h3>
+        <Heading id={`about-${post.id}`} className="font-display text-lg font-medium">About the role</Heading>
         <p className="mt-2 whitespace-pre-line text-sm leading-7">{post.description}</p>
       </section>
       {post.skills.length ? (
         <section className="mt-6" aria-labelledby={`skills-${post.id}`}>
-          <h3 id={`skills-${post.id}`} className="font-display text-lg font-medium">Required skills</h3>
+          <Heading id={`skills-${post.id}`} className="font-display text-lg font-medium">Required skills</Heading>
           <HiringPostSkills skills={post.skills} />
         </section>
       ) : null}
       {post.requirements ? (
         <section className="mt-6" aria-labelledby={`requirements-${post.id}`}>
-          <h3 id={`requirements-${post.id}`} className="font-display text-lg font-medium">Other requirements</h3>
+          <Heading id={`requirements-${post.id}`} className="font-display text-lg font-medium">Other requirements</Heading>
           <p className="mt-2 whitespace-pre-line text-sm leading-7">{post.requirements}</p>
         </section>
       ) : null}

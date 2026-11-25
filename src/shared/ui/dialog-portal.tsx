@@ -2,14 +2,19 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { FOCUSABLE_SELECTOR, initialFocusIndex, nextFocusIndex } from './dialog-focus'
+import { FOCUSABLE_SELECTOR, initialFocusIndex, isTopmostDialog, nextFocusIndex } from './dialog-focus'
 
 const subscribe = () => () => undefined
 
+// Stack of currently mounted modal dialog boxes so stacked dialogs (for example a confirmation
+// dialog opened over a discussion modal) only let the topmost dialog handle Escape and Tab.
+const openDialogs: HTMLElement[] = []
+
 /**
- * Draws a dialog at the end of `document.body` (a "portal"), so it is not trapped inside the phone detail view's
- * layer and always sits above the sticky header and the Chat button. The server draws nothing; the browser
- * draws the dialog once the page is ready.
+ * Draws a dialog at the end of `document.body` (a "portal"), so ancestor transforms, animations,
+ * or `overflow-hidden` containers never trap `position: fixed` overlays, and the dialog always
+ * sits above sticky headers and floating controls. The server draws nothing; the browser draws
+ * the dialog once the page is ready.
  */
 export function DialogPortal({ children }: { children: ReactNode }) {
   const inBrowser = useSyncExternalStore(subscribe, () => true, () => false)
@@ -25,7 +30,7 @@ function reachable(box: HTMLElement): HTMLElement[] {
  * Keyboard care for a modal dialog. Put the returned ref on the `role="dialog"` box.
  * - On open, focus moves to the first form field, else the Cancel button (`data-dialog-cancel`), else the box.
  * - Tab and Shift+Tab stay inside the box (a "focus trap").
- * - Escape calls `onClose`, unless `canClose` is false (a step is still being sent).
+ * - Escape calls `onClose`, unless `canClose` is false (a step is still being sent) or an inner widget already handled it.
  * - On close, focus goes back to the element that opened the dialog.
  *
  * The ref is a "callback ref" (React calls it with the element once it is on the page), so it also works
@@ -41,6 +46,7 @@ export function useDialogFocus<T extends HTMLElement = HTMLElement>(onClose: () 
 
   useEffect(() => {
     if (!box) return
+    openDialogs.push(box)
     const opener = document.activeElement instanceof HTMLElement && !box.contains(document.activeElement) ? document.activeElement : null
 
     const items = reachable(box)
@@ -54,7 +60,9 @@ export function useDialogFocus<T extends HTMLElement = HTMLElement>(onClose: () 
     }
 
     const onKey = (event: KeyboardEvent) => {
+      if (!isTopmostDialog(openDialogs, box)) return
       if (event.key === 'Escape') {
+        if (event.defaultPrevented) return
         if (latest.current.canClose) {
           event.preventDefault()
           latest.current.onClose()
@@ -70,6 +78,8 @@ export function useDialogFocus<T extends HTMLElement = HTMLElement>(onClose: () 
     }
     document.addEventListener('keydown', onKey)
     return () => {
+      const idx = openDialogs.lastIndexOf(box)
+      if (idx >= 0) openDialogs.splice(idx, 1)
       document.removeEventListener('keydown', onKey)
       if (opener?.isConnected) opener.focus()
     }

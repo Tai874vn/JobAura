@@ -1,9 +1,8 @@
 'use client'
 
 import { X } from 'lucide-react'
-import { useEffect, useId, useState } from 'react'
-import { Button, Textarea } from '@/shared/ui'
-import { DialogPortal } from './dialog-portal'
+import { useId, useState } from 'react'
+import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
 
 type Props = {
   open: boolean
@@ -45,13 +44,7 @@ function ConfirmActionBody({
   const titleId = useId()
   const [note, setNote] = useState('')
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !pending) onCancel()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onCancel, pending])
+  const dialogRef = useDialogFocus(onCancel, !pending)
 
   return (
     <DialogPortal>
@@ -61,7 +54,7 @@ function ConfirmActionBody({
         if (event.target === event.currentTarget && !pending) onCancel()
       }}
     >
-      <section role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+      <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
         <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onCancel} disabled={pending} aria-label="Close">
           <X className="h-5 w-5" />
         </Button>
@@ -75,7 +68,7 @@ function ConfirmActionBody({
         ) : null}
         {error ? <p role="alert" className="mt-4 break-words text-sm text-danger">{error}</p> : null}
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={pending}>Cancel</Button>
+          <Button data-dialog-cancel type="button" variant="secondary" onClick={onCancel} disabled={pending}>Cancel</Button>
           <Button type="button" variant={tone === 'danger' ? 'danger' : 'primary'} loading={pending} onClick={() => onConfirm(note.trim() || undefined)}>
             {confirmLabel}
           </Button>

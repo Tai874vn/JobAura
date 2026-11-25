@@ -132,6 +132,7 @@ export function MyApplicationPanel({ application, backHref }: { application: App
           All applications
         </Link>
 
+        <div className="lg:results-in">
         <div className="flex flex-wrap items-center gap-3">
           <Avatar name={company} src={recruiter?.avatar} size="lg" />
           <div className="min-w-0 flex-1 basis-40">
@@ -201,6 +202,7 @@ export function MyApplicationPanel({ application, backHref }: { application: App
         <h3 className="mt-6 font-display text-base font-medium">Timeline</h3>
         <div className="mt-2">
           <ApplicationTimeline events={application.events} />
+        </div>
         </div>
       </div>
 

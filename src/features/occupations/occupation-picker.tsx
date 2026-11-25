@@ -135,7 +135,7 @@ export function OccupationPicker({
             if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, hits.length - 1))) }
             else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }
             else if (event.key === 'Enter' && open && hits[active]) { event.preventDefault(); choose(hits[active]) }
-            else if (event.key === 'Escape') reset()
+            else if (event.key === 'Escape') { if (open || typing) event.preventDefault(); reset() }
           }}
         />
         {value && onClear ? (
@@ -176,7 +176,7 @@ export function OccupationResults({
     : !hits.length ? 'No matching occupation. Try another job title.'
     : `${hits.length} ${hits.length === 1 ? 'occupation' : 'occupations'} found`
   return (
-    <ul id={listId} role="listbox" aria-label="Occupations" className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
+    <ul id={listId} role="listbox" aria-label="Occupations" className="menu-drop absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-lg border border-border bg-surface py-1 shadow-lg">
       {/* Status rows are not options. The live region inside announces the status and the result count. */}
       <li role="presentation" className={cn('px-3 py-2 text-sm', hits.length ? 'sr-only' : failed ? 'text-danger' : 'text-muted')}>
         {hits.length ? null : <span aria-hidden="true">{status}</span>}

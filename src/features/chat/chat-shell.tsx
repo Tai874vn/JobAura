@@ -289,7 +289,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
     <>
       {!isOpen ? (
         <Button
-          className="fixed bottom-5 right-5 z-40 h-12 rounded-full shadow-float"
+          className="motion-popover fixed bottom-5 right-5 z-40 h-12 rounded-full shadow-float"
           onClick={openChat}
         >
           <MessageCircle className="h-4 w-4" />
@@ -355,7 +355,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
               )}
             </div>
           </aside>
-          <main className={cn('min-h-0 min-w-0 flex-col sm:flex', activeRoomId ? 'flex' : 'hidden')}>
+          <div className={cn('min-h-0 min-w-0 flex-col sm:flex', activeRoomId ? 'flex' : 'hidden')}>
             <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
               {activeRoomId ? (
                 <span className="flex min-w-0 items-center gap-2.5">
@@ -489,7 +489,7 @@ export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest
                 <Send className="h-4 w-4" />
               </Button>
             </form>
-          </main>
+          </div>
         </section>
       ) : null}
     </>
