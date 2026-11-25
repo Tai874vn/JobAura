@@ -82,9 +82,13 @@ export function JobResultCard({
           )}
 
           <div className="min-w-0 flex-1">
+            {/* Every card has the same height on wide screens (title 1 line, chip row and summary always
+                take their space), so new results replace old ones in place instead of pushing the list
+                around (layout shift, CLS 0.19–0.50 measured by the bot when filtering). */}
             <h2
               id={`job-${job.id}-title`}
-              className="break-words text-xl font-semibold leading-tight tracking-[-0.01em] text-foreground sm:text-2xl"
+              title={job.title}
+              className="line-clamp-2 break-words text-xl font-semibold leading-tight tracking-[-0.01em] text-foreground sm:line-clamp-1 sm:text-2xl"
             >
               <Link
                 href={href}
@@ -106,7 +110,7 @@ export function JobResultCard({
             )}
 
             {fieldName || specialtyName ? (
-              <p className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold">
+              <p className="mt-2 flex flex-wrap gap-1.5 text-xs font-semibold sm:h-[26px] sm:flex-nowrap sm:overflow-hidden">
                 {fieldName ? (
                   <span className="rounded-md bg-[#123f32] px-2 py-1 text-white">{fieldName}</span>
                 ) : null}
@@ -123,7 +127,9 @@ export function JobResultCard({
                   </span>
                 ) : null}
               </p>
-            ) : null}
+            ) : (
+              <span aria-hidden="true" className="mt-2 hidden h-[26px] sm:block" />
+            )}
           </div>
         </div>
 
@@ -144,8 +150,10 @@ export function JobResultCard({
       </div>
 
       {summary ? (
-        <p className="line-clamp-2 break-words text-sm leading-6 text-muted">{summary}</p>
-      ) : null}
+        <p className="line-clamp-2 break-words text-sm leading-6 text-muted sm:h-12">{summary}</p>
+      ) : (
+        <span aria-hidden="true" className="hidden h-12 sm:block" />
+      )}
 
       <div className="flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center">
         <p className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
