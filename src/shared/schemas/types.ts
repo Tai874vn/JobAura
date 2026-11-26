@@ -84,6 +84,8 @@ export type RecommendationQuota = {
   resetAt: string;
 };
 export type CandidateDirectoryParams = PaginationParams & {
+  /** Which fields the keyword is searched in, comma-separated (all when left out). */
+  searchIn?: string;
   skill?: string;
   location?: string;
   hasPortfolio?: boolean;
@@ -96,6 +98,8 @@ export type CandidateDirectoryParams = PaginationParams & {
   minYears?: number;
 };
 export type JobSearchParams = PaginationParams & {
+  /** Which fields the keyword is searched in, comma-separated (all when left out). */
+  searchIn?: string;
   categoryId?: number;
   subcategoryId?: number;
   minPrice?: number;

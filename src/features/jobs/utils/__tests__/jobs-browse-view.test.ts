@@ -14,6 +14,7 @@ import {
   portfolioPriceLabel,
   readJobListFilters,
   toJobSearchParams,
+  jobSearchIn,
 } from '../jobs-browse-view'
 import { queryKeys } from '@/shared/api/query-keys'
 
@@ -174,6 +175,7 @@ describe('readJobListFilters, buildJobsHref and toJobSearchParams', () => {
       page: 2,
       pageSize: 12,
       keyword: 'Design',
+      searchIn: jobSearchIn.join(','),
       categoryId: 4,
       minPrice: 500,
       maxPrice: 2000,

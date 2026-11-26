@@ -10,6 +10,20 @@ import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-pric
  */
 
 export const jobsPageSize = 12
+
+// @find jobs search search-in logic [all] — the fields the keyword box searches: delete a line to stop searching it
+/**
+ * The fields the keyword box searches, sent as ?searchIn=... Delete a line to stop searching that field.
+ * The backend accepts only: title, shortDescription, description, sellerName, subcategory, category.
+ */
+export const jobSearchIn = [
+  'title',
+  'shortDescription',
+  'description',
+  'sellerName',
+  'subcategory',
+  'category',
+] as const
 /** The longest search text read from the URL; longer text is cut, so a huge ?keyword= cannot reach the backend. */
 export const maxJobKeywordLength = 100
 /** The server fetches the first paint only for the plain list, up to this page (see canPrefetchJobs). */
@@ -166,7 +180,7 @@ export function toJobSearchParams(filters: JobListFilters, page: number, pageSiz
   return {
     page,
     pageSize,
-    ...(keyword ? { keyword } : {}),
+    ...(keyword ? { keyword, searchIn: jobSearchIn.join(',') } : {}),
     ...(filters.categoryId !== undefined ? { categoryId: filters.categoryId } : {}),
     ...(filters.subcategoryId !== undefined ? { subcategoryId: filters.subcategoryId } : {}),
     ...(filters.minPrice !== undefined ? { minPrice: filters.minPrice } : {}),

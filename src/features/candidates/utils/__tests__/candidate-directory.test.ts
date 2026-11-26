@@ -15,6 +15,7 @@ import {
   readCandidateFilters,
   resolveOutOfRangePage,
   toCandidateSearchParams,
+  candidateSearchIn,
 } from '../candidate-directory'
 import type { CandidateProfile } from '@/shared/schemas'
 
@@ -297,6 +298,7 @@ describe('readCandidateFilters, buildCandidatesHref and toCandidateSearchParams'
       page: 2,
       pageSize: 12,
       keyword: 'Lina',
+      searchIn: candidateSearchIn.join(','),
       location: 'Remote',
       skill: 'Python',
       occupation: '2513.5',

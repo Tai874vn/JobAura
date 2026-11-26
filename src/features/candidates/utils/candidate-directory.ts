@@ -10,6 +10,13 @@ import type { CandidateDirectoryParams, CandidateProfile } from '@/shared/schema
 
 export const candidatesPageSize = 12
 
+// @find candidates search search-in logic [recruiter] — the fields the keyword box searches: delete a line to stop searching it
+/**
+ * The fields the keyword box searches, sent as ?searchIn=... Delete a line to stop searching that field.
+ * The backend accepts only: name, headline, bio, location, skills, portfolio.
+ */
+export const candidateSearchIn = ['name', 'headline', 'bio', 'location', 'skills', 'portfolio'] as const
+
 /** AI seniority levels accepted by GET /api/users/candidates. */
 export const candidateLevels = ['Junior', 'Mid', 'Senior'] as const
 export type CandidateLevel = (typeof candidateLevels)[number]
@@ -232,7 +239,7 @@ export function toCandidateSearchParams(
   return {
     page,
     pageSize,
-    ...(keyword ? { keyword } : {}),
+    ...(keyword ? { keyword, searchIn: candidateSearchIn.join(',') } : {}),
     ...(location ? { location } : {}),
     ...(skill ? { skill } : {}),
     ...occupationParams(occupation, filters.includeRelated),
