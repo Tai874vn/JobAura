@@ -1,5 +1,6 @@
 'use client'
 
+import { candidatesConfig as config } from '@/page-config/candidates'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { replaceUrlInPlace } from '@/shared/lib/replace-url'
 import { ListOrdered, MapPin, Search, SearchX, Users, X } from 'lucide-react'
@@ -41,7 +42,8 @@ import {
 } from '../utils/candidate-directory'
 import { CandidateResultCard } from './candidate-result-card'
 
-const EXPLORE_SKILLS_LIMIT = 6
+// Set in src/page-config/candidates.ts (popularSkillsLimit).
+const EXPLORE_SKILLS_LIMIT = config.popularSkillsLimit
 
 /**
  * Discoverable candidates (/candidates, employers and admins) on the shared BrowsePage shell:
@@ -230,22 +232,26 @@ export function CandidateDirectoryPage() {
             <input
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
-              placeholder="Name, role, skill, or project"
+              placeholder={config.search.placeholder}
               aria-label="Keyword"
               className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none"
             />
           </label>
+          {config.search.showLocationBox ? (
+          <>
           <span className="hidden h-7 w-px bg-border md:block" aria-hidden="true" />
           <label className="hidden min-w-0 flex-[2] items-center gap-2 px-2 md:flex">
             <MapPin className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
             <input
               value={location}
               onChange={(event) => setLocation(event.target.value)}
-              placeholder="Location (e.g. Ho Chi Minh, Remote)"
+              placeholder={config.search.locationPlaceholder}
               aria-label="Location"
               className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none"
             />
           </label>
+          </>
+          ) : null}
           <button
             type="submit"
             className="interaction inline-flex h-[42px] shrink-0 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-32"
@@ -275,7 +281,9 @@ export function CandidateDirectoryPage() {
       filtersOpen={showFilters}
       filters={
         <FilterPanel intro="Narrow down candidates by occupation, level, and skills." onReset={reset} canReset={searching}>
-          <FilterGroup title="Occupation">
+          {config.filters.occupation.show ? (
+          <>
+          <FilterGroup title={config.filters.occupation.title}>
             <OccupationPicker
               compact
               hideLabel
@@ -308,15 +316,19 @@ export function CandidateDirectoryPage() {
               />
             </div>
           </FilterGroup>
+          </>
+          ) : null}
 
           {/* The backend matches one AI seniority level at a time and does not return facet counts. */}
-          <FilterGroup title="AI level">
+          {config.filters.level.show ? (
+          <>
+          <FilterGroup title={config.filters.level.title}>
             <FilterChoice
               label="All levels"
               checked={!applied.level}
               onChange={() => go({ level: '' })}
             />
-            {candidateLevels.map((level) => (
+            {config.filters.level.values.map((level) => (
               <FilterChoice
                 key={level}
                 label={level}
@@ -325,7 +337,11 @@ export function CandidateDirectoryPage() {
               />
             ))}
           </FilterGroup>
+          </>
+          ) : null}
 
+          {config.filters.minYears.show ? (
+          <>
           <FilterGroup title={minYearsLabel(applied.occupation ? occupationTitle : null)}>
             <FilterChoice
               label="Any experience"
@@ -369,9 +385,13 @@ export function CandidateDirectoryPage() {
               />
             </label>
           </FilterGroup>
+          </>
+          ) : null}
 
           <div className={cn(!applied.hasPortfolio && !applied.hasCertification && '[&>fieldset]:md:pb-0')}>
-            <FilterGroup title="Skill">
+            {config.filters.skill.show ? (
+            <>
+            <FilterGroup title={config.filters.skill.title}>
               <div className="relative">
                 <input
                   value={skillDraft}
@@ -425,11 +445,15 @@ export function CandidateDirectoryPage() {
                 </>
               ) : null}
             </FilterGroup>
+            </>
+            ) : null}
           </div>
 
           {/* Below md the search bar hides Location, so the phone filter popover shows it here instead. */}
           <div className="md:hidden">
-            <FilterGroup title="Location" last={!applied.hasPortfolio && !applied.hasCertification}>
+            {config.filters.location.show ? (
+            <>
+            <FilterGroup title={config.filters.location.title} last={!applied.hasPortfolio && !applied.hasCertification}>
               <div className="relative">
                 <input
                   value={location}
@@ -463,6 +487,8 @@ export function CandidateDirectoryPage() {
                 ) : null}
               </div>
             </FilterGroup>
+            </>
+            ) : null}
           </div>
 
           {applied.hasPortfolio || applied.hasCertification ? (

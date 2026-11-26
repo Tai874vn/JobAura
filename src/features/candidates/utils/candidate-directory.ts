@@ -1,3 +1,4 @@
+import { candidatesConfig } from '@/page-config/candidates'
 import { occupationLabel } from '@/features/occupations/api'
 import { formatCredit, formatYears } from '@/features/users/utils/resume-career'
 import type { CandidateDirectoryParams, CandidateProfile } from '@/shared/schemas'
@@ -8,21 +9,24 @@ import type { CandidateDirectoryParams, CandidateProfile } from '@/shared/schema
  * formatting career, degree and card facts, and deciding which card actions show.
  */
 
-export const candidatesPageSize = 12
+/** Set in src/page-config/candidates.ts */
+export const candidatesPageSize = candidatesConfig.pageSize
 
 // @find candidates search search-in logic [recruiter] — the fields the keyword box searches: delete a line to stop searching it
 /**
  * The fields the keyword box searches, sent as ?searchIn=... Delete a line to stop searching that field.
  * The backend accepts only: name, headline, bio, location, skills, portfolio.
  */
-export const candidateSearchIn = ['name', 'headline', 'bio', 'location', 'skills', 'portfolio'] as const
+/** Set in src/page-config/candidates.ts (search.fields). */
+export const candidateSearchIn = candidatesConfig.search.fields
 
 /** AI seniority levels accepted by GET /api/users/candidates. */
 export const candidateLevels = ['Junior', 'Mid', 'Senior'] as const
 export type CandidateLevel = (typeof candidateLevels)[number]
 
 /** Quick minimum-years choices in the filter sidebar; custom values from 1 to 40 also work. */
-export const candidateMinYearsPresets = [1, 3, 5, 8] as const
+/** Set in src/page-config/candidates.ts (filters.minYears.presets). */
+export const candidateMinYearsPresets = candidatesConfig.filters.minYears.presets
 
 export type CandidateListFilters = {
   keyword: string
