@@ -1,3 +1,3 @@
-import { SettingsLoading } from '@/features/workspace/settings/settings-loading'
+import { SettingsLoading } from '@/features/workspace/components/settings/settings-loading'
 
 export default SettingsLoading

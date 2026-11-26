@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useProfileStrength } from '@/features/users/utils/profile-strength'
 import type { UserProfile } from '@/shared/schemas'
 import { hasResumeSection, SettingsOverview, type SettingSection } from './setting-sections'
-import { settingsResumeOptions } from './settings-resume-query'
+import { settingsResumeOptions } from '../../utils/settings/settings-resume-query'
 
 export function SettingsOverviewPanel({ profile, onSelect }: {
   profile: UserProfile

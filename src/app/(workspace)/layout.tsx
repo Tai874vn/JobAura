@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { PublicShell } from '@/features/layout/public-shell'
-import { WorkspaceRequireAuth } from '@/features/workspace/workspace-require-auth'
+import { WorkspaceRequireAuth } from '@/features/workspace/components/workspace-require-auth'
 
 export const metadata: Metadata = {
   robots: {

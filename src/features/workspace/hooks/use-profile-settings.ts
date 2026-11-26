@@ -12,7 +12,7 @@ import { refreshMyProfilePage } from '@/features/users/utils/refresh-profile-pag
 import { useProfileUpload } from '@/features/users/hooks/use-profile-upload'
 import { getErrorMessage, UserValidationError } from '@/shared/lib/utils'
 import type { ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
-import type { PortfolioDraft } from './settings-form-controls'
+import type { PortfolioDraft } from '../components/settings/settings-form-controls'
 import { allCertificationProblems, certificationDraft, certificationPayload, type CertificationDraft } from '@/features/users/utils/certifications'
 
 export const emptySkill: Omit<ProfileSkill, 'id'> = { name: '', level: '', sortOrder: 0 }

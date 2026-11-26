@@ -16,9 +16,9 @@ import {
   resumeDraftToImportPayload, validateResumeFile, type ResumeDraft, type ResumeFieldKey,
 } from '@/features/users/utils/resume'
 import { resumeCareerProblems } from '@/features/users/utils/resume-career'
-import { ResumeSettingsSection } from '../resume-settings-section'
+import { ResumeSettingsSection } from './resume-settings-section'
 import { SettingsPanelSkeleton } from './settings-loading'
-import { settingsResumeOptions } from './settings-resume-query'
+import { settingsResumeOptions } from '../../utils/settings/settings-resume-query'
 
 export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: boolean; onBlockedNavigation?: () => void }) {
   const client = useQueryClient()

@@ -6,15 +6,15 @@ import { useEffect, useState } from 'react'
 import { useSession } from '@/features/auth/hooks/use-session'
 import { scrollBehavior } from '@/shared/lib/motion'
 import { Button } from '@/shared/ui'
-import { hasResumeSection, isSettingSection, SettingsPlaceholder, type SettingSection } from './settings/setting-sections'
-import { SettingsLoading, SettingsPanelSkeleton } from './settings/settings-loading'
-import { SettingsNavigation } from './settings/settings-navigation'
-import { SettingsOverviewPanel } from './settings/settings-overview-panel'
+import { hasResumeSection, isSettingSection, SettingsPlaceholder, type SettingSection } from './setting-sections'
+import { SettingsLoading, SettingsPanelSkeleton } from './settings-loading'
+import { SettingsNavigation } from './settings-navigation'
+import { SettingsOverviewPanel } from './settings-overview-panel'
 
-const ProfileSettingsEditor = dynamic(() => import('./settings/profile-settings-editor').then((mod) => mod.ProfileSettingsEditor), {
+const ProfileSettingsEditor = dynamic(() => import('./profile-settings-editor').then((mod) => mod.ProfileSettingsEditor), {
   loading: () => <SettingsPanelSkeleton />,
 })
-const ResumeSettingsEditor = dynamic(() => import('./settings/resume-settings-editor').then((mod) => mod.ResumeSettingsEditor), {
+const ResumeSettingsEditor = dynamic(() => import('./resume-settings-editor').then((mod) => mod.ResumeSettingsEditor), {
   loading: () => <SettingsPanelSkeleton />,
 })
 
