@@ -20,7 +20,7 @@ const application = {
 }
 
 describe('CallScreen', () => {
-  it('shows a plain message with Leave and Skip when the call pass request fails', () => {
+  it('shows a plain message with Leave (and no Skip) when the call pass request fails', () => {
     const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } } })
     client.setQueryData(pipelineKeys.detail(2, 9), application)
     client.getQueryCache().build(client, { queryKey: ['call-token', 5, 9] }).setState({ status: 'error', error: new Error('503'), fetchStatus: 'idle' })
@@ -33,7 +33,7 @@ describe('CallScreen', () => {
 
     expect(html).toContain('The call could not start.')
     expect(html).toMatch(/<button[^>]*>Leave<\/button>/)
-    expect(html).toMatch(/<button[^>]*>Skip<\/button>/)
+    expect(html).not.toContain('>Skip<')
   })
 
   it('renders the full 3-part call loading shell while the interview detail is pending', () => {
@@ -64,5 +64,21 @@ describe('CallScreen', () => {
     expect(html).toContain('aria-hidden="true"')
     // Only the <p role="status"> and CallStageSkeleton have role="status" — never a nested Spinner status inside <p>.
     expect(html).not.toMatch(/<p[^>]*role="status"[^>]*>[^<]*<span[^>]*role="status"/)
+  })
+
+  it('closes the call and says the interview has ended once it is marked done', () => {
+    const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } } })
+    const done = { ...application, interviews: [{ ...application.interviews[0], status: 'COMPLETED' }] }
+    client.setQueryData(pipelineKeys.detail(2, 9), done)
+
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <CallScreen interviewId={5} />
+      </QueryClientProvider>,
+    )
+
+    expect(html).toContain('This interview has ended.')
+    expect(html).not.toContain('Getting the call ready')
+    expect(html).toMatch(/<button[^>]*>Leave<\/button>/)
   })
 })

@@ -17,7 +17,7 @@ export function CallStageSkeleton() {
   )
 }
 
-/** Full-screen call shell skeleton mirroring CallScreen's header, 2-tile stage, and Leave/Skip footer. */
+/** Full-screen call shell skeleton mirroring CallScreen's header, 2-tile stage, and Leave footer. */
 export function CallLoading() {
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground" role="status" aria-label="Loading the call" aria-busy="true">
@@ -31,7 +31,6 @@ export function CallLoading() {
       </div>
       <footer className="flex items-center justify-end gap-2 border-t border-border bg-surface px-4 py-3 sm:px-6" aria-hidden="true">
         <Skeleton className="h-10 w-20 rounded-lg" />
-        <Skeleton className="h-10 w-16 rounded-lg" />
       </footer>
     </div>
   )

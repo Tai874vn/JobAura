@@ -1,6 +1,6 @@
 "use client";
 
-import { LogOut, Menu, User } from "lucide-react";
+import { Bookmark, Briefcase, FileSignature, FileText, Home, LogOut, Menu, Search, Settings, User, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +12,17 @@ import { WalletChip } from "@/features/wallet/components/wallet-chip";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, Button } from "@/shared/ui";
 import { isCurrentLink, siteNav } from "../utils/site-nav";
+
+// One icon per account menu link, so every row of the menu looks the same.
+const accountIcons: Record<string, LucideIcon> = {
+  "/": Home,
+  "/contracts": FileSignature,
+  "/my-hiring-posts": Briefcase,
+  "/hiring-posts": Search,
+  "/my-posts": FileText,
+  "/saved": Bookmark,
+  "/settings": Settings,
+};
 
 export function SiteHeader() {
   const router = useRouter();
@@ -109,9 +120,23 @@ export function SiteHeader() {
             {accountMenuOpen ? (
               <div id="account-navigation" className="motion-popover absolute right-0 top-11 w-60 rounded-lg border border-border bg-surface p-2 shadow-float">
                 <MenuLink href={`/profile/${user.id}`} label="Profile" icon={<User className="h-4 w-4" />} onClick={() => setAccountMenuOpen(false)} />
-                {nav.account.map((link) => (
-                  <MenuLink key={link.href} href={link.href} label={link.label} onClick={() => setAccountMenuOpen(false)} />
-                ))}
+                {nav.account.map((link) => {
+                  // A link already in the header bar is left out. A "wide" header link (hidden below 1280px)
+                  // stays in the menu only on those narrower screens.
+                  const inHeader = nav.main.find((main) => main.href === link.href);
+                  if (inHeader && !inHeader.wide) return null;
+                  const Icon = accountIcons[link.href] ?? FileText;
+                  return (
+                    <MenuLink
+                      key={link.href}
+                      href={link.href}
+                      label={link.label}
+                      icon={<Icon className="h-4 w-4" />}
+                      className={inHeader ? "xl:hidden" : undefined}
+                      onClick={() => setAccountMenuOpen(false)}
+                    />
+                  );
+                })}
                 <button
                   className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-danger hover:bg-danger/5"
                   onClick={goToLogout}
@@ -181,15 +206,16 @@ export function SiteHeader() {
   );
 }
 
-function MenuLink({ href, icon, label, onClick }: {
+function MenuLink({ href, icon, label, onClick, className }: {
   href: string;
   icon?: React.ReactNode;
+  className?: string;
   label: string;
   onClick?: () => void;
 }) {
   return (
     <Link
-      className="interaction flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+      className={cn("interaction flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright", className)}
       href={href}
       onClick={onClick}
     >

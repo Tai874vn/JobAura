@@ -24,6 +24,11 @@ function isMissing(error: unknown) {
   return error instanceof AxiosError && (error.response?.status === 404 || error.response?.status === 403)
 }
 
+/** True when the interview is done or cancelled, so the call is over. */
+function isOver(status: string | undefined) {
+  return status === 'COMPLETED' || status === 'CANCELLED'
+}
+
 function NotFound() {
   return (
     <div className="container-page py-10">
@@ -39,8 +44,9 @@ function NotFound() {
 
 /**
  * The online interview call, full screen. It finds the application from ?application= (or from the upcoming
- * interviews when the link has none), fetches the call pass, and joins the room. Leave and Skip are always on
- * the page, also when the pass or the connection fails, so nobody is stuck here.
+ * interviews when the link has none), fetches the call pass, and joins the room. Leave is always on the
+ * page, also when the pass or the connection fails, so nobody is stuck here. When the interview ends (the recruiter
+ * marked it done, or it was cancelled), the call closes on its own: camera, microphone and sound stop.
  */
 export function CallScreen({ interviewId }: { interviewId: number }) {
   const router = useRouter()
@@ -63,6 +69,9 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
     queryFn: () => pipelineApi.detail(applicationId as number),
     enabled: Boolean(user) && applicationId !== null,
     staleTime: 15_000,
+    // While the call is open, look every 5 seconds whether the other side ended the interview.
+    refetchInterval: (query) =>
+      isOver(query.state.data?.interviews.find((item) => item.id === interviewId)?.status) ? false : 5_000,
   })
 
   // The pass is used once, so it is never kept for another visit or another person. The key avoids the
@@ -70,7 +79,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
   const tokenQuery = useQuery({
     queryKey: ['call-token', interviewId, userId],
     queryFn: () => pipelineApi.callToken(interviewId),
-    enabled: Boolean(user) && Boolean(detail.data),
+    enabled: Boolean(user) && Boolean(detail.data) && !isOver(detail.data?.interviews.find((item) => item.id === interviewId)?.status),
     retry: false,
     staleTime: Infinity,
     gcTime: 0,
@@ -105,7 +114,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
     : fromSession
 
   if (!user) return <CallLoading />
-  // Only a real "not found" or "not yours" answer says so. Any other failure keeps Leave and Skip on the page.
+  // Only a real "not found" or "not yours" answer says so. Any other failure keeps Leave on the page.
   if (isMissing(upcoming.error) || isMissing(detail.error)) return <NotFound />
   const lookupFailed = upcoming.isError || detail.isError
   if (!lookupFailed) {
@@ -135,9 +144,10 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
     }
   }
 
-  const onSkip = () => (role === 'recruiter' ? void finish() : exit())
   const onLeave = () => (role === 'recruiter' ? setConfirmOpen(true) : exit())
 
+  // An ended interview removes the video part, which leaves the room and stops camera, microphone and sound.
+  const ended = isOver(interview?.status)
   const state = lookupFailed
     ? 'unavailable'
     : callState({ token: tokenQuery.isError ? 'error' : tokenQuery.data ? 'ok' : 'loading', connection })
@@ -152,7 +162,12 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
       </header>
 
       <main className="relative flex min-h-0 flex-1 flex-col p-3 sm:p-4" aria-label="Video call">
-        {state === 'unavailable' ? (
+        {ended ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-1 text-center">
+            <p role="status" className="text-base">This interview has ended.</p>
+            <p className="text-sm text-muted">You can leave the call.</p>
+          </div>
+        ) : state === 'unavailable' ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-1 text-center">
             <p role="alert" className="text-base">The call could not start.</p>
             {(upcoming.error ?? detail.error ?? tokenQuery.error) ? (
@@ -181,8 +196,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
       </main>
 
       <footer className="flex items-center justify-end gap-2 border-t border-border bg-surface px-4 py-3 sm:px-6">
-        <Button type="button" variant="secondary" disabled={busy} onClick={onLeave}>Leave</Button>
-        <Button type="button" variant="secondary" loading={busy} onClick={onSkip}>Skip</Button>
+        <Button type="button" variant="secondary" loading={busy} onClick={ended ? () => exit(role === 'recruiter') : onLeave}>Leave</Button>
       </footer>
 
       {confirmOpen ? <LeaveDialog busy={busy} onNo={() => exit(false)} onYes={() => void finish()} /> : null}
