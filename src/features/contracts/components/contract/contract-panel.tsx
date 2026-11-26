@@ -1,6 +1,6 @@
 'use client'
 
-import { openChatEventName } from '@/features/chat/chat-data'
+import { openChatEventName } from '@/features/chat/utils/chat-data'
 import type { ContractDetail } from '@/shared/schemas'
 import { AmendmentCard } from './amendment-card'
 import { ContractActionBar } from './contract-action-bar'

@@ -6,10 +6,10 @@ import { useSession } from '@/features/auth/hooks/use-session'
 import { Button } from '@/shared/ui'
 import { ChatComposer } from './chat-composer'
 import { ChatConversation } from './chat-conversation'
-import { type OpenChatRequest } from './chat-data'
+import { type OpenChatRequest } from '../utils/chat-data'
 import { ChatRoomList } from './chat-room-list'
-import { useChatRoomSelection } from './use-chat-room-selection'
-import { useChatSocket } from './use-chat-socket'
+import { useChatRoomSelection } from '../hooks/use-chat-room-selection'
+import { useChatSocket } from '../hooks/use-chat-socket'
 
 export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest | null } = {}) {
   const { user } = useSession()

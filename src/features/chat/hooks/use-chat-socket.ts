@@ -8,8 +8,8 @@ import { useRealtimeConnection } from '@/features/auth/components/realtime-provi
 import { sanitizeUserMessage } from '@/shared/lib/errors'
 import type { ChatMessage } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { createChatConnectHandler, handleIncomingChatMessage } from './chat-connection'
-import { mergeRoomMessages } from './chat-data'
+import { createChatConnectHandler, handleIncomingChatMessage } from '../utils/chat-connection'
+import { mergeRoomMessages } from '../utils/chat-data'
 
 type SendMessageAcknowledgement = {
   status: 'success' | 'error' | 'rate_limited'

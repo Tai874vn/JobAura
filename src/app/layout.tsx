@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Hanken_Grotesk, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { RealtimeProvider } from '@/features/auth/components/realtime-provider'
-import { LazyChatShell } from '@/features/chat/lazy-chat-shell'
+import { LazyChatShell } from '@/features/chat/components/lazy-chat-shell'
 import { AppProviders } from '@/shared/providers/app-providers'
 
 const inter = Inter({

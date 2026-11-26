@@ -9,7 +9,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ChatRoom } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
-import { openChatEventName, parseOpenChatRequest, type OpenChatRequest } from './chat-data'
+import { openChatEventName, parseOpenChatRequest, type OpenChatRequest } from '../utils/chat-data'
 
 /**
  * Opens the room an `OpenChatRequest` names. A user id gets the direct room with that person (the server makes
