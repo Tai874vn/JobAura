@@ -168,6 +168,13 @@ const nextConfig: NextConfig = {
       { source: '/my-jobs', destination: '/contracts', permanent: true },
     ]
   },
+  // Local development has no nginx: public images (/uploads/images/...) are fetched from the NestJS dev server,
+  // which serves them only outside production. Production keeps nginx as the image server.
+  async rewrites() {
+    if (process.env.NODE_ENV !== 'development') return []
+    const backend = (process.env.BACKEND_API_BASE_URL || 'http://localhost:3002').replace(/\/+$/, '')
+    return [{ source: '/uploads/images/:path*', destination: `${backend}/uploads/images/:path*` }]
+  },
   turbopack: {
     root: __dirname,
   },

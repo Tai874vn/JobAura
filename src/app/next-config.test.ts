@@ -23,4 +23,16 @@ describe('next.config', () => {
     expect(pattern.test('/profile-ico')).toBe(false)
     expect(pattern.test('/_next/static/media/font.woff2')).toBe(false)
   })
+
+  it('sends public images to the backend only in local development', async () => {
+    const { default: config } = await import('../../next.config')
+    vi.stubEnv('NODE_ENV', 'production')
+    expect(await config.rewrites!()).toEqual([])
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('BACKEND_API_BASE_URL', 'http://localhost:3002/')
+    expect(await config.rewrites!()).toEqual([
+      { source: '/uploads/images/:path*', destination: 'http://localhost:3002/uploads/images/:path*' },
+    ])
+    vi.unstubAllEnvs()
+  })
 })
