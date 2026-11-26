@@ -16,6 +16,23 @@ export const maxHiringPostFilterLength = 100
 /** The server fetches the first paint only for the plain list, up to this page (see canPrefetchHiringPosts). */
 export const maxPrefetchHiringPostPage = 10
 
+// @find hiring-posts search search-in logic [all] — the fields the keyword box searches: delete a line to stop searching it
+/**
+ * The fields the keyword box searches, sent as ?searchIn=... Delete a line to stop searching that field.
+ * The backend accepts only these names (title, description, requirements, location, employmentType,
+ * companyName, recruiterName, skills) and searches all of them when searchIn is left out.
+ */
+export const hiringPostSearchIn = [
+  'title',
+  'description',
+  'requirements',
+  'location',
+  'employmentType',
+  'companyName',
+  'recruiterName',
+  'skills',
+] as const
+
 // @find hiring-posts filters keys url [all] — the query-string names
 export const hiringPostFilterKeys = ['keyword', 'occupation', 'level', 'employmentType', 'location', 'sort'] as const
 export type HiringPostFilterKey = (typeof hiringPostFilterKeys)[number]
@@ -72,6 +89,7 @@ export function toHiringPostQueryParams(
     page,
     pageSize,
     ...Object.fromEntries(hiringPostFilterKeys.filter((key) => applied[key]).map((key) => [key, applied[key]])),
+    ...(applied.keyword ? { searchIn: hiringPostSearchIn.join(',') } : {}),
   }
 }
 
@@ -80,7 +98,8 @@ export function toHiringPostQueryParams(
 export function toHiringPostFacetParams(
   applied: HiringPostAppliedFilters,
 ): Omit<HiringPostFilters, 'page' | 'pageSize' | 'sort'> {
-  return Object.fromEntries(
-    hiringPostFilterKeys.filter((key) => key !== 'sort' && applied[key]).map((key) => [key, applied[key]]),
-  )
+  return {
+    ...Object.fromEntries(hiringPostFilterKeys.filter((key) => key !== 'sort' && applied[key]).map((key) => [key, applied[key]])),
+    ...(applied.keyword ? { searchIn: hiringPostSearchIn.join(',') } : {}),
+  }
 }

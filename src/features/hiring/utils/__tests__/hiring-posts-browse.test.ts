@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { queryKeys } from '@/shared/api/query-keys'
-import { canPrefetchHiringPosts, readHiringPostFilters, toHiringPostFacetParams, toHiringPostQueryParams } from '../hiring-posts-browse'
+import { canPrefetchHiringPosts, hiringPostSearchIn, readHiringPostFilters, toHiringPostFacetParams, toHiringPostQueryParams } from '../hiring-posts-browse'
 
 const url = (query: string) => new URLSearchParams(query)
 
@@ -33,13 +33,19 @@ describe('hiring post request params', () => {
   it('sends only the filters that are set, with the page and page size', () => {
     const { applied } = readHiringPostFilters(url('keyword=react&sort=salary_high'))
 
-    expect(toHiringPostQueryParams(applied, 3)).toEqual({ page: 3, pageSize: 10, keyword: 'react', sort: 'salary_high' })
+    expect(toHiringPostQueryParams(applied, 3)).toEqual({
+      page: 3,
+      pageSize: 10,
+      keyword: 'react',
+      sort: 'salary_high',
+      searchIn: hiringPostSearchIn.join(','),
+    })
   })
 
   it('leaves the page, page size and sort out of the facet counts', () => {
     const { applied } = readHiringPostFilters(url('keyword=react&level=junior&sort=newest&page=4'))
 
-    expect(toHiringPostFacetParams(applied)).toEqual({ keyword: 'react', level: 'junior' })
+    expect(toHiringPostFacetParams(applied)).toEqual({ keyword: 'react', level: 'junior', searchIn: hiringPostSearchIn.join(',') })
   })
 
   it('builds the same params for the server first paint and the browser (same React Query key)', () => {
@@ -73,5 +79,15 @@ describe('server first paint for /hiring-posts', () => {
 
     expect(applied.keyword).toHaveLength(100)
     expect(applied.location).toHaveLength(100)
+  })
+})
+
+describe('keyword search fields (searchIn)', () => {
+  it('sends the fields listed in hiringPostSearchIn, only when there is a keyword', () => {
+    expect(hiringPostSearchIn).toContain('title')
+    const withKeyword = toHiringPostQueryParams(readHiringPostFilters(url('keyword=react')).applied, 1)
+    expect(withKeyword.searchIn).toBe('title,description,requirements,location,employmentType,companyName,recruiterName,skills')
+    const without = toHiringPostQueryParams(readHiringPostFilters(url('level=Junior')).applied, 1)
+    expect(without).not.toHaveProperty('searchIn')
   })
 })

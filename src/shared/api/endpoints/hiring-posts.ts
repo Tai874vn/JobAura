@@ -16,6 +16,8 @@ export type HiringPostFilters = PaginationParams & {
   level?: string
   employmentType?: string
   location?: string
+  /** Which fields the keyword is searched in, comma-separated (all when left out). */
+  searchIn?: string
   /** Newest first when left out. */
   sort?: HiringPostSort
 }
