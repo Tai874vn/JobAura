@@ -1,5 +1,6 @@
 'use client'
 
+import { jobsConfig as config } from '@/page-config/jobs'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { replaceUrlInPlace } from '@/shared/lib/replace-url'
 import { ArrowDownWideNarrow, BriefcaseBusiness, ChevronDown, Plus, Search, SearchX } from 'lucide-react'
@@ -38,8 +39,6 @@ import {
   countActiveJobFilters,
   customPriceRangeLabel,
   jobPriceRanges,
-  jobSortLabels,
-  jobSorts,
   jobsPageSize,
   popularPortfolioTerms,
   readJobListFilters,
@@ -52,7 +51,8 @@ import {
 const postPortfolioButton =
   'interaction inline-flex h-[42px] items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 
-const SIDEBAR_CATEGORY_LIMIT = 8
+// Set in src/page-config/jobs.ts (filters.category.collapsedLimit).
+const SIDEBAR_CATEGORY_LIMIT = config.filters.category.collapsedLimit
 
 /**
  * Candidate portfolios (/jobs) on the shared BrowsePage shell:
@@ -188,7 +188,7 @@ export function JobListView() {
               <input
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
-                placeholder="Role, skill, or candidate name"
+                placeholder={config.search.placeholder}
                 aria-label="Keyword"
                 className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none"
               />
@@ -234,7 +234,9 @@ export function JobListView() {
         filters={
           <FilterPanel intro="Narrow down portfolios by field and budget." onReset={reset} canReset={searching}>
             {/* The categories endpoint does not send per-category counts, so counts are omitted here. */}
-            <FilterGroup title="Category">
+            {config.filters.category.show ? (
+            <>
+            <FilterGroup title={config.filters.category.title}>
               <FilterChoice
                 label="All categories"
                 checked={applied.categoryId === undefined}
@@ -265,9 +267,11 @@ export function JobListView() {
                 </button>
               ) : null}
             </FilterGroup>
+            </>
+            ) : null}
 
-            {subcategories.length ? (
-              <FilterGroup title="Specialty">
+            {config.filters.specialty.show && subcategories.length ? (
+              <FilterGroup title={config.filters.specialty.title}>
                 <FilterChoice
                   label="All specialties"
                   checked={applied.subcategoryId === undefined}
@@ -287,7 +291,9 @@ export function JobListView() {
               </FilterGroup>
             ) : null}
 
-            <FilterGroup title="Price" last>
+            {config.filters.price.show ? (
+            <>
+            <FilterGroup title={config.filters.price.title} last>
               <FilterChoice
                 label="All prices"
                 checked={priceRangeId === ''}
@@ -309,6 +315,8 @@ export function JobListView() {
                 />
               ) : null}
             </FilterGroup>
+            </>
+            ) : null}
           </FilterPanel>
         }
         toolbar={
@@ -332,7 +340,7 @@ export function JobListView() {
                   align="right"
                   buttonClassName="h-[42px] rounded-lg border border-transparent bg-surface px-3.5 text-sm font-semibold text-muted transition-colors hover:border-border focus-visible:ring-2 focus-visible:ring-primary"
                   icon={<ArrowDownWideNarrow className="h-4 w-4 shrink-0" aria-hidden="true" />}
-                  options={jobSorts.map((sort) => ({ value: sort, label: jobSortLabels[sort] }))}
+                  options={config.sorts.map((sort) => ({ value: sort.value, label: sort.label }))}
                   onChange={(next) => go({ sort: next as JobSort })}
                 />
               </>

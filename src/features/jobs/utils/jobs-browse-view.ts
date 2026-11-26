@@ -1,3 +1,4 @@
+import { jobsConfig } from '@/page-config/jobs'
 import { credits } from '@/shared/lib/credits'
 import type { Category, Job, JobSearchParams } from '@/shared/schemas'
 import { getSellerId } from './seller-profile'
@@ -9,33 +10,23 @@ import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-pric
  * price ranges in credits, price and work-mode labels, and which card actions show for each viewer.
  */
 
-export const jobsPageSize = 12
+/** Set in src/page-config/jobs.ts */
+export const jobsPageSize = jobsConfig.pageSize
 
 // @find jobs search search-in logic [all] — the fields the keyword box searches: delete a line to stop searching it
 /**
  * The fields the keyword box searches, sent as ?searchIn=... Delete a line to stop searching that field.
  * The backend accepts only: title, shortDescription, description, sellerName, subcategory, category.
  */
-export const jobSearchIn = [
-  'title',
-  'shortDescription',
-  'description',
-  'sellerName',
-  'subcategory',
-  'category',
-] as const
+/** Set in src/page-config/jobs.ts (search.fields). */
+export const jobSearchIn = jobsConfig.search.fields
 /** The longest search text read from the URL; longer text is cut, so a huge ?keyword= cannot reach the backend. */
 export const maxJobKeywordLength = 100
 /** The server fetches the first paint only for the plain list, up to this page (see canPrefetchJobs). */
 export const maxPrefetchJobsPage = 10
 
-export const popularPortfolioTerms = [
-  'Software Engineer',
-  'Data Analyst',
-  'Product Designer',
-  'QA',
-  'Marketing',
-] as const
+/** Set in src/page-config/jobs.ts (exploreChips). */
+export const popularPortfolioTerms = jobsConfig.exploreChips
 
 /** Sort values the backend /api/jobs/paginated-search endpoint accepts, plus empty string for default order. */
 export const jobSorts = ['', 'newest', 'price_asc', 'price_desc', 'rating_desc'] as const
@@ -62,13 +53,8 @@ export type JobPriceRange = {
  * Sidebar price choices in credits.
  * Price 0 is a portfolio post (no rate); priced ranges start at 1 credit so portfolio posts stay separate.
  */
-export const jobPriceRanges: readonly JobPriceRange[] = [
-  { id: 'portfolio', label: 'Portfolio posts', minPrice: 0, maxPrice: 0 },
-  { id: 'up_to_500', label: `Up to ${credits(500)}`, minPrice: 1, maxPrice: 500 },
-  { id: '500_to_2000', label: `${credits(500)} to ${credits(2000)}`, minPrice: 500, maxPrice: 2000 },
-  { id: '2000_to_5000', label: `${credits(2000)} to ${credits(5000)}`, minPrice: 2000, maxPrice: 5000 },
-  { id: 'over_5000', label: `${credits(5000)} and up`, minPrice: 5000 },
-]
+/** Set in src/page-config/jobs.ts (filters.price.ranges). */
+export const jobPriceRanges: readonly JobPriceRange[] = jobsConfig.filters.price.ranges
 
 export type JobListFilters = {
   keyword: string

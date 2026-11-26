@@ -1,5 +1,6 @@
 'use client'
 
+import { jobsConfig } from '@/page-config/jobs'
 import { ChevronDown, LayoutGrid } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { Category } from '@/shared/schemas'
@@ -7,7 +8,8 @@ import { cn } from '@/shared/lib/utils'
 import { Skeleton } from '@/shared/ui'
 import { categoryIcon } from '../../utils/category-icon'
 
-const COLLAPSED_LIMIT = 8
+// How many categories show before "More": set in src/page-config/jobs.ts (categoryBarLimit).
+const COLLAPSED_LIMIT = jobsConfig.categoryBarLimit
 
 /**
  * Category chips shown in the Explore band of /jobs.
