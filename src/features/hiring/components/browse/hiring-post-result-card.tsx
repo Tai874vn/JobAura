@@ -8,10 +8,12 @@ import { cn } from "@/shared/lib/utils";
 import { ApplyPanel } from "../detail/apply-panel";
 import { formatDate, formatHiringPostSalary, formatYearsRequired, salaryPeriodLabel, type HiringPostViewer } from "./hiring-post-card";
 import { usePostOccupation } from "../../hooks/use-post-occupation";
+import { hiringPostsConfig } from "../../config/hiring-posts";
 
 // Soft tiles behind a company's initials; the same company always gets the same one.
 const tileColors = ["#e7eedf", "#efe7de", "#e0ebee", "#e6e5f0", "#f2e7da", "#e0ede7", "#e2ebf1", "#eae6f1", "#e6eedc"];
-const SKILLS_SHOWN = 6;
+// Set in src/features/hiring/config/hiring-posts.ts (skillsShownOnCard).
+const SKILLS_SHOWN = hiringPostsConfig.skillsShownOnCard;
 
 export function companyInitials(name: string) {
   const words = name.trim().split(/\s+/).filter(Boolean);

@@ -61,8 +61,14 @@ export const hiringPostsConfig = {
   },
 
   /**
+   * Skill badges on each post card in the list (for example CSS, Figma, Vue.js). Any number works, the rest
+   * show as "+N more". The opened post (panel and post page) always lists every skill.
+   */
+  skillsShownOnCard: 6,
+
+  /**
    * The "Sort" menu, in this order. Remove a line to hide that choice.
-   * Allowed by the backend: newest, closing_soon, salary_high (HIRING_POST_SORTS).
+   * Allowed by the backend: newest, oldest, closing_soon, salary_high (HIRING_POST_SORTS).
    */
   sorts: [
     { value: 'newest', label: 'Newest' },
