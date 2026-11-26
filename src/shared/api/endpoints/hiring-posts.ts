@@ -32,13 +32,13 @@ export type HiringPostFacets = {
 
 export const hiringPostsApi = {
   /** Locations of open posts with how many each finds; counts can overlap ("Da Nang" also finds "Da Nang, Vietnam"). */
-  // @find [all] hiring-posts / filters / location / api — GET /api/hiring-posts/locations
+  // @find hiring-posts filters location api [all] — GET /api/hiring-posts/locations
   locations: async () =>
     (await apiClient.get<ApiResponse<FacetCount[]>>("/api/hiring-posts/locations")).data,
-  // @find [all] hiring-posts / filters / counts / api — GET /api/hiring-posts/facets
+  // @find hiring-posts filters counts api [all] — GET /api/hiring-posts/facets
   facets: async (params: Omit<HiringPostFilters, 'page' | 'pageSize' | 'sort'>) =>
     (await apiClient.get<ApiResponse<HiringPostFacets>>("/api/hiring-posts/facets", { params: definedParams(params) })).data,
-  // @find [all] hiring-posts / results / list / api — GET /api/hiring-posts
+  // @find hiring-posts results list api [all] — GET /api/hiring-posts
   open: async (params: HiringPostFilters) =>
     normalizePaginatedHiringPostsResponse(
       (
@@ -48,14 +48,14 @@ export const hiringPostsApi = {
         )
       ).data,
     ),
-  // @find [all] hiring-post-detail / page / post / api — GET /api/hiring-posts/:id
+  // @find hiring-post-detail page post api [all] — GET /api/hiring-posts/:id
   one: async (id: number) => {
     const response = (await apiClient.get<ApiResponse<HiringPost>>(`/api/hiring-posts/${id}`)).data
     return response.content
       ? { ...response, content: normalizeHiringPost(response.content) }
       : response
   },
-  // @find [recruiter] my-hiring-posts / results / list / api — GET /api/hiring-posts/mine
+  // @find my-hiring-posts results list api [recruiter] — GET /api/hiring-posts/mine
   mine: async (params: PaginationParams) =>
     normalizePaginatedHiringPostsResponse(
       (
@@ -65,7 +65,7 @@ export const hiringPostsApi = {
         )
       ).data,
     ),
-  // @find [recruiter] my-hiring-posts / form / create / api — POST /api/hiring-posts
+  // @find my-hiring-posts form create api [recruiter] — POST /api/hiring-posts
   create: async (data: CreateHiringPost) => {
     const response = (
       await apiClient.post<ApiResponse<HiringPost>>("/api/hiring-posts", data)
@@ -74,7 +74,7 @@ export const hiringPostsApi = {
       ? { ...response, content: normalizeHiringPost(response.content) }
       : response
   },
-  // @find [owner] my-hiring-posts / form / update / api — PATCH /api/hiring-posts/:id (also close and reopen)
+  // @find my-hiring-posts form update api [owner] — PATCH /api/hiring-posts/:id (also close and reopen)
   update: async (
     id: number,
     data: Partial<CreateHiringPost> & { status?: HiringPost["status"] },
@@ -89,10 +89,10 @@ export const hiringPostsApi = {
       ? { ...response, content: normalizeHiringPost(response.content) }
       : response
   },
-  // @find [owner] my-hiring-posts / card / delete / api — DELETE /api/hiring-posts/:id
+  // @find my-hiring-posts card delete api [owner] — DELETE /api/hiring-posts/:id
   delete: async (id: number) =>
     (await apiClient.delete<ApiResponse<void>>(`/api/hiring-posts/${id}`)).data,
-  // @find [owner] my-hiring-posts / form / seniority / api — POST /api/hiring-posts/:id/seniority
+  // @find my-hiring-posts form seniority api [owner] — POST /api/hiring-posts/:id/seniority
   predictSeniority: async (id: number) => {
     const response = (
       await apiClient.post<ApiResponse<HiringPost>>(

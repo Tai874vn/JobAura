@@ -18,7 +18,7 @@ import { buildPageMetadata, JsonLd, organizationJsonLd, websiteJsonLd } from '@/
 import { hiringPostsItemListJsonLd } from '@/shared/lib/seo-jsonld'
 import type { ApiResponse, HiringPost, PaginatedContent } from '@/shared/schemas'
 
-// @find [all] hiring-posts / page / metadata / seo — title, description, canonical
+// @find hiring-posts page metadata seo [all] — title, description, canonical
 export const metadata: Metadata = buildPageMetadata({
   title: 'Hiring posts',
   description:
@@ -29,7 +29,7 @@ export const metadata: Metadata = buildPageMetadata({
 // The first paint for visitors and search engines: public data read without cookies on the server and handed to
 // the list under the same React Query keys it uses, so it shows real cards at once. Signed-in viewers then load
 // their own "applied" status in the browser; nothing per-user is cached on the server.
-// @find [all] hiring-posts / page / prefetch / server — first page of public roles fetched on the server
+// @find hiring-posts page prefetch server [all] — first page of public roles fetched on the server
 export default async function Page({
   searchParams,
 }: {
@@ -71,7 +71,7 @@ export default async function Page({
 
   return (
     <>
-      {/* @find [all] hiring-posts / page / json-ld / seo — ItemList of the roles for search engines */}
+      {/* @find hiring-posts page json-ld seo [all] — ItemList of the roles for search engines */}
       <JsonLd data={[organizationJsonLd(), websiteJsonLd(), hiringPostsItemListJsonLd(posts)]} />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={<HiringPostsPageSkeleton />}>

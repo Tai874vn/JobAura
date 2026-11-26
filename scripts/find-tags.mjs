@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // Lists, searches and checks the "@find" comment tags (full guide: FIND-TAGS.md, kept locally).
 //
-// Tag format, one line just above the code it names:
-//   // @find [role] page / part / thing / layer — short note
-//   {/* @find [role] page / part / thing / layer — short note */}      (inside JSX)
-// role:  all | guest | signed-in | candidate | recruiter | admin | owner   (several: [candidate,recruiter])
+// Tag format, one line just above the code it names, words from wide to narrow so a VS Code search
+// (Ctrl+Shift+F) narrows as you type: "@find hiring-posts" → "@find hiring-posts filters" → "... location".
+//   // @find page part thing layer [role] — short note
+//   (inside JSX the same text goes in a JSX comment block)
 // page:  URL without ids (hiring-posts, hiring-post-detail, my-hiring-posts, wallet, ...); shared; app
 // part:  page | hero | search | filters | results | card | pagination | form | dialog | header | ...
 // thing: the field or action (location, keyword, apply, sort, ...)
 // layer: ui | state | url | api | cache | logic | server | seo | access
-// Example: {/* @find [all] hiring-posts / filters / location / ui — Location group in the filter column */}
-//
+// role:  all | guest | signed-in | candidate | recruiter | admin | owner   (several: [candidate,recruiter])
+// Example: @find hiring-posts filters location ui [all] — Location group in the filter column
 //   node scripts/find-tags.mjs                 → index of every tag, grouped by page
 //   node scripts/find-tags.mjs hiring location → tags that contain every word (any order, any case)
 //   node scripts/find-tags.mjs --check         → exit 1 if a tag breaks the format
@@ -23,9 +23,9 @@ const SRC = join(root, 'src')
 export const ROLES = ['all', 'guest', 'signed-in', 'candidate', 'recruiter', 'admin', 'owner']
 export const LAYERS = ['ui', 'state', 'url', 'api', 'cache', 'logic', 'server', 'seo', 'access']
 const WORD = '[a-z0-9]+(?:-[a-z0-9]+)*'
-// [role(,role)] page / part / thing / layer — note
+// page part thing layer [role(,role)] — note
 export const TAG = new RegExp(
-  `@find \\[(${WORD}(?:,${WORD})*)\\] (${WORD}) / (${WORD}) / (${WORD}) / (${WORD})(?: — (.+?))?\\s*(?:\\*/\\}?)?\\s*$`,
+  `@find (${WORD}) (${WORD}) (${WORD}) (${WORD}) \\[(${WORD}(?:,${WORD})*)\\](?: — (.+?))?\\s*(?:\\*/\\}?)?\\s*$`,
 )
 
 function* files(dir) {
@@ -45,10 +45,10 @@ export function collectTags(dir = SRC) {
       if (at < 0) return
       const text = source.slice(at).replace(/\s*\*\/\}?\s*$/, '').trim()
       const match = TAG.exec(source.slice(at))
-      let problem = match ? null : 'format: @find [role] page / part / thing / layer — note'
+      let problem = match ? null : 'format: @find page part thing layer [role] — note'
       let parts = null
       if (match) {
-        const [, roles, page, part, thing, layer, note] = match
+        const [, page, part, thing, layer, roles, note] = match
         parts = { roles: roles.split(','), page, part, thing, layer, note: note ?? '' }
         const badRole = parts.roles.find((role) => !ROLES.includes(role))
         if (badRole) problem = `unknown role "${badRole}" (use ${ROLES.join(', ')})`

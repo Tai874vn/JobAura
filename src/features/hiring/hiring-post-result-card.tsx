@@ -28,7 +28,7 @@ export function tileColor(name: string) {
  * One open role in the hiring posts list: who is hiring and what it pays, what it asks for, and the two next steps.
  * The tile links to the recruiter's profile; View details opens the post; Apply opens the application form in place.
  */
-// @find [all] hiring-posts / card / result-card / ui — company tile, title, chips, View details, Apply
+// @find hiring-posts card result-card ui [all] — company tile, title, chips, View details, Apply
 export function HiringPostResultCard({ post, viewer, onApplied }: {
   post: HiringPost;
   viewer: HiringPostViewer;
@@ -117,12 +117,12 @@ export function HiringPostResultCard({ post, viewer, onApplied }: {
             className="interaction inline-flex h-[42px] items-center justify-center rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
             View details
           </Link>
-          {/* @find [candidate,guest] hiring-posts / card / apply / ui */}
+          {/* @find hiring-posts card apply ui [candidate,guest] */}
           <ApplyButton post={post} viewer={viewer} applying={applying} onToggle={() => setApplying((value) => !value)} />
         </div>
       </div>
 
-      {/* @find [candidate] hiring-posts / card / apply-form / ui — application form opens inside the card */}
+      {/* @find hiring-posts card apply-form ui [candidate] — application form opens inside the card */}
       {applying && viewer === "candidate" && !post.viewerHasApplied ? (
         <ApplyPanel postId={post.id} onApplied={() => { setApplying(false); onApplied(); }} onCancel={() => setApplying(false)} />
       ) : null}
@@ -130,7 +130,7 @@ export function HiringPostResultCard({ post, viewer, onApplied }: {
   );
 }
 
-// @find [candidate,guest] hiring-posts / card / apply / access — recruiter: no button; applied: status; visitor: sign-in link
+// @find hiring-posts card apply access [candidate,guest] — recruiter: no button; applied: status; visitor: sign-in link
 function ApplyButton({ post, viewer, applying, onToggle }: {
   post: HiringPost;
   viewer: HiringPostViewer;
