@@ -6,7 +6,8 @@ import { ArrowDownWideNarrow, BriefcaseBusiness, ListChecks, ListOrdered, MapPin
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useSession } from "@/features/auth/hooks/use-session";
-import { hiringPostsApi, hiringPostSorts } from "@/shared/api/endpoints/hiring-posts";
+import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
+import { hiringPostsConfig as config } from "@/page-config/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
   BrowseHero, BrowsePage, ButtonLink, ChoiceMenu, countOf, EmptyState, ExploreChip, ExploreRow, FilterChoice, FilterGroup, FilterPanel,
@@ -14,7 +15,6 @@ import {
 } from "@/shared/ui";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import { occupationLabel } from "@/features/occupations/api";
-import { employmentTypes, hiringPostLevels } from "../../utils/hiring-post-form";
 import { HiringPostResultCard } from "./hiring-post-result-card";
 import { HiringPostResultSkeleton } from "./hiring-posts-skeleton";
 import { hiringPostViewer } from "../../utils/hiring-post-viewer";
@@ -30,13 +30,6 @@ import {
 
 
 type MultiKey = "occupation" | "level" | "employmentType";
-// Quick searches under the search bar until the backend says which occupations have the most open roles.
-const fallbackExplore = ["Software developer", "Data analyst", "Product manager", "Graphic designer", "Business analyst"];
-const sortLabels: Record<(typeof hiringPostSorts)[number], string> = {
-  newest: "Newest",
-  closing_soon: "Closing soon",
-  salary_high: "Highest salary",
-};
 
 /**
  * Open hiring posts, for everyone: a search band, a filter column that stays in view while the list scrolls, and
@@ -131,14 +124,17 @@ export function HiringPostsPage() {
     go({ keyword: "", occupation: "", level: "", employmentType: "", location: "" });
   }
 
-  const typeChoices = [...new Set([...employmentTypes, ...(facets?.employmentTypes ?? []).map((item) => item.value).filter(Boolean)])];
+  const typeChoices = [...new Set([
+    ...config.filters.employmentType.values,
+    ...(config.filters.employmentType.alsoShowTypesFoundInPosts ? (facets?.employmentTypes ?? []).map((item) => item.value).filter(Boolean) : []),
+  ])];
   // @find hiring-posts filters location logic [all] — top 5 locations plus the chosen one
-  const locationChoices = (facets?.locations.length ? facets.locations : locations).slice(0, 5).map((item) => item.value);
+  const locationChoices = (facets?.locations.length ? facets.locations : locations).slice(0, config.filters.location.maxChoices).map((item) => item.value);
   if (applied.location && !locationChoices.some((value) => value.toLowerCase() === applied.location.toLowerCase())) locationChoices.push(applied.location);
   // @find hiring-posts explore chips logic [all] — occupation chips from the facets, or a fixed list
   const exploreChoices = facets?.occupations.length
     ? facets.occupations.slice(0, 4).map((item) => ({ label: occupationLabel(item.title), code: item.code, filter: { occupation: item.code, keyword: "" } }))
-    : fallbackExplore.slice(0, 4).map((label) => ({ label, code: "", filter: { keyword: label } }));
+    : config.exploreChips.map((label) => ({ label, code: "", filter: { keyword: label } }));
 
   return (
     <BrowsePage
@@ -162,16 +158,20 @@ export function HiringPostsPage() {
           className="field-shell flex min-w-0 items-center gap-2 rounded-xl border border-[#d1ddd1] bg-surface p-2 sm:h-[68px] sm:pl-3">
           <label className="flex min-w-0 flex-[3] items-center gap-2.5 px-2">
             <Search className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
-            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder="Role, skill, or company" aria-label="Keyword"
+            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} placeholder={config.search.placeholder} aria-label="Keyword"
               className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none" />
           </label>
           <span className="hidden h-7 w-px bg-border md:block" aria-hidden="true" />
+          {config.search.showLocationBox ? (
+          <>
           {/* @find hiring-posts search location ui [all] — Location menu inside the search bar (wide screens) */}
           <ChoiceMenu label="Location" value={location} className="hidden min-w-0 flex-[2] md:block"
             buttonClassName="h-11 rounded-lg px-3 text-[15px] transition-colors hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-primary"
             icon={<MapPin className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />}
             options={[{ value: "", label: "All locations" }, ...locations.map((item) => ({ value: item.value, label: item.value, count: item.count }))]}
             onChange={(next) => { setLocation(next); go({ keyword, location: next }); }} />
+          </>
+          ) : null}
           <button type="submit" className="interaction inline-flex h-[42px] shrink-0 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:w-32">
             Search
           </button>
@@ -197,27 +197,37 @@ export function HiringPostsPage() {
       filters={
         <>
           <FilterPanel intro="Narrow down your next role." onReset={reset} canReset={searching}>
+            {config.filters.level.show ? (
+            <>
             {/* @find hiring-posts filters level ui [all] */}
-            <FilterGroup title="Experience level">
+            <FilterGroup title={config.filters.level.title}>
               <FilterChoice label="All levels" checked={!applied.level} onChange={() => go({ level: "" })} />
-              {hiringPostLevels.map((level) => (
+              {config.filters.level.values.map((level) => (
                 <FilterChoice key={level} label={level} count={facets ? countOf(facets.levels, level) ?? 0 : undefined}
                   checked={listOf(applied.level).includes(level)} onChange={() => toggle("level", level)} />
               ))}
             </FilterGroup>
+            </>
+            ) : null}
 
+            {config.filters.employmentType.show ? (
+            <>
             {/* @find hiring-posts filters employment-type ui [all] */}
-            <FilterGroup title="Employment type">
+            <FilterGroup title={config.filters.employmentType.title}>
               <FilterChoice label="All types" checked={!applied.employmentType} onChange={() => go({ employmentType: "" })} />
               {typeChoices.map((type) => (
                 <FilterChoice key={type} label={type} count={facets ? countOf(facets.employmentTypes, type) ?? 0 : undefined}
                   checked={listOf(applied.employmentType).includes(type)} onChange={() => toggle("employmentType", type)} />
               ))}
             </FilterGroup>
+            </>
+            ) : null}
 
+            {config.filters.location.show ? (
+            <>
             {/* @find hiring-posts filters location ui [all] — Location group in the filter column */}
             {/* The backend matches one location at a time, so these choices replace each other. */}
-            <FilterGroup title="Location" last>
+            <FilterGroup title={config.filters.location.title} last>
               <FilterChoice label="All locations" checked={!applied.location} onChange={() => { setLocation(""); go({ location: "" }); }} />
               {locationChoices.map((value) => (
                 <FilterChoice key={value} label={value} count={countOf(facets?.locations.length ? facets.locations : locations, value)}
@@ -225,6 +235,8 @@ export function HiringPostsPage() {
                   onChange={() => { const next = applied.location.toLowerCase() === value.toLowerCase() ? "" : value; setLocation(next); go({ location: next }); }} />
               ))}
             </FilterGroup>
+            </>
+            ) : null}
           </FilterPanel>
 
           {/* @find hiring-posts filters ai-picks-promo access [guest,candidate] — promo card, hidden for recruiters */}
@@ -252,7 +264,7 @@ export function HiringPostsPage() {
               <ChoiceMenu label="Sort" prefix="Sort:" value={applied.sort || "newest"} align="right"
                 buttonClassName="h-[42px] rounded-lg border border-transparent bg-surface px-3.5 text-sm font-semibold text-muted transition-colors hover:border-border focus-visible:ring-2 focus-visible:ring-primary"
                 icon={<ArrowDownWideNarrow className="h-4 w-4 shrink-0" aria-hidden="true" />}
-                options={hiringPostSorts.map((sort) => ({ value: sort, label: sortLabels[sort] }))}
+                options={config.sorts.map((sort) => ({ value: sort.value, label: sort.label }))}
                 onChange={(next) => go({ sort: next === "newest" ? "" : next })} />
             </>
           }
