@@ -18,9 +18,9 @@ import { getErrorMessage, UserValidationError } from '@/shared/lib/utils'
 import { createJobSchema, type CreateJob, type Job } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, Card, Input, PageHeader, Select, Textarea } from '@/shared/ui'
 import { MilestoneTemplateField } from './milestone-template-field'
-import { fromTemplate, serviceAreaError, templateErrors, toTemplatePayload, type TemplateRow } from './milestone-template'
-import { refreshJobPagesAfterSave } from './refresh-job-pages'
-import { servicePriceLabel } from './service-price'
+import { fromTemplate, serviceAreaError, templateErrors, toTemplatePayload, type TemplateRow } from '../../utils/milestone-template'
+import { refreshJobPagesAfterSave } from '../../utils/refresh-job-pages'
+import { servicePriceLabel } from '../../utils/service-price'
 
 type CreateJobInput = z.input<typeof createJobSchema>
 

@@ -4,7 +4,7 @@ import { credits } from '@/shared/lib/credits'
 import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { Comment, Job, Subcategory, Category, User } from '@/shared/schemas'
 import { Badge } from '@/shared/ui'
-import { deleteJob } from '@/features/jobs/delete-job'
+import { deleteJob } from '@/features/jobs/utils/delete-job'
 
 export type Resource = 'jobs' | 'users' | 'categories' | 'subcategories' | 'comments'
 export type ResourceRow = Job | User | Category | Subcategory | Comment

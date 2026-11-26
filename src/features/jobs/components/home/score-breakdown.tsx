@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
-import { MatchScore } from '@/features/jobs/recommendation-ui'
+import { MatchScore } from '@/features/jobs/components/recommendations/recommendation-ui'
 import { Section } from '@/shared/ui'
-import { sampleBreakdown, sampleCandidates, samplePost } from './sample-shortlist'
+import { sampleBreakdown, sampleCandidates, samplePost } from '../../utils/home/sample-shortlist'
 
 /** Opens up the top row of the hero shortlist: what each requirement asked for and what the resume showed. */
 export function ScoreBreakdown() {

@@ -15,12 +15,12 @@ import { credits } from '@/shared/lib/credits'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { splitPrice } from '@/features/contracts/utils/proposal-editor-model'
 import { NewProposalDialog } from '@/features/contracts/components/proposal/new-proposal-dialog'
-import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-price'
+import { isPortfolioPost, servicePriceLabel, workModeLine } from '../../utils/service-price'
 import type { Comment, Job } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialog } from '@/shared/ui'
-import { deleteJob } from './delete-job'
-import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
+import { deleteJob } from '../../utils/delete-job'
+import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from '../../utils/seller-profile'
 
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
   const imageUrl = resolveAssetUrl(job.image)

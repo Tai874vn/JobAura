@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { normalizeCategoriesResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import type { ApiResponse, Category } from '@/shared/schemas'
-import { categoryIcon } from '../category-icon'
+import { categoryIcon } from '../../utils/category-icon'
 
 const fallbackCategories = ['Design', 'Development', 'Marketing', 'Business']
 

@@ -7,7 +7,7 @@ import { jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { Job } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
-import { servicePriceLabel } from '@/features/jobs/service-price'
+import { servicePriceLabel } from '@/features/jobs/utils/service-price'
 import { NewProposalDialog } from './proposal/new-proposal-dialog'
 
 /** The services a person can be hired for: only the ones with a price (a portfolio post has price 0). */

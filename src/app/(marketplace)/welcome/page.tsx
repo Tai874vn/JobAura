@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { HomePage } from '@/features/jobs/home-page'
-import { landingFaqs } from '@/features/jobs/home/faq'
+import { HomePage } from '@/features/jobs/components/home/home-page'
+import { landingFaqs } from '@/features/jobs/components/home/faq'
 import { buildPageMetadata, JsonLd, faqJsonLd, organizationJsonLd, websiteJsonLd } from '@/shared/lib/seo'
 
 export const metadata: Metadata = buildPageMetadata({

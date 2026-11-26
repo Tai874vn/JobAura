@@ -6,10 +6,10 @@ import { useState } from 'react'
 import { Star } from 'lucide-react'
 import { Badge, Card, CardSkeleton } from '@/shared/ui'
 import { cn, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import { servicePriceLabel } from './service-price'
+import { servicePriceLabel } from '../../utils/service-price'
 import type { Job } from '@/shared/schemas'
-import { getSellerAvatar, getSellerHref, getSellerName } from './seller-profile'
-import { JobSaveButton } from './job-save-button'
+import { getSellerAvatar, getSellerHref, getSellerName } from '../../utils/seller-profile'
+import { JobSaveButton } from '../detail/job-save-button'
 
 export function JobCard({ job, priority = false, initialSaved = false, waitForImages = false }: { job: Job; priority?: boolean; initialSaved?: boolean; waitForImages?: boolean }) {
   const imageUrl = resolveAssetUrl(job.image)

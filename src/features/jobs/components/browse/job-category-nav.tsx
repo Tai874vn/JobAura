@@ -5,7 +5,7 @@ import { useId, useState } from 'react'
 import type { Category } from '@/shared/schemas'
 import { cn } from '@/shared/lib/utils'
 import { Skeleton } from '@/shared/ui'
-import { categoryIcon } from './category-icon'
+import { categoryIcon } from '../../utils/category-icon'
 
 const COLLAPSED_LIMIT = 8
 

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { getSignedInRedirect } from '@/shared/lib/roles'
-import { ShortlistPreview } from '@/features/jobs/home/shortlist-preview'
+import { ShortlistPreview } from '@/features/jobs/components/home/shortlist-preview'
 import { Card, CardContent, Spinner } from '@/shared/ui'
 import { useSession } from './use-session'
 

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { RequireAuth } from '@/features/auth/require-auth'
-import { JobEditPage } from '@/features/jobs/job-edit-page'
+import { JobEditPage } from '@/features/jobs/components/form/job-edit-page'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 
 export const metadata: Metadata = { title: 'Edit your post' }

@@ -1,6 +1,6 @@
-import { MatchScore } from '@/features/jobs/recommendation-ui'
+import { MatchScore } from '@/features/jobs/components/recommendations/recommendation-ui'
 import { cn } from '@/shared/lib/utils'
-import { samplePost, sampleCandidates } from './sample-shortlist'
+import { samplePost, sampleCandidates } from '../../utils/home/sample-shortlist'
 
 /** A static copy of the recruiter shortlist, the result JobAura produces for each hiring post. */
 export function ShortlistPreview({ rows = sampleCandidates.length, className }: { rows?: number; className?: string }) {

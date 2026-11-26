@@ -1,12 +1,12 @@
 import { Suspense } from 'react'
-import { BrowseSection } from './home/browse-section'
-import { CtaBand } from './home/cta-band'
-import { FaqSection } from './home/faq'
-import { FeaturedServices } from './home/featured-services'
-import { FeaturedServicesSkeleton } from './home/home-skeletons'
-import { HowItWorks } from './home/how-it-works'
-import { LandingHero } from './home/hero'
-import { ScoreBreakdown } from './home/score-breakdown'
+import { BrowseSection } from './browse-section'
+import { CtaBand } from './cta-band'
+import { FaqSection } from './faq'
+import { FeaturedServices } from './featured-services'
+import { FeaturedServicesSkeleton } from './home-skeletons'
+import { HowItWorks } from './how-it-works'
+import { LandingHero } from './hero'
+import { ScoreBreakdown } from './score-breakdown'
 
 export function HomePage() {
   return (

@@ -4,7 +4,7 @@ import { normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import type { ApiResponse, Job, PaginatedContent } from '@/shared/schemas'
 import { Section, SectionHeading } from '@/shared/ui'
-import { JobCard } from '../job-card'
+import { JobCard } from '../browse/job-card'
 
 export async function FeaturedServices() {
   const response = await serverRequest<ApiResponse<PaginatedContent<Job>>>(

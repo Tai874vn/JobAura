@@ -12,7 +12,7 @@ import {
   templateErrors,
   templateShareTotal,
   type TemplateRow,
-} from './milestone-template'
+} from '../../utils/milestone-template'
 
 /**
  * The seller's usual steps (for example Sketch 30%, Build 50%, Polish 20%). A client's proposal starts from these.

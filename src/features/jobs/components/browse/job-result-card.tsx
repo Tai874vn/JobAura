@@ -10,9 +10,9 @@ import {
   jobWorkModeSummary,
   portfolioPriceLabel,
   type JobViewer,
-} from './jobs-browse-view'
-import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from './seller-profile'
-import { isPortfolioPost } from './service-price'
+} from '../../utils/jobs-browse-view'
+import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from '../../utils/seller-profile'
+import { isPortfolioPost } from '../../utils/service-price'
 
 const secondaryButton =
   'interaction inline-flex h-[42px] items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'

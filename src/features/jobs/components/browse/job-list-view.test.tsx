@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '@/shared/api/query-keys'
 import { JobListView } from './job-list-view'
-import { readJobListFilters, toJobSearchParams } from './jobs-browse-view'
+import { readJobListFilters, toJobSearchParams } from '../../utils/jobs-browse-view'
 
 const navigation = vi.hoisted(() => ({ search: '', replace: vi.fn(), push: vi.fn() }))
 vi.mock('next/navigation', () => ({

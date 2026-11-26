@@ -47,7 +47,7 @@ import {
   type JobListFilters,
   type JobPriceRange,
   type JobSort,
-} from './jobs-browse-view'
+} from '../../utils/jobs-browse-view'
 
 const postPortfolioButton =
   'interaction inline-flex h-[42px] items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'

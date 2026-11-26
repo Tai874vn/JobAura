@@ -13,7 +13,7 @@ import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from
 import type { FeedPost } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardSkeleton, EmptyState, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/feed-avatar'
-import { JobCard } from '@/features/jobs/job-card'
+import { JobCard } from '@/features/jobs/components/browse/job-card'
 import { mergeSavedPages } from './saved-data'
 
 type SavedTab = 'posts' | 'jobs'
