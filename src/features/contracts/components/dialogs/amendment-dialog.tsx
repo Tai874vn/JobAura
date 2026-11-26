@@ -1,5 +1,6 @@
 'use client'
 
+import { contractsConfig } from '@/page-config/contracts'
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { ContractDetail } from '@/shared/schemas'
@@ -7,7 +8,8 @@ import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
 import { amendmentStart, buildAmendment, type AmendmentBody } from '../../utils/amendment-changes'
 import { ProposalEditor } from '../proposal/proposal-editor'
 
-const MAX_CHANGES = 10
+// Set in src/page-config/contracts.ts (maxChangesPerRequest).
+const MAX_CHANGES = contractsConfig.maxChangesPerRequest
 
 /**
  * "Propose a change": the proposal editor in amendment mode, started from the milestones as they are now.

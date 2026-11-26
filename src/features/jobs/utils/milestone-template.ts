@@ -1,3 +1,4 @@
+import { jobFormConfig } from '@/page-config/job-form'
 import type { Job } from '@/shared/schemas'
 
 /** One row of the template a seller fills in. The share is typed text, so a half-typed value can be shown and checked. */
@@ -12,10 +13,11 @@ export type TemplateRow = {
 
 export type TemplateError = { field: string; message: string }
 
-export const MAX_TEMPLATE_ROWS = 10
-export const TEMPLATE_TITLE_MAX = 80
-export const TEMPLATE_DESCRIPTION_MAX = 300
-export const SERVICE_AREA_MAX = 160
+/** Set in src/page-config/job-form.ts */
+export const MAX_TEMPLATE_ROWS = jobFormConfig.milestoneTemplate.maxRows
+export const TEMPLATE_TITLE_MAX = jobFormConfig.milestoneTemplate.titleMax
+export const TEMPLATE_DESCRIPTION_MAX = jobFormConfig.milestoneTemplate.descriptionMax
+export const SERVICE_AREA_MAX = jobFormConfig.serviceAreaMax
 
 export const blankTemplateRow = (key: string): TemplateRow => ({ key, title: '', description: '', share: '' })
 

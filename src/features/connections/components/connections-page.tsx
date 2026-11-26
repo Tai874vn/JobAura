@@ -1,5 +1,6 @@
 'use client'
 
+import { connectionsConfig } from '@/page-config/connections'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import Link from 'next/link'
@@ -40,11 +41,11 @@ export function ConnectionsPage() {
   }, [keyword])
 
   const connectionsParams = useMemo(
-    () => ({ page: connectionsPage, pageSize: 24, keyword: debouncedKeyword || undefined }),
+    () => ({ page: connectionsPage, pageSize: connectionsConfig.pageSize, keyword: debouncedKeyword || undefined }),
     [connectionsPage, debouncedKeyword]
   )
   const suggestionsParams = useMemo(
-    () => ({ page: discoverPage, pageSize: 24, keyword: debouncedKeyword || undefined }),
+    () => ({ page: discoverPage, pageSize: connectionsConfig.pageSize, keyword: debouncedKeyword || undefined }),
     [discoverPage, debouncedKeyword]
   )
   const connectionsQuery = useQuery({
@@ -119,7 +120,7 @@ export function ConnectionsPage() {
                 value={keyword}
                 maxLength={80}
                 onChange={(event) => setKeyword(event.target.value)}
-                placeholder="Search people, skills, or location"
+                placeholder={connectionsConfig.searchPlaceholder}
                 aria-label="Search connections"
               />
             </label>
@@ -346,7 +347,7 @@ function ProfileSummary({ user }: { user: ConnectionProfile }) {
 }
 
 function SkillList({ user, highlighted = [] }: { user: ConnectionProfile; highlighted?: string[] }) {
-  const skills = highlighted.length ? highlighted : user.profileSkills.slice(0, 3).map((skill) => skill.name)
+  const skills = highlighted.length ? highlighted : user.profileSkills.slice(0, connectionsConfig.skillsPerCard).map((skill) => skill.name)
   return <div className="mt-4 flex min-h-7 flex-wrap gap-2">{skills.map((skill) => <span key={skill} className="rounded border border-border bg-surface-muted px-2 py-1 text-xs font-medium">{skill}</span>)}</div>
 }
 

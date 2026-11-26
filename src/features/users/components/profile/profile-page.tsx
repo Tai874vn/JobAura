@@ -1,5 +1,6 @@
 'use client'
 
+import { profileConfig } from '@/page-config/profile'
 
 import { useMemo } from 'react'
 import { useQueryClient, useQuery } from '@tanstack/react-query'
@@ -131,7 +132,7 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
               </div>
               {skills.length ? (
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {skills.slice(0, 4).map((skill, index) => (
+                  {skills.slice(0, profileConfig.skillsInHeader).map((skill, index) => (
                     <span key={skill.id ?? `${skill.name}-${index}`} className="rounded-full bg-accent/30 px-2.5 py-1 text-xs font-medium">
                       {skill.name}
                       {skill.level ? <span className="ml-1.5 text-xs font-medium text-muted">{humanize(skill.level)}</span> : null}

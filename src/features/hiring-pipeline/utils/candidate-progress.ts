@@ -1,7 +1,9 @@
+import { myApplicationsConfig } from '@/page-config/my-applications'
 import type { ApplicationDetail, ApplicationEvent, ApplicationStatus, Interview } from '@/shared/schemas'
 import { trackerStep } from '../api'
 
-export const trackerLabels = ['Applied', 'Shortlisted', 'Interview', 'Offer', 'Hired'] as const
+/** Set in src/page-config/my-applications.ts (trackerLabels). */
+export const trackerLabels = myApplicationsConfig.trackerLabels
 
 /** done = passed, current = where the application is now, stopped = reached before it ended, todo = not reached. */
 export type StepState = 'done' | 'current' | 'stopped' | 'todo'

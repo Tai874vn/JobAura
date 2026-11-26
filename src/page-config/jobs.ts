@@ -1,5 +1,6 @@
 import { credits } from '@/shared/lib/credits'
 
+// @find jobs page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /jobs (portfolios and services list)
  *

@@ -1,8 +1,10 @@
+import { myHiringPostsConfig } from '@/page-config/my-hiring-posts'
 import { occupationLabel } from '@/features/occupations/api'
 import { createHiringPostSchema, type CreateHiringPost, type HiringPost } from '@/shared/schemas'
 
-export const employmentTypes = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'] as const
-export const hiringPostLevels = ['Junior', 'Mid', 'Senior'] as const
+/** Set in src/page-config/my-hiring-posts.ts (postForm). */
+export const employmentTypes = myHiringPostsConfig.postForm.employmentTypes
+export const hiringPostLevels = myHiringPostsConfig.postForm.levels
 
 /** What the form edits. Numbers stay text so a half-typed value isn't lost. */
 export type HiringPostDraft = {

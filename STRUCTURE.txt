@@ -5,6 +5,9 @@ src/
   app/          Next.js routes. One folder per URL; page.tsx only loads data and renders a feature component.
                 Folders in (brackets) group routes without changing the URL: (marketplace) public, (workspace)
                 signed-in, (admin) admin, (auth) logout.
+  page-config/  ONE FILE PER PAGE with every value you can change without touching the page code:
+                page sizes, search fields, filter groups (on/off and values), sort choices, limits,
+                hint texts. Start at src/page-config/index.ts (URL -> file).
   features/     Everything for one part of the product (see the layout below).
   shared/       Used by many features:
     api/        HTTP client, one file per backend area in api/endpoints/, React Query keys, normalizers

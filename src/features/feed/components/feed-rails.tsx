@@ -1,5 +1,6 @@
 'use client'
 
+import { feedConfig } from '@/page-config/feed'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TrendingUp, UserPlus } from 'lucide-react'
 import Link from 'next/link'
@@ -34,13 +35,13 @@ function RightFeedRailContent() {
   const { user } = useSession()
   const skillsQuery = useQuery({ queryKey: ['skills', 'feed'], queryFn: skillsApi.all, staleTime: 300_000 })
   const suggestionsQuery = useQuery({
-    queryKey: queryKeys.connectionSuggestions({ page: 1, pageSize: 2 }, user?.id),
-    queryFn: () => connectionsApi.suggestions({ page: 1, pageSize: 2 }),
+    queryKey: queryKeys.connectionSuggestions({ page: 1, pageSize: feedConfig.rightRail.peopleYouMayKnow }, user?.id),
+    queryFn: () => connectionsApi.suggestions({ page: 1, pageSize: feedConfig.rightRail.peopleYouMayKnow }),
     staleTime: 60_000,
   })
 
-  const skills = skillsQuery.data?.content?.slice(0, 6) ?? []
-  const suggestions = (suggestionsQuery.data?.content?.data ?? []).slice(0, 2)
+  const skills = skillsQuery.data?.content?.slice(0, feedConfig.rightRail.trendingSkills) ?? []
+  const suggestions = (suggestionsQuery.data?.content?.data ?? []).slice(0, feedConfig.rightRail.peopleYouMayKnow)
 
   return (
     <aside className="sticky top-20 hidden h-fit space-y-4 xl:block">

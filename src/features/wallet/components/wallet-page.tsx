@@ -1,5 +1,6 @@
 'use client'
 
+import { walletConfig } from '@/page-config/wallet'
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
@@ -14,7 +15,8 @@ import Link from 'next/link'
 import type { LedgerEntryView } from '@/shared/schemas'
 import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 
-const PAGE_SIZE = 20
+// Set in src/page-config/wallet.ts (ledgerPageSize).
+const PAGE_SIZE = walletConfig.ledgerPageSize
 
 /** The wallet: four figures, a place for the Top up, and the ledger (the list of every change) 20 rows at a time. */
 export function WalletPage() {

@@ -1,5 +1,6 @@
 'use client'
 
+import { feedConfig } from '@/page-config/feed'
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, ListOrdered } from 'lucide-react'
 import Link from 'next/link'
@@ -12,7 +13,8 @@ import type { HiringPost, RecommendedJob } from '@/shared/schemas'
 import { ButtonLink, Card, Skeleton } from '@/shared/ui'
 
 const recommendationParams = { topK: 12, poolSize: 50 }
-const freshParams = { page: 1, pageSize: 3 }
+// How many: src/page-config/feed.ts (jobsForYou).
+const freshParams = { page: 1, pageSize: feedConfig.jobsForYou }
 
 /**
  * The first thing a candidate sees on Home: roles to apply to. Their AI matches when they have run matching,
@@ -33,8 +35,8 @@ export function JobsForYou() {
     staleTime: 120_000,
   })
   const cached = matchesQuery.data?.content?.cache?.hit ? matchesQuery.data.content : null
-  const matches = ((cached?.data ?? []) as RecommendedJob[]).slice(0, 3)
-  const fresh = freshQuery.data?.content?.data.slice(0, 3) ?? []
+  const matches = ((cached?.data ?? []) as RecommendedJob[]).slice(0, feedConfig.jobsForYou)
+  const fresh = freshQuery.data?.content?.data.slice(0, feedConfig.jobsForYou) ?? []
   const showingMatches = matches.length > 0
   const posts: Array<HiringPost | RecommendedJob> = showingMatches ? matches : fresh
   const loading = matchesQuery.isPending || (!showingMatches && freshQuery.isPending)

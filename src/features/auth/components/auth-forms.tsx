@@ -1,5 +1,6 @@
 "use client";
 
+import { authConfig } from '@/page-config/auth'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -317,7 +318,7 @@ function RegisterFormFields({
           <div className="flex items-center rounded-lg border border-border bg-surface field-shell">
             <Input
               className="border-0 bg-transparent shadow-none focus:border-0 focus:ring-0"
-              placeholder="At least 10 characters"
+              placeholder={`At least ${authConfig.passwordMinLength} characters`}
               type={showPassword ? "text" : "password"}
               {...form.register("password")}
             />

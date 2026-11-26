@@ -1,5 +1,6 @@
 'use client'
 
+import { applicantsConfig } from '@/page-config/applicants'
 
 import { Plus, X } from 'lucide-react'
 import { useId, useState } from 'react'
@@ -151,7 +152,8 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
   )
 }
 
-export const durationOptions = [15, 30, 45, 60, 90, 120] as const
+/** Set in src/page-config/applicants.ts (interviewDurations). */
+export const durationOptions = applicantsConfig.interviewDurations
 
 /** What the person typed in the dialog. Times are `datetime-local` text, in the viewer's own time. */
 export type InterviewDraft = {

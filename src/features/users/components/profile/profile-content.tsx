@@ -1,3 +1,4 @@
+import { profileConfig } from '@/page-config/profile'
 import { formatCredit, formatYears } from '@/features/users/utils/resume-career'
 import { occupationLabel } from '@/features/occupations/api'
 import {
@@ -181,7 +182,7 @@ export function ResumeShowcase({
               </p>
               {skills.length ? (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  {skills.slice(0, 10).map((skill) => (
+                  {skills.slice(0, profileConfig.skillsInSection).map((skill) => (
                     <span key={skill} className="rounded bg-accent/40 px-2 py-1 text-xs font-medium text-foreground">
                       {skill}
                     </span>

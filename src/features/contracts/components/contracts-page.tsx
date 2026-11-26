@@ -1,5 +1,6 @@
 'use client'
 
+import { contractsConfig } from '@/page-config/contracts'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
@@ -28,7 +29,8 @@ import { PanelLoading } from './panel-frame'
 import { ProposalPanel } from './proposal/proposal-panel'
 
 /** The lists show the newest 50 of each kind (the server's largest page). */
-export const contractsPageSize = 50
+/** Set in src/page-config/contracts.ts */
+export const contractsPageSize = contractsConfig.pageSize
 
 /** What each list asks the server for. The page and its tests both build the query keys from this. */
 export function contractsListParams(role: Side, status: string | undefined) {

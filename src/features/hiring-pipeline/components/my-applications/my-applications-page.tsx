@@ -1,5 +1,6 @@
 'use client'
 
+import { myApplicationsConfig } from '@/page-config/my-applications'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
@@ -17,7 +18,8 @@ import Link from 'next/link'
 import type { UpcomingInterview } from '@/shared/schemas'
 import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'
 
-export const myApplicationsPageSize = 20
+/** Set in src/page-config/my-applications.ts */
+export const myApplicationsPageSize = myApplicationsConfig.pageSize
 
 /** What the list asks the server for; the page and its tests both build the query key from this. */
 export function myApplicationsParams(page: number) {

@@ -1,3 +1,4 @@
+import { contractsConfig } from '@/page-config/contracts'
 import { credits } from '@/shared/lib/credits'
 import type { MilestoneStatus, ProposalVersionView, VersionBody } from '@/shared/schemas'
 
@@ -26,9 +27,10 @@ export type EditorState = {
 
 export type EditorError = { field: string; message: string }
 
-export const MAX_MILESTONES = 20
-export const MAX_AMOUNT = 1_000_000
-export const MAX_REFERENCES = 10
+/** Set in src/page-config/contracts.ts (proposal). */
+export const MAX_MILESTONES = contractsConfig.proposal.maxMilestones
+export const MAX_AMOUNT = contractsConfig.proposal.maxAmount
+export const MAX_REFERENCES = contractsConfig.proposal.maxReferences
 
 const two = (n: number) => String(n).padStart(2, '0')
 

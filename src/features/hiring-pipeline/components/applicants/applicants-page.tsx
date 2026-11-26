@@ -1,5 +1,6 @@
 'use client'
 
+import { applicantsConfig } from '@/page-config/applicants'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { ArrowLeft, Pencil } from 'lucide-react'
@@ -16,18 +17,12 @@ import { ApplicantListItem } from './applicant-list-item'
 import { ApplicantPanel, ApplicantPanelLoading } from './applicant-panel'
 import { PipelineListSkeleton } from '../split-pane-skeletons'
 
-export const applicantsPageSize = 20
+/** Set in src/page-config/applicants.ts */
+export const applicantsPageSize = applicantsConfig.pageSize
 
 /** The tabs. "Not selected" is the REJECTED status; the others keep their own name. */
-export const applicantTabs: { key: 'all' | ApplicationStatus; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'APPLIED', label: 'New' },
-  { key: 'REVIEWING', label: 'Shortlisted' },
-  { key: 'INTERVIEWING', label: 'Interview' },
-  { key: 'OFFERED', label: 'Offer' },
-  { key: 'HIRED', label: 'Hired' },
-  { key: 'REJECTED', label: 'Not selected' },
-]
+/** Set in src/page-config/applicants.ts (tabs). */
+export const applicantTabs: readonly { key: 'all' | ApplicationStatus; label: string }[] = applicantsConfig.tabs
 
 /** What the list asks the server for; the page and its tests both build the query key from this. */
 export function applicantsListParams(status: ApplicationStatus | undefined, page: number) {

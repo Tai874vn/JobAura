@@ -1,3 +1,4 @@
+// @find hiring-posts page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /hiring-posts (public list of open roles)
  *

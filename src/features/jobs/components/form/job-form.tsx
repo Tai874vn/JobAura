@@ -1,5 +1,6 @@
 'use client'
 
+import { jobFormConfig } from '@/page-config/job-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
@@ -24,9 +25,10 @@ import { servicePriceLabel } from '../../utils/service-price'
 
 type CreateJobInput = z.input<typeof createJobSchema>
 
-const titleLimit = 160
-const shortLimit = 500
-const descriptionLimit = 5000
+// Limits set in src/page-config/job-form.ts
+const titleLimit = jobFormConfig.titleMax
+const shortLimit = jobFormConfig.shortDescriptionMax
+const descriptionLimit = jobFormConfig.descriptionMax
 
 const workModes = [
   { value: 'REMOTE', label: 'Remote' },

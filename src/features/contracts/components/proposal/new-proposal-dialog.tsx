@@ -1,5 +1,6 @@
 'use client'
 
+import { contractsConfig } from '@/page-config/contracts'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { X } from 'lucide-react'
@@ -26,7 +27,8 @@ export const OPEN_PROPOSAL_SENTENCE = 'You already have an open proposal for thi
 const serverSentence = (error: unknown) => getErrorMessage(error, '')
 
 /** How many days from today the first deadline suggestion is. The client changes it freely. */
-const DEFAULT_DEADLINE_DAYS = 14
+// Set in src/page-config/contracts.ts (proposal.defaultDeadlineDays).
+const DEFAULT_DEADLINE_DAYS = contractsConfig.proposal.defaultDeadlineDays
 
 /**
  * "Send a proposal" on a service page. The editor starts from the service price and its template (see

@@ -1,5 +1,6 @@
 'use client'
 
+import { contractsConfig } from '@/page-config/contracts'
 import { ImagePlus, Plus, X } from 'lucide-react'
 import Image from 'next/image'
 import { useId, useRef, useState } from 'react'
@@ -10,8 +11,9 @@ import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, DialogPortal, Input, Textarea, useDialogFocus } from '@/shared/ui'
 import { contractsApi } from '../../api'
 
-export const MAX_WORK_FILES = 10
-export const MAX_NOTE = 2000
+/** Set in src/page-config/contracts.ts (submitWork). */
+export const MAX_WORK_FILES = contractsConfig.submitWork.maxFiles
+export const MAX_NOTE = contractsConfig.submitWork.maxNoteLength
 
 export type WorkBody = { note: string; images: string[]; links: string[] }
 

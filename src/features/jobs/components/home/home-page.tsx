@@ -1,3 +1,4 @@
+import { welcomeConfig } from '@/page-config/welcome'
 import { Suspense } from 'react'
 import { FaqSection } from './faq'
 import { FeaturedServicesSkeleton, CategoryGridSkeleton } from './home-skeletons'
@@ -78,7 +79,7 @@ export async function CategoryGrid() {
   const categories = typesRes.ok ? (normalizeCategoriesResponse(typesRes.data).content ?? []) : []
   // Without the API there are no real IDs, so the fallback searches by name instead of inventing IDs.
   const displayed = categories.length
-    ? categories.slice(0, 8).map((category) => ({
+    ? categories.slice(0, welcomeConfig.categoriesShown).map((category) => ({
         key: String(category.id),
         name: category.name,
         href: `/jobs?category=${category.id}`,
@@ -220,7 +221,7 @@ export function LandingHero() {
                 name="keyword"
                 aria-label="Search roles, skills, or companies"
                 className="h-11 min-w-0 flex-1 bg-transparent text-sm outline-none"
-                placeholder="Role, skill, or company"
+                placeholder={welcomeConfig.searchPlaceholder}
               />
             </div>
             <Button size="lg" type="submit" className="h-11">

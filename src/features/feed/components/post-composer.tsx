@@ -1,5 +1,6 @@
 'use client'
 
+import { feedConfig } from '@/page-config/feed'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BriefcaseBusiness, ImagePlus, Send, X } from 'lucide-react'
@@ -139,7 +140,7 @@ export function PostComposer({
               id={inputId}
               value={content}
               onChange={(event) => setContent(event.target.value)}
-              placeholder="What do you want to share?"
+              placeholder={feedConfig.composerPlaceholder}
               maxLength={3000}
               rows={7}
               className="mt-4 min-h-44 w-full resize-none border-0 bg-transparent text-base leading-7 outline-none placeholder:text-muted"

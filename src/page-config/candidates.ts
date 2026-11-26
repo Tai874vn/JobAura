@@ -1,3 +1,4 @@
+// @find candidates page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /candidates (recruiters search candidate profiles)
  *

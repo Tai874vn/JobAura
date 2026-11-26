@@ -1,5 +1,6 @@
 'use client'
 
+import { feedConfig } from '@/page-config/feed'
 
 import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData, mutationOptions, type QueryClient } from '@tanstack/react-query'
 import { MessagesSquare, RefreshCw } from 'lucide-react'
@@ -34,7 +35,7 @@ export function FeedPage() {
 
   const feedQuery = useInfiniteQuery({
     queryKey: queryKeys.feed(user.id),
-    queryFn: async ({ pageParam }) => (await postsApi.feed({ cursor: pageParam ?? undefined, limit: 10 })).content ?? { data: [], nextCursor: null },
+    queryFn: async ({ pageParam }) => (await postsApi.feed({ cursor: pageParam ?? undefined, limit: feedConfig.postsPerLoad })).content ?? { data: [], nextCursor: null },
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   })

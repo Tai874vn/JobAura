@@ -1,7 +1,9 @@
+import { settingsConfig } from '@/page-config/settings'
 import type { ResumeOccupationYears, UserResume } from '@/shared/schemas'
 
 /** Same levels as the labeling data, so the model reads them the same way. */
-export const degreeLevels = ['Not stated', 'Below bachelor', 'Bachelor', 'Master or higher'] as const
+/** Set in src/page-config/settings.ts */
+export const degreeLevels = settingsConfig.degreeLevels
 
 /**
  * A job in the resume. `occupation` is an ESCO code, or empty when no occupation fits the title: the job and its

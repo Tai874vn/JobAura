@@ -1,5 +1,6 @@
 "use client";
 
+import { authConfig } from '@/page-config/auth'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, MailCheck, XCircle } from "lucide-react";
@@ -197,7 +198,7 @@ const resetSchema = z
   .object({
     password: z
       .string()
-      .min(10, "Password must be at least 10 characters")
+      .min(authConfig.passwordMinLength, `Password must be at least ${authConfig.passwordMinLength} characters`)
       .max(128, "Password must be 128 characters or fewer"),
     confirm: z.string(),
   })
@@ -246,7 +247,7 @@ export function ResetPasswordForm() {
     body = (
       <form className="space-y-4" onSubmit={form.handleSubmit((values) => mutation.mutate(values.password))}>
         <FieldError label="New password" message={form.formState.errors.password?.message}>
-          <Input placeholder="At least 10 characters" type="password" autoComplete="new-password" {...form.register("password")} />
+          <Input placeholder={`At least ${authConfig.passwordMinLength} characters`} type="password" autoComplete="new-password" {...form.register("password")} />
         </FieldError>
         <FieldError label="Type it again" message={form.formState.errors.confirm?.message}>
           <Input type="password" autoComplete="new-password" {...form.register("confirm")} />
