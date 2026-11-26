@@ -176,9 +176,7 @@ export function InterviewCard({
               Join call
             </ButtonLink>
           ) : null}
-          {!candidate && interview.status === 'SCHEDULED' && online ? (
-            <Button size="sm" variant="secondary" disabled={pending} onClick={() => onAction({ type: 'complete' })}>Skip</Button>
-          ) : null}
+          {/* An online interview is marked done when the recruiter leaves the call (call-screen.tsx), so it has no button here. */}
           {!candidate && interview.status === 'SCHEDULED' && !online ? (
             <Button size="sm" variant="secondary" disabled={pending} onClick={() => onAction({ type: 'complete' })}>Mark as done</Button>
           ) : null}

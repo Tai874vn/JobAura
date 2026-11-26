@@ -32,10 +32,11 @@ describe('InterviewCard', () => {
     expect(html).not.toContain('Skip')
   })
 
-  it('gives the recruiter a plain "Skip" button on a scheduled online interview', () => {
+  it('gives the recruiter Join call and no Skip on a scheduled online interview (it is marked done when leaving the call)', () => {
     const html = card(scheduled, 'recruiter')
-    expect(html).toMatch(/<button[^>]*>Skip<\/button>/)
-    expect(html).not.toMatch(/<button[^>]*(title|aria-label)=[^>]*>Skip/)
+    expect(html).toContain('Join call')
+    expect(html).not.toContain('Skip')
+    expect(html).not.toContain('Mark as done')
   })
 
   it('shows the address and no Join call for an onsite interview', () => {

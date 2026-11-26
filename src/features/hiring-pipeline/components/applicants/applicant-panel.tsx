@@ -31,7 +31,7 @@ type PanelAction =
 
 type Dialog = ApplicantDialog | null
 
-/** Shortlist and Skip have no dialog, so a refused step is told by a toast; every other step is told inside its dialog. */
+/** Shortlist and Mark as done have no dialog, so a refused step is told by a toast; every other step is told inside its dialog. */
 const toastsErrors = (act: PanelAction) => act.type === 'shortlist' || (act.type === 'interview' && act.action.type === 'complete')
 
 const doneText: Record<PanelAction['type'], string> = {
@@ -103,7 +103,7 @@ export function ApplicantPanel({
   application: ApplicationDetail
   /** The list without a selected applicant; the Back link on phones. */
   backHref: string
-  /** The page was opened with ?outcome=1 (after Skip on the call screen). */
+  /** The page was opened with ?outcome=1 (the recruiter left the call and marked the interview done). */
   outcomeOnLoad?: boolean
   onOutcomeShown?: () => void
 }) {
@@ -277,7 +277,7 @@ export function ApplicantPanel({
                   onStale={setNotice}
                   onAction={(action) => {
                     const run = perform({ type: 'interview', interviewId: interview.id, action })
-                    // Skip and Mark as done have no dialog to show an error in; the toast already told the recruiter.
+                    // Mark as done has no dialog to show an error in; the toast already told the recruiter.
                     return action.type === 'complete' ? run.catch(() => undefined) : run
                   }}
                 />
@@ -420,7 +420,7 @@ export function ApplicantPanelLoading({ row, backHref }: { row?: ApplicationDeta
 export type OutcomeChoice = 'offer' | 'round' | 'reject' | 'later'
 
 /**
- * Shown after an interview is done (Skip, Mark as done, or back from the call): "How did it go?".
+ * Shown after an interview is done (Mark as done, or leaving the call with Yes): "How did it go?".
  * Each choice only picks the next step; the panel opens the matching dialog. "Decide later" just closes.
  */
 export function InterviewOutcomeDialog({
