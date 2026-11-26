@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { CandidateDirectoryPage } from '@/features/candidates/candidate-directory-page'
 
 export const metadata: Metadata = { title: 'Find candidates' }

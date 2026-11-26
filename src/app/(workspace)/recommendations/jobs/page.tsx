@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { RecommendedJobsPage } from '@/features/jobs/components/recommendations/recommended-jobs-page'
 
 export const metadata: Metadata = { title: 'Hiring posts for you' }

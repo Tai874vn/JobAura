@@ -6,7 +6,7 @@ import { JobDetailView } from './job-detail-view'
 
 let sessionUser: { id: number; role: string } | null = null
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
-vi.mock('@/features/auth/use-session', () => ({ useSession: () => ({ user: sessionUser }) }))
+vi.mock('@/features/auth/hooks/use-session', () => ({ useSession: () => ({ user: sessionUser }) }))
 
 const service: Job = {
   id: 7,

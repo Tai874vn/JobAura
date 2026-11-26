@@ -3,7 +3,7 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'

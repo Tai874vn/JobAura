@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { queryKeys } from '@/shared/api/query-keys'
 

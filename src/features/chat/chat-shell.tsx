@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { Button } from '@/shared/ui'
 import { ChatComposer } from './chat-composer'
 import { ChatConversation } from './chat-conversation'

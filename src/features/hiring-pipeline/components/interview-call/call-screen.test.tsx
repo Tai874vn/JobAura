@@ -8,7 +8,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   useSearchParams: () => new URLSearchParams('application=2'),
 }))
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: { id: 9, role: 'employer' }, isLoading: false, isAuthenticated: true }),
 }))
 

@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { ResetPasswordForm } from '@/features/auth/email-flows'
+import { ResetPasswordForm } from '@/features/auth/components/email-flows'
 import { Spinner } from '@/shared/ui'
 
 export const metadata: Metadata = {

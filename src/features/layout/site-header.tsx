@@ -4,7 +4,7 @@ import { LogOut, Menu, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { PipelineLiveUpdates } from "@/features/hiring-pipeline/hooks/use-pipeline-live-updates";
 import { ContractLiveUpdates } from "@/features/contracts/hooks/use-contract-live-updates";
 import { NotificationBell } from "@/features/notifications/notification-bell";

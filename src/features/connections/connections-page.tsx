@@ -5,7 +5,7 @@ import { AlertCircle, Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, S
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { chatApi, connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'

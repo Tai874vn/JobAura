@@ -5,7 +5,7 @@ import { authApi } from '@/shared/api/endpoints'
 import { env } from '@/shared/config/env'
 import { fetchRealtimeAuth } from '@/shared/realtime/realtime-auth'
 import { createRealtimeConnection, type RealtimeConnection } from '@/shared/realtime/realtime-connection'
-import { useSession } from './use-session'
+import { useSession } from '../hooks/use-session'
 
 const RealtimeContext = createContext<RealtimeConnection | null>(null)
 

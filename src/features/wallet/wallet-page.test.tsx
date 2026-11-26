@@ -5,7 +5,7 @@ import { walletKeys } from './api'
 import { WalletPage } from './wallet-page'
 import { WalletChip } from './wallet-chip'
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: { id: 1, role: 'user' }, isLoading: false, isAuthenticated: true }),
 }))
 

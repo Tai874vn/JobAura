@@ -3,7 +3,7 @@
 import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Tags, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { cn } from '@/shared/lib/utils'
 import { Avatar } from '@/shared/ui'
 

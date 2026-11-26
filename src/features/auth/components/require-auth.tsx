@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react'
 import { canAccessRole, getSignedInRedirect, type AccountRole } from '@/shared/lib/roles'
 import { buildLoginRedirect } from '@/shared/lib/session-routing'
 import { Card, Skeleton } from '@/shared/ui'
-import { useSession } from './use-session'
+import { useSession } from '../hooks/use-session'
 
 export function RequireAuth({
   children,

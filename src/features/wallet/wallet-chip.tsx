@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { credits } from '@/shared/lib/credits'
 import { Skeleton } from '@/shared/ui'
 import { walletApi, walletKeys } from './api'

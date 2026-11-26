@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { toast } from 'sonner'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
 import { pipelineKeys } from '../api'

@@ -6,7 +6,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import type { Job } from '@/shared/schemas'
 import { JobEditPage } from './job-edit-page'
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: { id: 7, role: 'user' }, isLoading: false, isAuthenticated: true }),
 }))
 

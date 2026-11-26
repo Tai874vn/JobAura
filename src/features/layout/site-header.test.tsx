@@ -11,7 +11,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
 }))
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ ...mocks.session, isAuthenticated: Boolean(mocks.session.user) }),
 }))
 

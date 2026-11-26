@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { scrollBehavior } from '@/shared/lib/motion'
 import { Button } from '@/shared/ui'
 import { hasResumeSection, isSettingSection, SettingsPlaceholder, type SettingSection } from './settings/setting-sections'

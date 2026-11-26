@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { JobEditPage } from '@/features/jobs/components/form/job-edit-page'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 

@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, useSyncExternalStore } from 'react'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Skeleton } from '@/shared/ui'

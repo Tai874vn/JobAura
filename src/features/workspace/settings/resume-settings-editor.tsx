@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { refreshMyProfilePage } from '@/features/users/utils/refresh-profile-page'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { suggestedSkills } from '@/features/users/utils/resume-ai'

@@ -7,7 +7,7 @@ import { ArrowUpRight, Calendar, MapPin, MessageSquare, ListOrdered, Pencil, Sta
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { chatApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { canAccessCandidateDirectory } from '@/shared/lib/roles'

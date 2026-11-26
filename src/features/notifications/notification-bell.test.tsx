@@ -13,11 +13,11 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
 }))
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: { id: 12, role: 'user' }, isLoading: false, isAuthenticated: true }),
 }))
 
-vi.mock('@/features/auth/realtime-provider', () => ({
+vi.mock('@/features/auth/components/realtime-provider', () => ({
   useRealtimeConnection: () => null,
 }))
 

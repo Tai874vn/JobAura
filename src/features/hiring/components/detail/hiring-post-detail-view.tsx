@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Pencil } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
 import type { HiringPost } from "@/shared/schemas";
 import { ButtonLink, Card, CardContent } from "@/shared/ui";

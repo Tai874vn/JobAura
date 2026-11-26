@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { openChatEventName, parseOpenChatRequest, type OpenChatRequest } from './chat-data'
 
 const ChatShell = dynamic(() => import('./chat-shell').then((mod) => mod.ChatShell), {

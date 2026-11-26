@@ -5,7 +5,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import type { Connection } from '@/shared/schemas'
 import { ConnectionsPage } from './connections-page'
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: { id: 1, role: 'user' }, isLoading: false, isAuthenticated: true }),
 }))
 

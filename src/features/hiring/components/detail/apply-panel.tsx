@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileWarning, Send } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints";
 import { usersApi } from "@/shared/api/endpoints/users";
 import { queryKeys } from "@/shared/api/query-keys";

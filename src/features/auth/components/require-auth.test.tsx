@@ -17,7 +17,7 @@ vi.mock('next/navigation', () => ({
   useRouter: () => ({ replace: mocks.replace }),
 }))
 
-vi.mock('./use-session', () => ({
+vi.mock('../hooks/use-session', () => ({
   useSession: () => mocks.session,
 }))
 

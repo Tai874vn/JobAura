@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { getSignedInRedirect } from '@/shared/lib/roles'
 import { ShortlistPreview } from '@/features/jobs/components/home/shortlist-preview'
 import { Card, CardContent, Spinner } from '@/shared/ui'
-import { useSession } from './use-session'
+import { useSession } from '../hooks/use-session'
 
 export function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextPath?: string | null }) {
   const router = useRouter()

@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useRealtimeConnection } from "@/features/auth/realtime-provider";
-import { useSession } from "@/features/auth/use-session";
+import { useRealtimeConnection } from "@/features/auth/components/realtime-provider";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { chatApi, notificationsApi } from "@/shared/api/endpoints";
 import { normalizeNotification } from "@/shared/api/normalizers";
 import { reportServerError } from "@/shared/api/query-client";

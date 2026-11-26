@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { Footer } from '@/features/layout/footer'
 import { SiteHeader } from '@/features/layout/site-header'
 import { Card, Skeleton } from '@/shared/ui'

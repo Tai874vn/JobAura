@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { ContractsPage } from '@/features/contracts/components/contracts-page'
 import { ContractsPageSkeleton } from '@/features/contracts/components/contracts-skeleton'
 

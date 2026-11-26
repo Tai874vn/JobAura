@@ -6,7 +6,7 @@ import { ConnectionActions } from './connect-button'
 
 const session = vi.hoisted(() => ({ user: null as { id: number } | null, isLoading: false }))
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: session.user, isLoading: session.isLoading, isAuthenticated: Boolean(session.user) }),
 }))
 

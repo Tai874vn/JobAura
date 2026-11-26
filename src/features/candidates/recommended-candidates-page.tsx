@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { hiringPostsApi, recommendationsApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
 import { getErrorMessage } from "@/shared/lib/utils";

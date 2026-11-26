@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ExternalLink, ListOrdered, Lock, LockOpen, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { pipelineApi, pipelineKeys, statusLabel } from "@/features/hiring-pipeline/api";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";

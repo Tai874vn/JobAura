@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { CallLoading } from '@/features/hiring-pipeline/components/interview-call/call-loading'
 import { CallScreen } from '@/features/hiring-pipeline/components/interview-call/call-screen'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'

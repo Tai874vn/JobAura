@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, ListOrdered } from 'lucide-react'
 import Link from 'next/link'
-import { useSession } from '@/features/auth/use-session'
+import { useSession } from '@/features/auth/hooks/use-session'
 import { usePostOccupation } from '@/features/hiring/hooks/use-post-occupation'
 import { MatchBadge } from '@/features/jobs/components/recommendations/recommendation-ui'
 import { hiringPostsApi, recommendationsApi } from '@/shared/api/endpoints'

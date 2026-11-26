@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { VerifyEmailView } from '@/features/auth/email-flows'
+import { VerifyEmailView } from '@/features/auth/components/email-flows'
 import { Spinner } from '@/shared/ui'
 
 export const metadata: Metadata = {

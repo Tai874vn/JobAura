@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { RequireAuth } from '@/features/auth/require-auth'
+import { RequireAuth } from '@/features/auth/components/require-auth'
 import { AdminShell } from '@/features/admin/admin-shell'
 import { Card, Skeleton } from '@/shared/ui'
 

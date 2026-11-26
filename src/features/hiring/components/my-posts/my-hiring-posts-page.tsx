@@ -6,7 +6,7 @@ import { ArrowDownWideNarrow, BriefcaseBusiness, Plus, Search } from "lucide-rea
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
 import { reportNonFatalError } from "@/shared/api/query-client";
 import { queryKeys } from "@/shared/api/query-keys";

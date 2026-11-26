@@ -5,7 +5,7 @@ import { replaceUrlInPlace } from "@/shared/lib/replace-url";
 import { ArrowDownWideNarrow, BriefcaseBusiness, ListChecks, ListOrdered, MapPin, Search } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { useSession } from "@/features/auth/use-session";
+import { useSession } from "@/features/auth/hooks/use-session";
 import { hiringPostsApi, hiringPostSorts } from "@/shared/api/endpoints/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
 import {

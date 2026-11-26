@@ -2,8 +2,8 @@
 
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
-import { useRealtimeConnection } from '@/features/auth/realtime-provider'
-import { useSession } from '@/features/auth/use-session'
+import { useRealtimeConnection } from '@/features/auth/components/realtime-provider'
+import { useSession } from '@/features/auth/hooks/use-session'
 
 const contractTypes: ReadonlySet<string> = new Set(['PROPOSAL_UPDATE', 'CONTRACT_UPDATE'])
 

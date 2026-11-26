@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
 import { computeTooltipPosition, RecommendedJobsPage } from './recommended-jobs-page'
 
-vi.mock('@/features/auth/use-session', () => ({
+vi.mock('@/features/auth/hooks/use-session', () => ({
   useSession: () => ({ user: { id: 5, role: 'user' }, isLoading: false, isAuthenticated: true }),
 }))
 
