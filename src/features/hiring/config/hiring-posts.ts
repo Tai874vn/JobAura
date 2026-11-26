@@ -69,6 +69,8 @@ export const hiringPostsConfig = {
   /**
    * The "Sort" menu, in this order. Remove a line to hide that choice.
    * Allowed by the backend: newest, oldest, closing_soon, salary_high (HIRING_POST_SORTS).
+   * A NEW sort needs 3 places: here, hiringPostSorts in src/shared/api/endpoints/hiring-posts.ts, and the
+   * backend (HIRING_POST_SORTS + HIRING_POST_ORDER). A test fails when this list and hiringPostSorts disagree.
    */
   sorts: [
     { value: 'newest', label: 'Newest' },

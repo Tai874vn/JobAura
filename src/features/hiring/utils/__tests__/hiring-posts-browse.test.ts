@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { queryKeys } from '@/shared/api/query-keys'
+import { hiringPostsConfig } from '../../config/hiring-posts'
 import { canPrefetchHiringPosts, hiringPostSearchIn, readHiringPostFilters, toHiringPostFacetParams, toHiringPostQueryParams } from '../hiring-posts-browse'
 
 const url = (query: string) => new URLSearchParams(query)
@@ -17,6 +18,12 @@ describe('readHiringPostFilters', () => {
       sort: 'newest',
     })
     expect(page).toBe(1)
+  })
+
+  it('keeps every sort the Sort menu offers (config sorts), so picking one really changes the order', () => {
+    for (const { value } of hiringPostsConfig.sorts) {
+      expect(readHiringPostFilters(url(`sort=${value}`)).applied.sort).toBe(value)
+    }
   })
 
   it('drops an unknown sort and keeps the page between 1 and 100', () => {

@@ -3,7 +3,11 @@ import type { ApiResponse, ApplyHiringPost, CreateHiringPost, HiringApplication,
 import { normalizeHiringApplication, normalizeHiringPost, normalizePaginatedHiringApplicationsResponse, normalizePaginatedHiringPostsResponse } from '../normalizers'
 import { definedParams } from './params'
 
-export const hiringPostSorts = ['newest', 'closing_soon', 'salary_high'] as const
+/**
+ * Sorts the backend accepts (HIRING_POST_SORTS in NestjsBE hiring-post-query.dto.ts). A ?sort= in the URL that is
+ * not in this list is dropped, so a new sort must be added here, in the backend list, and in config/hiring-posts.ts.
+ */
+export const hiringPostSorts = ['newest', 'oldest', 'closing_soon', 'salary_high'] as const
 export type HiringPostSort = (typeof hiringPostSorts)[number]
 
 /**
