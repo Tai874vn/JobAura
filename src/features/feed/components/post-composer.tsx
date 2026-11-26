@@ -1,6 +1,6 @@
 'use client'
 
-import { feedConfig } from '@/page-config/feed'
+import { feedConfig } from '@/features/feed/config/feed'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BriefcaseBusiness, ImagePlus, Send, X } from 'lucide-react'

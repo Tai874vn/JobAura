@@ -1,6 +1,6 @@
 'use client'
 
-import { profileConfig } from '@/page-config/profile'
+import { profileConfig } from '@/features/users/config/profile'
 
 import { useMemo } from 'react'
 import { useQueryClient, useQuery } from '@tanstack/react-query'

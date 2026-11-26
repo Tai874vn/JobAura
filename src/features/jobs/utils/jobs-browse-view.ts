@@ -1,4 +1,4 @@
-import { jobsConfig } from '@/page-config/jobs'
+import { jobsConfig } from '@/features/jobs/config/jobs'
 import { credits } from '@/shared/lib/credits'
 import type { Category, Job, JobSearchParams } from '@/shared/schemas'
 import { getSellerId } from './seller-profile'
@@ -10,7 +10,7 @@ import { isPortfolioPost, servicePriceLabel, workModeLine } from './service-pric
  * price ranges in credits, price and work-mode labels, and which card actions show for each viewer.
  */
 
-/** Set in src/page-config/jobs.ts */
+/** Set in src/features/jobs/config/jobs.ts */
 export const jobsPageSize = jobsConfig.pageSize
 
 // @find jobs search search-in logic [all] — the fields the keyword box searches: delete a line to stop searching it
@@ -18,14 +18,14 @@ export const jobsPageSize = jobsConfig.pageSize
  * The fields the keyword box searches, sent as ?searchIn=... Delete a line to stop searching that field.
  * The backend accepts only: title, shortDescription, description, sellerName, subcategory, category.
  */
-/** Set in src/page-config/jobs.ts (search.fields). */
+/** Set in src/features/jobs/config/jobs.ts (search.fields). */
 export const jobSearchIn = jobsConfig.search.fields
 /** The longest search text read from the URL; longer text is cut, so a huge ?keyword= cannot reach the backend. */
 export const maxJobKeywordLength = 100
 /** The server fetches the first paint only for the plain list, up to this page (see canPrefetchJobs). */
 export const maxPrefetchJobsPage = 10
 
-/** Set in src/page-config/jobs.ts (exploreChips). */
+/** Set in src/features/jobs/config/jobs.ts (exploreChips). */
 export const popularPortfolioTerms = jobsConfig.exploreChips
 
 /** Sort values the backend /api/jobs/paginated-search endpoint accepts, plus empty string for default order. */
@@ -53,7 +53,7 @@ export type JobPriceRange = {
  * Sidebar price choices in credits.
  * Price 0 is a portfolio post (no rate); priced ranges start at 1 credit so portfolio posts stay separate.
  */
-/** Set in src/page-config/jobs.ts (filters.price.ranges). */
+/** Set in src/features/jobs/config/jobs.ts (filters.price.ranges). */
 export const jobPriceRanges: readonly JobPriceRange[] = jobsConfig.filters.price.ranges
 
 export type JobListFilters = {

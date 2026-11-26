@@ -1,4 +1,4 @@
-import { contractsConfig } from '@/page-config/contracts'
+import { contractsConfig } from '@/features/contracts/config/contracts'
 import type { ContractListItem, ContractStatus, ProposalListItem, ProposalStatus, Side } from '@/shared/schemas'
 
 /** The chips above the list. */
@@ -12,7 +12,7 @@ export const contractFilters: { key: ContractFilter; label: string }[] = [
   { key: 'ended', label: 'Ended' },
 ]
 
-/** Set in src/page-config/contracts.ts (tabs). */
+/** Set in src/features/contracts/config/contracts.ts (tabs). */
 export const contractTabs: readonly { key: Side; label: string }[] = contractsConfig.tabs
 
 /** What is open on the right: one proposal or one contract. */

@@ -1,6 +1,6 @@
 'use client'
 
-import { walletConfig } from '@/page-config/wallet'
+import { walletConfig } from '@/features/wallet/config/wallet'
 
 import { useMutation } from '@tanstack/react-query'
 import { X } from 'lucide-react'
@@ -12,7 +12,7 @@ import { openCheckout, walletApi } from '../api'
 
 export type TopUpInfo = { minCredits: number; maxCredits: number; centsPerCredit: number }
 
-// Set in src/page-config/wallet.ts (topUpQuickPicks).
+// Set in src/features/wallet/config/wallet.ts (topUpQuickPicks).
 const QUICK_PICKS = walletConfig.topUpQuickPicks
 
 /** Asks how many credits to add, then sends the browser to Stripe Checkout in test mode (a full page change). */

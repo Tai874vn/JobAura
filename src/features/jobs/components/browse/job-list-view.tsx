@@ -1,6 +1,6 @@
 'use client'
 
-import { jobsConfig as config } from '@/page-config/jobs'
+import { jobsConfig as config } from '@/features/jobs/config/jobs'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { replaceUrlInPlace } from '@/shared/lib/replace-url'
 import { ArrowDownWideNarrow, BriefcaseBusiness, ChevronDown, Plus, Search, SearchX } from 'lucide-react'
@@ -51,7 +51,7 @@ import {
 const postPortfolioButton =
   'interaction inline-flex h-[42px] items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
 
-// Set in src/page-config/jobs.ts (filters.category.collapsedLimit).
+// Set in src/features/jobs/config/jobs.ts (filters.category.collapsedLimit).
 const SIDEBAR_CATEGORY_LIMIT = config.filters.category.collapsedLimit
 
 /**

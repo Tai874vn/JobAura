@@ -1,6 +1,6 @@
 "use client";
 
-import { authConfig } from '@/page-config/auth'
+import { authConfig } from '@/features/auth/config/auth'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";

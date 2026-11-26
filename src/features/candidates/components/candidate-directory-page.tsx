@@ -1,6 +1,6 @@
 'use client'
 
-import { candidatesConfig as config } from '@/page-config/candidates'
+import { candidatesConfig as config } from '@/features/candidates/config/candidates'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { replaceUrlInPlace } from '@/shared/lib/replace-url'
 import { ListOrdered, MapPin, Search, SearchX, Users, X } from 'lucide-react'
@@ -42,7 +42,7 @@ import {
 } from '../utils/candidate-directory'
 import { CandidateResultCard } from './candidate-result-card'
 
-// Set in src/page-config/candidates.ts (popularSkillsLimit).
+// Set in src/features/candidates/config/candidates.ts (popularSkillsLimit).
 const EXPLORE_SKILLS_LIMIT = config.popularSkillsLimit
 
 /**

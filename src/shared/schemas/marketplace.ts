@@ -1,4 +1,9 @@
 import { z } from 'zod'
+// Form input rules defined in the feature config folders (edit them there):
+import { createHiringPostSchema } from '@/features/hiring/config/my-hiring-posts'
+import { createJobSchema } from '@/features/jobs/config/job-form'
+
+export { createHiringPostSchema, createJobSchema }
 import { profileSkillSchema, userProfileSchema, userSchema } from './users'
 
 const baseCategorySchema = z.object({
@@ -127,66 +132,6 @@ export const hiringPostSchema = z.object({
     .object({ id: z.number(), status: hiringApplicationStatusSchema, statusReason: hiringStatusReasonSchema.nullish() })
     .nullish(),
 });
-
-export const createHiringPostSchema = z
-  .object({
-    title: z
-      .string()
-      .trim()
-      .min(3, "Role title is required")
-      .max(160, "Role title must be 160 characters or fewer"),
-    description: z
-      .string()
-      .trim()
-      .min(20, "Description should explain the role")
-      .max(5000, "Description must be 5000 characters or fewer"),
-    requirements: z
-      .string()
-      .trim()
-      .max(3000, "Requirements must be 3000 characters or fewer")
-      .optional(),
-    location: z
-      .string()
-      .trim()
-      .max(120, "Location must be 120 characters or fewer")
-      .optional(),
-    employmentType: z
-      .string()
-      .trim()
-      .max(80, "Employment type must be 80 characters or fewer")
-      .optional(),
-    salaryMin: z.coerce.number().min(0).optional(),
-    salaryMax: z.coerce.number().min(0).optional(),
-    companyName: z
-      .string()
-      .trim()
-      .max(120, "Company name must be 120 characters or fewer")
-      .optional(),
-    /** ESCO occupation code, picked from the catalogue search. */
-    occupationCode: z.string().trim().min(1, "Choose the occupation"),
-    /** One of the occupation's specialties; null clears it on an edit. */
-    specialty: z.string().trim().max(120).nullable().optional(),
-    yearsRequired: z.coerce
-      .number({ message: "Enter the years of experience required" })
-      .int("Use whole years")
-      .min(0, "Years cannot be negative")
-      .max(40, "Use 40 years or fewer"),
-    skills: z.array(z.string()).max(20, "Pick up to 20 skills").optional(),
-    /** A date (YYYY-MM-DD) after which the post is no longer listed. */
-    closesAt: z.string().optional(),
-    /** How many people the post hires (1 to 50); null keeps hiring until the post is closed. */
-    openings: z.number().int().min(1).max(50).nullable().optional(),
-  })
-  .refine(
-    (data) =>
-      data.salaryMin === undefined ||
-      data.salaryMax === undefined ||
-      data.salaryMin <= data.salaryMax,
-    {
-      message: "Maximum salary must be greater than or equal to minimum salary",
-      path: ["salaryMax"],
-    },
-  );
 
 export const applyHiringPostSchema = z.object({
   coverLetter: z
@@ -384,43 +329,6 @@ export const recommendedJobSchema = hiringPostSchema.extend({
 
 export const recommendedCandidateSchema = userProfileSchema.extend({
   recommendation: recommendationScoreSchema,
-});
-
-export const createJobSchema = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(3, "Service title is required")
-    .max(160, "Service title must be 160 characters or fewer"),
-  /** Optional rate; 0 means a portfolio post with no price. */
-  price: z.coerce.number().min(0, "The rate cannot be negative").default(0),
-  shortDescription: z
-    .string()
-    .trim()
-    .max(500, "Short description must be 500 characters or fewer")
-    .optional(),
-  description: z
-    .string()
-    .trim()
-    .max(5000, "Description must be 5000 characters or fewer")
-    .optional(),
-  subcategoryId: z.coerce.number().min(1, "Choose the kind of work"),
-  workMode: z.enum(["REMOTE", "ONSITE", "BOTH"]).default("REMOTE"),
-  /** Null for remote work. */
-  serviceArea: z.string().trim().max(160, "The area is at most 160 characters.").nullish(),
-  /** Null for no template; otherwise 1-10 steps whose shares add up to 100 (the form checks this). */
-  milestoneTemplate: z
-    .array(
-      z.object({
-        title: z.string().trim().min(1).max(80),
-        description: z.string().trim().max(300).optional(),
-        share: z.number().int().min(1).max(100),
-      }),
-    )
-    .max(10)
-    .nullish(),
-  reviews: z.coerce.number().default(0),
-  rating: z.coerce.number().min(0).max(5).default(0),
 });
 
 export const updateJobSchema = createJobSchema.partial();

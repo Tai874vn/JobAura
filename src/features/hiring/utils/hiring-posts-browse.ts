@@ -1,5 +1,5 @@
 import { hiringPostSorts, type HiringPostFilters, type HiringPostSort } from '@/shared/api/endpoints/hiring-posts'
-import { hiringPostsConfig } from '@/page-config/hiring-posts'
+import { hiringPostsConfig } from '@/features/hiring/config/hiring-posts'
 
 /**
  * Pure URL-filter logic for the public Hiring posts (/hiring-posts) page.
@@ -7,7 +7,7 @@ import { hiringPostsConfig } from '@/page-config/hiring-posts'
  * (interactive filters) so both build identical React Query keys and API requests.
  */
 
-/** Set in src/page-config/hiring-posts.ts */
+/** Set in src/features/hiring/config/hiring-posts.ts */
 export const hiringPostsPageSize = hiringPostsConfig.pageSize
 
 /** The backend lists at most this many pages of open posts (MAX_HIRING_POST_PAGE); later pages are a 400. */
@@ -24,7 +24,7 @@ export const maxPrefetchHiringPostPage = 10
  * The backend accepts only these names (title, description, requirements, location, employmentType,
  * companyName, recruiterName, skills) and searches all of them when searchIn is left out.
  */
-/** Set in src/page-config/hiring-posts.ts (search.fields). */
+/** Set in src/features/hiring/config/hiring-posts.ts (search.fields). */
 export const hiringPostSearchIn = hiringPostsConfig.search.fields
 
 // @find hiring-posts filters keys url [all] — the query-string names

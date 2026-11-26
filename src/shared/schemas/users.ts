@@ -1,4 +1,3 @@
-import { authConfig } from '@/page-config/auth'
 import { z } from 'zod'
 import { accountRoles, signupRoles } from '@/shared/lib/roles'
 
@@ -216,41 +215,6 @@ export const updateProfileSchema = z.object({
     .optional(),
 });
 
-export const signInSchema = z.object({
-  email: z.string().trim().pipe(z.email("Enter a valid email").toLowerCase()),
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .max(128, "Password must be 128 characters or fewer"),
-});
 
-export const signUpSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Name must be at least 2 characters")
-    .max(100, "Name must be 100 characters or fewer"),
-  email: z.string().trim().pipe(z.email("Enter a valid email").toLowerCase()),
-  password: z
-    .string()
-    .min(authConfig.passwordMinLength, `Password must be at least ${authConfig.passwordMinLength} characters`)
-    .max(128, "Password must be 128 characters or fewer"),
-  phone: z
-    .string()
-    .trim()
-    .max(30, "Phone must be 30 characters or fewer")
-    .optional(),
-  birthDay: z
-    .string()
-    .trim()
-    .max(30, "Birthday must be 30 characters or fewer")
-    .optional(),
-  gender: z
-    .string()
-    .trim()
-    .max(30, "Gender must be 30 characters or fewer")
-    .optional(),
-  role: z.enum(signupRoles).optional(),
-  skill: z.string().trim().optional(),
-  certification: z.string().trim().optional(),
-});
+// Sign-in and sign-up forms: defined in src/features/auth/config/auth.ts (edit them there).
+export { signInSchema, signUpSchema } from '@/features/auth/config/auth'

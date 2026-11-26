@@ -1,6 +1,6 @@
 'use client'
 
-import { settingsConfig } from '@/page-config/settings'
+import { settingsConfig } from '@/features/workspace/config/settings'
 import { useEffect, useId, useRef, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Plus, X } from 'lucide-react'
@@ -10,7 +10,7 @@ import { Input } from '@/shared/ui'
 
 const kindLabel: Record<string, string> = { software: 'Tool', knowledge: 'Knowledge', skill: 'Skill' }
 
-/** Set in src/page-config/settings.ts */
+/** Set in src/features/workspace/config/settings.ts */
 export const skillLevels = settingsConfig.skillLevels
 
 function useDebounced(value: string, delayMs: number) {

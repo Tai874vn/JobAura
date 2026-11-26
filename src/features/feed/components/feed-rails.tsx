@@ -1,6 +1,6 @@
 'use client'
 
-import { feedConfig } from '@/page-config/feed'
+import { feedConfig } from '@/features/feed/config/feed'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TrendingUp, UserPlus } from 'lucide-react'
 import Link from 'next/link'

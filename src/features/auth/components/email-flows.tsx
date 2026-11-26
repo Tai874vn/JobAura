@@ -1,6 +1,6 @@
 "use client";
 
-import { authConfig } from '@/page-config/auth'
+import { authConfig, forgotPasswordSchema, resetPasswordSchema } from '@/features/auth/config/auth'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, MailCheck, XCircle } from "lucide-react";
@@ -146,14 +146,10 @@ export function VerifyEmailView() {
   return <AuthCard title="Confirm your email">{body}</AuthCard>;
 }
 
-const forgotSchema = z.object({
-  email: z.string().trim().pipe(z.email("Enter a valid email").toLowerCase()),
-});
-
 export function ForgotPasswordForm() {
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const form = useForm<z.infer<typeof forgotSchema>>({
-    resolver: zodResolver(forgotSchema),
+  const form = useForm<z.infer<typeof forgotPasswordSchema>>({
+    resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
   const mutation = useMutation({
@@ -194,24 +190,11 @@ export function ForgotPasswordForm() {
   );
 }
 
-const resetSchema = z
-  .object({
-    password: z
-      .string()
-      .min(authConfig.passwordMinLength, `Password must be at least ${authConfig.passwordMinLength} characters`)
-      .max(128, "Password must be 128 characters or fewer"),
-    confirm: z.string(),
-  })
-  .refine((values) => values.password === values.confirm, {
-    path: ["confirm"],
-    message: "The two passwords are not the same",
-  });
-
 export function ResetPasswordForm() {
   const { token, ready } = useHashToken();
   const queryClient = useQueryClient();
-  const form = useForm<z.infer<typeof resetSchema>>({
-    resolver: zodResolver(resetSchema),
+  const form = useForm<z.infer<typeof resetPasswordSchema>>({
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: "", confirm: "" },
   });
   const mutation = useMutation({

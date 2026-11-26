@@ -1,4 +1,4 @@
-import { profileConfig } from '@/page-config/profile'
+import { profileConfig } from '@/features/users/config/profile'
 import { formatCredit, formatYears } from '@/features/users/utils/resume-career'
 import { occupationLabel } from '@/features/occupations/api'
 import {

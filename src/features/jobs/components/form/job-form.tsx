@@ -1,6 +1,6 @@
 'use client'
 
-import { jobFormConfig } from '@/page-config/job-form'
+import { jobFormConfig } from '@/features/jobs/config/job-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
@@ -25,7 +25,7 @@ import { servicePriceLabel } from '../../utils/service-price'
 
 type CreateJobInput = z.input<typeof createJobSchema>
 
-// Limits set in src/page-config/job-form.ts
+// Limits set in src/features/jobs/config/job-form.ts
 const titleLimit = jobFormConfig.titleMax
 const shortLimit = jobFormConfig.shortDescriptionMax
 const descriptionLimit = jobFormConfig.descriptionMax

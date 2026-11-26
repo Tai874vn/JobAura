@@ -1,6 +1,6 @@
 'use client'
 
-import { feedConfig } from '@/page-config/feed'
+import { feedConfig } from '@/features/feed/config/feed'
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, ListOrdered } from 'lucide-react'
 import Link from 'next/link'
@@ -13,7 +13,7 @@ import type { HiringPost, RecommendedJob } from '@/shared/schemas'
 import { ButtonLink, Card, Skeleton } from '@/shared/ui'
 
 const recommendationParams = { topK: 12, poolSize: 50 }
-// How many: src/page-config/feed.ts (jobsForYou).
+// How many: src/features/feed/config/feed.ts (jobsForYou).
 const freshParams = { page: 1, pageSize: feedConfig.jobsForYou }
 
 /**

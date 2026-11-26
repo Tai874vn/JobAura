@@ -5,9 +5,6 @@ src/
   app/          Next.js routes. One folder per URL; page.tsx only loads data and renders a feature component.
                 Folders in (brackets) group routes without changing the URL: (marketplace) public, (workspace)
                 signed-in, (admin) admin, (auth) logout.
-  page-config/  ONE FILE PER PAGE with every value you can change without touching the page code:
-                page sizes, search fields, filter groups (on/off and values), sort choices, limits,
-                hint texts. Start at src/page-config/index.ts (URL -> file).
   features/     Everything for one part of the product (see the layout below).
   shared/       Used by many features:
     api/        HTTP client, one file per backend area in api/endpoints/, React Query keys, normalizers
@@ -20,6 +17,9 @@ src/
 
 Every feature folder has the same layout:
   features/<name>/
+    config/         ONE FILE PER PAGE with every value you can change without touching the page code
+                    (page sizes, search fields, filter groups on/off and values, sorts, limits, hint texts)
+                    and the Zod rules of the page's forms. Each line says which edits are safe.
     api.ts          calls to the backend (when the feature has its own)
     components/     React components (.tsx); big features split them by screen, e.g. components/browse/
     hooks/          use-*.ts React hooks
@@ -47,6 +47,26 @@ Features:
   users           profile page, resume, skills and certifications
   wallet          wallet page, ledger, Stripe top-up and return page
   workspace       settings pages, my posts
+
+Page settings (find by URL -> config file):
+  /hiring-posts                          src/features/hiring/config/hiring-posts.ts
+  /my-hiring-posts + hiring post form    src/features/hiring/config/my-hiring-posts.ts   (+ form Zod rules)
+  /my-hiring-posts/[id]/applicants       src/features/hiring-pipeline/config/applicants.ts
+  /my-applications                       src/features/hiring-pipeline/config/my-applications.ts
+  /jobs                                  src/features/jobs/config/jobs.ts
+  /jobs/new, /jobs/[id]/edit             src/features/jobs/config/job-form.ts             (+ form Zod rules)
+  /welcome                               src/features/jobs/config/welcome.ts
+  /candidates                            src/features/candidates/config/candidates.ts
+  /recommendations/candidates            src/features/candidates/config/ai-matching.ts
+  /contracts                             src/features/contracts/config/contracts.ts
+  /wallet                                src/features/wallet/config/wallet.ts
+  /settings                              src/features/workspace/config/settings.ts
+  /my-posts                              src/features/workspace/config/my-posts.ts
+  /                                      src/features/feed/config/feed.ts
+  /connections                           src/features/connections/config/connections.ts
+  /profile/[id]                          src/features/users/config/profile.ts
+  /auth/login, register, forgot, reset   src/features/auth/config/auth.ts                 (+ form Zod rules)
+  In VS Code search: "<page> page config" (settings) or "form input validation" (Zod rules).
 
 Find by URL (page -> main component):
 /                                  src/features/feed/components/feed-page.tsx

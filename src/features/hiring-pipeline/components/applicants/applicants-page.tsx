@@ -1,6 +1,6 @@
 'use client'
 
-import { applicantsConfig } from '@/page-config/applicants'
+import { applicantsConfig } from '@/features/hiring-pipeline/config/applicants'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { ArrowLeft, Pencil } from 'lucide-react'
@@ -17,11 +17,11 @@ import { ApplicantListItem } from './applicant-list-item'
 import { ApplicantPanel, ApplicantPanelLoading } from './applicant-panel'
 import { PipelineListSkeleton } from '../split-pane-skeletons'
 
-/** Set in src/page-config/applicants.ts */
+/** Set in src/features/hiring-pipeline/config/applicants.ts */
 export const applicantsPageSize = applicantsConfig.pageSize
 
 /** The tabs. "Not selected" is the REJECTED status; the others keep their own name. */
-/** Set in src/page-config/applicants.ts (tabs). */
+/** Set in src/features/hiring-pipeline/config/applicants.ts (tabs). */
 export const applicantTabs: readonly { key: 'all' | ApplicationStatus; label: string }[] = applicantsConfig.tabs
 
 /** What the list asks the server for; the page and its tests both build the query key from this. */

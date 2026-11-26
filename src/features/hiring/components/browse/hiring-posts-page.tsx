@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useSession } from "@/features/auth/hooks/use-session";
 import { hiringPostsApi } from "@/shared/api/endpoints/hiring-posts";
-import { hiringPostsConfig as config } from "@/page-config/hiring-posts";
+import { hiringPostsConfig as config } from "@/features/hiring/config/hiring-posts";
 import { queryKeys } from "@/shared/api/query-keys";
 import {
   BrowseHero, BrowsePage, ButtonLink, ChoiceMenu, countOf, EmptyState, ExploreChip, ExploreRow, FilterChoice, FilterGroup, FilterPanel,

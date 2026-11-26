@@ -1,6 +1,6 @@
 'use client'
 
-import { connectionsConfig } from '@/page-config/connections'
+import { connectionsConfig } from '@/features/connections/config/connections'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'
 import Link from 'next/link'

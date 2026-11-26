@@ -1,8 +1,8 @@
-import { myHiringPostsConfig } from '@/page-config/my-hiring-posts'
+import { myHiringPostsConfig } from '@/features/hiring/config/my-hiring-posts'
 import { occupationLabel } from '@/features/occupations/api'
 import { createHiringPostSchema, type CreateHiringPost, type HiringPost } from '@/shared/schemas'
 
-/** Set in src/page-config/my-hiring-posts.ts (postForm). */
+/** Set in src/features/hiring/config/my-hiring-posts.ts (postForm). */
 export const employmentTypes = myHiringPostsConfig.postForm.employmentTypes
 export const hiringPostLevels = myHiringPostsConfig.postForm.levels
 

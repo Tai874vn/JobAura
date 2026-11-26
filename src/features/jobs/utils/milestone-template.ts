@@ -1,4 +1,4 @@
-import { jobFormConfig } from '@/page-config/job-form'
+import { jobFormConfig } from '@/features/jobs/config/job-form'
 import type { Job } from '@/shared/schemas'
 
 /** One row of the template a seller fills in. The share is typed text, so a half-typed value can be shown and checked. */
@@ -13,7 +13,7 @@ export type TemplateRow = {
 
 export type TemplateError = { field: string; message: string }
 
-/** Set in src/page-config/job-form.ts */
+/** Set in src/features/jobs/config/job-form.ts */
 export const MAX_TEMPLATE_ROWS = jobFormConfig.milestoneTemplate.maxRows
 export const TEMPLATE_TITLE_MAX = jobFormConfig.milestoneTemplate.titleMax
 export const TEMPLATE_DESCRIPTION_MAX = jobFormConfig.milestoneTemplate.descriptionMax

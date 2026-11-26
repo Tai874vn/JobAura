@@ -1,4 +1,4 @@
-import { welcomeConfig } from '@/page-config/welcome'
+import { welcomeConfig } from '@/features/jobs/config/welcome'
 import { Suspense } from 'react'
 import { FaqSection } from './faq'
 import { FeaturedServicesSkeleton, CategoryGridSkeleton } from './home-skeletons'

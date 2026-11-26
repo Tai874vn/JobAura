@@ -1,6 +1,6 @@
 'use client'
 
-import { applicantsConfig } from '@/page-config/applicants'
+import { applicantsConfig } from '@/features/hiring-pipeline/config/applicants'
 
 import { Plus, X } from 'lucide-react'
 import { useId, useState } from 'react'
@@ -152,7 +152,7 @@ function RequestInterviewForm({ timesOnly = false, pending = false, serverError,
   )
 }
 
-/** Set in src/page-config/applicants.ts (interviewDurations). */
+/** Set in src/features/hiring-pipeline/config/applicants.ts (interviewDurations). */
 export const durationOptions = applicantsConfig.interviewDurations
 
 /** What the person typed in the dialog. Times are `datetime-local` text, in the viewer's own time. */

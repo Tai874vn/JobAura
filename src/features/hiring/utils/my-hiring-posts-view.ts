@@ -1,4 +1,4 @@
-import { myHiringPostsConfig } from '@/page-config/my-hiring-posts'
+import { myHiringPostsConfig } from '@/features/hiring/config/my-hiring-posts'
 import type { ApplicationStatus, HiringPost } from '@/shared/schemas'
 import { applicantTabs } from '@/features/hiring-pipeline/components/applicants/applicants-page'
 
@@ -11,7 +11,7 @@ import { applicantTabs } from '@/features/hiring-pipeline/components/applicants/
  * filter, its counts, the sort and the pages are worked out here from what came back.
  */
 
-/** Set in src/page-config/my-hiring-posts.ts */
+/** Set in src/features/hiring/config/my-hiring-posts.ts */
 export const myPostsPageSize = myHiringPostsConfig.pageSize
 /** The most posts one request may ask for (the backend's pageSize limit). */
 export const myPostsLoadLimit = myHiringPostsConfig.loadLimit
@@ -20,7 +20,7 @@ export type MyPostsStatus = '' | 'open' | 'closed'
 export type MyPostsSort = '' | 'applicants'
 export type MyPostsFilters = { keyword: string; status: MyPostsStatus; sort: MyPostsSort }
 
-/** Set in src/page-config/my-hiring-posts.ts (sortLabels). */
+/** Set in src/features/hiring/config/my-hiring-posts.ts (sortLabels). */
 export const myPostsSortLabels: Record<MyPostsSort, string> = myHiringPostsConfig.sortLabels
 
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`

@@ -1,6 +1,6 @@
 'use client'
 
-import { myPostsConfig } from '@/page-config/my-posts'
+import { myPostsConfig } from '@/features/workspace/config/my-posts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -20,7 +20,7 @@ export function MyPostsPage() {
   const { user } = useSession()
   const queryClient = useQueryClient()
   const [pendingDelete, setPendingDelete] = useState<{ id: number; title: string } | null>(null)
-  // How many: src/page-config/my-posts.ts (loadSize).
+  // How many: src/features/workspace/config/my-posts.ts (loadSize).
   const params = { page: 1, pageSize: myPostsConfig.loadSize }
   const query = useQuery({
     queryKey: queryKeys.jobsByCreator(user?.id ?? 0, params),

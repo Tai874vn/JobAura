@@ -1,6 +1,6 @@
 'use client'
 
-import { feedConfig } from '@/page-config/feed'
+import { feedConfig } from '@/features/feed/config/feed'
 
 import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData, mutationOptions, type QueryClient } from '@tanstack/react-query'
 import { MessagesSquare, RefreshCw } from 'lucide-react'
