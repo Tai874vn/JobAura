@@ -11,7 +11,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { FeedPage, FeedPost } from '@/shared/schemas'
 import { Button, Card, ConfirmationDialog, EmptyState, Skeleton } from '@/shared/ui'
-import { mergeFeedPages } from './feed-data'
+import { mergeFeedPages } from '../utils/feed-data'
 import { FeedGreeting } from './feed-greeting'
 import { LeftFeedRail } from './feed-left-rail'
 import { JobsForYou } from './jobs-for-you'
@@ -19,7 +19,7 @@ import { FeedPostCard } from './feed-post-card'
 import { RightFeedRail } from './feed-rails'
 import { PostComposer } from './post-composer'
 import { PostDiscussionModal } from './post-discussion-modal'
-import { postLikeOptions, postSaveOptions } from './post-reactions'
+import { postLikeOptions, postSaveOptions } from '../utils/post-reactions'
 
 type FeedCache = InfiniteData<FeedPage, string | null>
 

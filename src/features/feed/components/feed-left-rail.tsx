@@ -10,7 +10,7 @@ import { resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { UserProfile } from '@/shared/schemas'
 import { Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
-import { selectFeedCover } from './feed-cover'
+import { selectFeedCover } from '../utils/feed-cover'
 import { useProfileStrength } from '@/features/users/utils/profile-strength'
 
 export function LeftFeedRail({ user }: { user: UserProfile }) {

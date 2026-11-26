@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { FeedPage } from '@/features/feed/feed-page'
+import { FeedPage } from '@/features/feed/components/feed-page'
 
 export const metadata: Metadata = {
   title: 'Home',

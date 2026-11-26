@@ -7,7 +7,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'
 import { DiscussionComment, type DiscussionCommentProps } from './discussion-comment'
-import { mergeReplies } from './feed-data'
+import { mergeReplies } from '../utils/feed-data'
 
 /** Memoized so typing in the modal's main comment box does not re-render every comment thread. */
 export const CommentThread = memo(function CommentThread({ onReply, replying, ...props }: DiscussionCommentProps & {

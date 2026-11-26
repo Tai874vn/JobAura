@@ -12,7 +12,7 @@ import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { Connection, ConnectionProfile, ConnectionSuggestion } from '@/shared/schemas'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Card, ConfirmationDialog, EmptyState, Input, PageHeader, Skeleton } from '@/shared/ui'
-import { FeedAvatar } from '@/features/feed/feed-avatar'
+import { FeedAvatar } from '@/features/feed/components/feed-avatar'
 import { pageWindow } from './connections-data'
 
 type ConnectionsTab = 'connections' | 'requests' | 'discover'

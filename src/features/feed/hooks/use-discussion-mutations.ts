@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { postsApi } from '@/shared/api/endpoints'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApiResponse, PostComment } from '@/shared/schemas'
-import { syncDiscussionChange } from './discussion-cache'
+import { syncDiscussionChange } from '../utils/discussion-cache'
 
 export function useDiscussionMutations(postId: number, viewerId?: number | null) {
   const client = useQueryClient()

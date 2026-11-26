@@ -8,7 +8,7 @@ import type { FeedPost, PostComment } from '@/shared/schemas'
 import { cn, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { Button, Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
-import { timeAgo } from './time-ago'
+import { timeAgo } from '../utils/time-ago'
 
 /** Memoized so liking/opening one post or typing in the composer does not re-render every post in the feed. */
 export const FeedPostCard = memo(function FeedPostCard({

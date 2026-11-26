@@ -12,10 +12,10 @@ import { getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/
 import type { FeedPost, PostComment } from '@/shared/schemas'
 import { Button, DialogPortal, Skeleton, useDialogFocus } from '@/shared/ui'
 import { CommentThread } from './comment-thread'
-import { mergeComments } from './feed-data'
+import { mergeComments } from '../utils/feed-data'
 import { FeedAvatar } from './feed-avatar'
-import { timeAgo } from './time-ago'
-import { useDiscussionMutations } from './use-discussion-mutations'
+import { timeAgo } from '../utils/time-ago'
+import { useDiscussionMutations } from '../hooks/use-discussion-mutations'
 
 export type DiscussionScrollStage = 'idle' | 'preview' | 'settled'
 

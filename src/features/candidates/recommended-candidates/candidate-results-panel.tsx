@@ -1,7 +1,7 @@
 import { ArrowUpRight, CheckCircle2, MapPin, Users, XCircle } from "lucide-react";
 import Link from "next/link";
 import { ConnectionActions } from "@/features/connections/connect-button";
-import { FeedAvatar } from "@/features/feed/feed-avatar";
+import { FeedAvatar } from "@/features/feed/components/feed-avatar";
 import { cn } from "@/shared/lib/utils";
 import type { HiringPost, RecommendedCandidate } from "@/shared/schemas";
 import { Button, ButtonLink, Card, CardContent, EmptyState } from "@/shared/ui";
