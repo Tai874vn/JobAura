@@ -6,8 +6,8 @@ import { useId, useState } from 'react'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, DialogPortal, Input, useDialogFocus } from '@/shared/ui'
-import { openCheckout, walletApi } from './api'
-import { parseTopUpAmount, topUpErrors, usdText } from './top-up-validation'
+import { openCheckout, walletApi } from '../api'
+import { parseTopUpAmount, topUpErrors, usdText } from '../utils/top-up-validation'
 
 export type TopUpInfo = { minCredits: number; maxCredits: number; centsPerCredit: number }
 

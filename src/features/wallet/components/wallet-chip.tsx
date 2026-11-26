@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSession } from '@/features/auth/hooks/use-session'
 import { credits } from '@/shared/lib/credits'
 import { Skeleton } from '@/shared/ui'
-import { walletApi, walletKeys } from './api'
+import { walletApi, walletKeys } from '../api'
 
 /**
  * The balance in the header, for signed-in people only. It is the one lime spot of the design. A skeleton shows

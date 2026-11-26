@@ -6,7 +6,7 @@ import { useSession } from '@/features/auth/hooks/use-session'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Skeleton } from '@/shared/ui'
-import { walletApi, walletKeys } from './api'
+import { walletApi, walletKeys } from '../api'
 
 export type ReturnResult = 'success' | 'error' | 'cancel' | null
 

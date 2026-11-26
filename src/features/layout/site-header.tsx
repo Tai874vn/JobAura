@@ -8,7 +8,7 @@ import { useSession } from "@/features/auth/hooks/use-session";
 import { PipelineLiveUpdates } from "@/features/hiring-pipeline/hooks/use-pipeline-live-updates";
 import { ContractLiveUpdates } from "@/features/contracts/hooks/use-contract-live-updates";
 import { NotificationBell } from "@/features/notifications/notification-bell";
-import { WalletChip } from "@/features/wallet/wallet-chip";
+import { WalletChip } from "@/features/wallet/components/wallet-chip";
 import { cn } from "@/shared/lib/utils";
 import { Avatar, Button } from "@/shared/ui";
 import { isCurrentLink, siteNav } from "./site-nav";

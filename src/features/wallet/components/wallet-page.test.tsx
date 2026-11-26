@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { walletKeys } from './api'
+import { walletKeys } from '../api'
 import { WalletPage } from './wallet-page'
 import { WalletChip } from './wallet-chip'
 

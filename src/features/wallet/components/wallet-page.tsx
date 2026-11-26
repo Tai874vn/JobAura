@@ -7,7 +7,7 @@ import { useSession } from '@/features/auth/hooks/use-session'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'
-import { walletApi, walletKeys } from './api'
+import { walletApi, walletKeys } from '../api'
 import { LedgerRow } from './ledger-row'
 import { TopUpDialog } from './top-up-dialog'
 
