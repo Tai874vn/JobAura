@@ -17,7 +17,9 @@ export function topUpErrors(text: string, bounds: { min: number; max: number }):
   return null
 }
 
-/** The sandbox test money for an amount, for example 1,250 credits at 1,000 gives "1,250,000 VND". */
-export function vndText(creditAmount: number, vndPerCredit: number): string {
-  return `${grouped.format(creditAmount * vndPerCredit)} VND`
+const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+
+/** What Stripe test mode charges, for example 1,250 credits at 5 cents gives "$62.50". */
+export function usdText(creditAmount: number, centsPerCredit: number): string {
+  return dollars.format((creditAmount * centsPerCredit) / 100)
 }

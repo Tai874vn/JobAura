@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { submitCheckoutForm } from './api'
+import { openCheckout } from './api'
+import { usdText } from './top-up-validation'
 import { readReturnParams, topUpOutcome } from './top-up-return'
 
 describe('readReturnParams', () => {
@@ -23,50 +24,32 @@ describe('topUpOutcome', () => {
     expect(topUpOutcome({ status: 'FAILED', credits: 50, available: 5000 }, 'success').title).toBe('Payment was not completed')
   })
 
-  it('while PENDING, the words follow the way back from SePay', () => {
+  it('while PENDING, the words follow the way back from Stripe', () => {
     expect(topUpOutcome(pending, 'cancel').title).toBe('Payment cancelled')
     expect(topUpOutcome(pending, 'error').title).toBe('Payment was not completed')
-    expect(topUpOutcome(pending, 'success', true).title).toBe('Waiting for SePay to confirm')
-    expect(topUpOutcome(pending, 'success', false).title).toBe('Still waiting for SePay')
+    expect(topUpOutcome(pending, 'success', true).title).toBe('Waiting for Stripe to confirm')
+    expect(topUpOutcome(pending, 'success', false).title).toBe('Still waiting for Stripe')
   })
 })
 
-describe('submitCheckoutForm', () => {
-  function fakeDocument() {
-    const inputs: Array<Record<string, string>> = []
-    const form = {
-      method: '',
-      action: '',
-      style: {} as Record<string, string>,
-      appendChild: (input: Record<string, string>) => inputs.push(input),
-      submit: vi.fn(),
-    }
-    const doc = {
-      createElement: (tag: string) => (tag === 'form' ? form : ({} as Record<string, string>)),
-      body: { appendChild: vi.fn() },
-    }
-    return { doc: doc as unknown as Document, form, inputs }
-  }
-
-  it('posts every signed field, in order, to the SePay checkout', () => {
-    const { doc, form, inputs } = fakeDocument()
-    submitCheckoutForm(
-      { action: 'https://pay-sandbox.sepay.vn/v1/checkout/init', fields: { order_amount: '50000', merchant: 'M', signature: 'S' } },
-      doc,
-    )
-    expect(form.method).toBe('POST')
-    expect(form.action).toBe('https://pay-sandbox.sepay.vn/v1/checkout/init')
-    expect(inputs.map((i) => [i.type, i.name, i.value])).toEqual([
-      ['hidden', 'order_amount', '50000'],
-      ['hidden', 'merchant', 'M'],
-      ['hidden', 'signature', 'S'],
-    ])
-    expect(form.submit).toHaveBeenCalledTimes(1)
+describe('openCheckout', () => {
+  it('goes to Stripe Checkout', () => {
+    const go = vi.fn()
+    openCheckout('https://checkout.stripe.com/c/pay/cs_test_1#abc', go)
+    expect(go).toHaveBeenCalledWith('https://checkout.stripe.com/c/pay/cs_test_1#abc')
   })
 
-  it('refuses to post anywhere else', () => {
-    const { doc, form } = fakeDocument()
-    expect(() => submitCheckoutForm({ action: 'https://evil.example/init', fields: {} }, doc)).toThrow()
-    expect(form.submit).not.toHaveBeenCalled()
+  it('refuses any other address', () => {
+    const go = vi.fn()
+    expect(() => openCheckout('https://checkout.stripe.com.evil.example/x', go)).toThrow()
+    expect(() => openCheckout('http://checkout.stripe.com/x', go)).toThrow()
+    expect(go).not.toHaveBeenCalled()
+  })
+})
+
+describe('usdText', () => {
+  it('prices credits in US dollars (5 cents each)', () => {
+    expect(usdText(10, 5)).toBe('$0.50')
+    expect(usdText(1250, 5)).toBe('$62.50')
   })
 })

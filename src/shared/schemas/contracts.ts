@@ -258,6 +258,8 @@ export const walletSummarySchema = z.object({
     minCredits: z.number(),
     maxCredits: z.number(),
     vndPerCredit: z.number(),
+    currency: z.string().default('usd'),
+    centsPerCredit: z.number().default(5),
   }),
 })
 

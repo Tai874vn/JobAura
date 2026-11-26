@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseTopUpAmount, topUpErrors, vndText } from './top-up-validation'
+import { parseTopUpAmount, topUpErrors } from './top-up-validation'
 
 const bounds = { min: 10, max: 10_000 }
 
@@ -24,12 +24,5 @@ describe('parseTopUpAmount', () => {
     expect(parseTopUpAmount(' 40 ')).toBe(40)
     expect(parseTopUpAmount('12.5')).toBeNull()
     expect(parseTopUpAmount('')).toBeNull()
-  })
-})
-
-describe('vndText', () => {
-  it('writes the test money amount', () => {
-    expect(vndText(1250, 1000)).toBe('1,250,000 VND')
-    expect(vndText(10, 1000)).toBe('10,000 VND')
   })
 })

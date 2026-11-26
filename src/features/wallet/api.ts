@@ -13,41 +13,23 @@ export const walletApi = {
   ledger: async (p: { page: number; pageSize: number }): Promise<Paginated<LedgerEntryView>> =>
     parsePage((await apiClient.get('/api/wallet/ledger', { params: definedParams(p) })).data, ledgerEntrySchema),
 
-  /** Starts a SePay (test money) top up. Then post the signed form with submitCheckoutForm. */
-  startTopUp: async (credits: number): Promise<{ topUpId: number; checkout: CheckoutForm }> => {
-    const content = contentOf<{ topUpId: number; checkout: CheckoutForm }>((await apiClient.post('/api/wallet/top-ups', { credits })).data)
-    return { topUpId: content.topUpId, checkout: content.checkout }
+  /** Starts a Stripe Checkout (test mode) top up. Then send the browser to checkoutUrl with openCheckout. */
+  startTopUp: async (credits: number): Promise<{ topUpId: number; checkoutUrl: string }> => {
+    const content = contentOf<{ topUpId: number; checkoutUrl: string }>((await apiClient.post('/api/wallet/top-ups', { credits })).data)
+    return { topUpId: content.topUpId, checkoutUrl: content.checkoutUrl }
   },
 
-  /** The state of one of my top ups. The server asks SePay itself when its IPN is late. */
+  /** The state of one of my top ups. The server asks Stripe itself when its webhook is late. */
   topUpStatus: async (topUpId: number): Promise<TopUpResult> =>
     topUpResultSchema.parse(contentOf((await apiClient.get(`/api/wallet/top-ups/${topUpId}`)).data)),
 }
 
-/** The signed form the server gives back; it must be posted as it is (the signature covers it). */
-export type CheckoutForm = { action: string; fields: Record<string, string> }
+/** The only place a top up may send the browser: Stripe's hosted Checkout page. */
+export const STRIPE_CHECKOUT_ORIGIN = 'https://checkout.stripe.com'
 
-/** The only places a checkout form may be posted to (also listed in the CSP form-action). */
-export const SEPAY_CHECKOUT_ORIGINS = ['https://pay.sepay.vn', 'https://pay-sandbox.sepay.vn']
-
-/**
- * SePay's checkout only takes an HTML form POST, so a hidden form is built and submitted.
- * The browser leaves this site. An action on any other host is refused.
- */
-export function submitCheckoutForm(checkout: CheckoutForm, doc: Document = document): void {
-  const url = new URL(checkout.action)
-  if (!SEPAY_CHECKOUT_ORIGINS.includes(url.origin)) throw new Error('Unexpected payment page')
-  const form = doc.createElement('form')
-  form.method = 'POST'
-  form.action = url.toString()
-  form.style.display = 'none'
-  for (const [name, value] of Object.entries(checkout.fields)) {
-    const input = doc.createElement('input')
-    input.type = 'hidden'
-    input.name = name
-    input.value = value
-    form.appendChild(input)
-  }
-  doc.body.appendChild(form)
-  form.submit()
+/** Leaves the site for Stripe Checkout. Any other address is refused (defence in depth). */
+export function openCheckout(checkoutUrl: string, go: (url: string) => void = (url) => window.location.assign(url)): void {
+  const url = new URL(checkoutUrl)
+  if (url.origin !== STRIPE_CHECKOUT_ORIGIN) throw new Error('Unexpected payment page')
+  go(url.toString())
 }

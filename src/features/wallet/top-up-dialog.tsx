@@ -6,14 +6,14 @@ import { useId, useState } from 'react'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, DialogPortal, Input, useDialogFocus } from '@/shared/ui'
-import { submitCheckoutForm, walletApi } from './api'
-import { parseTopUpAmount, topUpErrors, vndText } from './top-up-validation'
+import { openCheckout, walletApi } from './api'
+import { parseTopUpAmount, topUpErrors, usdText } from './top-up-validation'
 
-export type TopUpInfo = { minCredits: number; maxCredits: number; vndPerCredit: number }
+export type TopUpInfo = { minCredits: number; maxCredits: number; centsPerCredit: number }
 
 const QUICK_PICKS = [100, 500, 1000, 2500]
 
-/** Asks how many credits to add, then posts the signed form to the SePay sandbox page (a full page change). */
+/** Asks how many credits to add, then sends the browser to Stripe Checkout in test mode (a full page change). */
 export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () => void }) {
   const titleId = useId()
   const errorId = useId()
@@ -24,8 +24,8 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
   const amount = parseTopUpAmount(text)
   const start = useMutation({
     mutationFn: (n: number) => walletApi.startTopUp(n),
-    // The browser leaves this site, so nothing else to do. The credits are added when SePay tells our server.
-    onSuccess: ({ checkout }) => submitCheckoutForm(checkout),
+    // The browser leaves this site, so nothing else to do. The credits are added when Stripe tells our server.
+    onSuccess: ({ checkoutUrl }) => openCheckout(checkoutUrl),
   })
 
   const dialogRef = useDialogFocus(onClose, !start.isPending)
@@ -88,8 +88,8 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
 
           <p className="mt-4 text-sm text-muted">
             {amount !== null && !problem
-              ? `You will pay ${vndText(amount, info.vndPerCredit)} test money in the SePay sandbox. No real money moves.`
-              : 'You will pay test money in the SePay sandbox. No real money moves.'}
+              ? `You will pay ${usdText(amount, info.centsPerCredit)} in Stripe test mode. Use the test card 4242 4242 4242 4242; no real money moves.`
+              : 'You will pay in Stripe test mode with a test card. No real money moves.'}
           </p>
           {start.isError ? <p role="alert" className="mt-3 break-words text-sm text-danger">{getErrorMessage(start.error)}</p> : null}
 

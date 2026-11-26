@@ -9,7 +9,7 @@ vi.mock('@/features/auth/use-session', () => ({
   useSession: () => ({ user: { id: 1, role: 'user' }, isLoading: false, isAuthenticated: true }),
 }))
 
-const summary = { available: 1250, held: 400, paidOut: 800, earned: 1, topUp: { enabled: true, minCredits: 100, maxCredits: 5000, vndPerCredit: 1000 } }
+const summary = { available: 1250, held: 400, paidOut: 800, earned: 1, topUp: { enabled: true, minCredits: 100, maxCredits: 5000, vndPerCredit: 1000, currency: 'usd', centsPerCredit: 5 } }
 const row = (id: number, over: Record<string, unknown> = {}) => ({
   id, type: 'FUND_HOLD', availableDelta: -400, heldDelta: 400, availableAfter: 4600, heldAfter: 400,
   contract: { id: 7, title: 'Logo design' }, milestone: { id: 40, position: 2, title: 'Sketch' }, counterparty: null, topUpId: null,

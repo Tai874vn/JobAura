@@ -204,10 +204,10 @@ describe('walletApi', () => {
     expect(get).toHaveBeenNthCalledWith(2, '/api/wallet/ledger', { params: { page: 1, pageSize: 20 } })
   })
 
-  it('starts a top up (signed SePay form) and reads a top up status', async () => {
-    const checkout = { action: 'https://pay-sandbox.sepay.vn/v1/checkout/init', fields: { order_amount: '100000', signature: 's' } }
-    post.mockResolvedValue(wrap({ topUpId: 4, checkout }) as never)
-    expect(await walletApi.startTopUp(100)).toEqual({ topUpId: 4, checkout })
+  it('starts a top up (Stripe Checkout URL) and reads a top up status', async () => {
+    const checkoutUrl = 'https://checkout.stripe.com/c/pay/cs_test_1'
+    post.mockResolvedValue(wrap({ topUpId: 4, checkoutUrl }) as never)
+    expect(await walletApi.startTopUp(100)).toEqual({ topUpId: 4, checkoutUrl })
     expect(post).toHaveBeenCalledWith('/api/wallet/top-ups', { credits: 100 })
 
     get.mockResolvedValue(wrap({ topUpId: 4, status: 'PAID', credits: 100, available: 5100 }) as never)

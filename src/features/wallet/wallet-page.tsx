@@ -50,7 +50,7 @@ export function WalletPage() {
         </div>
       ) : null}
 
-      {/* Shown while loading (keeps height steady) and whenever the server says SePay is set up (topUp.enabled). */}
+      {/* Shown while loading (keeps height steady) and whenever the server says Stripe is set up (topUp.enabled). */}
       <section id="top-up" aria-label="Top up" data-slot="top-up" className="mt-4 empty:hidden">
         {summary.isPending ? <Skeleton className="h-10 w-24 rounded-lg" /> : data?.topUp.enabled ? <TopUpButton info={data.topUp} /> : null}
       </section>
@@ -94,7 +94,7 @@ export function WalletPage() {
   )
 }
 
-function TopUpButton({ info }: { info: { minCredits: number; maxCredits: number; vndPerCredit: number } }) {
+function TopUpButton({ info }: { info: { minCredits: number; maxCredits: number; centsPerCredit: number } }) {
   const [open, setOpen] = useState(false)
   return (
     <>

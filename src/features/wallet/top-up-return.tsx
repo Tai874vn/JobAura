@@ -15,7 +15,7 @@ export const POLL_MS = 3_000
 export const POLL_FOR_MS = 90_000
 
 /**
- * Reads `?topUp=7&result=success` from the SePay return URL. The result only picks the words
+ * Reads `?topUp=7&result=success` from the Stripe return URL. The result only picks the words
  * shown while waiting: whether money arrived is decided by the server, never by this URL.
  */
 export function readReturnParams(search: string): { topUpId: number | null; result: ReturnResult } {
@@ -37,14 +37,14 @@ export function topUpOutcome(
   if (r.status === 'PAID') return { title: `Top up complete · ${credits(r.credits, { sign: true })} · Balance ${credits(r.available)}`, detail: null }
   if (r.status === 'FAILED') return { title: 'Payment was not completed', detail: 'Nothing was added to your balance.' }
   if (result === 'cancel') return { title: 'Payment cancelled', detail: 'Nothing was added to your balance. You can start a new top up from your wallet.' }
-  if (result === 'error') return { title: 'Payment was not completed', detail: 'SePay reported a problem. Nothing was added to your balance.' }
-  if (stillWaiting) return { title: 'Waiting for SePay to confirm', detail: 'This usually takes a few seconds.' }
-  return { title: 'Still waiting for SePay', detail: 'If you paid, the credits are added as soon as SePay confirms. Check again later.' }
+  if (result === 'error') return { title: 'Payment was not completed', detail: 'The payment did not go through. Nothing was added to your balance.' }
+  if (stillWaiting) return { title: 'Waiting for Stripe to confirm', detail: 'This usually takes a few seconds.' }
+  return { title: 'Still waiting for Stripe', detail: 'If you paid, the credits are added as soon as Stripe confirms. Check again later.' }
 }
 
 const subscribeNothing = () => () => {} // the address does not change while this page is open
 
-/** The page SePay sends the browser back to. It asks the server about the top up until it is settled. */
+/** The page Stripe sends the browser back to. It asks the server about the top up until it is settled. */
 export function TopUpReturn() {
   const client = useQueryClient()
   const { user } = useSession()
@@ -82,7 +82,7 @@ export function TopUpReturn() {
         {search !== null && topUpId === null ? (
           <>
             <p className="text-base font-medium text-foreground">No payment details found</p>
-            <p className="mt-1 text-sm text-muted">Return here from SePay after a top up to check its status.</p>
+            <p className="mt-1 text-sm text-muted">Return here from Stripe after a top up to check its status.</p>
           </>
         ) : check.isError ? (
           <p role="alert" className="text-sm text-danger">{getErrorMessage(check.error)}</p>

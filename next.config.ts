@@ -98,14 +98,12 @@ const scriptSources = [
 // The video call (LiveKit Cloud) opens a websocket and calls its server over https. blob: workers and media are
 // already allowed below, which is what LiveKit needs for the camera and microphone.
 const liveKitOrigins = ['wss://*.livekit.cloud', 'https://*.livekit.cloud']
-// Top ups post a signed form to SePay's checkout (sandbox and live). Keep in sync with SEPAY_CHECKOUT_ORIGINS.
-const paymentFormOrigins = ['https://pay.sepay.vn', 'https://pay-sandbox.sepay.vn']
 const contentSecurityPolicy = [
   cspDirective('default-src', ["'self'"]),
   cspDirective('base-uri', ["'self'"]),
   cspDirective('object-src', ["'none'"]),
   cspDirective('frame-ancestors', ["'none'"]),
-  cspDirective('form-action', ["'self'", ...paymentFormOrigins]),
+  cspDirective('form-action', ["'self'"]),
   cspDirective('script-src', scriptSources),
   cspDirective('style-src', ["'self'", "'unsafe-inline'"]),
   cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
@@ -121,7 +119,7 @@ const contentSecurityPolicyReportOnly = [
   cspDirective('base-uri', ["'self'"]),
   cspDirective('object-src', ["'none'"]),
   cspDirective('frame-ancestors', ["'none'"]),
-  cspDirective('form-action', ["'self'", ...paymentFormOrigins]),
+  cspDirective('form-action', ["'self'"]),
   cspDirective('script-src', ["'self'", "'report-sample'"]),
   cspDirective('style-src', ["'self'", "'report-sample'"]),
   cspDirective('img-src', ["'self'", 'data:', 'blob:', ...configuredImagePatterns.map(sourceFromImagePattern)]),
