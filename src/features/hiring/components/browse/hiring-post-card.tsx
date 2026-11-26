@@ -2,9 +2,9 @@ import { BriefcaseBusiness, CalendarClock, Clock3, MapPin, Send, Users, X } from
 import Link from "next/link";
 import type { HiringPost } from "@/shared/schemas";
 import { Avatar, Badge, Button, ButtonLink, Card, CardContent } from "@/shared/ui";
-import { AppliedAction } from "./applied-action";
-import { ApplyPanel } from "./apply-panel";
-import { usePostOccupation } from "./use-post-occupation";
+import { AppliedAction } from "../detail/applied-action";
+import { ApplyPanel } from "../detail/apply-panel";
+import { usePostOccupation } from "../../hooks/use-post-occupation";
 
 /** Who is looking at the post decides the action: candidates apply, visitors sign in first, recruiters only read. */
 export type HiringPostViewer = "candidate" | "visitor" | "recruiter";

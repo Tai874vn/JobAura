@@ -15,7 +15,7 @@ import {
   HiringPostFacts,
   HiringPostSkills,
   type HiringPostViewer,
-} from "./hiring-post-card";
+} from "../browse/hiring-post-card";
 
 /** The role's text: description, required skills, and other requirements. Shared by the panel and the post page. */
 export function HiringPostBody({ post, headingAs = "h3" }: { post: HiringPost; headingAs?: "h2" | "h3" }) {

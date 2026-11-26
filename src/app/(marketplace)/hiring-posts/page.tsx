@@ -6,9 +6,9 @@ import {
   readHiringPostFilters,
   toHiringPostFacetParams,
   toHiringPostQueryParams,
-} from '@/features/hiring/hiring-posts-browse'
-import { HiringPostsPage } from '@/features/hiring/hiring-posts-page'
-import { HiringPostsPageSkeleton } from '@/features/hiring/hiring-posts-skeleton'
+} from '@/features/hiring/utils/hiring-posts-browse'
+import { HiringPostsPage } from '@/features/hiring/components/browse/hiring-posts-page'
+import { HiringPostsPageSkeleton } from '@/features/hiring/components/browse/hiring-posts-skeleton'
 import type { FacetCount, HiringPostFacets } from '@/shared/api/endpoints/hiring-posts'
 import { normalizePaginatedHiringPostsResponse } from '@/shared/api/normalizers'
 import { queryKeys } from '@/shared/api/query-keys'

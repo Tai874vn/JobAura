@@ -11,7 +11,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApiResponse, RecommendationContent, RecommendedJob } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardContent, EmptyState, PageHeader, Skeleton } from '@/shared/ui'
-import { HiringPostCard } from '@/features/hiring/hiring-post-card'
+import { HiringPostCard } from '@/features/hiring/components/browse/hiring-post-card'
 import { MatchBadge } from './recommendation-ui'
 
 const recommendationParams = { topK: 12, poolSize: 50 }

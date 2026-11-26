@@ -2,7 +2,7 @@
 
 import { useOccupationTitle } from '@/features/occupations/occupation-picker'
 import type { HiringPost } from '@/shared/schemas'
-import { postOccupation } from './hiring-post-form'
+import { postOccupation } from '../utils/hiring-post-form'
 
 /**
  * The post's occupation label for a card. When the response has the code but no title (recommendations saved in

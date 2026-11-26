@@ -10,9 +10,9 @@ import type { HiringPost } from "@/shared/schemas";
 import { ButtonLink, Card, CardContent } from "@/shared/ui";
 import { AppliedAction } from "./applied-action";
 import { ApplyPanel } from "./apply-panel";
-import { formatPostedAgo, HiringPostAction, HiringPostAvatar, HiringPostBadges, HiringPostFacts } from "./hiring-post-card";
+import { formatPostedAgo, HiringPostAction, HiringPostAvatar, HiringPostBadges, HiringPostFacts } from "../browse/hiring-post-card";
 import { HiringPostBody, ManageApplicantsLink } from "./hiring-post-panel";
-import { hiringPostViewer } from "./hiring-post-viewer";
+import { hiringPostViewer } from "../../utils/hiring-post-viewer";
 
 /** A hiring post on its own page, so it can be shared and read in full. */
 export function HiringPostDetailView({ initialPost }: { initialPost: HiringPost }) {

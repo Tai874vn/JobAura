@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { HiringPost } from "@/shared/schemas";
 import { cn } from "@/shared/lib/utils";
 import { formatHiringPostSalary, formatPostedAgo, formatYearsRequired, HiringPostAvatar, salaryPeriodLabel } from "./hiring-post-card";
-import { usePostOccupation } from "./use-post-occupation";
+import { usePostOccupation } from "../../hooks/use-post-occupation";
 
 /**
  * One post in the list. The whole row can be hovered and clicked to select it (on wide screens the post opens in

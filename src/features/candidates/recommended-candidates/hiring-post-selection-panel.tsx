@@ -8,7 +8,7 @@ import { hiringPostsApi } from "@/shared/api/endpoints";
 import { queryKeys } from "@/shared/api/query-keys";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
-import { HiringPostFormDialog } from "@/features/hiring/hiring-post-form-dialog";
+import { HiringPostFormDialog } from "@/features/hiring/components/form/hiring-post-form-dialog";
 import { Badge, Button, Card, CardContent, Select } from "@/shared/ui";
 import {
   hiringPostPageParams,

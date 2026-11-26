@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { HiringPostDetailView } from '@/features/hiring/hiring-post-detail-view'
+import { HiringPostDetailView } from '@/features/hiring/components/detail/hiring-post-detail-view'
 import { normalizeHiringPost } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'
 import { resolveServerEntity } from '@/shared/api/server-load'

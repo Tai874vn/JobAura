@@ -5,9 +5,9 @@ import Link from "next/link";
 import { useState } from "react";
 import type { HiringPost } from "@/shared/schemas";
 import { cn } from "@/shared/lib/utils";
-import { ApplyPanel } from "./apply-panel";
+import { ApplyPanel } from "../detail/apply-panel";
 import { formatDate, formatHiringPostSalary, formatYearsRequired, salaryPeriodLabel, type HiringPostViewer } from "./hiring-post-card";
-import { usePostOccupation } from "./use-post-occupation";
+import { usePostOccupation } from "../../hooks/use-post-occupation";
 
 // Soft tiles behind a company's initials; the same company always gets the same one.
 const tileColors = ["#e7eedf", "#efe7de", "#e0ebee", "#e6e5f0", "#f2e7da", "#e0ede7", "#e2ebf1", "#eae6f1", "#e6eedc"];

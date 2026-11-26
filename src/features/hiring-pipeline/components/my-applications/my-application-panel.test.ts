@@ -5,7 +5,7 @@ const { refreshHiringPostPages } = vi.hoisted(() => ({
   refreshHiringPostPages: vi.fn(),
 }))
 
-vi.mock('@/features/hiring/refresh-hiring-post-pages', () => ({ refreshHiringPostPages }))
+vi.mock('@/features/hiring/utils/refresh-hiring-post-pages', () => ({ refreshHiringPostPages }))
 
 import { refreshClosedPostAfterAccept } from './my-application-panel'
 

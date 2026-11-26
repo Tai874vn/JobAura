@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { HiringPost } from '@/shared/schemas'
 import { MyHiringPostsPage } from './my-hiring-posts-page'
-import { myPostsRequest } from './my-hiring-posts-view'
+import { myPostsRequest } from '../../utils/my-hiring-posts-view'
 
 let search = ''
 vi.mock('next/navigation', () => ({

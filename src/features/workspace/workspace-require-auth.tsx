@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { RequireAuth } from '@/features/auth/require-auth'
 import { ContractsPageSkeleton } from '@/features/contracts/components/contracts-skeleton'
-import { MyHiringPostsPageSkeleton } from '@/features/hiring/hiring-posts-skeleton'
+import { MyHiringPostsPageSkeleton } from '@/features/hiring/components/browse/hiring-posts-skeleton'
 import { ApplicantsPageSkeleton, MyApplicationsPageSkeleton } from '@/features/hiring-pipeline/components/split-pane-skeletons'
 
 export type WorkspaceSkeletonKind =

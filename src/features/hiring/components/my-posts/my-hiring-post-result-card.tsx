@@ -9,11 +9,11 @@ import { pipelineApi, pipelineKeys, statusLabel } from "@/features/hiring-pipeli
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
 import { Avatar, Button, ButtonLink } from "@/shared/ui";
-import { hiringPostAiState } from "./hiring-post-ai";
-import { formatDate, formatHiringPostSalary, formatPostedAgo, formatYearsRequired } from "./hiring-post-card";
-import { pipelineSummary } from "./hiring-pipeline-summary";
-import { stepChips } from "./my-hiring-posts-view";
-import { usePostOccupation } from "./use-post-occupation";
+import { hiringPostAiState } from "../../utils/hiring-post-ai";
+import { formatDate, formatHiringPostSalary, formatPostedAgo, formatYearsRequired } from "../browse/hiring-post-card";
+import { pipelineSummary } from "../../utils/hiring-pipeline-summary";
+import { stepChips } from "../../utils/my-hiring-posts-view";
+import { usePostOccupation } from "../../hooks/use-post-occupation";
 
 /** How many of the latest applicants the open details show. */
 const RECENT_SHOWN = 3;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate as formatHiringDate } from '@/features/hiring/hiring-post-card'
+import { formatDate as formatHiringDate } from '@/features/hiring/components/browse/hiring-post-card'
 import { formatDate, formatFullDate } from './model'
 
 // 20:00 UTC on Nov 24 is already Nov 25 in Vietnam (UTC+7). Server and browser must print the same day,

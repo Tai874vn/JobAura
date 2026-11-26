@@ -3,8 +3,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { occupationKeys, type Occupation } from '@/features/occupations/api'
 import type { HiringPost } from '@/shared/schemas'
-import { HiringPostBadges } from './hiring-post-card'
-import { postOccupation } from './hiring-post-form'
+import { HiringPostBadges } from '../components/browse/hiring-post-card'
+import { postOccupation } from '../utils/hiring-post-form'
 
 const webDeveloper: Occupation = { code: '2513.5', isco: '2513', title: 'web developer', related: [], specialties: [] }
 const post = (change: Partial<HiringPost>): HiringPost => ({

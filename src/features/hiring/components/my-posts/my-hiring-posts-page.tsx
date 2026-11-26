@@ -17,16 +17,16 @@ import {
   ResultsHeader, shownRange,
 } from "@/shared/ui";
 import { ConfirmActionDialog } from "@/features/hiring-pipeline/components/confirm-action-dialog";
-import { isHiringPostAiPending } from "./hiring-post-ai";
-import { HiringPostFormDialog } from "./hiring-post-form-dialog";
-import { activeApplicationCount, closePostQuestion } from "./hiring-pipeline-summary";
-import { MyHiringPostResultSkeleton } from "./hiring-posts-skeleton";
+import { isHiringPostAiPending } from "../../utils/hiring-post-ai";
+import { HiringPostFormDialog } from "../form/hiring-post-form-dialog";
+import { activeApplicationCount, closePostQuestion } from "../../utils/hiring-pipeline-summary";
+import { MyHiringPostResultSkeleton } from "../browse/hiring-posts-skeleton";
 import { MyHiringPostResultCard } from "./my-hiring-post-result-card";
-import { refreshHiringPostPages } from "./refresh-hiring-post-pages";
+import { refreshHiringPostPages } from "../../utils/refresh-hiring-post-pages";
 import {
   arrangeMyPosts, myPostsHref, myPostsLoadLimit, myPostsPage, myPostsPageSize, myPostsRequest, myPostsSortLabels,
   myPostsStatsLine, readMyPostsFilters, statusCounts, type MyPostsFilters, type MyPostsSort, type MyPostsStatus,
-} from "./my-hiring-posts-view";
+} from "../../utils/my-hiring-posts-view";
 
 const newPostButton = "interaction inline-flex h-[42px] items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold text-white hover:bg-[#066a48] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2";
 

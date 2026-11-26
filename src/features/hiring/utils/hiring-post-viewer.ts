@@ -1,4 +1,4 @@
-import type { HiringPostViewer } from './hiring-post-card'
+import type { HiringPostViewer } from '../components/browse/hiring-post-card'
 
 /** Candidates (role `user`) and admins (who use the site like a normal user) apply; recruiters read; anyone signed out is a visitor. */
 // @find shared hiring-posts viewer-role access [all] — user/admin → candidate, employer → recruiter, signed out → visitor

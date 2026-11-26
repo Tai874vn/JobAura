@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/require-auth'
-import { MyHiringPostsPage } from '@/features/hiring/my-hiring-posts-page'
-import { MyHiringPostsPageSkeleton } from '@/features/hiring/hiring-posts-skeleton'
+import { MyHiringPostsPage } from '@/features/hiring/components/my-posts/my-hiring-posts-page'
+import { MyHiringPostsPageSkeleton } from '@/features/hiring/components/browse/hiring-posts-skeleton'
 
 export const metadata: Metadata = { title: 'My hiring posts' }
 

@@ -20,7 +20,7 @@ vi.mock('@/shared/api/server', () => ({
   serverRequest: serverRequestMock,
 }))
 
-vi.mock('@/features/hiring/hiring-post-detail-view', () => ({
+vi.mock('@/features/hiring/components/detail/hiring-post-detail-view', () => ({
   HiringPostDetailView: ({ initialPost }: { initialPost: HiringPost }) => (
     <div data-testid="hiring-post-detail">
       {initialPost.title} ({initialPost.status})

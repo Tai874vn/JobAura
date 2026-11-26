@@ -14,10 +14,10 @@ import {
 } from "@/shared/ui";
 import { cn, getErrorMessage } from "@/shared/lib/utils";
 import { occupationLabel } from "@/features/occupations/api";
-import { employmentTypes, hiringPostLevels } from "./hiring-post-form";
+import { employmentTypes, hiringPostLevels } from "../../utils/hiring-post-form";
 import { HiringPostResultCard } from "./hiring-post-result-card";
 import { HiringPostResultSkeleton } from "./hiring-posts-skeleton";
-import { hiringPostViewer } from "./hiring-post-viewer";
+import { hiringPostViewer } from "../../utils/hiring-post-viewer";
 import {
   hiringPostFilterKeys as filterKeys,
   hiringPostsPageSize as pageSize,
@@ -26,7 +26,7 @@ import {
   toHiringPostFacetParams,
   toHiringPostQueryParams,
   type HiringPostAppliedFilters as Filters,
-} from "./hiring-posts-browse";
+} from "../../utils/hiring-posts-browse";
 
 
 type MultiKey = "occupation" | "level" | "employmentType";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatHiringPostSalary, formatYearsRequired, salaryPeriodLabel } from "./hiring-post-card";
-import { hiringPostViewer } from "./hiring-post-viewer";
+import { hiringPostViewer } from "../../utils/hiring-post-viewer";
 
 describe("hiring post salary", () => {
   it("formats monthly ranges and single salary bounds", () => {
