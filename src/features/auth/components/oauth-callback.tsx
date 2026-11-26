@@ -23,6 +23,11 @@ function getOAuthErrorMessage(error: string) {
   return oauthErrorMessages[error] ?? 'Google sign-in could not be completed. Please try again.'
 }
 
+/**
+ * /auth/callback, where Google sign-in comes back. It clears the old session in the browser, asks the backend who
+ * is signed in (/api/auth/me) and goes to ?next= or the role's home page; on failure it shows the error and a link
+ * back to sign in.
+ */
 export function OAuthCallback() {
   const router = useRouter()
   const searchParams = useSearchParams()

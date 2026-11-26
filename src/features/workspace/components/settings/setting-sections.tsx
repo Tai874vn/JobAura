@@ -47,6 +47,9 @@ export function hasResumeSection(role?: string | null) {
 }
 
 
+/**
+ * Settings > Overview: profile strength with the missing fields (each links to its field), and the resume status.
+ */
 export function SettingsOverview({
   profile, completion, missing = [], resume, resumeLoading = false, resumeError = false,
   resumeRetrying = false, onRetryResume, onSelect,

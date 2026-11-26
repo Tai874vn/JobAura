@@ -36,6 +36,10 @@ import { NotificationSection, NotificationSkeleton } from "./notification-list";
 
 const previewLimit = 8;
 
+/**
+ * The bell. The unread number always loads (and updates live over the socket); the list itself loads only when
+ * the dropdown opens. Clicking a notification marks it read and opens its page, or the chat room for a message.
+ */
 export function NotificationBell() {
   const router = useRouter();
   const queryClient = useQueryClient();

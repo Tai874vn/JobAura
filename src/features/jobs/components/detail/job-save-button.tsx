@@ -10,6 +10,10 @@ import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 
+/**
+ * Bookmark button of a service. A visitor is sent to sign in first. The icon changes at once and goes back if
+ * the server refuses.
+ */
 export function JobSaveButton({ jobId, initialSaved = false }: { jobId: number; initialSaved?: boolean }) {
   const router = useRouter()
   const queryClient = useQueryClient()

@@ -7,6 +7,10 @@ import { buildLoginRedirect } from '@/shared/lib/session-routing'
 import { Card, Skeleton } from '@/shared/ui'
 import { useSession } from '../hooks/use-session'
 
+/**
+ * Client sign-in guard. A guest goes to /auth/login?next=<this page>; a signed-in user without the needed role
+ * (admin or allowedRoles) goes to their own home page. Shows `fallback` (a skeleton) while checking.
+ */
 export function RequireAuth({
   children,
   admin = false,

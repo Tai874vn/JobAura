@@ -7,6 +7,9 @@ import { useSession } from '@/features/auth/hooks/use-session'
 
 const subscribeNever = () => () => {}
 
+/**
+ * Site footer with the main links.
+ */
 export function Footer() {
   const { user, isLoading } = useSession()
   // The server can't know who is signed in, so it renders the neutral links; the client switches after hydration.

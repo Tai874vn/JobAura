@@ -8,6 +8,10 @@ import { ShortlistPreview } from '@/features/jobs/components/home/shortlist-prev
 import { Card, CardContent, Spinner } from '@/shared/ui'
 import { useSession } from '../hooks/use-session'
 
+/**
+ * Wraps the sign-in and sign-up pages. A guest sees the form at once; an already signed-in user is sent on to
+ * ?next= or the role's home page.
+ */
 export function AuthPageGate({ children, nextPath }: { children: React.ReactNode; nextPath?: string | null }) {
   const router = useRouter()
   const { user, isLoading } = useSession()

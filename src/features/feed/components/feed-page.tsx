@@ -24,6 +24,12 @@ import { PostDiscussionModal } from './post-discussion-modal'
 
 type FeedCache = InfiniteData<FeedPage, string | null>
 
+/**
+ * Home feed (/). Posts load feedConfig.postsPerLoad at a time; reaching the bottom (IntersectionObserver on
+ * sentinelRef) loads the next page. A new post is put at the top of the list without a reload. Like and save
+ * change the card at once and go back if the server refuses. Clicking a post opens the discussion modal
+ * (selectedPostId); delete asks first (pendingDeletePostId).
+ */
 export function FeedPage() {
   const { user: sessionUser } = useSession()
   const user = sessionUser!
@@ -42,7 +48,7 @@ export function FeedPage() {
   })
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = feedQuery
 
-  // Data: postsApi.create → POST /api/posts → NestjsBE/src/modules/storage/services/storage.service.ts uploadImage()
+  // Data: postsApi.create → POST /api/posts → NestjsBE/src/modules/posts/services/posts.service.ts createPost()
   const createMutation = useMutation({
     mutationFn: ({ content, image }: { content: string; image?: File }) => postsApi.create(content, image),
     onSuccess: (response) => {

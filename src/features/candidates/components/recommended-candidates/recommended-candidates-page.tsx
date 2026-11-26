@@ -29,6 +29,11 @@ type CandidateRunVariables = {
   forceRefresh?: boolean;
 };
 
+/**
+ * /recommendations/candidates (recruiter). Pick one of your hiring posts (?hiringPostId= picks it from a link),
+ * then run the AI matching. The last saved run shows first without using the quota; a new run uses one of today's
+ * runs. topK = how many candidates to show, poolSize = how many to compare.
+ */
 export function RecommendedCandidatesPage() {
   const queryClient = useQueryClient();
   const { user } = useSession();

@@ -29,6 +29,11 @@ import { formatDate, getProfileCertifications, getProfileSkills, humanize, sortB
 import Link from 'next/link'
 import { skillsApi } from '@/shared/api/endpoints/users'
 
+/**
+ * Public profile (/profile/[id]). The server sends the user and their service posts. When the viewer is the owner,
+ * the page uses the fresher signed-in data, shows the profile-strength badge and the resume, and shows buttons to
+ * change the avatar and cover. Every other edit links to the matching field in Settings.
+ */
 export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; posts?: Job[] }) {
   const queryClient = useQueryClient()
   const router = useRouter()

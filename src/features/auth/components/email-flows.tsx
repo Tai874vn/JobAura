@@ -98,6 +98,9 @@ export function CheckEmailPanel({ email, mailSent }: { email: string; mailSent: 
   );
 }
 
+/**
+ * /auth/verify-email: reads the token from the link (#token=...), sends it once, then shows done or the error.
+ */
 export function VerifyEmailView() {
   const { token, ready } = useHashToken();
   const started = useRef(false);
@@ -148,6 +151,10 @@ export function VerifyEmailView() {
   return <AuthCard title="Confirm your email">{body}</AuthCard>;
 }
 
+/**
+ * /auth/forgot-password: asks for the email and always shows the same "check your inbox" answer
+ * (so nobody can test which emails have an account).
+ */
 export function ForgotPasswordForm() {
   const [sentTo, setSentTo] = useState<string | null>(null);
   const form = useForm<z.infer<typeof forgotPasswordSchema>>({
@@ -193,6 +200,9 @@ export function ForgotPasswordForm() {
   );
 }
 
+/**
+ * /auth/reset-password: new password twice (rules: resetPasswordSchema in config/auth.ts), then back to sign in.
+ */
 export function ResetPasswordForm() {
   const { token, ready } = useHashToken();
   const queryClient = useQueryClient();

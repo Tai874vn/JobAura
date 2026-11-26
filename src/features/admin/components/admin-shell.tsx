@@ -17,6 +17,10 @@ const nav = [
   { href: '/settings?section=resume', activePath: '/settings', label: 'My resume', icon: FileJson },
 ]
 
+/**
+ * Frame of the admin pages: side menu (dashboard, jobs, users, categories, subcategories, comments, my resume)
+ * and the top bar.
+ */
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { user } = useSession()

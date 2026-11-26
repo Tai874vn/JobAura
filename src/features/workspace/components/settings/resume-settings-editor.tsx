@@ -20,6 +20,11 @@ import { ResumeSettingsSection } from './resume-settings-section'
 import { SettingsPanelSkeleton } from './settings-loading'
 import { settingsResumeOptions } from '../../utils/settings/settings-resume-query'
 
+/**
+ * Settings > Resume. A PDF can fill the fields first (extract). Save sends the fields, then the file; if only the
+ * file fails, the fields stay saved and the file is kept for a retry. After saving, the AI reads the resume and the
+ * page checks back until the AI result is there.
+ */
 export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: boolean; onBlockedNavigation?: () => void }) {
   const client = useQueryClient()
   const { user } = useSession()

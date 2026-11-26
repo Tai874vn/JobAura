@@ -9,6 +9,10 @@ import { usePostOccupation } from "../../hooks/use-post-occupation";
 /** Who is looking at the post decides the action: candidates apply, visitors sign in first, recruiters only read. */
 export type HiringPostViewer = "candidate" | "visitor" | "recruiter";
 
+/**
+ * One hiring post as a card (recommended jobs page): avatar, badges, title, facts, up to 6 skills, and the
+ * Apply / Applied button (HiringPostAction) for a candidate.
+ */
 export function HiringPostCard({
   post,
   viewer,

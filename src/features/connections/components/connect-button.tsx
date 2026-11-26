@@ -11,6 +11,10 @@ import { Button, ButtonLink, ConfirmationDialog, Skeleton } from '@/shared/ui'
 import type { ConnectionCommand } from '../utils/connections-data'
 import { useConnectionControls } from '../hooks/use-connection-controls'
 
+/**
+ * Buttons on a profile for one person: connect / accept / cancel / remove (from the connection state, see
+ * useConnectionControls) and Message, which opens the chat room.
+ */
 export function ConnectionActions({
   userId,
   userName,

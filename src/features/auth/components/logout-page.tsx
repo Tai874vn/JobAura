@@ -9,6 +9,10 @@ import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Spinner } from '@/shared/ui'
 import { useQueryClient } from '@tanstack/react-query'
 
+/**
+ * /logout. Runs once: clears chat and cached data in the browser, asks the backend to end the session, then goes
+ * to the sign-in page. If the backend call fails, it shows the error so the user can try again.
+ */
 export function LogoutPage() {
   const hasRunRef = useRef(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)

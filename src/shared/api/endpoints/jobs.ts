@@ -84,7 +84,7 @@ export const jobsApi = {
   // Backend: DELETE /api/jobs/:id → NestjsBE/src/modules/jobs/services/jobs.service.ts remove()
   delete: async (id: number) =>
     (await apiClient.delete<ApiResponse<void>>(`/api/jobs/${id}`)).data,
-  // Backend: POST /api/jobs/upload-image/:jobId → NestjsBE/src/modules/jobs/services/jobs.service.ts ensureCanManageJob()
+  // Backend: POST /api/jobs/upload-image/:jobId → NestjsBE/src/modules/jobs/services/jobs.service.ts uploadImage()
   uploadImage: async (jobId: number, file: File) => {
     assertValidImageFile(file, { label: "Service image" })
     const formData = new FormData()

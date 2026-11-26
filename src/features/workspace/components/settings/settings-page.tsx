@@ -24,6 +24,11 @@ const ResumeSettingsEditor = dynamic(() => import('./resume-settings-editor').th
   loading: () => <SettingsPanelSkeleton />,
 })
 
+/**
+ * /settings. ?section= picks the editor (overview, profile, resume, ...); resume only for roles that have one.
+ * An editor stays mounted after you leave it (visited), so a half-typed draft is kept when you switch sections.
+ * ?focus=<field> (from the profile-strength list) scrolls to that field, focuses it and flashes a ring once.
+ */
 export function SettingsPage() {
   const pathname = usePathname()
   const searchParams = useSearchParams()

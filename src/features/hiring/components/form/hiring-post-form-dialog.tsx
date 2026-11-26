@@ -45,6 +45,11 @@ export function HiringPostFormDialog({
   return <HiringPostForm key={post?.id ?? "new"} post={post ?? null} onClose={onClose} onSaved={onSaved} />;
 }
 
+/**
+ * Create or edit a hiring post (post = null means create). The form keeps a draft; picking an occupation loads
+ * its specialties. Save checks the Zod rules (createHiringPostSchema in config/my-hiring-posts.ts), then creates or
+ * updates the post and refreshes every 'hiring-posts' list.
+ */
 function HiringPostForm({
   post,
   onClose,

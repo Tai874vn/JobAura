@@ -41,6 +41,10 @@ function renderWorkspaceSkeleton(kind: WorkspaceSkeletonKind) {
   }
 }
 
+/**
+ * Sign-in guard for the workspace pages. While the session is checked it shows the skeleton of the page being
+ * opened (contracts, my applications, applicants, my hiring posts), so the page does not jump when it loads.
+ */
 export function WorkspaceRequireAuth({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const fallback = renderWorkspaceSkeleton(workspaceSkeletonForPathname(pathname))

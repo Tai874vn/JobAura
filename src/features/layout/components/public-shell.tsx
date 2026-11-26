@@ -1,6 +1,9 @@
 import { Footer } from './footer'
 import { SiteHeader } from './site-header'
 
+/**
+ * Header + page + footer frame used by the public and workspace pages.
+ */
 export function PublicShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">

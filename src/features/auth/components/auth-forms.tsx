@@ -41,6 +41,9 @@ import { AuthCard, AuthPageGate, FieldError } from "./auth-form-layout";
 import { GoogleSignupRoleModal } from "./google-signup-role-modal";
 import { CheckEmailPanel, ResendVerificationButton } from "./email-flows";
 
+/**
+ * /auth/login. AuthPageGate sends an already signed-in user on; ?next= is where to go after signing in.
+ */
 export function LoginForm() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");
@@ -53,6 +56,11 @@ export function LoginForm() {
   );
 }
 
+/**
+ * Email + password form (rules: signInSchema in config/auth.ts). On success it goes to ?next= or the home page of
+ * the role. "EMAIL_NOT_VERIFIED" shows a "send the link again" box instead of an error. Google sign-in leaves the
+ * page for the backend; a new Google user first picks an account type.
+ */
 function LoginFormFields({
   nextPath,
   notice,
@@ -207,6 +215,9 @@ function LoginFormFields({
   );
 }
 
+/**
+ * /auth/register. ?role=employer (from "Post a role") picks the account type in advance.
+ */
 export function RegisterForm() {
   const searchParams = useSearchParams();
   const nextPath = searchParams.get("next");

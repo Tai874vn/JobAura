@@ -14,6 +14,11 @@ import { ShortlistPreview } from '@/features/jobs/components/home/shortlist-prev
 import { MatchScore } from '@/features/jobs/components/recommendations/recommendation-ui'
 import { sampleBreakdown, sampleCandidates, samplePost } from '@/features/jobs/utils/home/sample-shortlist'
 
+/**
+ * Landing page (/welcome) for visitors, top to bottom: hero, score breakdown, how it works, browse links, the
+ * top-rated portfolios (streamed in, with a skeleton first), FAQ and the last call to action.
+ * Texts and numbers are in config/welcome.ts.
+ */
 export function HomePage() {
   return (
     <div>

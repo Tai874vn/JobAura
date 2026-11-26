@@ -12,6 +12,10 @@ import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, DialogPortal
 import { getResourceConfig, type Resource, type ResourceConfig, type ResourceRow } from './admin-resource-model'
 import { refreshMarketplaceTaxonomyPages } from '../utils/refresh-taxonomy-pages'
 
+/**
+ * One admin table (users, jobs, categories, subcategories or comments). What to load, delete and create for
+ * each table is in admin-resource-model.tsx. The search box filters the loaded rows in the browser; delete asks first.
+ */
 export function AdminResourcePage({ resource, embedded = false }: { resource: Resource; embedded?: boolean }) {
   const config = getResourceConfig(resource)
   const [keyword, setKeyword] = useState('')

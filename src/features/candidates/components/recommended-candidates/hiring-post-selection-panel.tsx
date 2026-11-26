@@ -27,6 +27,10 @@ type HiringPostSelectionPanelProps = {
   onPoolSizeChange: (value: number) => void;
 };
 
+/**
+ * Left side of AI matching: the list of your hiring posts to pick from, the topK / pool size choices, a button
+ * to ask the AI for the post's seniority, and editing the post in the form dialog.
+ */
 export function HiringPostSelectionPanel({
   hiringPosts,
   loading,

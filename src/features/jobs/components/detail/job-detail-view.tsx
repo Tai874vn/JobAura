@@ -22,6 +22,11 @@ import { Avatar, Badge, Button, ButtonLink, Card, CardContent, ConfirmationDialo
 import { deleteJob } from '../../utils/delete-job'
 import { getSellerAvatar, getSellerHref, getSellerId, getSellerName } from '../../utils/seller-profile'
 
+/**
+ * Service page (/jobs/[id]). A post without a price is a portfolio post: no purchase steps, only ways to reach
+ * the person. Visitors can message the seller (opens chat) or send a proposal; the owner can edit or delete
+ * (asks first, then goes to /my-posts). Reviews are listed at the bottom.
+ */
 export function JobDetailView({ job, comments }: { job: Job; comments: Comment[] }) {
   const imageUrl = resolveAssetUrl(job.image)
   const bypassOptimizer = shouldBypassImageOptimizer(job.image)

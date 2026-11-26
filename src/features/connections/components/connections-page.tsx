@@ -18,6 +18,12 @@ import { pageWindow } from '../utils/connections-data'
 
 type ConnectionsTab = 'connections' | 'requests' | 'discover'
 
+/**
+ * /connections with three tabs: Connections, Requests (the number of received requests is on the tab) and
+ * Discover ("people you may know"). Typing in the search box waits 400 ms, then searches and goes back to page 1.
+ * Only the open tab's list is fetched; requests always load. Send / accept / remove refresh every 'connections'
+ * query, and Message opens the chat window for that person.
+ */
 export function ConnectionsPage() {
   const [tab, setTab] = useState<ConnectionsTab>('connections')
   const [keyword, setKeyword] = useState('')

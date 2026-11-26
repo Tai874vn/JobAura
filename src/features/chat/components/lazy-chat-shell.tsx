@@ -11,9 +11,13 @@ const ChatShell = dynamic(() => import('./chat-shell').then((mod) => mod.ChatShe
   loading: () => null,
 })
 
+/**
+ * Loads the chat window only for a signed-in user and only when the browser is idle, so it does not slow the
+ * first paint. A Message button pressed before that loads it at once. Hidden on the interview call screen.
+ */
 export function LazyChatShell() {
   const { user, isLoading } = useSession()
-  // The call screen has its own Leave and Skip at the bottom right; the Chat button would sit on top of them.
+  // The call screen has its own Leave button at the bottom right; the Chat button would sit on top of it.
   const onCallScreen = /^\/interviews\/[^/]+\/call\/?$/.test(usePathname() ?? '')
   const [canLoadChat, setCanLoadChat] = useState(false)
   const shouldLoadChat = !isLoading && Boolean(user)

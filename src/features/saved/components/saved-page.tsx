@@ -18,6 +18,10 @@ import { JobCard } from '@/features/jobs/components/browse/job-card'
 
 type SavedTab = 'posts' | 'jobs'
 
+/**
+ * /saved with two tabs, Posts and Jobs. Only the open tab loads, a page at a time ("Load more").
+ * Removing a saved post also refreshes the home feed, so its bookmark icon changes there too.
+ */
 export function SavedPage() {
   const [tab, setTab] = useState<SavedTab>('posts')
   const queryClient = useQueryClient()

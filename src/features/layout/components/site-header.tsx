@@ -24,6 +24,11 @@ const accountIcons: Record<string, LucideIcon> = {
   "/settings": Settings,
 };
 
+/**
+ * Top bar on every page: logo, main links (nav.main), wallet, bell and the account menu.
+ * The links and the account menu items depend on the role. Both dropdowns close on an outside click or Escape;
+ * on small screens the main links move into the mobile menu.
+ */
 export function SiteHeader() {
   const router = useRouter();
   const pathname = usePathname();

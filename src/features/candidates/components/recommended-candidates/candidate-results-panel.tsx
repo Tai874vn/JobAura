@@ -11,6 +11,10 @@ type CandidateResultsPanelProps = {
   selectedHiringPost: HiringPost | null;
 };
 
+/**
+ * Results of a matching run, in two groups: candidates the classifier marks as a match, then the rest.
+ * Each card shows the score and which skills matched or are missing.
+ */
 export function CandidateResultsPanel({
   candidates,
   selectedHiringPost,

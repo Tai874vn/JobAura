@@ -11,6 +11,9 @@ import type { Job } from '@/shared/schemas'
 import { getSellerAvatar, getSellerHref, getSellerName } from '../../utils/seller-profile'
 import { JobSaveButton } from '../detail/job-save-button'
 
+/**
+ * One service / portfolio post as a card in the /jobs list (image, seller, price, save button).
+ */
 export function JobCard({ job, priority = false, initialSaved = false, waitForImages = false }: { job: Job; priority?: boolean; initialSaved?: boolean; waitForImages?: boolean }) {
   const imageUrl = resolveAssetUrl(job.image)
   const avatarUrl = resolveAssetUrl(getSellerAvatar(job))

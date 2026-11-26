@@ -10,6 +10,10 @@ import { SkillListEditor } from '@/features/users/components/resume/skill-picker
 import { CertificationFields } from '@/features/users/components/resume/certification-fields'
 import { certificationProblems } from '@/features/users/utils/certifications'
 
+/**
+ * Settings > Profile: basic info, skills, certifications and portfolio, with one "Save profile" bar
+ * (UnsavedChangesBar) that appears when something changed. All logic is in useProfileSettings.
+ */
 export function ProfileSettingsEditor({
   profile,
   active = true,

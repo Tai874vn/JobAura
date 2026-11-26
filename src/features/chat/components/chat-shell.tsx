@@ -11,6 +11,11 @@ import { ChatRoomList } from './chat-room-list'
 import { useChatRoomSelection } from '../hooks/use-chat-room-selection'
 import { useChatSocket } from '../hooks/use-chat-socket'
 
+/**
+ * The chat window in the bottom corner: room list, conversation and the message box. useChatRoomSelection loads
+ * the rooms and the open room's messages; useChatSocket sends and receives messages live. The typed draft is kept
+ * when the window closes.
+ */
 export function ChatShell({ initialRequest }: { initialRequest?: OpenChatRequest | null } = {}) {
   const { user } = useSession()
   const userId = user?.id

@@ -13,6 +13,9 @@ type GoogleSignupRoleModalProps = {
   onContinue: () => void
 }
 
+/**
+ * Asks a new Google user which account type they want (candidate or employer) before going to Google.
+ */
 export function GoogleSignupRoleModal(props: GoogleSignupRoleModalProps) {
   if (!props.open) return null
   return <GoogleSignupRoleModalBody {...props} />

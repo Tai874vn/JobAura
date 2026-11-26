@@ -17,7 +17,7 @@ export const postsApi = {
   // Backend: GET /api/posts/me/stats → NestjsBE/src/modules/posts/services/posts.service.ts getMyStats()
   stats: async () =>
     (await apiClient.get<ApiResponse<FeedStats>>('/api/posts/me/stats')).data,
-  // Backend: POST /api/posts → NestjsBE/src/modules/storage/services/storage.service.ts uploadImage()
+  // Backend: POST /api/posts → NestjsBE/src/modules/posts/services/posts.service.ts createPost()
   create: async (content: string, image?: File) => {
     if (image) assertValidImageFile(image, { label: 'Post image' })
     const formData = new FormData()

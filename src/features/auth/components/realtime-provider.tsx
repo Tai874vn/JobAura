@@ -9,6 +9,10 @@ import { useSession } from '../hooks/use-session'
 
 const RealtimeContext = createContext<RealtimeConnection | null>(null)
 
+/**
+ * Opens the one socket connection (chat, notifications, live updates) for the signed-in user and closes it on
+ * logout or account change. Editing your name or avatar does not reconnect.
+ */
 export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   const { user } = useSession()
   const userId = user?.id

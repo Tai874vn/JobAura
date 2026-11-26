@@ -16,6 +16,10 @@ import { servicePriceLabel } from '@/features/jobs/utils/service-price'
 import type { Job } from '@/shared/schemas'
 import { Button, ButtonLink, Card, ConfirmationDialog, EmptyState, Skeleton } from '@/shared/ui'
 
+/**
+ * /my-posts: the signed-in user's own portfolio / service posts. Delete asks first (pendingDelete), then a server
+ * action deletes the post and clears the cached public pages that showed it.
+ */
 export function MyPostsPage() {
   const { user } = useSession()
   const queryClient = useQueryClient()

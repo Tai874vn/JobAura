@@ -11,6 +11,10 @@ import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validati
 import { Button, Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 
+/**
+ * "Start a post" box on the feed. Opens a dialog with a text area and an optional image (with preview).
+ * An empty post (no text, no image) is not sent; the parent (FeedPage) does the upload.
+ */
 export function PostComposer({
   user,
   submitting,

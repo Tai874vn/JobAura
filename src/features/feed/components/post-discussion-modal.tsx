@@ -86,6 +86,10 @@ export function decideDiscussionScroll({
   return { shouldScroll: false, behavior: 'auto', nextStage: 'preview', clearPendingOwnComment: false }
 }
 
+/**
+ * The opened post with its comments and replies (CommentThread). Comments load a page at a time; the author
+ * can edit or delete their own comment (useDiscussionMutations).
+ */
 export function PostDiscussionModal({
   post,
   open,

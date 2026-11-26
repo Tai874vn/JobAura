@@ -17,6 +17,11 @@ import { MatchBadge } from './recommendation-ui'
 const recommendationParams = { topK: 12, poolSize: 50 }
 type SkillGapRecommendation = RecommendedJob['recommendation']
 
+/**
+ * /recommendations/jobs: AI job picks for a candidate. On open it shows the last saved run (cacheOnly, no quota
+ * used). "Proceed to match" / "Run again" runs the AI and uses one of today's runs (quota). Each card shows the match score;
+ * hovering shows the missing skills in a tooltip that follows the pointer without re-rendering the page.
+ */
 export function RecommendedJobsPage() {
   const queryClient = useQueryClient()
   const { user } = useSession()

@@ -8,6 +8,9 @@ import { getErrorMessage } from '@/shared/lib/utils'
 import { Card, CardContent, PageHeader, Skeleton } from '@/shared/ui'
 import { AdminResourcePage } from './admin-resource-page'
 
+/**
+ * /admin home: four counts (users, active jobs, contracts, comments) from one request; "—" when it fails.
+ */
 export function AdminDashboard() {
   const { user } = useSession()
   // Data: adminApi.stats → GET /api/admin/stats → NestjsBE/src/modules/admin/services/admin.service.ts getStats()
