@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { contractKeys } from './api'
+import { contractKeys } from '../api'
 import { ContractsPage, contractsListParams } from './contracts-page'
 
 const mocks = vi.hoisted(() => ({ search: '' }))

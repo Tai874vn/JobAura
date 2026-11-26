@@ -3,9 +3,9 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import type { ContractDetail } from '@/shared/schemas'
 import { ContractPanel } from './contract-panel'
-import { CLIENT, FREELANCER, contractOf, milestoneOf } from './contract-test-data'
+import { CLIENT, FREELANCER, contractOf, milestoneOf } from '../../utils/contract-test-data'
 import { FundError } from './fund-error'
-import { submitWorkErrors } from './submit-work-dialog'
+import { submitWorkErrors } from '../dialogs/submit-work-dialog'
 
 function render(contract: ContractDetail, viewerId: number) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })

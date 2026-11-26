@@ -10,15 +10,15 @@ import {
   openAmendment,
   submittedMilestone,
   type ContractAction,
-} from './contract-actions'
-import { ContractDialogs } from './contract-dialogs'
+} from '../../utils/contract-actions'
+import { ContractDialogs } from '../dialogs/contract-dialogs'
 import { ContractHeader } from './contract-header'
 import { ContractMilestones, ContractSubmissions } from './contract-milestones'
 import { ContractTimeline } from './contract-timeline'
 import { EndRequestCard } from './end-request-card'
-import { viewerRoleFor } from './milestone-actions'
-import { PanelFrame } from './panel-frame'
-import { useContractActions } from './use-contract-actions'
+import { viewerRoleFor } from '../../utils/milestone-actions'
+import { PanelFrame } from '../panel-frame'
+import { useContractActions } from '../../hooks/use-contract-actions'
 
 /**
  * One contract, in full: header with the four figures, the milestone steps, the current milestone with its buttons,

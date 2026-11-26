@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/require-auth'
-import { ContractsPage } from '@/features/contracts/contracts-page'
-import { ContractsPageSkeleton } from '@/features/contracts/contracts-skeleton'
+import { ContractsPage } from '@/features/contracts/components/contracts-page'
+import { ContractsPageSkeleton } from '@/features/contracts/components/contracts-skeleton'
 
 export const metadata: Metadata = { title: 'Contracts' }
 

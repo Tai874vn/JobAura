@@ -2,7 +2,7 @@ import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import type { MilestoneView } from '@/shared/schemas'
 import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
-import { milestoneLabel } from './status-labels'
+import { milestoneLabel } from '../../utils/status-labels'
 
 /**
  * One step per milestone: position, title, status word, amount and due date.

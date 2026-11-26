@@ -4,8 +4,8 @@ import { MessageSquare } from 'lucide-react'
 import { credits } from '@/shared/lib/credits'
 import type { ContractStatus, MilestoneView } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
-import type { ContractAction, ContractDialog } from './contract-actions'
-import { visibleMilestoneActions, type ContractViewerRole, type MilestoneAction } from './milestone-actions'
+import type { ContractAction, ContractDialog } from '../../utils/contract-actions'
+import { visibleMilestoneActions, type ContractViewerRole, type MilestoneAction } from '../../utils/milestone-actions'
 
 /**
  * Buttons for the current milestone (fund, submit, approve, request changes).

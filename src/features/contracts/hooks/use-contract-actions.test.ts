@@ -7,7 +7,7 @@ const { refreshServicePageAfterReview } = vi.hoisted(() => ({
   refreshServicePageAfterReview: vi.fn(),
 }))
 
-vi.mock('./refresh-service-page', () => ({ refreshServicePageAfterReview }))
+vi.mock('../utils/refresh-service-page', () => ({ refreshServicePageAfterReview }))
 
 import { handleReviewSuccess } from './use-contract-actions'
 

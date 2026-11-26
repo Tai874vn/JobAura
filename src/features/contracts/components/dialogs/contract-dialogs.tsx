@@ -4,13 +4,13 @@ import { credits } from '@/shared/lib/credits'
 import type { ContractDetail, MilestoneView, PersonSummary } from '@/shared/schemas'
 import { AmendmentDialog } from './amendment-dialog'
 import { ConfirmDialog } from './confirm-dialog'
-import type { ContractDialog } from './contract-actions'
-import { milestoneName } from './contract-milestones'
+import type { ContractDialog } from '../../utils/contract-actions'
+import { milestoneName } from '../contract/contract-milestones'
 import { EndDialog } from './end-dialog'
-import { FundError, FundWaysOut } from './fund-error'
+import { FundError, FundWaysOut } from '../contract/fund-error'
 import { ReviewDialog } from './review-dialog'
 import { SubmitWorkDialog } from './submit-work-dialog'
-import type { ContractAct } from './use-contract-actions'
+import type { ContractAct } from '../../hooks/use-contract-actions'
 
 type DialogsProps = {
   contract: ContractDetail

@@ -8,9 +8,9 @@ import { useSession } from '@/features/auth/use-session'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ContractStatus, ProposalStatus, Side } from '@/shared/schemas'
 import { Button, ButtonLink, EmptyState } from '@/shared/ui'
-import { contractKeys, contractsApi } from './api'
+import { contractKeys, contractsApi } from '../api'
 import { ContractListItem } from './contract-list-item'
-import { ContractPanel } from './contract-panel'
+import { ContractPanel } from './contract/contract-panel'
 import { ContractsListSkeleton } from './contracts-skeleton'
 import {
   buildRows,
@@ -23,9 +23,9 @@ import {
   resolveTab,
   type ContractFilter,
   type Row,
-} from './contracts-selection'
+} from '../utils/contracts-selection'
 import { PanelLoading } from './panel-frame'
-import { ProposalPanel } from './proposal-panel'
+import { ProposalPanel } from './proposal/proposal-panel'
 
 /** The lists show the newest 50 of each kind (the server's largest page). */
 export const contractsPageSize = 50

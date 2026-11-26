@@ -10,7 +10,7 @@ import { imageUploadAccept } from '@/shared/lib/file-validation'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { MilestoneStatus, VersionBody } from '@/shared/schemas'
 import { Button, Input, Textarea } from '@/shared/ui'
-import { contractsApi } from './api'
+import { contractsApi } from '../../api'
 import {
   MAX_MILESTONES,
   MAX_REFERENCES,
@@ -23,7 +23,7 @@ import {
   todayString,
   type EditorRow,
   type EditorState,
-} from './proposal-editor-model'
+} from '../../utils/proposal-editor-model'
 
 type Props = {
   initial: EditorState

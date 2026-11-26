@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { ArrowLeft, CheckCheck, MessageCircle, X } from 'lucide-react'
-import { ChatProposalButton } from '@/features/contracts/chat-proposal-button'
+import { ChatProposalButton } from '@/features/contracts/components/chat-proposal-button'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ChatMessage, ChatRoom, ChatUser } from '@/shared/schemas'
 import { Avatar, Button, Skeleton } from '@/shared/ui'

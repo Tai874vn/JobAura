@@ -10,9 +10,9 @@ import { toast } from 'sonner'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { Job } from '@/shared/schemas'
 import { Button, DialogPortal, useDialogFocus } from '@/shared/ui'
-import { contractsApi } from './api'
+import { contractsApi } from '../../api'
 import { ProposalEditor } from './proposal-editor'
-import { addDays, prefillFromService, todayString, type EditorState } from './proposal-editor-model'
+import { addDays, prefillFromService, todayString, type EditorState } from '../../utils/proposal-editor-model'
 
 type Props = {
   job: Job

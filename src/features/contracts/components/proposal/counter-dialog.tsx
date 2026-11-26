@@ -5,7 +5,7 @@ import { useId, useState } from 'react'
 import type { ProposalVersionView, VersionBody } from '@/shared/schemas'
 import { Button, DialogPortal, useDialogFocus } from '@/shared/ui'
 import { ProposalEditor } from './proposal-editor'
-import { fromVersion } from './proposal-editor-model'
+import { fromVersion } from '../../utils/proposal-editor-model'
 
 /**
  * The counter-offer form in a dialog. It starts from the latest version, so the person only changes what they want.

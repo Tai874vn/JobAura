@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSession } from "@/features/auth/use-session";
 import { PipelineLiveUpdates } from "@/features/hiring-pipeline/use-pipeline-live-updates";
-import { ContractLiveUpdates } from "@/features/contracts/use-contract-live-updates";
+import { ContractLiveUpdates } from "@/features/contracts/hooks/use-contract-live-updates";
 import { NotificationBell } from "@/features/notifications/notification-bell";
 import { WalletChip } from "@/features/wallet/wallet-chip";
 import { cn } from "@/shared/lib/utils";

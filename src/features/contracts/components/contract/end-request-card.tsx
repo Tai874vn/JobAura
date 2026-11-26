@@ -1,7 +1,7 @@
 import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
 import type { ContractDetail } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
-import { freelancerCanAcceptEnd } from './contract-actions'
+import { freelancerCanAcceptEnd } from '../../utils/contract-actions'
 
 /**
  * The open end request: who asked, when, the note, and the client's choice for submitted work (if one was made).

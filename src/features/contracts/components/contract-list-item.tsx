@@ -5,9 +5,9 @@ import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
 import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import { Avatar, Badge } from '@/shared/ui'
-import type { Row } from './contracts-selection'
-import { nextAction } from './next-action'
-import { contractLabel, endReasonLine, proposalLabel } from './status-labels'
+import type { Row } from '../utils/contracts-selection'
+import { nextAction } from '../utils/next-action'
+import { contractLabel, endReasonLine, proposalLabel } from '../utils/status-labels'
 
 /**
  * One proposal or contract in the list. The whole row selects it (the panel opens beside the list on wide screens,

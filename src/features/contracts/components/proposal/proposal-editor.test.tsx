@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { ProposalEditor } from './proposal-editor'
-import type { EditorState } from './proposal-editor-model'
+import type { EditorState } from '../../utils/proposal-editor-model'
 
 const state = (): EditorState => ({
   brief: '',

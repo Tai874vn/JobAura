@@ -4,8 +4,8 @@ import { X } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { ContractDetail } from '@/shared/schemas'
 import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'
-import { amendmentStart, buildAmendment, type AmendmentBody } from './amendment-changes'
-import { ProposalEditor } from './proposal-editor'
+import { amendmentStart, buildAmendment, type AmendmentBody } from '../../utils/amendment-changes'
+import { ProposalEditor } from '../proposal/proposal-editor'
 
 const MAX_CHANGES = 10
 

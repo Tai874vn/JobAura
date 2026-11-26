@@ -7,8 +7,8 @@ import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import type { ContractDetail, PersonSummary } from '@/shared/schemas'
 import { Avatar, Badge, Button } from '@/shared/ui'
-import { nextAction } from './next-action'
-import { contractLabel, endReasonLine } from './status-labels'
+import { nextAction } from '../../utils/next-action'
+import { contractLabel, endReasonLine } from '../../utils/status-labels'
 
 type HeaderProps = {
   contract: ContractDetail

@@ -8,7 +8,7 @@ import { reportServerError } from '@/shared/api/query-client'
 import { imageUploadAccept } from '@/shared/lib/file-validation'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, DialogPortal, Input, Textarea, useDialogFocus } from '@/shared/ui'
-import { contractsApi } from './api'
+import { contractsApi } from '../../api'
 
 export const MAX_WORK_FILES = 10
 export const MAX_NOTE = 2000

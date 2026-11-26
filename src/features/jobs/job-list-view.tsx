@@ -6,7 +6,7 @@ import { ArrowDownWideNarrow, BriefcaseBusiness, ChevronDown, Plus, Search, Sear
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { useSession } from '@/features/auth/use-session'
-import { NewProposalDialog } from '@/features/contracts/new-proposal-dialog'
+import { NewProposalDialog } from '@/features/contracts/components/proposal/new-proposal-dialog'
 import { categoriesApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'

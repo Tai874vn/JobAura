@@ -1,7 +1,7 @@
 import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
 import type { AmendmentView, ContractDetail } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
-import { describeAmendment } from './amendment-changes'
+import { describeAmendment } from '../../utils/amendment-changes'
 
 /**
  * The open change request: who asked, the note, and each change in words. The other person gets Accept and Decline;

@@ -1,5 +1,5 @@
 import { Button, ButtonLink } from '@/shared/ui'
-import { creditsShortage } from './amendment-changes'
+import { creditsShortage } from '../../utils/amendment-changes'
 
 /** The two ways out when the client has too few credits: `Top up` (the wallet page) and `Ask to lower the amount`. */
 export function FundWaysOut({ onLowerAmount }: { onLowerAmount?: () => void }) {
