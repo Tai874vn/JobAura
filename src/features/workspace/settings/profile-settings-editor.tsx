@@ -3,12 +3,12 @@
 import { Eye, ImageUp, Info, Upload } from 'lucide-react'
 import type { UserProfile } from '@/shared/schemas'
 import { Avatar, Button, Card, CardContent, ConfirmationDialog, Textarea, UnsavedChangesBar } from '@/shared/ui'
-import { removeListItem, updateList } from '@/features/users/profile-form-utils'
+import { removeListItem, updateList } from '@/features/users/utils/profile-form-utils'
 import { EditorSection, Field, PortfolioFields, UploadField } from './settings-form-controls'
 import { emptyCertification, useProfileSettings } from './use-profile-settings'
-import { SkillListEditor } from '@/features/users/skill-picker'
-import { CertificationFields } from '@/features/users/certification-fields'
-import { certificationProblems } from '@/features/users/certifications'
+import { SkillListEditor } from '@/features/users/components/resume/skill-picker'
+import { CertificationFields } from '@/features/users/components/resume/certification-fields'
+import { certificationProblems } from '@/features/users/utils/certifications'
 
 export function ProfileSettingsEditor({
   profile,

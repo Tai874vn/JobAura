@@ -1,5 +1,5 @@
 import { occupationLabel } from '@/features/occupations/api'
-import { formatCredit, formatYears } from '@/features/users/resume-career'
+import { formatCredit, formatYears } from '@/features/users/utils/resume-career'
 import type { CandidateDirectoryParams, CandidateProfile } from '@/shared/schemas'
 
 /**

@@ -9,7 +9,7 @@ import { Button, InfoTip, Input, Select, Textarea } from '@/shared/ui'
 import { occupationLabel, occupationQuery, type OccupationHit } from '@/features/occupations/api'
 import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
 import { SpecialtyPicker } from '@/features/occupations/specialty-picker'
-import type { ResumeDraft, ResumeFieldKey } from './resume'
+import type { ResumeDraft, ResumeFieldKey } from '../../utils/resume'
 import {
   currentJobOccupation,
   degreeLevels,
@@ -21,7 +21,7 @@ import {
   resumeCareerProblems,
   serializeResumeJobs,
   type ResumeJob,
-} from './resume-career'
+} from '../../utils/resume-career'
 
 type MainChoice = { Occupation: string; Specialty: string }
 

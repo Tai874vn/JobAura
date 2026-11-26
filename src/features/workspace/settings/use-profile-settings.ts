@@ -7,16 +7,16 @@ import { usersApi } from '@/shared/api/endpoints/users'
 import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'
 import { setCachedSession } from '@/shared/api/session-cache'
-import { cleanObject, toDateInput } from '@/features/users/profile-form-utils'
-import { refreshMyProfilePage } from '@/features/users/refresh-profile-page'
-import { useProfileUpload } from '@/features/users/use-profile-upload'
+import { cleanObject, toDateInput } from '@/features/users/utils/profile-form-utils'
+import { refreshMyProfilePage } from '@/features/users/utils/refresh-profile-page'
+import { useProfileUpload } from '@/features/users/hooks/use-profile-upload'
 import { getErrorMessage, UserValidationError } from '@/shared/lib/utils'
 import type { ProfilePortfolioItem, ProfileSkill, UpdateProfile, UserProfile } from '@/shared/schemas'
 import type { PortfolioDraft } from './settings-form-controls'
-import { allCertificationProblems, certificationDraft, certificationPayload, type CertificationDraft } from '@/features/users/certifications'
+import { allCertificationProblems, certificationDraft, certificationPayload, type CertificationDraft } from '@/features/users/utils/certifications'
 
 export const emptySkill: Omit<ProfileSkill, 'id'> = { name: '', level: '', sortOrder: 0 }
-export { emptyCertificationDraft as emptyCertification } from '@/features/users/certifications'
+export { emptyCertificationDraft as emptyCertification } from '@/features/users/utils/certifications'
 const emptyPortfolio: PortfolioDraft = { title: '', description: '', image: '', url: '', sortOrder: 0 }
 
 export function useProfileSettings(profile: UserProfile) {

@@ -3,7 +3,7 @@
 import { Trash2 } from 'lucide-react'
 import { Button, Input, Select } from '@/shared/ui'
 import { SkillPicker } from './skill-picker'
-import { certificationCategories, type CertificationDraft } from './certifications'
+import { certificationCategories, type CertificationDraft } from '../../utils/certifications'
 
 /** One certification's fields; the same form in Settings and on the profile page. */
 export function CertificationFields({ value, onChange, onRemove, problems = [] }: {

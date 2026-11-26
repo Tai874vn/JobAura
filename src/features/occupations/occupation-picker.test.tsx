@@ -5,7 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apiClient } from '@/shared/api/client'
 import type { ResumeOccupationYears } from '@/shared/schemas'
-import { resumeDraftFromData } from '@/features/users/resume'
+import { resumeDraftFromData } from '@/features/users/utils/resume'
 import {
   defaultMainOccupation,
   isStillChoice,
@@ -14,8 +14,8 @@ import {
   matchedSpecialty,
   OccupationYears,
   ResumeCareerFields,
-} from '@/features/users/resume-career-fields'
-import { parseResumeJobs, type ResumeJob } from '@/features/users/resume-career'
+} from '@/features/users/components/resume/resume-career-fields'
+import { parseResumeJobs, type ResumeJob } from '@/features/users/utils/resume-career'
 import { occupationKeys, occupationsApi, type Occupation, type OccupationHit } from './api'
 import { OccupationPicker, OccupationResults } from './occupation-picker'
 import { filterSpecialties, SpecialtyPicker } from './specialty-picker'

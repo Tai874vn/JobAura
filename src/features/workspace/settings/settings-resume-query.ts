@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { queryKeys } from '@/shared/api/query-keys'
-import { isResumeAiPending } from '@/features/users/resume-ai'
+import { isResumeAiPending } from '@/features/users/utils/resume-ai'
 
 export function settingsResumeOptions(enabled: boolean, viewerId?: number | null) {
   return queryOptions({

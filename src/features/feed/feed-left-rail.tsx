@@ -11,7 +11,7 @@ import type { UserProfile } from '@/shared/schemas'
 import { Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
 import { selectFeedCover } from './feed-cover'
-import { useProfileStrength } from '@/features/users/profile-strength'
+import { useProfileStrength } from '@/features/users/utils/profile-strength'
 
 export function LeftFeedRail({ user }: { user: UserProfile }) {
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests(user.id), queryFn: connectionsApi.requests, staleTime: 30_000 })

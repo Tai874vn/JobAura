@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, FileText, ListOrdered } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'
 import { Button, Card, CardContent, Input, Textarea, UnsavedChangesBar } from '@/shared/ui'
-import { formatFileSize } from '@/features/users/profile-form-utils'
+import { formatFileSize } from '@/features/users/utils/profile-form-utils'
 import { sanitizeUserMessage } from '@/shared/lib/errors'
 import { cn } from '@/shared/lib/utils'
 import {
@@ -13,12 +13,12 @@ import {
   resumeSkills,
   type ResumeDraft,
   type ResumeFieldKey,
-} from '@/features/users/resume'
-import { ResumeCareerFields } from '@/features/users/resume-career-fields'
-import { SkillListEditor } from '@/features/users/skill-picker'
-import { canRetryResumeAi, isResumeAiPending, resumeAiStatus, unrecognisedSkills } from '@/features/users/resume-ai'
+} from '@/features/users/utils/resume'
+import { ResumeCareerFields } from '@/features/users/components/resume/resume-career-fields'
+import { SkillListEditor } from '@/features/users/components/resume/skill-picker'
+import { canRetryResumeAi, isResumeAiPending, resumeAiStatus, unrecognisedSkills } from '@/features/users/utils/resume-ai'
 import type { FoundSkill } from '@/shared/api/endpoints/users'
-import { formatCredit, formatYears, resumeCareerProblems, savedOccupationYears } from '@/features/users/resume-career'
+import { formatCredit, formatYears, resumeCareerProblems, savedOccupationYears } from '@/features/users/utils/resume-career'
 import { occupationQuery } from '@/features/occupations/api'
 import { useOccupationTitle } from '@/features/occupations/occupation-picker'
 

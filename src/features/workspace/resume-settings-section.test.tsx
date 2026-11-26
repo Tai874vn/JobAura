@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { resumeDraftFromData } from '@/features/users/resume'
+import { resumeDraftFromData } from '@/features/users/utils/resume'
 import { ResumeSettingsSection } from './resume-settings-section'
 
 // The skill picker searches through React Query, so the section needs a query client.

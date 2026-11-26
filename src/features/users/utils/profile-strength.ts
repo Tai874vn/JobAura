@@ -5,7 +5,7 @@ import { hiringPostsApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { UserProfile, UserResume } from '@/shared/schemas'
 import { isOccupationCode, parseResumeJobs } from './resume-career'
-import { useOwnResume } from './use-own-resume'
+import { useOwnResume } from '../hooks/use-own-resume'
 
 /**
  * Profile strength: weighted checks that add up to 100. Only what changes how the profile works counts:

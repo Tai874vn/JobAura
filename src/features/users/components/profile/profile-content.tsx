@@ -1,4 +1,4 @@
-import { formatCredit, formatYears } from '@/features/users/resume-career'
+import { formatCredit, formatYears } from '@/features/users/utils/resume-career'
 import { occupationLabel } from '@/features/occupations/api'
 import {
   BriefcaseBusiness,
@@ -14,13 +14,13 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { hasResumeDraftInput, resumeSkills, type ResumeDraft } from '@/features/users/resume'
+import { hasResumeDraftInput, resumeSkills, type ResumeDraft } from '@/features/users/utils/resume'
 import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { servicePriceLabel } from '@/features/jobs/utils/service-price'
 import type { Job, UserProfile, UserResume } from '@/shared/schemas'
 import { Badge, ButtonLink, Card, CardContent, Skeleton } from '@/shared/ui'
 import { InlineEditButton, ResumeSnippet } from './profile-editor'
-import { formatDate, formatFullDate, type MarketplaceProfile } from './model'
+import { formatDate, formatFullDate, type MarketplaceProfile } from '../../utils/profile/model'
 
 export function ProfilePostCard({ post, user }: { post: Job; user: MarketplaceProfile | UserProfile }) {
   const imageUrl = resolveAssetUrl(post.image)

@@ -31,15 +31,15 @@ import { Button, Card, CardContent, CardHeader } from '@/shared/ui'
 import { initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import { safeExternalUrl } from '@/shared/lib/urls'
 import { useSession } from '@/features/auth/use-session'
-import { resumeDraftFromData } from '@/features/users/resume'
-import { useOwnResume } from '@/features/users/use-own-resume'
+import { resumeDraftFromData } from '@/features/users/utils/resume'
+import { useOwnResume } from '@/features/users/hooks/use-own-resume'
 import { ConnectionActions } from '@/features/connections/connect-button'
-import { useProfileStrength } from './profile-strength'
-import { ProfileEducation, resumeEducation } from './profile/profile-education'
-import { formatCertificationMonth, isCertificationExpired } from './certifications'
-import { useProfileUpload } from './use-profile-upload'
-import { refreshMyProfilePage } from './refresh-profile-page'
-import { InlineEditButton, OwnerUploadButton } from './profile/profile-editor'
+import { useProfileStrength } from '../../utils/profile-strength'
+import { ProfileEducation, resumeEducation } from './profile-education'
+import { formatCertificationMonth, isCertificationExpired } from '../../utils/certifications'
+import { useProfileUpload } from '../../hooks/use-profile-upload'
+import { refreshMyProfilePage } from '../../utils/refresh-profile-page'
+import { InlineEditButton, OwnerUploadButton } from './profile-editor'
 import {
   ContactRow,
   EmptyState,
@@ -47,7 +47,7 @@ import {
   ProfilePostCard,
   ResumeShowcase,
   SectionTitle,
-} from './profile/profile-content'
+} from './profile-content'
 import {
   formatDate,
   getProfileCertifications,
@@ -56,7 +56,7 @@ import {
   sortByOrder,
   type MarketplaceProfile,
   type PortfolioItem,
-} from './profile/model'
+} from '../../utils/profile/model'
 
 export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; posts?: Job[] }) {
   const queryClient = useQueryClient()

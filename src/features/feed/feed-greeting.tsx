@@ -6,7 +6,7 @@ import { connectionsApi, recommendationsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { UserProfile } from '@/shared/schemas'
 import { Skeleton } from '@/shared/ui'
-import { useProfileStrength } from '@/features/users/profile-strength'
+import { useProfileStrength } from '@/features/users/utils/profile-strength'
 
 export function FeedGreeting({ user }: { user: UserProfile }) {
   const completeness = useProfileStrength(user).score
