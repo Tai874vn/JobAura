@@ -8,7 +8,7 @@
 // page:  URL without ids (hiring-posts, hiring-post-detail, my-hiring-posts, wallet, ...); shared; app
 // part:  page | hero | search | filters | results | card | pagination | form | dialog | header | ...
 // thing: the field or action (location, keyword, apply, sort, ...)
-// layer: ui | state | url | api | cache | logic | server | seo | access
+// layer: ui | state | url | api | cache | logic | validation | server | seo | access
 // role:  all | guest | signed-in | candidate | recruiter | admin | owner   (several: [candidate,recruiter])
 // Example: @find hiring-posts filters location ui [all] — Location group in the filter column
 //   node scripts/find-tags.mjs                 → index of every tag, grouped by page
@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url'
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..')
 const SRC = join(root, 'src')
 export const ROLES = ['all', 'guest', 'signed-in', 'candidate', 'recruiter', 'admin', 'owner']
-export const LAYERS = ['ui', 'state', 'url', 'api', 'cache', 'logic', 'server', 'seo', 'access']
+export const LAYERS = ['ui', 'state', 'url', 'api', 'cache', 'logic', 'validation', 'server', 'seo', 'access']
 const WORD = '[a-z0-9]+(?:-[a-z0-9]+)*'
 // page part thing layer [role(,role)] — note
 export const TAG = new RegExp(
