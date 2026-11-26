@@ -21,7 +21,10 @@ Every feature folder has the same layout:
     components/     React components (.tsx); big features split them by screen, e.g. components/browse/
     hooks/          use-*.ts React hooks
     utils/          plain functions without UI (labels, rules, formatting, cache refresh)
-  Tests sit next to the file they test (name.test.ts / name.test.tsx).
+  Tests live in a __tests__ folder inside the folder of the code they test, e.g.
+    features/contracts/utils/status-labels.ts
+    features/contracts/utils/__tests__/status-labels.test.ts
+  (Next.js ignores folders that start with "_", so __tests__ inside app/ never becomes a page.)
 
 Features:
   admin           admin dashboard and the admin tables (users, jobs, categories, comments)
