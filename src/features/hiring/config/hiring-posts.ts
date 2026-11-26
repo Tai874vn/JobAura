@@ -66,6 +66,7 @@ export const hiringPostsConfig = {
    */
   sorts: [
     { value: 'newest', label: 'Newest' },
+    { value: 'oldest', label: 'Oldest' },
     { value: 'closing_soon', label: 'Closing soon' },
     { value: 'salary_high', label: 'Highest salary' },
   ],

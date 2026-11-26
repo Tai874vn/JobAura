@@ -40,7 +40,7 @@ export function ApplicantListItem({
   const summary = [
     resume?.occupationTitle || applicant?.headline,
     resume?.years != null ? formatYears(resume.years) : null,
-    resume?.level ? `AI level ${resume.level}` : null,
+    resume?.level || null,
   ].filter(Boolean)
 
   return (
