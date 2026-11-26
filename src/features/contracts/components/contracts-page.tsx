@@ -71,12 +71,14 @@ export function ContractsPage() {
     router[mode](hrefFor(next), { scroll: false })
 
   // The opened item is read first: with no ?tab= (a notification link) its side picks the tab.
+  // Data: contractsApi.proposal → GET /api/proposals/:id → NestjsBE/src/modules/contracts/services/proposals.service.ts findOne()
   const openedProposal = useQuery({
     queryKey: contractKeys.proposal(fromAddress?.kind === 'proposal' ? fromAddress.id : 0, user?.id),
     queryFn: () => contractsApi.proposal(fromAddress?.id as number),
     enabled: Boolean(user) && fromAddress?.kind === 'proposal',
     staleTime: 15_000,
   })
+  // Data: contractsApi.contract → GET /api/contracts/:id → NestjsBE/src/modules/contracts/services/contracts-query.service.ts findOne()
   const openedContract = useQuery({
     queryKey: contractKeys.contract(fromAddress?.kind === 'contract' ? fromAddress.id : 0, user?.id),
     queryFn: () => contractsApi.contract(fromAddress?.id as number),
@@ -90,6 +92,7 @@ export function ContractsPage() {
   const contractStatus: ContractStatus | undefined = plan.contracts === 'any' || plan.contracts === null ? undefined : plan.contracts
   const proposalParams = contractsListParams(tab, proposalStatus)
   const contractParams = contractsListParams(tab, contractStatus)
+  // Data: contractsApi.proposals → GET /api/proposals → NestjsBE/src/modules/contracts/services/proposals.service.ts list()
   const proposalsList = useQuery({
     // The keys carry the viewer id and the side, so one person never sees another person's cached list.
     queryKey: contractKeys.proposals(proposalParams, user?.id),
@@ -126,12 +129,14 @@ export function ContractsPage() {
   // Skip auto-selecting stale rows from the previous tab/filter while placeholder data is still settling.
   const selection = resolveSelection(fromAddress, isPlaceholderData && fromAddress === null ? [] : rows)
   const phoneView = fromAddress !== null
+  // Data: contractsApi.proposal → GET /api/proposals/:id → NestjsBE/src/modules/contracts/services/proposals.service.ts findOne()
   const selectedProposal = useQuery({
     queryKey: contractKeys.proposal(selection?.kind === 'proposal' ? selection.id : 0, user?.id),
     queryFn: () => contractsApi.proposal(selection?.id as number),
     enabled: Boolean(user) && selection?.kind === 'proposal',
     staleTime: 15_000,
   })
+  // Data: contractsApi.contract → GET /api/contracts/:id → NestjsBE/src/modules/contracts/services/contracts-query.service.ts findOne()
   const selectedContract = useQuery({
     queryKey: contractKeys.contract(selection?.kind === 'contract' ? selection.id : 0, user?.id),
     queryFn: () => contractsApi.contract(selection?.id as number),

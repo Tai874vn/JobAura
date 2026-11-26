@@ -68,8 +68,10 @@ const interviewPath = (id: number, action: string) => `/api/interviews/${id}/${a
  * application, so a screen can replace what it shows with one result.
  */
 export const pipelineApi = {
+  // Backend: GET /api/applications/:id → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts findOne()
   detail: async (id: number) => parseDetail((await apiClient.get(`/api/applications/${id}`)).data),
 
+  // Backend: GET /api/hiring-posts/:id/applications → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findApplicationsForPost()
   list: async (postId: number, p: { status?: ApplicationStatus; page: number; pageSize: number }) => {
     const body = (await apiClient.get(`/api/hiring-posts/${postId}/applications`, { params: definedParams(p) })).data
     const content = contentOf<Record<string, unknown> | undefined>(body)
@@ -77,41 +79,57 @@ export const pipelineApi = {
     return { data: page.data, counts: parseCounts(content?.counts), totalPages: page.totalPages }
   },
 
+  // Backend: GET /api/hiring-posts/applications/me → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findMyApplications()
   mine: async (p: { page: number; pageSize: number }) => {
     const body = (await apiClient.get('/api/hiring-posts/applications/me', { params: definedParams(p) })).data
     return parsePage(contentOf<Record<string, unknown> | undefined>(body))
   },
 
+  // Backend: POST /api/applications/:id/shortlist → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts shortlist()
   shortlist: async (id: number) => parseDetail((await apiClient.post(applicationPath(id, 'shortlist'))).data),
+  // Backend: POST /api/applications/:id/reject → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts reject()
   reject: async (id: number, note?: string) =>
     parseDetail((await apiClient.post(applicationPath(id, 'reject'), definedParams({ note }))).data),
+  // Backend: POST /api/applications/:id/offer → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts sendOffer()
   offer: async (id: number, note?: string) =>
     parseDetail((await apiClient.post(applicationPath(id, 'offer'), definedParams({ note }))).data),
+  // Backend: POST /api/applications/:id/offer/withdraw → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts withdrawOffer()
   withdrawOffer: async (id: number) => parseDetail((await apiClient.post(applicationPath(id, 'offer/withdraw'))).data),
+  // Backend: POST /api/applications/:id/offer/accept → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts acceptOffer()
   acceptOffer: async (id: number) => parseDetail((await apiClient.post(applicationPath(id, 'offer/accept'))).data),
+  // Backend: POST /api/applications/:id/offer/decline → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts declineOffer()
   declineOffer: async (id: number, note?: string) =>
     parseDetail((await apiClient.post(applicationPath(id, 'offer/decline'), definedParams({ note }))).data),
+  // Backend: POST /api/applications/:id/withdraw → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts withdraw()
   withdraw: async (id: number) => parseDetail((await apiClient.post(applicationPath(id, 'withdraw'))).data),
 
+  // Backend: POST /api/applications/:id/interviews → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts requestInterview()
   requestInterview: async (appId: number, body: InterviewRequest) =>
     parseDetail((await apiClient.post(applicationPath(appId, 'interviews'), body)).data),
+  // Backend: POST /api/interviews/:id/times → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts proposeTimes()
   proposeTimes: async (interviewId: number, times: string[]) =>
     parseDetail((await apiClient.post(interviewPath(interviewId, 'times'), { proposedTimes: times })).data),
+  // Backend: POST /api/interviews/:id/accept → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts accept()
   pickTime: async (interviewId: number, startsAt: string) =>
     parseDetail((await apiClient.post(interviewPath(interviewId, 'accept'), { startsAt })).data),
+  // Backend: POST /api/interviews/:id/reschedule → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts requestReschedule()
   askOtherTimes: async (interviewId: number, note?: string) =>
     parseDetail((await apiClient.post(interviewPath(interviewId, 'reschedule'), definedParams({ note }))).data),
+  // Backend: POST /api/interviews/:id/cancel → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts cancel()
   cancelInterview: async (interviewId: number, note?: string) =>
     parseDetail((await apiClient.post(interviewPath(interviewId, 'cancel'), definedParams({ note }))).data),
+  // Backend: POST /api/interviews/:id/complete → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts complete()
   completeInterview: async (interviewId: number) =>
     parseDetail((await apiClient.post(interviewPath(interviewId, 'complete'))).data),
 
+  // Backend: GET /api/interviews/upcoming → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts upcoming()
   upcoming: async (): Promise<UpcomingInterview[]> => {
     const content = contentOf<unknown>((await apiClient.get('/api/interviews/upcoming')).data)
     return (Array.isArray(content) ? content : []).map((row) => upcomingInterviewSchema.parse(row))
   },
 
   /** A pass to join the video call. The backend answers this one without a { message, content } wrapper. */
+  // Backend: POST /api/interviews/:id/call-token → NestjsBE/src/modules/hiring-pipeline/services/video-call.service.ts callToken()
   callToken: async (interviewId: number): Promise<CallToken> =>
     (await apiClient.post<CallToken>(interviewPath(interviewId, 'call-token'))).data,
 }

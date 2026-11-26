@@ -23,12 +23,14 @@ const freshParams = { page: 1, pageSize: feedConfig.jobsForYou }
 export function JobsForYou() {
   const { user } = useSession()
   const viewerId = user?.id
+  // Data: recommendationsApi.jobs → POST /api/recommendations/jobs → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendJobsForUser()
   const matchesQuery = useQuery({
     queryKey: queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId),
     queryFn: () => recommendationsApi.jobs({ ...recommendationParams, cacheOnly: true }),
     staleTime: 15_000,
     retry: false,
   })
+  // Data: hiringPostsApi.open → GET /api/hiring-posts → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findOpen()
   const freshQuery = useQuery({
     queryKey: queryKeys.hiringPosts(freshParams, viewerId),
     queryFn: () => hiringPostsApi.open(freshParams),

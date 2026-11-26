@@ -33,6 +33,7 @@ export function FeedPage() {
   const [pendingDeletePostId, setPendingDeletePostId] = useState<number | null>(null)
   const closeDiscussion = useCallback(() => setSelectedPostId(null), [])
 
+  // Data: postsApi.feed → GET /api/posts/feed → NestjsBE/src/modules/posts/services/posts.service.ts getFeed()
   const feedQuery = useInfiniteQuery({
     queryKey: queryKeys.feed(user.id),
     queryFn: async ({ pageParam }) => (await postsApi.feed({ cursor: pageParam ?? undefined, limit: feedConfig.postsPerLoad })).content ?? { data: [], nextCursor: null },
@@ -41,6 +42,7 @@ export function FeedPage() {
   })
   const { fetchNextPage, hasNextPage, isFetchingNextPage } = feedQuery
 
+  // Data: postsApi.create → POST /api/posts → NestjsBE/src/modules/storage/services/storage.service.ts uploadImage()
   const createMutation = useMutation({
     mutationFn: ({ content, image }: { content: string; image?: File }) => postsApi.create(content, image),
     onSuccess: (response) => {
@@ -52,11 +54,15 @@ export function FeedPage() {
     onError: (error) => toast.error(getErrorMessage(error, 'Could not publish this post')),
   })
 
+  // Data: postLikeOptions() → postsApi.like → PUT /api/posts/:id/like → NestjsBE/src/modules/posts/services/posts.service.ts likePost()
+  // Data: postLikeOptions() → postsApi.unlike → DELETE /api/posts/:id/like → NestjsBE/src/modules/posts/services/posts.service.ts unlikePost()
   const likeMutation = useMutation(postLikeOptions(queryClient, user.id))
+  // Data: postSaveOptions() → savedItemsApi.savePost / unsavePost → PUT or DELETE /api/saved/posts/:postId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts savePost() / unsavePost()
   const saveMutation = useMutation(postSaveOptions(queryClient, user.id))
   const { mutate: toggleLike } = likeMutation
   const { mutate: toggleSave } = saveMutation
 
+  // Data: postsApi.delete → DELETE /api/posts/:id → NestjsBE/src/modules/posts/services/posts.service.ts deletePost()
   const deleteMutation = useMutation({
     mutationFn: postsApi.delete,
     onSuccess: (_response, postId) => {

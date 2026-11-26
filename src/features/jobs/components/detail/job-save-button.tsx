@@ -15,6 +15,7 @@ export function JobSaveButton({ jobId, initialSaved = false }: { jobId: number; 
   const queryClient = useQueryClient()
   const { user, isLoading: isSessionLoading } = useSession()
   const [savedOverride, setSavedOverride] = useState<boolean | null>(null)
+  // Data: savedItemsApi.jobs → GET /api/saved/jobs → NestjsBE/src/modules/saved-items/services/saved-items.service.ts getSavedJobs()
   const savedQuery = useQuery({
     queryKey: queryKeys.savedJobsPreview(user?.id),
     queryFn: () => savedItemsApi.jobs(undefined, 20),
@@ -24,6 +25,8 @@ export function JobSaveButton({ jobId, initialSaved = false }: { jobId: number; 
   const savedFromQuery = savedQuery.data?.content?.data.some((job) => job.id === jobId) ?? false
   const saved = savedOverride ?? (initialSaved || savedFromQuery)
 
+  // Data: savedItemsApi.saveJob → PUT /api/saved/jobs/:jobId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts saveJob()
+  // Data: savedItemsApi.unsaveJob → DELETE /api/saved/jobs/:jobId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts unsaveJob()
   const mutation = useMutation({
     mutationFn: (nextSaved: boolean) => nextSaved ? savedItemsApi.saveJob(jobId) : savedItemsApi.unsaveJob(jobId),
     onMutate: (nextSaved) => {

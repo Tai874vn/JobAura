@@ -86,6 +86,7 @@ function LoginFormFields({
     ? `/auth/register?next=${encodeURIComponent(safeNextPath)}`
     : "/auth/register";
 
+  // Data: authApi.signIn → POST /api/auth/signin → NestjsBE/src/modules/auth/services/auth.service.ts signIn()
   const mutation = useMutation({
     mutationFn: authApi.signIn,
     onSuccess: (res) => {
@@ -251,6 +252,7 @@ function RegisterFormFields({
 
   // Sign-up does not sign in: the user confirms the address from the mail first.
   const [signedUp, setSignedUp] = useState<{ email: string; mailSent: boolean } | null>(null);
+  // Data: authApi.signUp → POST /api/auth/signup → NestjsBE/src/modules/auth/services/auth.service.ts signUp()
   const mutation = useMutation({
     mutationFn: authApi.signUp,
     onSuccess: (res, values) =>

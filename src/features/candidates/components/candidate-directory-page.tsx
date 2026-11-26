@@ -92,6 +92,7 @@ export function CandidateDirectoryPage() {
   const [showFilters, setShowFilters] = useState(false)
 
   const apiParams = toCandidateSearchParams(applied, page)
+  // Data: usersApi.candidates → GET /api/users/candidates → NestjsBE/src/modules/users/services/candidate-directory.service.ts findCandidates()
   const query = useQuery({
     queryKey: queryKeys.candidates(apiParams, user?.id),
     queryFn: () => usersApi.candidates(apiParams),

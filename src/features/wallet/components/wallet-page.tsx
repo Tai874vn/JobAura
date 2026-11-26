@@ -21,6 +21,7 @@ const PAGE_SIZE = walletConfig.ledgerPageSize
 /** The wallet: four figures, a place for the Top up, and the ledger (the list of every change) 20 rows at a time. */
 export function WalletPage() {
   const { user } = useSession()
+  // Data: walletApi.summary → GET /api/wallet → NestjsBE/src/modules/wallet/services/wallet.service.ts summary()
   const summary = useQuery({ queryKey: walletKeys.summary(user?.id), queryFn: walletApi.summary, staleTime: 15_000, enabled: Boolean(user) })
   const ledger = useInfiniteQuery({
     // The viewer id is an explicit segment of the key so another person never reads this list from cache.

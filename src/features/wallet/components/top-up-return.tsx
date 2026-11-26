@@ -58,6 +58,7 @@ export function TopUpReturn() {
     return () => window.clearTimeout(timer)
   }, [])
 
+  // Data: walletApi.topUpStatus → GET /api/wallet/top-ups/:id → NestjsBE/src/modules/wallet/services/top-ups.service.ts status()
   const check = useQuery({
     queryKey: walletKeys.topUpStatus(topUpId, user?.id),
     queryFn: () => walletApi.topUpStatus(topUpId!),

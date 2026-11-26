@@ -45,6 +45,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
   // The same split the proposal dialog starts from, so the numbers match.
   const splitAmounts = splitPrice(job.price, template.map((step) => step.share))
 
+  // Data: deleteJob() in features/jobs/utils/delete-job.ts → server action deleteJobAndRefresh() → DELETE /api/jobs/:id → NestjsBE/src/modules/jobs/services/jobs.service.ts remove()
   const deleteMutation = useMutation({
     // The server action deletes the post and clears the cached pages that showed it.
     mutationFn: () => deleteJob(job.id),
@@ -57,6 +58,7 @@ export function JobDetailView({ job, comments }: { job: Job; comments: Comment[]
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to delete service')),
   })
 
+  // Data: chatApi.start → GET /api/chat/start/:userId → NestjsBE/src/modules/chat/services/chat.service.ts findPrivateRoom()
   const contactSellerMutation = useMutation({
     mutationFn: async () => {
       if (!sellerId) throw new Error('Seller is unavailable')

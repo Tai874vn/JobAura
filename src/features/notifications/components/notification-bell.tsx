@@ -48,11 +48,13 @@ export function NotificationBell() {
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Only fetch the full list once the dropdown is opened; keep the unread count badge query always on.
+  // Data: notificationsApi.list → GET /api/notifications → NestjsBE/src/modules/notifications/services/notifications.service.ts list()
   const listQuery = useQuery({
     queryKey: queryKeys.notifications(userId),
     queryFn: () => notificationsApi.list({ limit: previewLimit }),
     enabled: Boolean(userId && open),
   });
+  // Data: notificationsApi.unreadCount → GET /api/notifications/unread-count → NestjsBE/src/modules/notifications/services/notifications.service.ts unreadCount()
   const countQuery = useQuery({
     queryKey: queryKeys.notificationUnreadCount(userId),
     queryFn: notificationsApi.unreadCount,
@@ -81,6 +83,7 @@ export function NotificationBell() {
     };
   }, [open]);
 
+  // Data: notificationsApi.markRead → PATCH /api/notifications/:id/read → NestjsBE/src/modules/notifications/services/notifications.service.ts markAsRead()
   const markRead = useMutation({
     mutationFn: notificationsApi.markRead,
     onSuccess: (response) => {
@@ -93,6 +96,7 @@ export function NotificationBell() {
     onError: (error) => toast.error(getErrorMessage(error, "Could not update notification")),
   });
 
+  // Data: notificationsApi.markAllRead → PATCH /api/notifications/read-all → NestjsBE/src/modules/notifications/services/notifications.service.ts markAllAsRead()
   const markAllRead = useMutation({
     mutationFn: notificationsApi.markAllRead,
     onSuccess: () => {

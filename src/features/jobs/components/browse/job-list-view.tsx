@@ -81,6 +81,7 @@ export function JobListView() {
   const [showAllCategories, setShowAllCategories] = useState(false)
   const [proposalJob, setProposalJob] = useState<Job | null>(null)
 
+  // Data: categoriesApi.all → GET /api/categories → NestjsBE/src/modules/categories/services/categories.service.ts findAll()
   const categoriesQuery = useQuery({
     queryKey: queryKeys.categories,
     queryFn: categoriesApi.all,
@@ -105,6 +106,7 @@ export function JobListView() {
   const hiddenCategoryCount = categories.length - sidebarCategories.length
 
   const apiParams = toJobSearchParams(applied, page)
+  // Data: jobsApi.paginated → GET /api/jobs/paginated-search → NestjsBE/src/modules/jobs/services/jobs.service.ts findAllWithPagination()
   const query = useQuery({
     queryKey: queryKeys.jobs(apiParams),
     queryFn: () => jobsApi.paginated(apiParams),

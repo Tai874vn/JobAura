@@ -14,6 +14,7 @@ export function useSession() {
   // hydration pass, so the session counts as loading until hydration ends, and only then is the server asked.
   const hydrated = useSyncExternalStore(subscribeNever, () => true, () => false)
   const hasSessionCookie = hydrated && hasCsrfTokenCookie()
+  // Data: authApi.me → GET /api/auth/me → NestjsBE/src/modules/auth/services/auth.service.ts getCurrentUser()
   const query = useQuery({
     queryKey: queryKeys.me,
     queryFn: authApi.me,

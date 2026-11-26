@@ -20,6 +20,7 @@ export const CommentThread = memo(function CommentThread({ onReply, replying, ..
   const [draft, setDraft] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const panelId = useId()
+  // Data: postsApi.replies → GET /api/posts/:postId/comments/:commentId/replies → NestjsBE/src/modules/posts/services/posts.service.ts getReplies()
   const repliesQuery = useInfiniteQuery({
     queryKey: queryKeys.postReplies(comment.postId, comment.id),
     queryFn: async ({ pageParam }) => {

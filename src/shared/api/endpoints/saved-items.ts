@@ -3,6 +3,7 @@ import { normalizeFeedResponse, normalizeSavedJobsResponse } from '../normalizer
 import type { ApiResponse, CursorPage, FeedPage, Job } from '@/shared/schemas'
 
 export const savedItemsApi = {
+  // Backend: GET /api/saved/posts → NestjsBE/src/modules/saved-items/services/saved-items.service.ts getSavedPosts()
   posts: async (cursor?: string, limit = 10) =>
     normalizeFeedResponse(
       (
@@ -11,10 +12,13 @@ export const savedItemsApi = {
         })
       ).data,
     ),
+  // Backend: PUT /api/saved/posts/:postId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts savePost()
   savePost: async (postId: number) =>
     (await apiClient.put<ApiResponse<void>>(`/api/saved/posts/${postId}`)).data,
+  // Backend: DELETE /api/saved/posts/:postId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts unsavePost()
   unsavePost: async (postId: number) =>
     (await apiClient.delete<ApiResponse<void>>(`/api/saved/posts/${postId}`)).data,
+  // Backend: GET /api/saved/jobs → NestjsBE/src/modules/saved-items/services/saved-items.service.ts getSavedJobs()
   jobs: async (cursor?: string, limit = 12) =>
     normalizeSavedJobsResponse(
       (
@@ -23,8 +27,10 @@ export const savedItemsApi = {
         })
       ).data,
     ),
+  // Backend: PUT /api/saved/jobs/:jobId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts saveJob()
   saveJob: async (jobId: number) =>
     (await apiClient.put<ApiResponse<void>>(`/api/saved/jobs/${jobId}`)).data,
+  // Backend: DELETE /api/saved/jobs/:jobId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts unsaveJob()
   unsaveJob: async (jobId: number) =>
     (await apiClient.delete<ApiResponse<void>>(`/api/saved/jobs/${jobId}`)).data,
 }

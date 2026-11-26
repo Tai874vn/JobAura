@@ -58,6 +58,7 @@ export function SkillPicker({
   const inputId = useId()
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const chosen = new Set(value.map((name) => name.toLowerCase()))
+  // Data: skillsApi.search → GET /api/skill/search → NestjsBE/src/modules/skill/services/skill.service.ts search()
   const results = useQuery({
     queryKey: ['skills', 'search', field ?? '', search],
     queryFn: () => skillsApi.search(search, field, 10),

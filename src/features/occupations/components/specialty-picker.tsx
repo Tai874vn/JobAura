@@ -42,6 +42,7 @@ export function SpecialtyPicker({
   const hintId = useId()
   const errorId = useId()
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Data: occupationQuery() → occupationsApi.get → GET /api/occupations/:code → NestjsBE/src/modules/occupations/services/occupations.service.ts occupation()
   const detail = useQuery(occupationQuery(occupation))
   const specialties = detail.data?.specialties ?? []
   const options = filterSpecialties(specialties, typing ? query : '')

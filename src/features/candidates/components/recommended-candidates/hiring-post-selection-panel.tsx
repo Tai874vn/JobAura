@@ -39,6 +39,7 @@ export function HiringPostSelectionPanel({
 }: HiringPostSelectionPanelProps) {
   const queryClient = useQueryClient();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  // Data: hiringPostsApi.predictSeniority → POST /api/hiring-posts/:id/seniority → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts predictSeniority()
   const predictSeniority = useMutation({
     mutationFn: hiringPostsApi.predictSeniority,
     onSuccess: () => {

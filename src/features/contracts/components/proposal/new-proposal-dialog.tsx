@@ -51,6 +51,7 @@ export function NewProposalDialog({ job, onSent, onClose }: Props) {
     }
   })
 
+  // Data: contractsApi.propose → POST /api/proposals → NestjsBE/src/modules/contracts/services/proposals.service.ts create()
   const mutation = useMutation({
     mutationFn: (body: Parameters<typeof contractsApi.propose>[0]) => contractsApi.propose(body),
     onSuccess: (proposal) => {

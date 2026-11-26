@@ -137,6 +137,7 @@ function PostDetails({ id, post, onPredict, predictPending, predictDisabled, aiA
   const { user } = useSession();
   // The latest applicants and every step's count, Not selected too; loaded only once the details are open.
   const listParams = { page: 1, pageSize: RECENT_SHOWN };
+  // Data: pipelineApi.list → GET /api/hiring-posts/:id/applications → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findApplicationsForPost()
   const recent = useQuery({
     queryKey: pipelineKeys.list(post.id, listParams, user?.id),
     queryFn: () => pipelineApi.list(post.id, listParams),

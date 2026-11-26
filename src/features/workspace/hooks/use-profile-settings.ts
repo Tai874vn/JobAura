@@ -63,6 +63,8 @@ export function useProfileSettings(profile: UserProfile) {
     certifications: certificationsJson !== certificationsBase,
   }), [basicBase, basicJson, certificationsBase, certificationsJson, skillsBase, skillsJson])
   const hasChanges = changed.basic || changed.skills || changed.certifications
+  // Data: usersApi.updateMyProfile → PATCH /api/users/me/profile → NestjsBE/src/modules/users/services/user-profile.service.ts updateMyProfile()
+  // Data: usersApi.replaceSkills → PUT /api/users/me/profile/skills → NestjsBE/src/modules/users/services/user-profile.service.ts replaceProfileSkills()
   const saveAll = useMutation({
     scope,
     mutationFn: async () => {
@@ -96,6 +98,7 @@ export function useProfileSettings(profile: UserProfile) {
     setSkills(JSON.parse(skillsBase))
     setCertifications(JSON.parse(certificationsBase))
   }
+  // Data: usersApi.createPortfolioItem → POST /api/users/me/profile/portfolio → NestjsBE/src/modules/users/services/user-portfolio.service.ts createPortfolioItem()
   const createPortfolio = useMutation({
     scope, mutationFn: () => usersApi.createPortfolioItem(cleanObject(newPortfolio)),
     onSuccess: (response) => {
@@ -107,11 +110,13 @@ export function useProfileSettings(profile: UserProfile) {
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to create portfolio item')),
   })
+  // Data: usersApi.updatePortfolioItem → PUT /api/users/me/profile/portfolio/:id → NestjsBE/src/modules/users/services/user-portfolio.service.ts updatePortfolioItem()
   const updatePortfolio = useMutation({
     scope, mutationFn: (item: ProfilePortfolioItem) => usersApi.updatePortfolioItem(Number(item.id), cleanObject(item)),
     onSuccess: (response) => { refreshProfile(response.content); toast.success('Portfolio item updated') },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to update portfolio item')),
   })
+  // Data: usersApi.deletePortfolioItem → DELETE /api/users/me/profile/portfolio/:id → NestjsBE/src/modules/users/services/user-portfolio.service.ts deletePortfolioItem()
   const deletePortfolio = useMutation({
     scope, mutationFn: usersApi.deletePortfolioItem,
     onSuccess: (_response, id) => {

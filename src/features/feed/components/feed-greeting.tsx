@@ -11,11 +11,13 @@ import { useProfileStrength } from '@/features/users/utils/profile-strength'
 export function FeedGreeting({ user }: { user: UserProfile }) {
   const completeness = useProfileStrength(user).score
 
+  // Data: connectionsApi.all → GET /api/connections → NestjsBE/src/modules/connections/services/connections.service.ts getConnections()
   const connectionsQuery = useQuery({
     queryKey: queryKeys.connections({ page: 1, pageSize: 1 }, user.id),
     queryFn: () => connectionsApi.all({ page: 1, pageSize: 1 }),
     staleTime: 60_000,
   })
+  // Data: recommendationsApi.quota → GET /api/recommendations/quota → NestjsBE/src/modules/recommendations/services/recommendations.service.ts getQuotaForUser()
   const quotaQuery = useQuery({
     queryKey: queryKeys.viewerRecommendationQuota(user.id),
     queryFn: recommendationsApi.quota,

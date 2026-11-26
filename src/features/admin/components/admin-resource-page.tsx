@@ -18,6 +18,8 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [pendingDelete, setPendingDelete] = useState<ResourceRow | null>(null)
   const queryClient = useQueryClient()
+  // Data: config.load from getResourceConfig() in admin-resource-model.tsx; each table calls its own api there
+  // (jobsApi.all, usersApi.all, categoriesApi.all, ...). Their backend files are on the '// Backend:' lines in shared/api/endpoints/.
   const query = useQuery({
     queryKey: ['admin', resource],
     queryFn: config.load,
@@ -29,6 +31,7 @@ export function AdminResourcePage({ resource, embedded = false }: { resource: Re
     return rows.filter((row) => JSON.stringify(row).toLowerCase().includes(lower))
   }, [keyword, query.data])
 
+  // Data: config.remove from admin-resource-model.tsx (jobs use deleteJob, the others xApi.delete).
   const deleteMutation = useMutation({
     mutationFn: (id: number) => config.remove(id),
     onSuccess: () => {
@@ -208,6 +211,7 @@ function CreateResourceDialog({
   const [name, setName] = useState('')
   const [parentTypeId, setParentTypeId] = useState<number | undefined>()
   const queryClient = useQueryClient()
+  // Data: categoriesApi.all → GET /api/categories → NestjsBE/src/modules/categories/services/categories.service.ts findAll()
   const parentTypesQuery = useQuery({
     queryKey: queryKeys.categories,
     queryFn: categoriesApi.all,
@@ -216,6 +220,7 @@ function CreateResourceDialog({
   const parentTypes = parentTypesQuery.data?.content ?? []
   const resolvedParentTypeId = parentTypeId ?? parentTypes[0]?.id
 
+  // Data: config.create.submit from admin-resource-model.tsx (categoriesApi.create or subcategoriesApi.create).
   const createMutation = useMutation({
     mutationFn: () => {
       if (!config.create) throw new Error('Resource does not support creation')

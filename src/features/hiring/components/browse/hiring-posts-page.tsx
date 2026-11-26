@@ -69,6 +69,7 @@ export function HiringPostsPage() {
 
   const params = toHiringPostQueryParams(applied, page);
   // @find hiring-posts results list api [all] — GET /api/hiring-posts (hiringPostsApi.open)
+  // Data: hiringPostsApi.open → GET /api/hiring-posts → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findOpen()
   const query = useQuery({
     queryKey: queryKeys.hiringPosts(params, user?.id),
     queryFn: () => hiringPostsApi.open(params),
@@ -79,6 +80,7 @@ export function HiringPostsPage() {
   // Counts beside each choice and the location list. Both are extras: without them the filters still work.
   // @find hiring-posts filters counts api [all] — GET /api/hiring-posts/facets: numbers beside each choice
   const facetParams = toHiringPostFacetParams(applied);
+  // Data: hiringPostsApi.facets → GET /api/hiring-posts/facets → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findFacets()
   const facets = useQuery({
     queryKey: queryKeys.hiringPostFacets(facetParams),
     queryFn: () => hiringPostsApi.facets(facetParams),

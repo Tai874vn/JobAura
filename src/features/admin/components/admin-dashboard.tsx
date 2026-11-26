@@ -10,6 +10,7 @@ import { AdminResourcePage } from './admin-resource-page'
 
 export function AdminDashboard() {
   const { user } = useSession()
+  // Data: adminApi.stats → GET /api/admin/stats → NestjsBE/src/modules/admin/services/admin.service.ts getStats()
   const stats = useQuery({ queryKey: queryKeys.adminStats(user?.id), queryFn: adminApi.stats })
 
   const metrics = [

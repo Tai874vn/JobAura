@@ -10,12 +10,15 @@ export type RecommendationParams = {
 }
 
 export const recommendationsApi = {
+  // Backend: GET /api/recommendations/quota → NestjsBE/src/modules/recommendations/services/recommendations.service.ts getQuotaForUser()
   quota: async () =>
     (
       await apiClient.get<ApiResponse<RecommendationQuota>>(
         "/api/recommendations/quota",
       )
     ).data,
+  // Backend: GET /api/recommendations/jobs → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendJobsForUser()
+  // Backend: POST /api/recommendations/jobs → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendJobsForUser()
   jobs: async (params?: RecommendationParams) =>
     normalizeRecommendedJobsResponse(
       (
@@ -31,6 +34,8 @@ export const recommendationsApi = {
             ))
       ).data,
     ),
+  // Backend: GET /api/recommendations/hiring-posts/:hiringPostId/candidates → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendCandidatesForHiringPost()
+  // Backend: POST /api/recommendations/hiring-posts/:hiringPostId/candidates → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendCandidatesForHiringPost()
   candidates: async (hiringPostId: number, params?: RecommendationParams) =>
     normalizeRecommendedCandidatesResponse(
       (

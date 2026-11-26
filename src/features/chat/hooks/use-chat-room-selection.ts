@@ -79,6 +79,7 @@ export function useChatRoomSelection({
     startRequest.current = null
   }, [userId])
 
+  // Data: chatApi.rooms → GET /api/chat/rooms → NestjsBE/src/modules/chat/services/chat.service.ts getUserRooms()
   const roomsQuery = useQuery({
     queryKey: queryKeys.chatRooms(userId),
     queryFn: chatApi.rooms,
@@ -99,6 +100,7 @@ export function useChatRoomSelection({
   // Load room history through React Query instead of an effect depending on messagesByRoom,
   // so an incoming message in another room never cancels or re-fires the active room's fetch.
   // Keep a short staleTime instead of Infinity so reopened rooms fetch any messages missed offline.
+  // Data: chatApi.messages → GET /api/chat/rooms/:id/messages → NestjsBE/src/modules/chat/services/chat.service.ts getMessages()
   const messagesQuery = useQuery({
     queryKey: queryKeys.chatMessages(activeRoomId ?? 0, userId),
     queryFn: () => chatApi.messages(activeRoomId as number),

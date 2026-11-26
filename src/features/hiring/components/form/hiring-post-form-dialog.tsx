@@ -59,6 +59,7 @@ function HiringPostForm({
   const [draft, setDraft] = useState<HiringPostDraft>(() => (post ? draftFromPost(post) : emptyHiringPostDraft));
   const set = <K extends keyof HiringPostDraft>(key: K, value: HiringPostDraft[K]) =>
     setDraft((current) => ({ ...current, [key]: value }));
+  // Data: occupationQuery() → occupationsApi.get → GET /api/occupations/:code → NestjsBE/src/modules/occupations/services/occupations.service.ts occupation()
   const detail = useQuery(occupationQuery(draft.occupationCode));
 
   // The latest choice, read after the specialty list loads: a later pick or edit wins over a slow response.
@@ -78,6 +79,8 @@ function HiringPostForm({
     }
   }
 
+  // Data: hiringPostsApi.create → POST /api/hiring-posts → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts create()
+  // Data: hiringPostsApi.update → PATCH /api/hiring-posts/:id → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts update()
   const save = useMutation({
     mutationFn: (data: Parameters<typeof hiringPostsApi.create>[0]) =>
       post ? hiringPostsApi.update(post.id, data) : hiringPostsApi.create(data),

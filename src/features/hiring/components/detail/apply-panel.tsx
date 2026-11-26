@@ -24,9 +24,11 @@ export function ApplyPanel({ postId, onApplied, onCancel }: {
   const { user } = useSession();
   const messageId = useId();
   const [message, setMessage] = useState("");
+  // Data: usersApi.myResume → GET /api/users/me/resume → NestjsBE/src/modules/users/services/user-resume.service.ts getMyResume()
   const resume = useQuery({ queryKey: queryKeys.myResume(user?.id), queryFn: usersApi.myResume, retry: false, staleTime: 60_000 });
   const hasNoResume = resume.isSuccess && !resume.data?.content;
 
+  // Data: hiringPostsApi.apply → POST /api/hiring-posts/:id/applications → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts apply()
   const apply = useMutation({
     mutationFn: () => hiringPostsApi.apply(postId, { coverLetter: message.trim() || undefined }),
     onSuccess: () => {

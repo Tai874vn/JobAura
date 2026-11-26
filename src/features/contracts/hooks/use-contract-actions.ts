@@ -124,6 +124,7 @@ export function useContractActions(contract: ContractDetail, viewerId: number, c
     onSuccess: closeDialog,
   })
 
+  // Data: contractsApi.review → POST /api/comments → NestjsBE/src/modules/comments/services/comments.service.ts create()
   const review = useMutation({
     mutationFn: (input: { rating: number; content: string }) => contractsApi.review({ contractId: contract.id, ...input }),
     onSuccess: (_answer, input) => {
@@ -136,6 +137,7 @@ export function useContractActions(contract: ContractDetail, viewerId: number, c
   const pending = mutation.isPending || review.isPending
 
   // The balance, for "after funding" in the fund dialog. Read only when the client can fund.
+  // Data: walletApi.summary → GET /api/wallet → NestjsBE/src/modules/wallet/services/wallet.service.ts summary()
   const wallet = useQuery({
     queryKey: walletKeys.summary(viewerId),
     queryFn: walletApi.summary,

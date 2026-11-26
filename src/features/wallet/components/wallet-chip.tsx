@@ -14,6 +14,7 @@ import { walletApi, walletKeys } from '../api'
  */
 export function WalletChip() {
   const { user } = useSession()
+  // Data: walletApi.summary → GET /api/wallet → NestjsBE/src/modules/wallet/services/wallet.service.ts summary()
   const { data, isError } = useQuery({
     queryKey: walletKeys.summary(user?.id),
     queryFn: walletApi.summary,

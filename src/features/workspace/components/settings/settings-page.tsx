@@ -144,6 +144,7 @@ export function SettingsOverviewPanel({ profile, onSelect }: {
   onSelect: (section: SettingSection) => void
 }) {
   const strength = useProfileStrength(profile)
+  // Data: settingsResumeOptions() → usersApi.myResume → GET /api/users/me/resume → NestjsBE/src/modules/users/services/user-resume.service.ts getMyResume()
   const resumeQuery = useQuery(settingsResumeOptions(hasResumeSection(profile.role), profile.id))
   return <SettingsOverview profile={profile} completion={strength.score} missing={strength.missing}
     resume={resumeQuery.data?.content ?? null} resumeLoading={resumeQuery.isLoading}

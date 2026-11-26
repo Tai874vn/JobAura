@@ -33,6 +33,7 @@ export function ConnectionActions({
   const queryClient = useQueryClient()
   const openChatForRoom = useChatStore((state) => state.openChatForRoom)
 
+  // Data: chatApi.start → GET /api/chat/start/:userId → NestjsBE/src/modules/chat/services/chat.service.ts findPrivateRoom()
   const messageMutation = useMutation({
     mutationFn: () => chatApi.start(userId),
     onSuccess: (response) => {

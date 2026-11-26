@@ -65,6 +65,7 @@ export function JobForm({ job }: { job?: Job }) {
   })
   const templateBlocked = templateErrors(templateRows).length > 0
   // Pick the field first (37 of them), then the kind of work inside it, instead of one list of 400+ entries.
+  // Data: categoriesApi.all → GET /api/categories → NestjsBE/src/modules/categories/services/categories.service.ts findAll()
   const categoriesQuery = useQuery({ queryKey: queryKeys.categories, queryFn: categoriesApi.all })
   const categories = categoriesQuery.data?.content ?? []
   const categoriesUnavailable = categoriesQuery.isError && !categories.length
@@ -85,6 +86,8 @@ export function JobForm({ job }: { job?: Job }) {
     }
   }, [previewUrl])
 
+  // Data: jobsApi.update → PUT /api/jobs/:id → NestjsBE/src/modules/jobs/services/jobs.service.ts update()
+  // Data: jobsApi.create → POST /api/jobs → NestjsBE/src/modules/jobs/services/jobs.service.ts create()
   const mutation = useMutation({
     mutationFn: async (values: CreateJob) => {
       if (file) {

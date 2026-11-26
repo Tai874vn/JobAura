@@ -95,6 +95,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
     return search ? `${pathname}?${search}` : pathname
   }
 
+  // Data: hiringPostsApi.one → GET /api/hiring-posts/:id → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findOne()
   const postQuery = useQuery({
     queryKey: ['hiring-posts', 'detail', postId, user?.id ?? 0],
     queryFn: () => hiringPostsApi.one(postId),
@@ -105,6 +106,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
   const allowed = Boolean(post && user && user.id === post.recruiterId)
 
   const listParams = applicantsListParams(status, page)
+  // Data: pipelineApi.list → GET /api/hiring-posts/:id/applications → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findApplicationsForPost()
   const list = useQuery({
     queryKey: pipelineKeys.list(postId, listParams, user?.id),
     queryFn: () => pipelineApi.list(postId, listParams),
@@ -117,6 +119,7 @@ export function ApplicantsPage({ postId }: { postId: number }) {
   // Wide screens always have someone open; phones only open a view after a tap (?application=).
   const selectedId = applicationParam ?? rows[0]?.id ?? null
 
+  // Data: pipelineApi.detail → GET /api/applications/:id → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts findOne()
   const detail = useQuery({
     queryKey: pipelineKeys.detail(selectedId ?? 0, user?.id),
     queryFn: () => pipelineApi.detail(selectedId as number),

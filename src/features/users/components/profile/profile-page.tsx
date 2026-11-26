@@ -357,6 +357,7 @@ export function ProfileEducation({ education, isOwner }: {
   education?: { degree: string; fieldOfStudy: string | null } | null
   isOwner: boolean
 }) {
+  // Data: skillsApi.fieldsOfStudy → GET /api/skill/fields-of-study → NestjsBE/src/modules/skill/services/skill.service.ts fieldsOfStudy()
   const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity, gcTime: 30 * 60_000, enabled: Boolean(education?.fieldOfStudy) })
   if (!education && !isOwner) return null
   const fieldName = fields.data?.content?.find((field) => field.code === education?.fieldOfStudy)?.name

@@ -23,6 +23,7 @@ export function ChatProposalButton({ otherUserId, viewerId, onSent }: { otherUse
   const [pickerOpen, setPickerOpen] = useState(false)
   const [chosen, setChosen] = useState<Job | null>(null)
   const params = { page: 1, pageSize: 50 }
+  // Data: jobsApi.byCreator → GET /api/jobs/by-creator/:creatorId → NestjsBE/src/modules/jobs/services/jobs.service.ts findByCreator()
   const query = useQuery({
     queryKey: queryKeys.jobsByCreator(otherUserId, params),
     queryFn: () => jobsApi.byCreator(otherUserId, params),

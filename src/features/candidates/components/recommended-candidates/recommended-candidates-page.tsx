@@ -43,6 +43,7 @@ export function RecommendedCandidatesPage() {
   const [topK, setTopK] = useState(10);
   const [poolSize, setPoolSize] = useState(100);
 
+  // Data: recommendationsApi.quota → GET /api/recommendations/quota → NestjsBE/src/modules/recommendations/services/recommendations.service.ts getQuotaForUser()
   const quotaQuery = useQuery({
     queryKey: queryKeys.viewerRecommendationQuota(user?.id),
     queryFn: recommendationsApi.quota,
@@ -50,6 +51,7 @@ export function RecommendedCandidatesPage() {
     retry: false,
   });
 
+  // Data: hiringPostsApi.mine → GET /api/hiring-posts/mine → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findMine()
   const hiringPostsQuery = useQuery({
     queryKey: queryKeys.myHiringPosts(hiringPostPageParams, user?.id),
     queryFn: () => hiringPostsApi.mine(hiringPostPageParams),
@@ -73,6 +75,7 @@ export function RecommendedCandidatesPage() {
     [hiringPosts, selectedHiringPostId],
   );
 
+  // Data: recommendationsApi.candidates → POST /api/recommendations/hiring-posts/:hiringPostId/candidates → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendCandidatesForHiringPost()
   const cachedQuery = useQuery({
     queryKey: queryKeys.recommendedCandidates(
       selectedHiringPostId ?? 0,
@@ -94,6 +97,7 @@ export function RecommendedCandidatesPage() {
     retry: false,
   });
 
+  // Data: recommendationsApi.candidates → POST /api/recommendations/hiring-posts/:hiringPostId/candidates → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendCandidatesForHiringPost()
   const runMutation = useMutation({
     mutationFn: ({
       hiringPostId,

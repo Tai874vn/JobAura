@@ -14,6 +14,7 @@ import { FeedAvatar } from './feed-avatar'
 import { useProfileStrength } from '@/features/users/utils/profile-strength'
 
 export function LeftFeedRail({ user }: { user: UserProfile }) {
+  // Data: connectionsApi.requests → GET /api/connections/requests → NestjsBE/src/modules/connections/services/connections.service.ts getRequests()
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests(user.id), queryFn: connectionsApi.requests, staleTime: 30_000 })
   const pending = requestsQuery.data?.content?.incomingCount ?? 0
   const strength = useProfileStrength(user)

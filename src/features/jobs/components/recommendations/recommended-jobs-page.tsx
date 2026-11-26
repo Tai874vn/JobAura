@@ -28,18 +28,21 @@ export function RecommendedJobsPage() {
   const pointerPosRef = useRef<{ x: number; y: number }>({ x: 12, y: 12 })
   const [applyingId, setApplyingId] = useState<number | null>(null)
   const cachedQueryKey = queryKeys.recommendedJobs({ ...recommendationParams, cacheOnly: true }, viewerId)
+  // Data: recommendationsApi.quota → GET /api/recommendations/quota → NestjsBE/src/modules/recommendations/services/recommendations.service.ts getQuotaForUser()
   const quotaQuery = useQuery({
     queryKey: queryKeys.viewerRecommendationQuota(viewerId),
     queryFn: recommendationsApi.quota,
     staleTime: 30 * 1000,
     retry: false,
   })
+  // Data: recommendationsApi.jobs → POST /api/recommendations/jobs → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendJobsForUser()
   const cachedQuery = useQuery({
     queryKey: cachedQueryKey,
     queryFn: () => recommendationsApi.jobs({ ...recommendationParams, cacheOnly: true }),
     staleTime: 15 * 1000,
     retry: false,
   })
+  // Data: recommendationsApi.jobs → POST /api/recommendations/jobs → NestjsBE/src/modules/recommendations/services/recommendations.service.ts recommendJobsForUser()
   const runMutation = useMutation({
     mutationFn: (forceRefresh?: boolean) =>
       recommendationsApi.jobs({ ...recommendationParams, forceRefresh: forceRefresh || undefined }),

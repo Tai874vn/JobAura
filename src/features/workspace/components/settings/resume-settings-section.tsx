@@ -60,6 +60,7 @@ export function ResumeSettingsSection({
   /** Dictionary skills found in the attached CV, offered for the user to add. */
   foundSkills?: FoundSkill[]
 }) {
+  // Data: occupationQuery() → occupationsApi.get → GET /api/occupations/:code → NestjsBE/src/modules/occupations/services/occupations.service.ts occupation()
   const occupation = useQuery(occupationQuery(draft.Occupation))
   const careerProblems = resumeCareerProblems(draft, occupation.data?.specialties)
   const years = savedOccupationYears(resume, draft)

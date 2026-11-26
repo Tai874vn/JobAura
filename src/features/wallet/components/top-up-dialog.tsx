@@ -24,6 +24,7 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
   const bounds = { min: info.minCredits, max: info.maxCredits }
   const problem = topUpErrors(text, bounds)
   const amount = parseTopUpAmount(text)
+  // Data: walletApi.startTopUp → POST /api/wallet/top-ups → NestjsBE/src/modules/wallet/services/top-ups.service.ts start()
   const start = useMutation({
     mutationFn: (n: number) => walletApi.startTopUp(n),
     // The browser leaves this site, so nothing else to do. The credits are added when Stripe tells our server.

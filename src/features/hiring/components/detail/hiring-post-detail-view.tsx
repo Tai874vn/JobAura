@@ -20,6 +20,7 @@ export function HiringPostDetailView({ initialPost }: { initialPost: HiringPost 
   const viewer = hiringPostViewer(user?.role);
   const [applying, setApplying] = useState(false);
   // The server page is the same for everyone; this adds the signed-in candidate's "applied" state.
+  // Data: hiringPostsApi.one → GET /api/hiring-posts/:id → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findOne()
   const query = useQuery({
     queryKey: ["hiring-posts", "detail", initialPost.id, user?.id ?? 0],
     queryFn: () => hiringPostsApi.one(initialPost.id),

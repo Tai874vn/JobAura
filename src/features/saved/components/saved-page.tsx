@@ -23,6 +23,7 @@ export function SavedPage() {
   const queryClient = useQueryClient()
   const { user } = useSession()
   const viewerId = user?.id
+  // Data: savedItemsApi.posts → GET /api/saved/posts → NestjsBE/src/modules/saved-items/services/saved-items.service.ts getSavedPosts()
   const postsQuery = useInfiniteQuery({
     queryKey: queryKeys.savedPosts(viewerId),
     queryFn: async ({ pageParam }) => (await savedItemsApi.posts(pageParam ?? undefined)).content ?? { data: [], nextCursor: null },
@@ -30,6 +31,7 @@ export function SavedPage() {
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: tab === 'posts',
   })
+  // Data: savedItemsApi.jobs → GET /api/saved/jobs → NestjsBE/src/modules/saved-items/services/saved-items.service.ts getSavedJobs()
   const jobsQuery = useInfiniteQuery({
     queryKey: queryKeys.savedJobs(viewerId),
     queryFn: async ({ pageParam }) => (await savedItemsApi.jobs(pageParam ?? undefined)).content ?? { data: [], nextCursor: null },
@@ -37,6 +39,7 @@ export function SavedPage() {
     getNextPageParam: (page) => page.nextCursor ?? undefined,
     enabled: tab === 'jobs',
   })
+  // Data: savedItemsApi.unsavePost → DELETE /api/saved/posts/:postId → NestjsBE/src/modules/saved-items/services/saved-items.service.ts unsavePost()
   const removePost = useMutation({
     mutationFn: savedItemsApi.unsavePost,
     onSuccess: () => {

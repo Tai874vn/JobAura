@@ -52,6 +52,7 @@ export function ResendVerificationButton({ email }: { email: string }) {
     return () => window.clearTimeout(timer);
   }, [now, waitUntil]);
   const secondsLeft = Math.max(0, Math.ceil((waitUntil - now) / 1000));
+  // Data: authApi.resendVerification → POST /api/auth/verify-email/resend → NestjsBE/src/modules/auth/services/email-verification.service.ts resendForEmail()
   const mutation = useMutation({
     mutationFn: () => authApi.resendVerification(email),
     onSuccess: () => {
@@ -100,6 +101,7 @@ export function CheckEmailPanel({ email, mailSent }: { email: string; mailSent: 
 export function VerifyEmailView() {
   const { token, ready } = useHashToken();
   const started = useRef(false);
+  // Data: authApi.verifyEmail → POST /api/auth/verify-email → NestjsBE/src/modules/auth/services/email-verification.service.ts verify()
   const mutation = useMutation({ mutationFn: authApi.verifyEmail });
   const { mutate } = mutation;
 
@@ -152,6 +154,7 @@ export function ForgotPasswordForm() {
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
+  // Data: authApi.forgotPassword → POST /api/auth/forgot-password → NestjsBE/src/modules/auth/services/password-reset.service.ts request()
   const mutation = useMutation({
     mutationFn: (email: string) => authApi.forgotPassword(email),
     onSuccess: (_res, email) => setSentTo(email),
@@ -197,6 +200,7 @@ export function ResetPasswordForm() {
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: "", confirm: "" },
   });
+  // Data: authApi.resetPassword → POST /api/auth/reset-password → NestjsBE/src/modules/auth/services/password-reset.service.ts reset()
   const mutation = useMutation({
     mutationFn: (password: string) => authApi.resetPassword({ token: token ?? "", password }),
     // Every device is signed out on the server; this browser forgets its session too.

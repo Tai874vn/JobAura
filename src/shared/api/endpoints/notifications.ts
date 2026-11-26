@@ -8,6 +8,7 @@ type NotificationParams = {
 }
 
 export const notificationsApi = {
+  // Backend: GET /api/notifications → NestjsBE/src/modules/notifications/services/notifications.service.ts list()
   list: async (params: NotificationParams = {}) =>
     normalizeNotificationsResponse(
       (
@@ -17,12 +18,14 @@ export const notificationsApi = {
         )
       ).data,
     ),
+  // Backend: GET /api/notifications/unread-count → NestjsBE/src/modules/notifications/services/notifications.service.ts unreadCount()
   unreadCount: async () =>
     (
       await apiClient.get<ApiResponse<{ unreadCount: number }>>(
         '/api/notifications/unread-count',
       )
     ).data,
+  // Backend: PATCH /api/notifications/:id/read → NestjsBE/src/modules/notifications/services/notifications.service.ts markAsRead()
   markRead: async (id: number) => {
     const response = (
       await apiClient.patch<ApiResponse<AppNotification>>(
@@ -33,6 +36,7 @@ export const notificationsApi = {
       ? { ...response, content: normalizeNotification(response.content) }
       : response
   },
+  // Backend: PATCH /api/notifications/read-all → NestjsBE/src/modules/notifications/services/notifications.service.ts markAllAsRead()
   markAllRead: async () =>
     (
       await apiClient.patch<ApiResponse<{ unreadCount: number }>>(

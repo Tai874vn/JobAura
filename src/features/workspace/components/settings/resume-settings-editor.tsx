@@ -24,12 +24,15 @@ export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: 
   const client = useQueryClient()
   const { user } = useSession()
   const myResumeKey = queryKeys.myResume(user?.id)
+  // Data: settingsResumeOptions() → usersApi.myResume → GET /api/users/me/resume → NestjsBE/src/modules/users/services/user-resume.service.ts getMyResume()
   const resumeQuery = useQuery(settingsResumeOptions(active, user?.id))
   const resume = resumeQuery.data?.content ?? null
   const [draft, setDraft] = useState<Partial<ResumeDraft>>({})
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [extracting, setExtracting] = useState(false)
   const currentDraft = { ...resumeDraftFromData(resume?.data), ...draft }
+  // Data: usersApi.importResume → PUT /api/users/me/resume → NestjsBE/src/modules/users/services/user-resume.service.ts importResume()
+  // Data: usersApi.uploadResumeFile → POST /api/users/me/resume/file → NestjsBE/src/modules/users/services/user-uploads.service.ts uploadResumeFile()
   const save = useMutation({
     mutationFn: async ({ data, file }: { data: ResumeDraft; file: File | null }) => {
       if (!hasResumeDraftInput(data)) throw new UserValidationError('Fill at least one resume field before saving.')
@@ -60,6 +63,7 @@ export function ResumeSettingsEditor({ active, onBlockedNavigation }: { active: 
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Unable to save resume')),
   })
+  // Data: usersApi.predictResumeSeniority → POST /api/users/me/resume/seniority → NestjsBE/src/modules/users/services/user-resume.service.ts predictResumeSeniority()
   const predict = useMutation({
     mutationFn: usersApi.predictResumeSeniority,
     onSuccess: (response) => {

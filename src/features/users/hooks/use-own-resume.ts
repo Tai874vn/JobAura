@@ -15,6 +15,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 export function useOwnResume(enabled: boolean, viewerId?: number | null) {
   const { user } = useSession()
   const resolvedViewerId = viewerId ?? user?.id
+  // Data: usersApi.myResume → GET /api/users/me/resume → NestjsBE/src/modules/users/services/user-resume.service.ts getMyResume()
   const query = useQuery({ queryKey: queryKeys.myResume(resolvedViewerId), queryFn: usersApi.myResume, enabled, retry: false })
   return {
     resume: enabled ? (query.data?.content ?? null) : null,

@@ -56,6 +56,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
   const applicationParam = positive(searchParams.get('application'))
 
   // Without ?application= the upcoming list tells which application this interview belongs to.
+  // Data: pipelineApi.upcoming → GET /api/interviews/upcoming → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts upcoming()
   const upcoming = useQuery({
     queryKey: pipelineKeys.upcoming(user?.id),
     queryFn: pipelineApi.upcoming,
@@ -64,6 +65,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
   })
   const applicationId = applicationParam ?? upcoming.data?.find((row) => row.id === interviewId)?.applicationId ?? null
 
+  // Data: pipelineApi.detail → GET /api/applications/:id → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts findOne()
   const detail = useQuery({
     queryKey: pipelineKeys.detail(applicationId ?? 0, user?.id),
     queryFn: () => pipelineApi.detail(applicationId as number),
@@ -76,6 +78,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
 
   // The pass is used once, so it is never kept for another visit or another person. The key avoids the
   // 'pipeline' prefix so list refreshes do not ask for a new pass in the middle of a call.
+  // Data: pipelineApi.callToken → POST /api/interviews/:id/call-token → NestjsBE/src/modules/hiring-pipeline/services/video-call.service.ts callToken()
   const tokenQuery = useQuery({
     queryKey: ['call-token', interviewId, userId],
     queryFn: () => pipelineApi.callToken(interviewId),
@@ -95,6 +98,7 @@ export function CallScreen({ interviewId }: { interviewId: number }) {
   useEffect(() => {
     if (detail.data) void import('./call-stage')
   }, [detail.data])
+  // Data: pipelineApi.completeInterview → POST /api/interviews/:id/complete → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts complete()
   const complete = useMutation({
     mutationFn: () => pipelineApi.completeInterview(interviewId),
     onSuccess: (done) => {

@@ -14,8 +14,10 @@ export type Occupation = {
 
 /** The ESCO occupation catalogue the backend serves. Both routes are public; the backend answers without a wrapper. */
 export const occupationsApi = {
+  // Backend: GET /api/occupations → NestjsBE/src/modules/occupations/services/occupations.service.ts search()
   search: async (q: string, limit = 10) =>
     (await apiClient.get<OccupationHit[]>('/api/occupations', { params: { q, limit } })).data,
+  // Backend: GET /api/occupations/:code → NestjsBE/src/modules/occupations/services/occupations.service.ts occupation()
   get: async (code: string) =>
     (await apiClient.get<Occupation>(`/api/occupations/${encodeURIComponent(code)}`)).data,
 }

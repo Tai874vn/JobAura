@@ -22,11 +22,13 @@ export function MyPostsPage() {
   const [pendingDelete, setPendingDelete] = useState<{ id: number; title: string } | null>(null)
   // How many: src/features/workspace/config/my-posts.ts (loadSize).
   const params = { page: 1, pageSize: myPostsConfig.loadSize }
+  // Data: jobsApi.byCreator → GET /api/jobs/by-creator/:creatorId → NestjsBE/src/modules/jobs/services/jobs.service.ts findByCreator()
   const query = useQuery({
     queryKey: queryKeys.jobsByCreator(user?.id ?? 0, params),
     queryFn: () => jobsApi.byCreator(user!.id, params),
     enabled: Boolean(user),
   })
+  // Data: deleteJob() in features/jobs/utils/delete-job.ts → server action deleteJobAndRefresh() → DELETE /api/jobs/:id → NestjsBE/src/modules/jobs/services/jobs.service.ts remove()
   const deleteMutation = useMutation({
     // The server action deletes the post and clears the cached pages that showed it.
     mutationFn: deleteJob,

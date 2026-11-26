@@ -33,6 +33,7 @@ export function RightFeedRail() {
 
 function RightFeedRailContent() {
   const { user } = useSession()
+  // Data: skillsApi.all → GET /api/skill → NestjsBE/src/modules/skill/services/skill.service.ts findAll()
   const skillsQuery = useQuery({ queryKey: ['skills', 'feed'], queryFn: skillsApi.all, staleTime: 300_000 })
   const suggestionsQuery = useQuery({
     queryKey: queryKeys.connectionSuggestions({ page: 1, pageSize: feedConfig.rightRail.peopleYouMayKnow }, user?.id),
@@ -107,6 +108,7 @@ function RightFeedRailContent() {
 function SuggestedPeople({ suggestions }: { suggestions: ConnectionSuggestion[] }) {
   const queryClient = useQueryClient()
   const [sentIds, setSentIds] = useState<Set<number>>(new Set())
+  // Data: connectionsApi.send → POST /api/connections/requests/:userId → NestjsBE/src/modules/connections/services/connections.service.ts sendRequest()
   const sendMutation = useMutation({
     mutationFn: (userId: number) => connectionsApi.send(userId),
     onSuccess: (_response, userId) => {

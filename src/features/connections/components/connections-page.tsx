@@ -48,6 +48,7 @@ export function ConnectionsPage() {
     () => ({ page: discoverPage, pageSize: connectionsConfig.pageSize, keyword: debouncedKeyword || undefined }),
     [discoverPage, debouncedKeyword]
   )
+  // Data: connectionsApi.all → GET /api/connections → NestjsBE/src/modules/connections/services/connections.service.ts getConnections()
   const connectionsQuery = useQuery({
     queryKey: queryKeys.connections(connectionsParams, viewerId),
     queryFn: () => connectionsApi.all(connectionsParams),
@@ -56,6 +57,7 @@ export function ConnectionsPage() {
     staleTime: 10_000,
   })
   const requestsQuery = useQuery({ queryKey: queryKeys.connectionRequests(viewerId), queryFn: connectionsApi.requests })
+  // Data: connectionsApi.suggestions → GET /api/connections/suggestions → NestjsBE/src/modules/connections/services/connections.service.ts getSuggestions()
   const suggestionsQuery = useQuery({
     queryKey: queryKeys.connectionSuggestions(suggestionsParams, viewerId),
     queryFn: () => connectionsApi.suggestions(suggestionsParams),
@@ -65,6 +67,7 @@ export function ConnectionsPage() {
   })
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['connections'] })
+  // Data: connectionsApi.send → POST /api/connections/requests/:userId → NestjsBE/src/modules/connections/services/connections.service.ts sendRequest()
   const sendMutation = useMutation({
     mutationFn: connectionsApi.send,
     onSuccess: async () => {
@@ -73,6 +76,7 @@ export function ConnectionsPage() {
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not send request')),
   })
+  // Data: connectionsApi.accept → PUT /api/connections/requests/:id/accept → NestjsBE/src/modules/connections/services/connections.service.ts acceptRequest()
   const acceptMutation = useMutation({
     mutationFn: connectionsApi.accept,
     onSuccess: async () => {
@@ -81,6 +85,7 @@ export function ConnectionsPage() {
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not accept request')),
   })
+  // Data: connectionsApi.remove → DELETE /api/connections/:id → NestjsBE/src/modules/connections/services/connections.service.ts deleteConnection()
   const removeMutation = useMutation({
     mutationFn: connectionsApi.remove,
     onSuccess: async (_response, connectionId) => {
@@ -92,6 +97,7 @@ export function ConnectionsPage() {
     },
     onError: (error) => toast.error(getErrorMessage(error, 'Could not update connection')),
   })
+  // Data: chatApi.start → GET /api/chat/start/:userId → NestjsBE/src/modules/chat/services/chat.service.ts findPrivateRoom()
   const messageMutation = useMutation({
     mutationFn: chatApi.start,
     onSuccess: (response) => {

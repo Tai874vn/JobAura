@@ -82,11 +82,13 @@ export function useProfileStrength(profile: StrengthInput['profile'] & { id: num
   const isEmployer = profile.role === 'employer'
   const countParams = { page: 1, pageSize: 1 }
   const { resume } = useOwnResume(enabled && !isEmployer, profile.id)
+  // Data: jobsApi.byCreator → GET /api/jobs/by-creator/:creatorId → NestjsBE/src/modules/jobs/services/jobs.service.ts findByCreator()
   const posts = useQuery({
     queryKey: queryKeys.jobsByCreator(profile.id, countParams),
     queryFn: () => jobsApi.byCreator(profile.id, countParams),
     enabled: enabled && !isEmployer,
   })
+  // Data: hiringPostsApi.mine → GET /api/hiring-posts/mine → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findMine()
   const hiring = useQuery({
     queryKey: queryKeys.myHiringPosts(countParams, profile.id),
     queryFn: () => hiringPostsApi.mine(countParams),

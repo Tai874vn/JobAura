@@ -74,6 +74,7 @@ function JobFormSkeleton() {
 /** Loads one post and opens the post form on it. Only the owner (or an admin) can edit. */
 export function JobEditPage({ jobId }: { jobId: number }) {
   const { user } = useSession()
+  // Data: jobsApi.detail → GET /api/jobs/details/:jobId → NestjsBE/src/modules/jobs/services/jobs.service.ts getJobDetails()
   const query = useQuery({ queryKey: queryKeys.job(jobId), queryFn: () => jobsApi.detail(jobId) })
   const job = query.data?.content
 

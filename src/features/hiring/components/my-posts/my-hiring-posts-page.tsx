@@ -61,6 +61,7 @@ export function MyHiringPostsPage() {
 
   // Every post (for the stats line and ?edit=), and the posts the keyword finds (the same request when no keyword).
   const allParams = myPostsRequest("");
+  // Data: hiringPostsApi.mine → GET /api/hiring-posts/mine → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findMine()
   const all = useQuery({
     queryKey: queryKeys.myHiringPosts(allParams, user?.id),
     queryFn: () => hiringPostsApi.mine(allParams),
@@ -68,6 +69,7 @@ export function MyHiringPostsPage() {
     refetchInterval: applied.keyword ? false : pollWhileAiWorks,
   });
   const matchParams = myPostsRequest(applied.keyword);
+  // Data: hiringPostsApi.mine → GET /api/hiring-posts/mine → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findMine()
   const matches = useQuery({
     queryKey: queryKeys.myHiringPosts(matchParams, user?.id),
     queryFn: () => hiringPostsApi.mine(matchParams),
@@ -109,6 +111,7 @@ export function MyHiringPostsPage() {
   }
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["hiring-posts"] });
+  // Data: hiringPostsApi.update → PATCH /api/hiring-posts/:id → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts update()
   const setStatus = useMutation({
     mutationFn: ({ id, status }: { id: number; status: HiringPost["status"] }) => hiringPostsApi.update(id, { status }),
     onSuccess: (_, { id, status }) => {
@@ -122,6 +125,7 @@ export function MyHiringPostsPage() {
       if (!closing) toast.error(getErrorMessage(error, "Could not change the post status"));
     },
   });
+  // Data: hiringPostsApi.predictSeniority → POST /api/hiring-posts/:id/seniority → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts predictSeniority()
   const predict = useMutation({
     mutationFn: hiringPostsApi.predictSeniority,
     onSuccess: (_, id) => {

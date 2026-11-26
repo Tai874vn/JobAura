@@ -18,6 +18,7 @@ function useDebounced(value: string, delayMs: number) {
 
 /** The title of an ESCO occupation code, loaded once; the code itself until it loads. */
 export function useOccupationTitle(code: string) {
+  // Data: occupationQuery() → occupationsApi.get → GET /api/occupations/:code → NestjsBE/src/modules/occupations/services/occupations.service.ts occupation()
   const occupation = useQuery(occupationQuery(code))
   return occupation.data ? occupationLabel(occupation.data.title) : occupation.isError ? code : null
 }
@@ -67,6 +68,7 @@ export function OccupationPicker({
   const hintId = useId()
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const title = useOccupationTitle(value)
+  // Data: occupationsApi.search → GET /api/occupations → NestjsBE/src/modules/occupations/services/occupations.service.ts search()
   const results = useQuery({
     queryKey: occupationKeys.search(search),
     queryFn: () => occupationsApi.search(search, 10),

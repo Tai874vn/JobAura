@@ -107,6 +107,7 @@ export function PostDiscussionModal({
   const scrollStageRef = useRef<DiscussionScrollStage>('idle')
   const pendingOwnCommentScroll = useRef(false)
   const image = resolveAssetUrl(post.imageUrl)
+  // Data: postsApi.comments → GET /api/posts/:id/comments → NestjsBE/src/modules/posts/services/posts.service.ts getComments()
   const commentsQuery = useInfiniteQuery({
     queryKey: queryKeys.postComments(post.id),
     queryFn: async ({ pageParam }) =>
@@ -339,12 +340,14 @@ export function useDiscussionMutations(postId: number, viewerId?: number | null)
   // Serialize changes within this discussion so count updates cannot race each other.
   const scope = { id: `post-discussion-${postId}` }
   const created = (comment: PostComment) => syncDiscussionChange(client, postId, { type: 'created', comment }, viewerId)
+  // Data: postsApi.createComment → POST /api/posts/:id/comments → NestjsBE/src/modules/posts/services/posts.service.ts createComment()
   const createComment = useMutation({
     scope,
     mutationFn: async (content: string) => requireComment(await postsApi.createComment(postId, content)),
     onSuccess: created,
     onError: (error) => toast.error(getErrorMessage(error, 'Could not add comment')),
   })
+  // Data: postsApi.createReply → POST /api/posts/:postId/comments/:commentId/replies → NestjsBE/src/modules/posts/services/posts.service.ts createReply()
   const createReply = useMutation({
     scope,
     mutationFn: async ({ rootId, content }: { rootId: number; content: string }) =>
@@ -352,6 +355,7 @@ export function useDiscussionMutations(postId: number, viewerId?: number | null)
     onSuccess: created,
     onError: (error) => toast.error(getErrorMessage(error, 'Could not add reply')),
   })
+  // Data: postsApi.updateComment → PUT /api/posts/:postId/comments/:commentId → NestjsBE/src/modules/posts/services/posts.service.ts updateComment()
   const editComment = useMutation({
     scope,
     mutationFn: async ({ comment, content }: { comment: PostComment; content: string }) =>
@@ -359,6 +363,7 @@ export function useDiscussionMutations(postId: number, viewerId?: number | null)
     onSuccess: (comment) => syncDiscussionChange(client, postId, { type: 'updated', comment }, viewerId),
     onError: (error) => toast.error(getErrorMessage(error, 'Could not edit comment')),
   })
+  // Data: postsApi.deleteComment → DELETE /api/posts/:postId/comments/:commentId → NestjsBE/src/modules/posts/services/posts.service.ts deleteComment()
   const deleteComment = useMutation({
     scope,
     mutationFn: (comment: PostComment) => postsApi.deleteComment(postId, comment.id),

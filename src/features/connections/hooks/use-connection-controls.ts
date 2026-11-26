@@ -22,6 +22,7 @@ export function useConnectionControls(userId: number, userName?: string) {
   const { user, isLoading: isSessionLoading } = useSession()
   const isSelf = Boolean(user && user.id === userId)
 
+  // Data: connectionsApi.status → GET /api/connections/status/:userId → NestjsBE/src/modules/connections/services/connections.service.ts getStatus()
   const statusQuery = useQuery({
     queryKey: queryKeys.connectionStatus(userId, user?.id),
     queryFn: () => connectionsApi.status(userId),
@@ -38,6 +39,8 @@ export function useConnectionControls(userId: number, userName?: string) {
     ])
   }
 
+  // Data: connectionsApi.send → POST /api/connections/requests/:userId → NestjsBE/src/modules/connections/services/connections.service.ts sendRequest()
+  // Data: connectionsApi.accept → PUT /api/connections/requests/:id/accept → NestjsBE/src/modules/connections/services/connections.service.ts acceptRequest()
   const relationshipMutation = useMutation({
     mutationFn: async (action: ConnectionRelationshipAction) => {
       if (action === 'send') return connectionsApi.send(userId)

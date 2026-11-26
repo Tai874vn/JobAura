@@ -63,6 +63,7 @@ export function MyApplicationsPage() {
     router[mode](hrefFor(next), { scroll: false })
 
   const params = myApplicationsParams(page)
+  // Data: pipelineApi.mine → GET /api/hiring-posts/applications/me → NestjsBE/src/modules/hiring-posts/services/hiring-posts.service.ts findMyApplications()
   const list = useQuery({
     // The key carries the user id, so one person never sees another person's cached list.
     queryKey: pipelineKeys.mine(params, user?.id),
@@ -75,6 +76,7 @@ export function MyApplicationsPage() {
   // Wide screens always have one open; phones only open a view after a tap (?application=).
   const selectedId = applicationParam ?? rows[0]?.id ?? null
 
+  // Data: pipelineApi.upcoming → GET /api/interviews/upcoming → NestjsBE/src/modules/hiring-pipeline/services/interviews.service.ts upcoming()
   const upcoming = useQuery({
     queryKey: pipelineKeys.upcoming(user?.id),
     queryFn: pipelineApi.upcoming,
@@ -82,6 +84,7 @@ export function MyApplicationsPage() {
     staleTime: 15_000,
   })
 
+  // Data: pipelineApi.detail → GET /api/applications/:id → NestjsBE/src/modules/hiring-pipeline/services/applications.service.ts findOne()
   const detail = useQuery({
     queryKey: pipelineKeys.detail(selectedId ?? 0, user?.id),
     queryFn: () => pipelineApi.detail(selectedId as number),
