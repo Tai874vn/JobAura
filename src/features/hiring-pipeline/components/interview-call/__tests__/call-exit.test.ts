@@ -1,6 +1,6 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
-import { callExitHref, fallbackExitHref, isAlreadyCompleted } from '../call-exit'
+import { callExitHref, fallbackExitHref, isAlreadyCompleted } from '../call-screen'
 
 describe('callExitHref', () => {
   it('sends a candidate to My applications with the application open', () => {

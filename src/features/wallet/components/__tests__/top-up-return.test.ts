@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { openCheckout } from '../../api'
-import { usdText } from '../../utils/top-up-validation'
+import { usdText } from '../top-up-dialog'
 import { readReturnParams, topUpOutcome } from '../top-up-return'
 
 describe('readReturnParams', () => {

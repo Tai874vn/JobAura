@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import type { ContractDetail } from '@/shared/schemas'
 import { ContractPanel } from '../contract-panel'
 import { CLIENT, FREELANCER, contractOf, milestoneOf } from '../../../utils/contract-test-data'
-import { FundError } from '../fund-error'
+import { FundError } from '../../dialogs/contract-dialogs'
 import { submitWorkErrors } from '../../dialogs/submit-work-dialog'
 
 function render(contract: ContractDetail, viewerId: number) {

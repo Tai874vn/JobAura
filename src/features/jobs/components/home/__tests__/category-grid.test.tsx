@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { serverRequest } from '@/shared/api/server'
-import { CategoryGrid } from '../category-grid'
+import { CategoryGrid } from '../home-page'
 
 vi.mock('@/shared/api/server', () => ({
   serverRequest: vi.fn(),

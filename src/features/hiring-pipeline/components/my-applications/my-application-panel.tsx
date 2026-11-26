@@ -1,24 +1,24 @@
 'use client'
 
-import { ArrowLeft, ExternalLink, MessageSquare } from 'lucide-react'
+
+
+import { ArrowLeft, ExternalLink, MessageSquare, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { formatHiringPostSalary } from '@/features/hiring/components/browse/hiring-post-card'
 import { refreshHiringPostPages } from '@/features/hiring/utils/refresh-hiring-post-pages'
 import { reportNonFatalError } from '@/shared/api/query-client'
-import { getErrorMessage } from '@/shared/lib/utils'
+import { getErrorMessage, cn } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
 import { Avatar, Button, Skeleton } from '@/shared/ui'
 import { pipelineApi } from '../../api'
 import { sortedInterviews } from '../applicants/applicant-panel'
 import { formatApplicantDay } from '../../utils/applicant-format'
 import { ApplicationTimeline } from '../application-timeline'
-import { ApplicationTracker } from './application-tracker'
-import { candidateDialogAllowed, type CandidateDialog } from '../../utils/candidate-progress'
+import { candidateDialogAllowed, type CandidateDialog, trackerView, type StepState } from '../../utils/candidate-progress'
 import { ConfirmActionDialog } from '../confirm-action-dialog'
 import { InterviewCard, type InterviewAction } from '../interview-card'
-import { OfferCard } from '../offer-card'
 import { bookedToastText } from '../../utils/format-time'
 import { runDialogAction } from '../../utils/run-dialog-action'
 import { StatusBadge } from '../status-badge'
@@ -313,5 +313,97 @@ export function MyApplicationPanelLoading({ row, backHref }: { row?: Application
         </div>
       </div>
     </article>
+  )
+}
+
+const dotStyles: Record<StepState, string> = {
+  done: 'border-primary bg-primary text-white',
+  current: 'border-primary bg-surface text-primary',
+  stopped: 'border-border bg-surface-muted text-muted',
+  todo: 'border-border bg-surface text-muted',
+}
+
+/**
+ * The candidate's progress: Applied, Shortlisted, Interview, Offer, Hired. A finished application keeps the
+ * steps it reached in grey ("stopped"), with one sentence under it for why it ended. Hired is all green.
+ */
+export function ApplicationTracker({
+  application,
+}: {
+  application: Pick<ApplicationDetail, 'status' | 'events'> & { statusReason?: string | null; statusNote?: string | null }
+}) {
+  const view = trackerView(application)
+  return (
+    <div>
+      <ol aria-label="Progress" className="flex">
+        {view.steps.map((step, index) => {
+          const filled = step.state === 'done' || step.state === 'stopped'
+          return (
+            <li
+              key={step.label}
+              aria-current={step.state === 'current' ? 'step' : undefined}
+              data-state={step.state}
+              className="relative flex min-w-0 flex-1 flex-col items-center gap-1.5 text-center"
+            >
+              {index > 0 ? (
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'absolute right-1/2 top-2.5 h-0.5 w-full -translate-y-1/2',
+                    filled ? (step.state === 'done' ? 'bg-primary' : 'bg-border') : step.state === 'current' ? 'bg-primary' : 'bg-border',
+                  )}
+                />
+              ) : null}
+              <span className={cn('relative flex h-5 w-5 items-center justify-center rounded-full border-2', dotStyles[step.state])}>
+                {filled ? <Check className="h-3 w-3" aria-hidden="true" strokeWidth={3} /> : null}
+              </span>
+              <span className={cn('max-w-full truncate text-xs', step.state === 'current' ? 'font-medium text-foreground' : step.state === 'done' ? 'text-foreground' : 'text-muted')}>
+                {step.label}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+      {view.line ? (
+        <p className={cn('mt-3 break-words rounded-lg p-3 text-sm', view.tone === 'good' ? 'bg-primary/10 font-medium text-primary' : 'bg-surface-muted')}>{view.line}</p>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * The offer the candidate can answer. It draws only while the status is OFFERED, so an offer that was withdrawn
+ * (or already answered) never leaves an Accept or Decline button on screen. The panel owns the confirm dialogs.
+ */
+export function OfferCard({
+  application,
+  company,
+  pending = false,
+  onAccept,
+  onDecline,
+}: {
+  application: Pick<ApplicationDetail, 'status' | 'offerNote' | 'offeredAt'>
+  company: string
+  pending?: boolean
+  onAccept: () => void
+  onDecline: () => void
+}) {
+  if (application.status !== 'OFFERED') return null
+  return (
+    <section aria-label="Offer" className="rounded-lg border border-primary/40 bg-primary/[0.04] p-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h3 className="min-w-0 break-words text-sm font-medium">Offer from {company}</h3>
+        {application.offeredAt ? <span className="text-xs text-muted">Sent {formatApplicantDay(application.offeredAt)}</span> : null}
+      </div>
+      {application.offerNote?.trim() ? (
+        <p className="mt-2 whitespace-pre-line break-words text-sm leading-6">{application.offerNote}</p>
+      ) : (
+        <p className="mt-2 text-sm text-muted">No note with this offer.</p>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button disabled={pending} onClick={onAccept}>Accept offer</Button>
+        <Button variant="secondary" disabled={pending} onClick={onDecline}>Decline</Button>
+      </div>
+    </section>
   )
 }

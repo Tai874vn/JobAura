@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { footerColumns } from '../footer-links'
+import { footerColumns } from '../footer'
 
 const labels = (role: Parameters<typeof footerColumns>[0]) =>
   footerColumns(role).flatMap((column) => column.links.map((link) => link.label))

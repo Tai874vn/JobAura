@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LedgerEntryView } from '@/shared/schemas'
-import { ledgerAmount, ledgerText } from '../ledger-text'
+import { ledgerAmount, ledgerText } from '../wallet-page'
 
 const entry = (over: Partial<LedgerEntryView>): LedgerEntryView => ({
   id: 1, type: 'SEED', availableDelta: 0, heldDelta: 0, availableAfter: 0, heldAfter: 0, contract: null, milestone: null,

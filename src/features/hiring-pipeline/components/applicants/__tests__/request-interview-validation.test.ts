@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateInterviewRequest, type InterviewDraft } from '../request-interview-validation'
+import { validateInterviewRequest, type InterviewDraft } from '../request-interview-dialog'
 
 const now = new Date(2026, 10, 23, 12, 0)
 const draft = (change: Partial<InterviewDraft> = {}): InterviewDraft => ({

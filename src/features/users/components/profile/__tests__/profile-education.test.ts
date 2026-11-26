@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resumeEducation } from '../profile-education'
+import { resumeEducation } from '../profile-page'
 
 describe('resumeEducation', () => {
   it('shows a stated degree and a valid field-of-study code only', () => {

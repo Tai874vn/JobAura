@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { proposalActions } from '../proposal-actions'
+import { proposalActions } from '../proposal-panel'
 
 const open = (turnUserId: number | null, status = 'OPEN') => ({ status, turnUserId, versions: [{ authorId: 1 }, { authorId: 2 }] }) as never
 

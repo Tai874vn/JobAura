@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseTopUpAmount, topUpErrors } from '../top-up-validation'
+import { parseTopUpAmount, topUpErrors } from '../top-up-dialog'
 
 const bounds = { min: 10, max: 10_000 }
 

@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { apiClient } from '@/shared/api/client'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { FeedPage, FeedPost, PostComment } from '@/shared/schemas'
-import { syncDiscussionChange } from '../discussion-cache'
-import { postLikeOptions, postSaveOptions } from '../post-reactions'
+import { syncDiscussionChange } from '../../utils/discussion-cache'
+import { postLikeOptions, postSaveOptions } from '../feed-page'
 
 const originalAdapter = apiClient.defaults.adapter
 afterEach(() => { apiClient.defaults.adapter = originalAdapter })

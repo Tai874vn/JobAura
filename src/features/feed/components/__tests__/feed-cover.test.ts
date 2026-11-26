@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { selectFeedCover } from '../feed-cover'
+import { selectFeedCover } from '../feed-left-rail'
 
 describe('feed profile cover', () => {
   it('uses the stored cover image with legacy fallback', () => {

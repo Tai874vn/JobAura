@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ProposalVersionView } from '@/shared/schemas'
-import { describeVersionChange } from '../proposal-changes'
+import { describeVersionChange } from '../proposal-panel'
 
 const version = (over: Record<string, unknown> = {}) => ({
   id: 1, number: 1, authorId: 1, total: 100, createdAt: '2026-11-01T00:00:00Z', brief: 'Make a logo', referenceLinks: [], referenceImages: [],

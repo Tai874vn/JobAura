@@ -1,5 +1,6 @@
 'use client'
 
+
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Bookmark, BriefcaseBusiness, FileText, Users } from 'lucide-react'
 import Image from 'next/image'
@@ -10,7 +11,6 @@ import { resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 import type { UserProfile } from '@/shared/schemas'
 import { Card } from '@/shared/ui'
 import { FeedAvatar } from './feed-avatar'
-import { selectFeedCover } from '../utils/feed-cover'
 import { useProfileStrength } from '@/features/users/utils/profile-strength'
 
 export function LeftFeedRail({ user }: { user: UserProfile }) {
@@ -83,4 +83,13 @@ export function LeftFeedRail({ user }: { user: UserProfile }) {
 
 function UtilityLink({ href, icon, label, badge = 0 }: { href: string; icon: React.ReactNode; label: string; badge?: number }) {
   return <Link href={href} className="flex h-9 items-center gap-2.5 rounded-lg px-3 text-sm font-medium text-muted transition-colors hover:bg-surface-muted hover:text-foreground">{icon}<span className="min-w-0 flex-1 truncate">{label}</span>{badge ? <span className="font-mono text-xs tabular-nums text-primary">{badge}</span> : null}</Link>
+}
+
+type CoverSource = {
+  coverImage?: string | null
+  cover?: string | null
+}
+
+export function selectFeedCover(source: CoverSource) {
+  return source.coverImage?.trim() || source.cover?.trim() || null
 }

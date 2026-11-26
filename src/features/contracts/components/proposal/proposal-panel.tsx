@@ -1,28 +1,30 @@
 'use client'
 
-import { MessageSquare } from 'lucide-react'
+
+
+
+import { MessageSquare, X } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { toast } from 'sonner'
 import { openChatEventName } from '@/features/chat/utils/chat-data'
-import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'
+import { formatPipelineTime, formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { runDialogAction } from '@/features/hiring-pipeline/utils/run-dialog-action'
 import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
-import type { ProposalDetail, VersionBody } from '@/shared/schemas'
-import { Avatar, Badge, Button } from '@/shared/ui'
+import type { ProposalDetail, VersionBody, ProposalVersionView } from '@/shared/schemas'
+import { Avatar, Badge, Button, DialogPortal, useDialogFocus } from '@/shared/ui'
 import { contractKeys, contractsApi } from '../../api'
 import { ConfirmDialog } from '../dialogs/confirm-dialog'
 import { ContractTimeline } from '../contract/contract-timeline'
 import { expiresIn } from '../../utils/contracts-selection'
-import { CounterDialog } from './counter-dialog'
 import { nextAction } from '../../utils/next-action'
 import { PanelFrame } from '../panel-frame'
-import { describeVersionChange } from '../../utils/proposal-changes'
-import { proposalActions } from '../../utils/proposal-actions'
 import { proposalLabel } from '../../utils/status-labels'
 import { useContractMutation } from '../../hooks/use-contract-mutation'
 import { VersionView } from './version-view'
+import { ProposalEditor } from '@/features/contracts/components/proposal/proposal-editor'
+import { fromVersion } from '@/features/contracts/utils/proposal-editor-model'
 
 /** One thing the viewer can ask the server to do on this proposal. */
 type Act =
@@ -276,4 +278,101 @@ function ChangeList({ changes }: { changes: string[] }) {
       {changes.map((change) => <li key={change} className="break-words">{change}</li>)}
     </ul>
   )
+}
+
+/**
+ * The counter-offer form in a dialog. It starts from the latest version, so the person only changes what they want.
+ * A refusal from the server (for example a newer version arrived) shows inside the dialog, with the typed values kept.
+ */
+export function CounterDialog({
+  latest,
+  pending,
+  error,
+  onSubmit,
+  onClose,
+}: {
+  latest: ProposalVersionView
+  pending: boolean
+  error: string | null
+  onSubmit: (body: VersionBody) => void
+  onClose: () => void
+}) {
+  const titleId = useId()
+  const descId = useId()
+  // Read once, so the typed values are not replaced when the proposal is read again behind the dialog.
+  const [initial] = useState(() => fromVersion(latest))
+
+  // Focus moves into the dialog, Tab stays inside, Escape closes (not while sending), focus goes back on close.
+  const dialogRef = useDialogFocus(onClose, !pending)
+
+  return (
+    <DialogPortal>
+      <div
+        className="motion-overlay fixed inset-0 z-80 flex items-center justify-center bg-black/45 p-4"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget && !pending) onClose()
+        }}
+      >
+        <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId} className="motion-panel relative max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-5 shadow-overlay">
+          <Button className="absolute right-2 top-2" type="button" variant="ghost" size="icon" onClick={onClose} disabled={pending} aria-label="Close">
+            <X className="h-5 w-5" />
+          </Button>
+          <h2 id={titleId} className="pr-10 font-display text-lg font-medium">Send a counter-offer</h2>
+          <p id={descId} className="mt-1 mb-4 text-sm leading-6 text-muted">
+            This starts from version {latest.number}. Change the steps, amounts or dates, then send it back.
+          </p>
+          <ProposalEditor initial={initial} mode="counter" pending={pending} serverError={error} onSubmit={(body) => onSubmit(body)} />
+        </section>
+      </div>
+    </DialogPortal>
+  )
+}
+
+export type ProposalActions = { accept: boolean; counter: boolean; decline: boolean; withdraw: boolean }
+
+/**
+ * Which buttons the viewer gets on a proposal. Accept, Counter and Decline belong to the person whose turn it is.
+ * Withdraw belongs to the person who sent the latest version (so, while it is open, the person who is waiting).
+ * The server checks all of this again; this only decides what to draw.
+ */
+export function proposalActions(p: Pick<ProposalDetail, 'status' | 'turnUserId' | 'versions'>, viewerId: number): ProposalActions {
+  const none = { accept: false, counter: false, decline: false, withdraw: false }
+  if (p.status !== 'OPEN') return none
+  const myTurn = p.turnUserId === viewerId
+  const author = p.versions.length ? p.versions[p.versions.length - 1].authorId : null
+  return { accept: myTurn, counter: myTurn, decline: myTurn, withdraw: !myTurn && author === viewerId }
+}
+
+const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
+const sameList = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i])
+
+/**
+ * What a version changed compared with the one before it, as short sentences for the panel.
+ * The first version has nothing to compare, so it gives an empty list.
+ */
+export function describeVersionChange(previous: ProposalVersionView | undefined, next: ProposalVersionView): string[] {
+  if (!previous) return []
+  const out: string[] = []
+
+  if (previous.total !== next.total) out.push(`Total ${credits(previous.total)} to ${credits(next.total)}`)
+  if (previous.deadline !== next.deadline) out.push(`Deadline ${formatPipelineDay(previous.deadline)} to ${formatPipelineDay(next.deadline)}`)
+  if (previous.brief.trim() !== next.brief.trim()) out.push('Brief changed')
+  if (!sameList(previous.referenceLinks, next.referenceLinks) || !sameList(previous.referenceImages, next.referenceImages)) out.push('References changed')
+
+  const a = previous.milestones
+  const b = next.milestones
+  if (a.length !== b.length) {
+    out.push(`${count(a.length, 'milestone')} to ${count(b.length, 'milestone')}`)
+  } else {
+    b.forEach((m, i) => {
+      const old = a[i]
+      const parts: string[] = []
+      if (old.title !== m.title) parts.push('renamed')
+      if (old.amount !== m.amount) parts.push(`${credits(old.amount)} to ${credits(m.amount)}`)
+      if (old.dueDate !== m.dueDate) parts.push(`due ${formatPipelineDay(old.dueDate)} to ${formatPipelineDay(m.dueDate)}`)
+      if ((old.description ?? '') !== (m.description ?? '') && !parts.length) parts.push('description changed')
+      if (parts.length) out.push(`Milestone ${i + 1}: ${parts.join(', ')}`)
+    })
+  }
+  return out
 }

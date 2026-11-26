@@ -1,5 +1,6 @@
 'use client'
 
+
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -10,11 +11,10 @@ import { useSession } from '@/features/auth/hooks/use-session'
 import { savedItemsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
-import type { FeedPost } from '@/shared/schemas'
+import type { FeedPost, CursorPage } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardSkeleton, EmptyState, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/components/feed-avatar'
 import { JobCard } from '@/features/jobs/components/browse/job-card'
-import { mergeSavedPages } from '../utils/saved-data'
 
 type SavedTab = 'posts' | 'jobs'
 
@@ -211,4 +211,13 @@ function SavedPostCard({ post, removing, onRemove }: { post: FeedPost; removing:
 
 function SavedSkeleton() {
   return <Card className="space-y-4 p-4"><div className="flex gap-3"><Skeleton className="h-10 w-10 rounded-full" /><Skeleton className="h-4 w-40" /></div><Skeleton className="h-4 w-full" /><Skeleton className="h-48 w-full" /></Card>
+}
+
+export function mergeSavedPages<T extends { id: number }>(pages: CursorPage<T>[] | undefined) {
+  const seen = new Set<number>()
+  return (pages ?? []).flatMap((page) => page.data.filter((item) => {
+    if (seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  }))
 }

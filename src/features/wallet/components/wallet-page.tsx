@@ -1,5 +1,6 @@
 'use client'
 
+
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
@@ -8,8 +9,10 @@ import { credits } from '@/shared/lib/credits'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, Skeleton } from '@/shared/ui'
 import { walletApi, walletKeys } from '../api'
-import { LedgerRow } from './ledger-row'
 import { TopUpDialog } from './top-up-dialog'
+import Link from 'next/link'
+import type { LedgerEntryView } from '@/shared/schemas'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 
 const PAGE_SIZE = 20
 
@@ -111,4 +114,56 @@ function Figure({ label, value }: { label: string; value: string | null }) {
       <dd className="mt-1 text-lg font-medium text-foreground">{value ?? <Skeleton className="h-7 w-24" />}</dd>
     </div>
   )
+}
+
+/** One line of the ledger: date, a sentence (a link to the contract when there is one), the change and the balance after. */
+export function LedgerRow({ entry }: { entry: LedgerEntryView }) {
+  const text = ledgerText(entry)
+  const change = entry.availableDelta !== 0 ? entry.availableDelta : entry.heldDelta
+  return (
+    <li className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border py-3 last:border-b-0">
+      <div className="min-w-0 flex-1 basis-56">
+        <p className="text-xs text-muted">{formatPipelineDay(entry.createdAt)}</p>
+        {entry.contract ? (
+          <Link href={`/contracts?contract=${entry.contract.id}`} className="break-words text-sm font-medium text-primary hover:underline">{text}</Link>
+        ) : (
+          <p className="break-words text-sm font-medium text-foreground">{text}</p>
+        )}
+      </div>
+      {/* On a phone the amount drops under the sentence and lines up on the left; on wider screens it sits on the right. */}
+      <div className="w-full sm:w-auto sm:text-right">
+        <p className={change > 0 ? 'text-sm font-medium text-primary' : 'text-sm font-medium text-foreground'}>{ledgerAmount(entry)}</p>
+        <p className="text-xs text-muted">Balance {credits(entry.availableAfter)}</p>
+      </div>
+    </li>
+  )
+}
+
+/**
+ * One ledger row as a plain sentence. A release has two sides and the row itself tells which one it is:
+ * the person who earns gets credits in "available" (so the delta is above 0), while the person who pays
+ * only sees their "held" credits go down. So no viewer id is needed.
+ */
+export function ledgerText(entry: LedgerEntryView): string {
+  const step = entry.milestone ? `milestone ${entry.milestone.position}` : 'a milestone'
+  const who = entry.counterparty?.name
+  switch (entry.type) {
+    case 'SEED':
+      return 'Starting credits'
+    case 'TOP_UP':
+      return 'Top up'
+    case 'FUND_HOLD':
+      return `Held for ${step}${entry.contract ? ` · ${entry.contract.title}` : ''}`
+    case 'RELEASE':
+      return entry.availableDelta > 0
+        ? `Earned${who ? ` from ${who}` : ''} for ${step}`
+        : `Paid${who ? ` to ${who}` : ''} for ${step}`
+    case 'REFUND':
+      return entry.milestone ? `Refund for ${step}` : 'Refund'
+  }
+}
+
+/** The change shown on a row: the available change when it is not 0, else the held change. */
+export function ledgerAmount(entry: LedgerEntryView): string {
+  return credits(entry.availableDelta !== 0 ? entry.availableDelta : entry.heldDelta, { sign: true })
 }

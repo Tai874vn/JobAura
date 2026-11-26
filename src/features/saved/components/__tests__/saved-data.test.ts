@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mergeSavedPages } from '../saved-data'
+import { mergeSavedPages } from '../saved-page'
 
 describe('saved page data', () => {
   it('merges cursor pages without duplicate items', () => {
