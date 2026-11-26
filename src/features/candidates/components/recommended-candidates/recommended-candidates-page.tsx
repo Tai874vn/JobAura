@@ -15,12 +15,12 @@ import type {
   RecommendedCandidate,
 } from "@/shared/schemas";
 import { Card, CardContent, PageHeader, Spinner } from "@/shared/ui";
-import { CandidateResultsPanel, EmptyResultsCard } from "./recommended-candidates/candidate-results-panel";
-import { hiringPostPageParams } from "./recommended-candidates/constants";
-import { HiringPostSelectionPanel } from "./recommended-candidates/hiring-post-selection-panel";
-import { StartCandidateMatchingCard } from "./recommended-candidates/matching-action-card";
-import { MatchingPolicyCard, RecruiterQuotaCard } from "./recommended-candidates/sidebar-cards";
-import { sortByFinalScore } from "./recommended-candidates/utils";
+import { CandidateResultsPanel, EmptyResultsCard } from "./candidate-results-panel";
+import { hiringPostPageParams } from "../../utils/recommended-candidates/constants";
+import { HiringPostSelectionPanel } from "./hiring-post-selection-panel";
+import { StartCandidateMatchingCard } from "./matching-action-card";
+import { MatchingPolicyCard, RecruiterQuotaCard } from "./sidebar-cards";
+import { sortByFinalScore } from "../../utils/recommended-candidates/utils";
 
 type CandidateRunVariables = {
   hiringPostId: number;

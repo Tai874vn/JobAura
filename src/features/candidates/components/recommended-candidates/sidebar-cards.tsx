@@ -7,7 +7,7 @@ import {
 import type { ReactNode } from "react";
 import type { RecommendationQuota } from "@/shared/schemas";
 import { Card, CardContent } from "@/shared/ui";
-import { formatReset } from "./utils";
+import { formatReset } from "../../utils/recommended-candidates/utils";
 
 export function RecruiterQuotaCard({
   quota,

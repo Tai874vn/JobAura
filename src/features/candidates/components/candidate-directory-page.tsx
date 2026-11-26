@@ -38,7 +38,7 @@ import {
   resolveOutOfRangePage,
   toCandidateSearchParams,
   type CandidateListFilters,
-} from './candidate-directory'
+} from '../utils/candidate-directory'
 import { CandidateResultCard } from './candidate-result-card'
 
 const EXPLORE_SKILLS_LIMIT = 6

@@ -14,7 +14,7 @@ import {
   hiringPostPageParams,
   poolSizeOptions,
   topKOptions,
-} from "./constants";
+} from "../../utils/recommended-candidates/constants";
 
 type HiringPostSelectionPanelProps = {
   hiringPosts: HiringPost[];

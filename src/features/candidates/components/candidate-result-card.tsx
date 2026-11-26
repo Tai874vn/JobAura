@@ -10,7 +10,7 @@ import {
   candidateCardFacts,
   getCandidateSkillNames,
   type CandidateViewer,
-} from './candidate-directory'
+} from '../utils/candidate-directory'
 
 const SKILLS_SHOWN = 5
 
