@@ -1,0 +1,85 @@
+JOBAURA FRONTEND: WHERE THINGS ARE
+==================================
+
+src/
+  app/          Next.js routes. One folder per URL; page.tsx only loads data and renders a feature component.
+                Folders in (brackets) group routes without changing the URL: (marketplace) public, (workspace)
+                signed-in, (admin) admin, (auth) logout.
+  features/     Everything for one part of the product (see the layout below).
+  shared/       Used by many features:
+    api/        HTTP client, one file per backend area in api/endpoints/, React Query keys, normalizers
+    ui/         Buttons, inputs, dialogs, browse-page layout, pagination
+    lib/        Small helpers (errors, SEO, URL, dates)
+    schemas/    Zod types for API data
+    stores/ realtime/ providers/ config/ icons/
+  proxy.ts      Edge proxy: sends signed-out visitors to /auth/login for private pages.
+  instrumentation*.ts   Sentry setup.
+
+Every feature folder has the same layout:
+  features/<name>/
+    api.ts          calls to the backend (when the feature has its own)
+    components/     React components (.tsx); big features split them by screen, e.g. components/browse/
+    hooks/          use-*.ts React hooks
+    utils/          plain functions without UI (labels, rules, formatting, cache refresh)
+  Tests sit next to the file they test (name.test.ts / name.test.tsx).
+
+Features:
+  admin           admin dashboard and the admin tables (users, jobs, categories, comments)
+  auth            sign-in, sign-up, email confirm, forgot/reset password, Google callback, session hook
+  candidates      candidate directory and AI-recommended candidates (recruiter)
+  chat            chat window and rooms
+  connections     connections page and connect button
+  contracts       proposals, contracts, milestones, changes, ending, reviews
+  feed            home feed, posts, comments, reactions
+  hiring          hiring posts: browse, detail + apply, my hiring posts, post form
+  hiring-pipeline applicants board (recruiter), my applications (candidate), interview video call
+  jobs            services (portfolios): browse, detail, create/edit form, welcome page, AI job picks
+  layout          header, footer, public page shell
+  notifications   bell and list
+  occupations     occupation and specialty pickers
+  saved           saved items page
+  users           profile page, resume, skills and certifications
+  wallet          wallet page, ledger, Stripe top-up and return page
+  workspace       settings pages, my posts
+
+Find by URL (page -> main component):
+/                                  src/features/feed/components/feed-page.tsx
+/admin                             src/features/admin/components/admin-dashboard.tsx
+/admin/categories                  src/features/admin/components/admin-resource-page.tsx
+/admin/comments                    src/features/admin/components/admin-resource-page.tsx
+/admin/jobs                        src/features/admin/components/admin-resource-page.tsx
+/admin/subcategories               src/features/admin/components/admin-resource-page.tsx
+/admin/users                       src/features/admin/components/admin-resource-page.tsx
+/auth/callback                     src/features/auth/components/oauth-callback.tsx
+/auth/forgot-password              src/features/auth/components/email-flows.tsx
+/auth/login                        src/features/auth/components/auth-forms.tsx
+/auth/register                     src/features/auth/components/auth-forms.tsx
+/auth/reset-password               src/features/auth/components/email-flows.tsx
+/auth/verify-email                 src/features/auth/components/email-flows.tsx
+/candidates                        src/features/candidates/components/candidate-directory-page.tsx
+/connections                       src/features/connections/components/connections-page.tsx
+/contracts                         src/features/contracts/components/contracts-page.tsx
+/hiring-posts                      src/features/hiring/components/browse/hiring-posts-page.tsx
+/hiring-posts/[id]                 src/features/hiring/components/detail/hiring-post-detail-view.tsx
+/interviews/[id]/call              src/features/hiring-pipeline/components/interview-call/call-screen.tsx
+/jobs                              src/features/jobs/components/browse/job-list-view.tsx
+/jobs/[id]                         src/features/jobs/components/detail/job-detail-view.tsx
+/jobs/[id]/edit                    src/features/jobs/components/form/job-edit-page.tsx
+/jobs/new                          src/features/jobs/components/form/job-form.tsx
+/logout                            src/features/auth/components/logout-page.tsx
+/my-applications                   src/features/hiring-pipeline/components/my-applications/my-applications-page.tsx
+/my-hiring-posts                   src/features/hiring/components/my-posts/my-hiring-posts-page.tsx
+/my-hiring-posts/[id]/applicants   src/features/hiring-pipeline/components/applicants/applicants-page.tsx
+/my-posts                          src/features/workspace/components/my-posts-page.tsx
+/profile/[id]                      src/features/users/components/profile/profile-page.tsx
+/recommendations/candidates        src/features/candidates/components/recommended-candidates/recommended-candidates-page.tsx
+/recommendations/jobs              src/features/jobs/components/recommendations/recommended-jobs-page.tsx
+/saved                             src/features/saved/components/saved-page.tsx
+/settings                          src/features/workspace/components/settings/settings-page.tsx
+/wallet                            src/features/wallet/components/wallet-page.tsx
+/wallet/top-up/return              src/features/wallet/components/top-up-return.tsx
+/welcome                           src/features/jobs/components/home/home-page.tsx
+
+Find by keyword: every important line carries an "@find" comment, e.g.
+  @find hiring-posts filters location ui [all]
+Search it in VS Code (Ctrl+Shift+F) or run: npm run find -- hiring-posts location

@@ -30,6 +30,7 @@ documentation/
 *.pdf
 *.rtf
 *.txt
+!STRUCTURE.txt
 
 # Seed files
 **/seed/
