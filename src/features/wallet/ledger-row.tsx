@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { LedgerEntryView } from '@/shared/schemas'
 import { credits } from '@/shared/lib/credits'
-import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { ledgerAmount, ledgerText } from './ledger-text'
 
 /** One line of the ledger: date, a sentence (a link to the contract when there is one), the change and the balance after. */

@@ -9,10 +9,10 @@ import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, DialogPortal, EmptyState, Spinner, useDialogFocus } from '@/shared/ui'
-import { pipelineApi, pipelineKeys } from './api'
-import { callExitHref, fallbackExitHref, isAlreadyCompleted } from './call-exit'
+import { pipelineApi, pipelineKeys } from '../../api'
+import { callExitHref, fallbackExitHref, isAlreadyCompleted } from '../../utils/call-exit'
 import { CallLoading, CallStageSkeleton } from './call-loading'
-import { callState } from './call-state'
+import { callState } from '../../utils/call-state'
 import type { CallConnection } from './call-stage'
 
 // The video part is loaded in the browser only (LiveKit needs the camera, the microphone and WebRTC).

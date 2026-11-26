@@ -1,5 +1,5 @@
 import type { ApplicationEvent } from '@/shared/schemas'
-import { formatPipelineTime } from './format-time'
+import { formatPipelineTime } from '../utils/format-time'
 
 const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value.trim() : null)
 const modeWords: Record<string, string> = { ONLINE: 'online', ONSITE: 'onsite', PHONE: 'phone' }

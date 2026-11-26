@@ -3,8 +3,8 @@
 import { Plus, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { Button, DialogPortal, Input, Select, Textarea, useDialogFocus } from '@/shared/ui'
-import type { InterviewRequest } from './api'
-import { durationOptions, validateInterviewRequest, type InterviewDraft } from './request-interview-validation'
+import type { InterviewRequest } from '../../api'
+import { durationOptions, validateInterviewRequest, type InterviewDraft } from '../../utils/request-interview-validation'
 
 type Props = {
   open: boolean

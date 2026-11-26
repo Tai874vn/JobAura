@@ -7,10 +7,10 @@ import { useCallback } from 'react'
 import { useSession } from '@/features/auth/use-session'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, EmptyState, Pagination } from '@/shared/ui'
-import { pipelineApi, pipelineKeys } from './api'
+import { pipelineApi, pipelineKeys } from '../../api'
 import { MyApplicationListItem } from './my-application-list-item'
 import { MyApplicationPanel, MyApplicationPanelLoading } from './my-application-panel'
-import { PipelineListSkeleton } from './split-pane-skeletons'
+import { PipelineListSkeleton } from '../split-pane-skeletons'
 import { UpcomingStrip } from './upcoming-strip'
 
 export const myApplicationsPageSize = 20

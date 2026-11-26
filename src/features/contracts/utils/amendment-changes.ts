@@ -1,4 +1,4 @@
-import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { credits } from '@/shared/lib/credits'
 import type { AmendmentChange, ContractDetail, MilestoneStatus } from '@/shared/schemas'
 import { toDayString, toVersionBody, type EditorState } from './proposal-editor-model'

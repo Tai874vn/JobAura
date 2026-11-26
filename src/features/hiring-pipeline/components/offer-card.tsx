@@ -1,6 +1,6 @@
 import type { ApplicationDetail } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
-import { formatApplicantDay } from './applicant-format'
+import { formatApplicantDay } from '../utils/applicant-format'
 
 /**
  * The offer the candidate can answer. It draws only while the status is OFFERED, so an offer that was withdrawn

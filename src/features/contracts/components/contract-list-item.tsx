@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import { Avatar, Badge } from '@/shared/ui'

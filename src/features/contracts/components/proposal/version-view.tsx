@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { credits } from '@/shared/lib/credits'
 import type { ProposalVersionView } from '@/shared/schemas'
 

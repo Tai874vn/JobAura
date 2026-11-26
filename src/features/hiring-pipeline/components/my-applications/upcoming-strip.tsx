@@ -4,7 +4,7 @@ import { Video } from 'lucide-react'
 import Link from 'next/link'
 import type { UpcomingInterview } from '@/shared/schemas'
 import { Badge, ButtonLink } from '@/shared/ui'
-import { formatPipelineTime } from './format-time'
+import { formatPipelineTime } from '../../utils/format-time'
 
 const maxShown = 3
 

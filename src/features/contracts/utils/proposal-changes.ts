@@ -1,6 +1,6 @@
 import { credits } from '@/shared/lib/credits'
 import type { ProposalVersionView } from '@/shared/schemas'
-import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 
 const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`
 const sameList = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i])

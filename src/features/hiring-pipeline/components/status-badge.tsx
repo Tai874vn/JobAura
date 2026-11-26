@@ -1,6 +1,6 @@
 import type { ApplicationStatus } from '@/shared/schemas'
 import { Badge } from '@/shared/ui'
-import { statusLabel } from './api'
+import { statusLabel } from '../api'
 
 const tones: Record<ApplicationStatus, 'neutral' | 'primary' | 'danger'> = {
   APPLIED: 'neutral',

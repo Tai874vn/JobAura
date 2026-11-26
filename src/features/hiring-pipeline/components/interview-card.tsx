@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Badge, Button, ButtonLink } from '@/shared/ui'
 import type { Interview } from '@/shared/schemas'
-import type { InterviewRequest } from './api'
+import type { InterviewRequest } from '../api'
 import { ConfirmActionDialog } from './confirm-action-dialog'
-import { formatPipelineTime } from './format-time'
-import { runDialogAction } from './run-dialog-action'
-import { RequestInterviewDialog } from './request-interview-dialog'
+import { formatPipelineTime } from '../utils/format-time'
+import { runDialogAction } from '../utils/run-dialog-action'
+import { RequestInterviewDialog } from './applicants/request-interview-dialog'
 
 /** What a button on the card asks the parent to do. The parent calls the matching `pipelineApi` function. */
 export type InterviewAction =

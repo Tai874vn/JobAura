@@ -1,7 +1,7 @@
 import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import type { MilestoneView } from '@/shared/schemas'
-import { formatPipelineDay } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { milestoneLabel } from '../../utils/status-labels'
 
 /**

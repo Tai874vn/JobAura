@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { ApplicationTracker } from './application-tracker'
-import { OfferCard } from './offer-card'
+import { OfferCard } from '../offer-card'
 
 describe('ApplicationTracker', () => {
   it('draws the five steps, with the current one marked', () => {

@@ -11,7 +11,7 @@ import {
 } from '@livekit/components-react'
 import { Track } from 'livekit-client'
 import { useCallback, useState } from 'react'
-import { deviceNotice, isDeviceError, type CallState } from './call-state'
+import { deviceNotice, isDeviceError, type CallState } from '../../utils/call-state'
 
 export type CallConnection = 'connecting' | 'connected' | 'failed' | 'disconnected'
 

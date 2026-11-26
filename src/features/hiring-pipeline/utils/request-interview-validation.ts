@@ -1,4 +1,4 @@
-import type { InterviewRequest } from './api'
+import type { InterviewRequest } from '../api'
 
 export const durationOptions = [15, 30, 45, 60, 90, 120] as const
 

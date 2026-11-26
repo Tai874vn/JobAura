@@ -1,5 +1,5 @@
 import type { ApplicationStatus, HiringPost } from '@/shared/schemas'
-import { applicantTabs } from '@/features/hiring-pipeline/applicants-page'
+import { applicantTabs } from '@/features/hiring-pipeline/components/applicants/applicants-page'
 
 /**
  * The pure parts of My hiring posts: what the address says, what the server is asked, and how the loaded posts

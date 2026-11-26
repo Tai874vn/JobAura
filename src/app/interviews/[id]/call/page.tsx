@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/require-auth'
-import { CallLoading } from '@/features/hiring-pipeline/call-loading'
-import { CallScreen } from '@/features/hiring-pipeline/call-screen'
+import { CallLoading } from '@/features/hiring-pipeline/components/interview-call/call-loading'
+import { CallScreen } from '@/features/hiring-pipeline/components/interview-call/call-screen'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 
 export const metadata: Metadata = { title: 'Interview call', robots: { index: false, follow: false } }

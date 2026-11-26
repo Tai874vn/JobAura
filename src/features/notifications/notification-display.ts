@@ -1,7 +1,7 @@
 import type { AppNotification } from '@/shared/schemas'
 import { safeInternalPath } from '@/shared/lib/session-routing'
 import { credits } from '@/shared/lib/credits'
-import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'
 
 export function roomIdFromNotification(notification: AppNotification) {
   const roomId = notification.metadata?.roomId

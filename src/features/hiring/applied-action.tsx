@@ -1,4 +1,4 @@
-import { StatusBadge } from '@/features/hiring-pipeline/status-badge'
+import { StatusBadge } from '@/features/hiring-pipeline/components/status-badge'
 import type { HiringPost } from '@/shared/schemas'
 import { ButtonLink } from '@/shared/ui'
 

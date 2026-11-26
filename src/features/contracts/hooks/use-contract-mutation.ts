@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { isStaleActionError } from '@/features/hiring-pipeline/use-pipeline-mutation'
+import { isStaleActionError } from '@/features/hiring-pipeline/hooks/use-pipeline-mutation'
 import { getErrorMessage } from '@/shared/lib/utils'
 
 /**

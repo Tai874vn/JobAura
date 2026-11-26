@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/require-auth'
-import { ApplicantsPage } from '@/features/hiring-pipeline/applicants-page'
-import { ApplicantsPageSkeleton } from '@/features/hiring-pipeline/split-pane-skeletons'
+import { ApplicantsPage } from '@/features/hiring-pipeline/components/applicants/applicants-page'
+import { ApplicantsPageSkeleton } from '@/features/hiring-pipeline/components/split-pane-skeletons'
 import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 
 export const metadata: Metadata = { title: 'Applicants' }

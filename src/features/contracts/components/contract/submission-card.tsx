@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import type { SubmissionView } from '@/shared/schemas'
-import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'
 
 /** The host of a link ("example.com"), so a long address does not fill the card. */
 function linkLabel(link: string): string {

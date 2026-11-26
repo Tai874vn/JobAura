@@ -16,7 +16,7 @@ import {
   BrowseHero, BrowsePage, ChoiceMenu, EmptyState, FilterChoice, FilterGroup, FilterPanel, FiltersToggle, Pagination,
   ResultsHeader, shownRange,
 } from "@/shared/ui";
-import { ConfirmActionDialog } from "@/features/hiring-pipeline/confirm-action-dialog";
+import { ConfirmActionDialog } from "@/features/hiring-pipeline/components/confirm-action-dialog";
 import { isHiringPostAiPending } from "./hiring-post-ai";
 import { HiringPostFormDialog } from "./hiring-post-form-dialog";
 import { activeApplicationCount, closePostQuestion } from "./hiring-pipeline-summary";

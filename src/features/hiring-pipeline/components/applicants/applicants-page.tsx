@@ -11,10 +11,10 @@ import { hiringPostsApi } from '@/shared/api/endpoints/hiring-posts'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationStatus } from '@/shared/schemas'
 import { Badge, Button, ButtonLink, EmptyState, Pagination, Skeleton } from '@/shared/ui'
-import { pipelineApi, pipelineKeys } from './api'
+import { pipelineApi, pipelineKeys } from '../../api'
 import { ApplicantListItem } from './applicant-list-item'
 import { ApplicantPanel, ApplicantPanelLoading } from './applicant-panel'
-import { PipelineListSkeleton } from './split-pane-skeletons'
+import { PipelineListSkeleton } from '../split-pane-skeletons'
 
 export const applicantsPageSize = 20
 

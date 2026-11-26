@@ -1,5 +1,5 @@
 import type { ApplicationDetail, ApplicationEvent, ApplicationStatus, Interview } from '@/shared/schemas'
-import { trackerStep } from './api'
+import { trackerStep } from '../api'
 
 export const trackerLabels = ['Applied', 'Shortlisted', 'Interview', 'Offer', 'Hired'] as const
 

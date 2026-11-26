@@ -1,4 +1,4 @@
-import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'
 import type { AmendmentView, ContractDetail } from '@/shared/schemas'
 import { Button } from '@/shared/ui'
 import { describeAmendment } from '../../utils/amendment-changes'

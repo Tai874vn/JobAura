@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { runDialogAction } from '@/features/hiring-pipeline/run-dialog-action'
+import { runDialogAction } from '@/features/hiring-pipeline/utils/run-dialog-action'
 import { walletApi, walletKeys } from '@/features/wallet/api'
 import { reportNonFatalError } from '@/shared/api/query-client'
 import { queryKeys } from '@/shared/api/query-keys'

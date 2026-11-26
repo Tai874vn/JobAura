@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
-import { trackerView, type StepState } from './candidate-progress'
+import { trackerView, type StepState } from '../../utils/candidate-progress'
 
 const dotStyles: Record<StepState, string> = {
   done: 'border-primary bg-primary text-white',

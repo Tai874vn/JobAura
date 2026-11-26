@@ -1,6 +1,6 @@
 import type { ContractEventView } from '@/shared/schemas'
 import { credits } from '@/shared/lib/credits'
-import { formatPipelineTime } from '@/features/hiring-pipeline/format-time'
+import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'
 
 const text = (value: unknown) => (typeof value === 'string' && value.trim() ? value.trim() : null)
 const num = (value: unknown) => (typeof value === 'number' ? value : null)

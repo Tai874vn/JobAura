@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { pipelineKeys } from './api'
+import { pipelineKeys } from '../../api'
 import { MyApplicationsPage, myApplicationsParams } from './my-applications-page'
 
 const mocks = vi.hoisted(() => ({ search: 'application=2' }))

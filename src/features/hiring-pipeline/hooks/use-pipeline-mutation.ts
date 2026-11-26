@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import { useSession } from '@/features/auth/use-session'
 import { getErrorMessage } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'
-import { pipelineKeys } from './api'
+import { pipelineKeys } from '../api'
 
 /** 409 (the application moved on) and 400 (for example a time that is now in the past) both carry a sentence to show. */
 export function isStaleActionError(error: unknown): boolean {
