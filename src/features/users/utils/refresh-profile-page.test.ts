@@ -12,7 +12,7 @@ vi.mock('@/shared/api/server', async (importOriginal) => {
   return { ...actual, serverRequest }
 })
 
-import { refreshMarketplaceTaxonomyPages } from '@/features/admin/refresh-taxonomy-pages'
+import { refreshMarketplaceTaxonomyPages } from '@/features/admin/utils/refresh-taxonomy-pages'
 import { refreshMyProfilePage } from './refresh-profile-page'
 
 const me = (content: unknown) => serverRequest.mockResolvedValue({ ok: true, status: 200, data: { content } })

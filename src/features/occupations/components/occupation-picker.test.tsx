@@ -16,7 +16,7 @@ import {
   ResumeCareerFields,
 } from '@/features/users/components/resume/resume-career-fields'
 import { parseResumeJobs, type ResumeJob } from '@/features/users/utils/resume-career'
-import { occupationKeys, occupationsApi, type Occupation, type OccupationHit } from './api'
+import { occupationKeys, occupationsApi, type Occupation, type OccupationHit } from '../api'
 import { OccupationPicker, OccupationResults } from './occupation-picker'
 import { filterSpecialties, SpecialtyPicker } from './specialty-picker'
 

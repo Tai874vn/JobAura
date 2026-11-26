@@ -13,7 +13,7 @@ import type { Connection, ConnectionProfile, ConnectionSuggestion } from '@/shar
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, Card, ConfirmationDialog, EmptyState, Input, PageHeader, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/components/feed-avatar'
-import { pageWindow } from './connections-data'
+import { pageWindow } from '../utils/connections-data'
 
 type ConnectionsTab = 'connections' | 'requests' | 'discover'
 

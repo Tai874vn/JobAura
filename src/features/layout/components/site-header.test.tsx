@@ -18,7 +18,7 @@ vi.mock('@/features/auth/hooks/use-session', () => ({
 // The live-update and bell parts open sockets and read other queries; they are not under test here.
 vi.mock('@/features/hiring-pipeline/hooks/use-pipeline-live-updates', () => ({ PipelineLiveUpdates: () => null }))
 vi.mock('@/features/contracts/hooks/use-contract-live-updates', () => ({ ContractLiveUpdates: () => null }))
-vi.mock('@/features/notifications/notification-bell', () => ({ NotificationBell: () => null }))
+vi.mock('@/features/notifications/components/notification-bell', () => ({ NotificationBell: () => null }))
 
 function render() {
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })

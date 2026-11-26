@@ -7,7 +7,7 @@ import { useSession } from '@/features/auth/hooks/use-session'
 import { connectionsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'
 import { getErrorMessage } from '@/shared/lib/utils'
-import { connectionControlsFor, type ConnectionCommand } from './connections-data'
+import { connectionControlsFor, type ConnectionCommand } from '../utils/connections-data'
 
 export type ConnectionRelationshipAction = Exclude<ConnectionCommand['action'], 'message'>
 

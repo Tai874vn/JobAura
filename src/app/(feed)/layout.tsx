@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/components/require-auth'
-import { Footer } from '@/features/layout/footer'
-import { SiteHeader } from '@/features/layout/site-header'
+import { Footer } from '@/features/layout/components/footer'
+import { SiteHeader } from '@/features/layout/components/site-header'
 import { Card, Skeleton } from '@/shared/ui'
 
 export const metadata: Metadata = {

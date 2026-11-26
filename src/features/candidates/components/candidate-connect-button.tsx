@@ -2,7 +2,7 @@
 
 import { Check, ChevronDown, Clock3, UserMinus, UserPlus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useConnectionControls } from '@/features/connections/use-connection-controls'
+import { useConnectionControls } from '@/features/connections/hooks/use-connection-controls'
 import { cn } from '@/shared/lib/utils'
 import { ConfirmationDialog } from '@/shared/ui'
 

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { SavedPage } from '@/features/saved/saved-page'
+import { SavedPage } from '@/features/saved/components/saved-page'
 
 export const metadata: Metadata = { title: 'Saved' }
 

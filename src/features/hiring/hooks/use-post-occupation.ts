@@ -1,6 +1,6 @@
 'use client'
 
-import { useOccupationTitle } from '@/features/occupations/occupation-picker'
+import { useOccupationTitle } from '@/features/occupations/components/occupation-picker'
 import type { HiringPost } from '@/shared/schemas'
 import { postOccupation } from '../utils/hiring-post-form'
 

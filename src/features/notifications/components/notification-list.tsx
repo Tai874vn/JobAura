@@ -21,7 +21,7 @@ import {
   notificationContext,
   notificationDetail,
   notificationHeadline,
-} from './notification-display'
+} from '../utils/notification-display'
 
 type NotificationMeta = {
   icon: LucideIcon

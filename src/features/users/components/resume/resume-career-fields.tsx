@@ -7,8 +7,8 @@ import { skillsApi, type FieldOfStudy } from '@/shared/api/endpoints/users'
 import type { ResumeOccupationYears } from '@/shared/schemas'
 import { Button, InfoTip, Input, Select, Textarea } from '@/shared/ui'
 import { occupationLabel, occupationQuery, type OccupationHit } from '@/features/occupations/api'
-import { OccupationPicker, useOccupationTitle } from '@/features/occupations/occupation-picker'
-import { SpecialtyPicker } from '@/features/occupations/specialty-picker'
+import { OccupationPicker, useOccupationTitle } from '@/features/occupations/components/occupation-picker'
+import { SpecialtyPicker } from '@/features/occupations/components/specialty-picker'
 import type { ResumeDraft, ResumeFieldKey } from '../../utils/resume'
 import {
   currentJobOccupation,

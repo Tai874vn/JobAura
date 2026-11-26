@@ -14,7 +14,7 @@ import type { FeedPost } from '@/shared/schemas'
 import { Button, ButtonLink, Card, CardSkeleton, EmptyState, Skeleton } from '@/shared/ui'
 import { FeedAvatar } from '@/features/feed/components/feed-avatar'
 import { JobCard } from '@/features/jobs/components/browse/job-card'
-import { mergeSavedPages } from './saved-data'
+import { mergeSavedPages } from '../utils/saved-data'
 
 type SavedTab = 'posts' | 'jobs'
 

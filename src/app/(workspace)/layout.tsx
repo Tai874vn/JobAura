@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { PublicShell } from '@/features/layout/public-shell'
+import { PublicShell } from '@/features/layout/components/public-shell'
 import { WorkspaceRequireAuth } from '@/features/workspace/components/workspace-require-auth'
 
 export const metadata: Metadata = {

@@ -8,8 +8,8 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { useChatStore } from '@/shared/stores/chat-store'
 import { Button, ButtonLink, ConfirmationDialog, Skeleton } from '@/shared/ui'
-import type { ConnectionCommand } from './connections-data'
-import { useConnectionControls } from './use-connection-controls'
+import type { ConnectionCommand } from '../utils/connections-data'
+import { useConnectionControls } from '../hooks/use-connection-controls'
 
 export function ConnectionActions({
   userId,

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { ConnectionsPage } from '@/features/connections/connections-page'
+import { ConnectionsPage } from '@/features/connections/components/connections-page'
 
 export const metadata: Metadata = { title: 'Connections' }
 

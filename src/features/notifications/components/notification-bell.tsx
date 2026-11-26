@@ -27,11 +27,11 @@ import {
   prependNotification,
   sortNotificationsByActivity,
   updateNotificationInCache,
-} from "./notification-cache";
+} from "../utils/notification-cache";
 import {
   roomIdFromNotification,
   notificationTarget,
-} from "./notification-display";
+} from "../utils/notification-display";
 import { NotificationSection, NotificationSkeleton } from "./notification-list";
 
 const previewLimit = 8;

@@ -20,7 +20,7 @@ import { canRetryResumeAi, isResumeAiPending, resumeAiStatus, unrecognisedSkills
 import type { FoundSkill } from '@/shared/api/endpoints/users'
 import { formatCredit, formatYears, resumeCareerProblems, savedOccupationYears } from '@/features/users/utils/resume-career'
 import { occupationQuery } from '@/features/occupations/api'
-import { useOccupationTitle } from '@/features/occupations/occupation-picker'
+import { useOccupationTitle } from '@/features/occupations/components/occupation-picker'
 
 export function ResumeSettingsSection({
   resume,

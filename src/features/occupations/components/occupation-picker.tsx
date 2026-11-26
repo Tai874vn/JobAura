@@ -5,7 +5,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Input, LiveStatus } from '@/shared/ui'
-import { occupationKeys, occupationLabel, occupationQuery, occupationsApi, type OccupationHit } from './api'
+import { occupationKeys, occupationLabel, occupationQuery, occupationsApi, type OccupationHit } from '../api'
 
 function useDebounced(value: string, delayMs: number) {
   const [debounced, setDebounced] = useState(value)

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useSyncExternalStore } from 'react'
 import { useSession } from '@/features/auth/hooks/use-session'
-import { footerColumns } from './footer-links'
+import { footerColumns } from '../utils/footer-links'
 
 const subscribeNever = () => () => {}
 

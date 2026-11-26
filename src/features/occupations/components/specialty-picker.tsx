@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Input, LiveStatus } from '@/shared/ui'
-import { occupationQuery } from './api'
+import { occupationQuery } from '../api'
 
 const SHOWN = 30
 

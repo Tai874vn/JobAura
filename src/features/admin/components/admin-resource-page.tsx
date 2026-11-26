@@ -10,7 +10,7 @@ import { queryKeys } from '@/shared/api/query-keys'
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Button, ButtonLink, Card, CardContent, ConfirmationDialog, DialogPortal, EmptyState, Input, PageHeader, Select, Skeleton, useDialogFocus } from '@/shared/ui'
 import { getResourceConfig, type Resource, type ResourceConfig, type ResourceRow } from './admin-resource-model'
-import { refreshMarketplaceTaxonomyPages } from './refresh-taxonomy-pages'
+import { refreshMarketplaceTaxonomyPages } from '../utils/refresh-taxonomy-pages'
 
 export function AdminResourcePage({ resource, embedded = false }: { resource: Resource; embedded?: boolean }) {
   const config = getResourceConfig(resource)
