@@ -12,6 +12,7 @@ export const metadata: Metadata = {
   },
 }
 
+// Page /auth/login — renders <LoginForm> (features/auth/components/auth-forms.tsx).
 export default function LoginPage() {
   return (
     <Suspense fallback={<main className="flex min-h-screen items-center justify-center" aria-label="Loading sign in"><Spinner /></main>}>

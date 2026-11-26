@@ -63,6 +63,7 @@ export const metadata: Metadata = {
   },
 }
 
+// Layout of the whole site (every page) — renders <RealtimeProvider> (features/auth/components/realtime-provider.tsx), <LazyChatShell> (features/chat/components/lazy-chat-shell.tsx).
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning className={`${inter.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable}`}>

@@ -61,6 +61,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
+// Page /hiring-posts/[id] — renders <HiringPostDetailView> (features/hiring/components/detail/hiring-post-detail-view.tsx).
+// Data loaded on the server here first (for SEO and a fast first paint); the component refreshes it in the browser.
 export default async function HiringPostPage({ params }: { params: Promise<{ id: string }> }) {
   const id = positiveIntegerRouteParam((await params).id)
   if (!id) notFound()

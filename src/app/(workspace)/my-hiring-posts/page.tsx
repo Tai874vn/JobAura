@@ -6,6 +6,8 @@ import { MyHiringPostsPageSkeleton } from '@/features/hiring/components/browse/h
 
 export const metadata: Metadata = { title: 'My hiring posts' }
 
+// Page /my-hiring-posts — renders <MyHiringPostsPage> (features/hiring/components/my-posts/my-hiring-posts-page.tsx); while loading: <MyHiringPostsPageSkeleton> (sign-in required).
+// Page settings: src/features/hiring/config/my-hiring-posts.ts
 export default function Page() {
   return (
     <RequireAuth allowedRoles={['employer', 'admin']} fallback={<MyHiringPostsPageSkeleton />}>

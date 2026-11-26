@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+// Page /auth/forgot-password — renders <ForgotPasswordForm> (features/auth/components/email-flows.tsx).
 export default function Page() {
   return (
     <Suspense fallback={<main className="flex min-h-screen items-center justify-center" aria-label="Loading"><Spinner /></main>}>

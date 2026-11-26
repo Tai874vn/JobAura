@@ -8,6 +8,8 @@ import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 
 export const metadata: Metadata = { title: 'Applicants' }
 
+// Page /my-hiring-posts/[id]/applicants — renders <ApplicantsPage> (features/hiring-pipeline/components/applicants/applicants-page.tsx); while loading: <ApplicantsPageSkeleton> (sign-in required).
+// Page settings: src/features/hiring-pipeline/config/applicants.ts
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const id = positiveIntegerRouteParam((await params).id)
   if (!id) notFound()

@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   },
 }
 
+// Page /logout — renders <LogoutPage> (features/auth/components/logout-page.tsx).
 export default function LogoutRoute() {
   return <LogoutPage />
 }

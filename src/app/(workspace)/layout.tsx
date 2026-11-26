@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   },
 }
 
+// Layout for every page in app/(workspace)/ — renders <PublicShell> (features/layout/components/public-shell.tsx) (sign-in required).
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (
     // Keep the shared header and footer visible while RequireAuth checks the session.

@@ -6,6 +6,7 @@ import { positiveIntegerRouteParam } from '@/shared/lib/route-params'
 
 export const metadata: Metadata = { title: 'Edit your post' }
 
+// Page /jobs/[id]/edit — renders <JobEditPage> (features/jobs/components/form/job-edit-page.tsx) (sign-in required).
 export default async function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const jobId = positiveIntegerRouteParam((await params).id)
   if (!jobId) notFound()

@@ -44,6 +44,7 @@ function AdminAccessSkeleton() {
   )
 }
 
+// Layout for every page under /admin — renders <AdminShell> (features/admin/components/admin-shell.tsx) (sign-in required).
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireAuth admin fallback={<AdminAccessSkeleton />}>

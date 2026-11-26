@@ -10,6 +10,8 @@ export const metadata: Metadata = buildPageMetadata({
   canonical: '/welcome',
 })
 
+// Page /welcome — renders <HomePage> (features/jobs/components/home/home-page.tsx).
+// Page settings: src/features/jobs/config/welcome.ts
 export default function WelcomePage() {
   return (
     <>

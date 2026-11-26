@@ -77,6 +77,9 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
+// Page /profile/[id] — renders <ProfilePage> (features/users/components/profile/profile-page.tsx).
+// Page settings: src/features/users/config/profile.ts
+// Data loaded on the server here first (for SEO and a fast first paint); the component refreshes it in the browser.
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const profileId = positiveIntegerRouteParam(id)

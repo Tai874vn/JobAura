@@ -74,6 +74,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 }
 
+// Page /jobs/[id] — renders <JobDetailView> (features/jobs/components/detail/job-detail-view.tsx).
+// Data loaded on the server here first (for SEO and a fast first paint); the component refreshes it in the browser.
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const jobId = positiveIntegerRouteParam(id)

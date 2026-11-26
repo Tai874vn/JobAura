@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   },
 }
 
+// Page /auth/callback — renders <OAuthCallback> (features/auth/components/oauth-callback.tsx).
 export default function OAuthCallbackPage() {
   return (
     <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><Spinner /></div>}>

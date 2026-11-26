@@ -4,6 +4,8 @@ import { RecommendedCandidatesPage } from '@/features/candidates/components/reco
 
 export const metadata: Metadata = { title: 'AI candidate matching' }
 
+// Page /recommendations/candidates — renders <RecommendedCandidatesPage> (features/candidates/components/recommended-candidates/recommended-candidates-page.tsx) (sign-in required).
+// Page settings: src/features/candidates/config/ai-matching.ts
 export default function CandidateRecommendationsRoute() {
   return (
     <RequireAuth allowedRoles={['employer', 'admin']}>

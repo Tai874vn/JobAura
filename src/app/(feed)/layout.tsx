@@ -48,6 +48,7 @@ function FeedAccessSkeleton() {
   )
 }
 
+// Layout for every page in app/(feed)/ — renders <Footer> (features/layout/components/footer.tsx), <SiteHeader> (features/layout/components/site-header.tsx) (sign-in required).
 export default function FeedLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">

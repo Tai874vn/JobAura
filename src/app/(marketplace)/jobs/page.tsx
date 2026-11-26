@@ -18,6 +18,9 @@ export const metadata: Metadata = buildPageMetadata({
   canonical: '/jobs',
 })
 
+// Page /jobs — renders <JobListView> (features/jobs/components/browse/job-list-view.tsx); while loading: <JobsPageSkeleton>.
+// Page settings: src/features/jobs/config/jobs.ts
+// Data loaded on the server here first (for SEO and a fast first paint); the component refreshes it in the browser.
 export default async function JobsPage({
   searchParams,
 }: {
