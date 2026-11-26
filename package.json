@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "bot": "node bot/browser-bot.mjs",
+    "find": "node scripts/find-tags.mjs",
     "bot:api": "node bot/api-bot.mjs"
   },
   "dependencies": {

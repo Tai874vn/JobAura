@@ -43,21 +43,26 @@ const sortLabels: Record<(typeof hiringPostSorts)[number], string> = {
  * one card per role with View details and Apply. Every filter lives in the URL, so a filtered list can be shared.
  * The layout is the shared BrowsePage; this page fills in its search, filters and cards.
  */
+// @find [all] hiring-posts / page / component / ui — the browse page: search, filters, cards
 export function HiringPostsPage() {
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { user } = useSession();
+  // @find [all] hiring-posts / page / viewer-role / access — visitor, candidate or recruiter changes the header link, promo card and Apply
   const viewer = hiringPostViewer(user?.role);
 
+  // @find [all] hiring-posts / filters / read-from-url / url — filters and page number come from the address
   const { applied, page } = readHiringPostFilters(searchParams);
   // Keep the search inputs synced with the URL whenever a chip, Reset, or browser Back/Forward changes it.
+  // @find [all] hiring-posts / search / keyword / state — keyword box, kept in sync with the URL
   const [keyword, setKeyword] = useState(applied.keyword);
   const [syncedKeyword, setSyncedKeyword] = useState(applied.keyword);
   if (syncedKeyword !== applied.keyword) {
     setSyncedKeyword(applied.keyword);
     setKeyword(applied.keyword);
   }
+  // @find [all] hiring-posts / search / location / state — location box, kept in sync with the URL
   const [location, setLocation] = useState(applied.location);
   const [syncedLocation, setSyncedLocation] = useState(applied.location);
   if (syncedLocation !== applied.location) {
@@ -70,6 +75,7 @@ export function HiringPostsPage() {
   const searching = activeFilterCount > 0 || Boolean(applied.keyword);
 
   const params = toHiringPostQueryParams(applied, page);
+  // @find [all] hiring-posts / results / list / api — GET /api/hiring-posts (hiringPostsApi.open)
   const query = useQuery({
     queryKey: queryKeys.hiringPosts(params, user?.id),
     queryFn: () => hiringPostsApi.open(params),
@@ -78,6 +84,7 @@ export function HiringPostsPage() {
     placeholderData: keepPreviousData,
   });
   // Counts beside each choice and the location list. Both are extras: without them the filters still work.
+  // @find [all] hiring-posts / filters / counts / api — GET /api/hiring-posts/facets: numbers beside each choice
   const facetParams = toHiringPostFacetParams(applied);
   const facets = useQuery({
     queryKey: queryKeys.hiringPostFacets(facetParams),
@@ -87,6 +94,7 @@ export function HiringPostsPage() {
     // Keep the counts (and the choices built from them) in place while new ones load, so the column doesn't jump.
     placeholderData: keepPreviousData,
   }).data?.content;
+  // @find [all] hiring-posts / filters / location / api — GET /api/hiring-posts/locations: choices for both location pickers
   const locations = useQuery({
     queryKey: queryKeys.hiringPostLocations,
     queryFn: hiringPostsApi.locations,
@@ -99,6 +107,7 @@ export function HiringPostsPage() {
   const shown = shownRange(page, pageSize, total);
   const pastLastPage = rolesPastLastPage(total, totalPages);
 
+  // @find [all] hiring-posts / filters / apply-to-url / url — writes filters to the address in place (no server navigation)
   function go(next: Partial<Filters>, nextPage = 1) {
     const merged = { ...applied, ...next };
     const url = new URLSearchParams();
@@ -107,6 +116,7 @@ export function HiringPostsPage() {
     const search = url.toString();
     replaceUrlInPlace(search ? `${pathname}?${search}` : pathname);
   }
+  // @find [all] hiring-posts / search / submit / logic
   function search(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     go({ keyword, location });
@@ -114,6 +124,7 @@ export function HiringPostsPage() {
   function toggle(key: MultiKey, value: string) {
     go({ [key]: toggleListValue(applied[key], value) });
   }
+  // @find [all] hiring-posts / filters / reset / logic
   function reset() {
     setKeyword("");
     setLocation("");
@@ -121,8 +132,10 @@ export function HiringPostsPage() {
   }
 
   const typeChoices = [...new Set([...employmentTypes, ...(facets?.employmentTypes ?? []).map((item) => item.value).filter(Boolean)])];
+  // @find [all] hiring-posts / filters / location / logic — top 5 locations plus the chosen one
   const locationChoices = (facets?.locations.length ? facets.locations : locations).slice(0, 5).map((item) => item.value);
   if (applied.location && !locationChoices.some((value) => value.toLowerCase() === applied.location.toLowerCase())) locationChoices.push(applied.location);
+  // @find [all] hiring-posts / explore / chips / logic — occupation chips from the facets, or a fixed list
   const exploreChoices = facets?.occupations.length
     ? facets.occupations.slice(0, 4).map((item) => ({ label: occupationLabel(item.title), code: item.code, filter: { occupation: item.code, keyword: "" } }))
     : fallbackExplore.slice(0, 4).map((label) => ({ label, code: "", filter: { keyword: label } }));
@@ -132,6 +145,7 @@ export function HiringPostsPage() {
       // New results (a search, a filter, another page) start at the top of the list.
       resultsKey={searchParams.toString()}
       resultsReady={Boolean(query.data)}
+      // @find [all] hiring-posts / hero / title-and-link / ui — recruiter: My hiring posts; candidate: AI job picks
       hero={
         <BrowseHero
           title={viewer === "recruiter" ? "Browse hiring posts" : "Find a role and apply"}
@@ -142,6 +156,7 @@ export function HiringPostsPage() {
             <HeaderLink href="/recommendations/jobs"><ListOrdered className="h-4 w-4" aria-hidden="true" />AI job picks</HeaderLink>
           ) : null} />
       }
+      // @find [all] hiring-posts / search / bar / ui
       search={
         <form onSubmit={search} role="search" aria-label="Search hiring posts"
           className="field-shell flex min-w-0 items-center gap-2 rounded-xl border border-[#d1ddd1] bg-surface p-2 sm:h-[68px] sm:pl-3">
@@ -151,6 +166,7 @@ export function HiringPostsPage() {
               className="h-11 min-w-0 flex-1 bg-transparent text-[15px] outline-none" />
           </label>
           <span className="hidden h-7 w-px bg-border md:block" aria-hidden="true" />
+          {/* @find [all] hiring-posts / search / location / ui — Location menu inside the search bar (wide screens) */}
           <ChoiceMenu label="Location" value={location} className="hidden min-w-0 flex-[2] md:block"
             buttonClassName="h-11 rounded-lg px-3 text-[15px] transition-colors hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-primary"
             icon={<MapPin className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />}
@@ -161,6 +177,7 @@ export function HiringPostsPage() {
           </button>
         </form>
       }
+      // @find [all] hiring-posts / explore / chips / ui
       explore={
         <ExploreRow>
           {exploreChoices.map((choice) => (
@@ -176,9 +193,11 @@ export function HiringPostsPage() {
         </ExploreRow>
       }
       filtersOpen={showFilters}
+      // @find [all] hiring-posts / filters / column / ui
       filters={
         <>
           <FilterPanel intro="Narrow down your next role." onReset={reset} canReset={searching}>
+            {/* @find [all] hiring-posts / filters / level / ui */}
             <FilterGroup title="Experience level">
               <FilterChoice label="All levels" checked={!applied.level} onChange={() => go({ level: "" })} />
               {hiringPostLevels.map((level) => (
@@ -187,6 +206,7 @@ export function HiringPostsPage() {
               ))}
             </FilterGroup>
 
+            {/* @find [all] hiring-posts / filters / employment-type / ui */}
             <FilterGroup title="Employment type">
               <FilterChoice label="All types" checked={!applied.employmentType} onChange={() => go({ employmentType: "" })} />
               {typeChoices.map((type) => (
@@ -195,6 +215,7 @@ export function HiringPostsPage() {
               ))}
             </FilterGroup>
 
+            {/* @find [all] hiring-posts / filters / location / ui — Location group in the filter column */}
             {/* The backend matches one location at a time, so these choices replace each other. */}
             <FilterGroup title="Location" last>
               <FilterChoice label="All locations" checked={!applied.location} onChange={() => { setLocation(""); go({ location: "" }); }} />
@@ -206,6 +227,7 @@ export function HiringPostsPage() {
             </FilterGroup>
           </FilterPanel>
 
+          {/* @find [guest,candidate] hiring-posts / filters / ai-picks-promo / access — promo card, hidden for recruiters */}
           {viewer !== "recruiter" ? (
             <div className="grid gap-3 rounded-xl bg-[#123f32] p-[22px] text-white">
               <p className="text-xl font-semibold leading-8">A little help finding the right fit.</p>
@@ -218,12 +240,15 @@ export function HiringPostsPage() {
           ) : null}
         </>
       }
+      // @find [all] hiring-posts / results / header / ui — "N open roles" and the showing range
       toolbar={
         <ResultsHeader
           title={query.isPending ? "Loading roles…" : `${total.toLocaleString("en-US")} open ${total === 1 ? "role" : "roles"}`}
           actions={
             <>
+              {/* @find [all] hiring-posts / filters / mobile-toggle / ui — Filters button on small screens */}
               <FiltersToggle open={showFilters} onToggle={() => setShowFilters((value) => !value)} count={activeFilterCount} />
+              {/* @find [all] hiring-posts / results / sort / ui */}
               <ChoiceMenu label="Sort" prefix="Sort:" value={applied.sort || "newest"} align="right"
                 buttonClassName="h-[42px] rounded-lg border border-transparent bg-surface px-3.5 text-sm font-semibold text-muted transition-colors hover:border-border focus-visible:ring-2 focus-visible:ring-primary"
                 icon={<ArrowDownWideNarrow className="h-4 w-4 shrink-0" aria-hidden="true" />}
@@ -235,6 +260,7 @@ export function HiringPostsPage() {
             ? `Showing ${shown.first.toLocaleString("en-US")}–${shown.last.toLocaleString("en-US")} of ${total.toLocaleString("en-US")} open roles`
             : null} />
       }
+      // @find [all] hiring-posts / results / list / ui — loading, error, cards, empty state
       results={
         query.isPending ? (
           <HiringPostResultSkeleton />
@@ -245,6 +271,7 @@ export function HiringPostsPage() {
           <ul key={posts.map((post) => post.id).join(",")} className={cn("results-in mt-4 grid gap-4 transition-opacity duration-200", query.isPlaceholderData && "opacity-60")} aria-busy={query.isPlaceholderData} aria-label="Hiring posts">
             {posts.map((post) => (
               <li key={post.id}>
+                {/* @find [all] hiring-posts / card / result-card / ui */}
                 <HiringPostResultCard post={post} viewer={viewer}
                   onApplied={() => void queryClient.invalidateQueries({ queryKey: ["hiring-posts"] })} />
               </li>
@@ -257,6 +284,7 @@ export function HiringPostsPage() {
         )
       }
       // Pages show only under a list of roles, not while loading, after an error, or when nothing matches.
+      // @find [all] hiring-posts / pagination / pages / ui
       pagination={!query.isPending && !query.isError && posts.length ? (
         <>
           <Pagination page={page} totalPages={totalPages} onPage={(next) => go({}, next)} label="Hiring post pages" boxed />

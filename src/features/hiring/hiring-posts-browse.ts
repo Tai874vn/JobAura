@@ -16,6 +16,7 @@ export const maxHiringPostFilterLength = 100
 /** The server fetches the first paint only for the plain list, up to this page (see canPrefetchHiringPosts). */
 export const maxPrefetchHiringPostPage = 10
 
+// @find [all] hiring-posts / filters / keys / url — the query-string names
 export const hiringPostFilterKeys = ['keyword', 'occupation', 'level', 'employmentType', 'location', 'sort'] as const
 export type HiringPostFilterKey = (typeof hiringPostFilterKeys)[number]
 export type HiringPostAppliedFilters = Record<HiringPostFilterKey, string>
@@ -31,6 +32,7 @@ function parseHiringPostSort(value: string | null): HiringPostSort | '' {
 }
 
 /** Reads the URL query params into normalized filter strings and a safe page number (1..100). */
+// @find [all] hiring-posts / filters / read-from-url / logic — cleans and limits values from the address
 export function readHiringPostFilters(params: Pick<URLSearchParams, 'get'>): {
   applied: HiringPostAppliedFilters
   page: number
@@ -54,11 +56,13 @@ export function readHiringPostFilters(params: Pick<URLSearchParams, 'get'>): {
  * or sort) on its first pages: those few addresses share one server cache entry each. Any other address is left to
  * the browser, as before, so random ?keyword= values cannot fill the server cache or reach the backend through it.
  */
+// @find [all] hiring-posts / page / prefetch-rule / server — only plain first pages are fetched on the server
 export function canPrefetchHiringPosts(applied: HiringPostAppliedFilters, page: number): boolean {
   return hiringPostFilterKeys.every((key) => !applied[key]) && page <= maxPrefetchHiringPostPage
 }
 
 /** Builds the exact query object sent to `/api/hiring-posts` and used in `queryKeys.hiringPosts`. */
+// @find [all] hiring-posts / filters / to-api-params / logic
 export function toHiringPostQueryParams(
   applied: HiringPostAppliedFilters,
   page: number,
@@ -72,6 +76,7 @@ export function toHiringPostQueryParams(
 }
 
 /** Builds the exact query object sent to `/api/hiring-posts/facets` and used in `queryKeys.hiringPostFacets`. */
+// @find [all] hiring-posts / filters / facet-params / logic
 export function toHiringPostFacetParams(
   applied: HiringPostAppliedFilters,
 ): Omit<HiringPostFilters, 'page' | 'pageSize' | 'sort'> {
