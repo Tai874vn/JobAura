@@ -1,3 +1,12 @@
+/**
+ * Shared pagination controls and page-range helper for paged lists across the app.
+ * Shows Previous, numbered page buttons with gaps, and Next, and hides when everything fits on one page.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from './button'
 

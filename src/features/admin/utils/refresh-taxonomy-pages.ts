@@ -1,5 +1,13 @@
 'use server'
 
+/**
+ * Server action that clears cached /welcome and /jobs pages after an admin adds or deletes a category or subcategory. It checks /api/auth/me first to confirm the caller is an admin.
+ *
+ * Calls: GET /api/auth/me; serverRequest; reportServerRequestFailure
+ * Used by:
+ *   - features/admin/components/admin-resource-page.tsx
+ */
+
 import { revalidatePath } from 'next/cache'
 import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'

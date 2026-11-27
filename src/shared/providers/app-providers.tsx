@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Root client provider wrapper for the whole app. Sets up React Query, toast notifications, dev tools in development, and cross-tab session sync that resets chat state on sign-out.
+ *
+ * Calls: getQueryClient; subscribeSessionSync; useChatStore
+ * Used by:
+ *   - app/layout.tsx
+ */
+
 import { QueryClientProvider } from '@tanstack/react-query'
 import dynamic from 'next/dynamic'
 import { useEffect } from 'react'

@@ -1,5 +1,15 @@
 'use server'
 
+/**
+ * Server action that clears the Next.js cache for the Hiring posts list and a post's detail page after a hiring post changes or closes. Verifies the caller's session and permissions against the backend before revalidating the paths.
+ *
+ * Calls: GET /api/auth/me; GET /api/hiring-posts/:id; GET /api/applications/:id; serverRequest; reportServerRequestFailure; normalizeHiringPost; applicationDetailSchema
+ * Used by:
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import { revalidatePath } from 'next/cache'
 import { normalizeHiringPost } from '@/shared/api/normalizers'
 import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'

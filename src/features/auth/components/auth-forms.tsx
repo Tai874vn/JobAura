@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Renders the sign-in (/auth/login) and sign-up (/auth/register) forms. Users can sign in or create an account with email and password, pick a role, resend email verification, or continue with Google.
+ *
+ * Calls: POST /api/auth/signin; POST /api/auth/signup; useChatStore; AuthPageGate; AuthCard; GoogleSignupRoleModal; CheckEmailPanel; ResendVerificationButton
+ * Used by:
+ *   - app/auth/login/page.tsx
+ *   - app/auth/register/page.tsx
+ */
+
 import { authConfig } from '@/features/auth/config/auth'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

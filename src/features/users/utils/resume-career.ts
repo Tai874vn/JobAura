@@ -1,3 +1,11 @@
+/**
+ * Career, job history, and experience-year helpers for resumes. Parses and validates dated jobs, checks ESCO occupation codes, picks the default occupation from the current job, and formats experience years and related credit.
+ *
+ * Calls: settingsConfig
+ * Used by:
+ *   - 7 files, for example features/candidates/utils/candidate-directory.ts, features/users/components/profile/profile-content.tsx, features/users/components/resume/resume-career-fields.tsx
+ */
+
 import { settingsConfig } from '@/features/workspace/config/settings'
 import type { ResumeOccupationYears, UserResume } from '@/shared/schemas'
 

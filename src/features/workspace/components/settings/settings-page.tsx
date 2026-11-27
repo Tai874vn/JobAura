@@ -1,6 +1,13 @@
 'use client'
 
-
+/**
+ * Main layout and tab switcher for the /settings page.
+ * Reads ?section= and ?focus= from the URL, keeps visited editors mounted to preserve drafts, and renders the sidebar navigation and active panel.
+ *
+ * Calls: GET /api/users/me/resume; useSession; useProfileStrength; settingsResumeOptions; ProfileSettingsEditor; ResumeSettingsEditor; SettingsOverview; SettingsPlaceholder
+ * Used by:
+ *   - app/(workspace)/settings/page.tsx
+ */
 
 import dynamic from 'next/dynamic'
 import { usePathname, useSearchParams } from 'next/navigation'

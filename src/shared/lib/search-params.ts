@@ -1,3 +1,13 @@
+/**
+ * Converts Next.js server search params into URLSearchParams and builds query strings for backend fetches.
+ * Keeps filter handling on marketplace list pages consistent between server rendering and client requests.
+ *
+ * Calls: definedParams
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/page.tsx
+ *   - app/(marketplace)/jobs/page.tsx
+ */
+
 import { definedParams } from '@/shared/api/endpoints/params'
 
 export type RawSearchParams = Record<string, string | string[] | undefined>

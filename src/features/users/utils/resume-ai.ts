@@ -1,3 +1,13 @@
+/**
+ * Helpers for reading the AI review queue state on a user's resume. Checks whether review is pending or retryable, and extracts suggested and unrecognized skills from the AI insights.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/workspace/components/settings/resume-settings-editor.tsx
+ *   - features/workspace/components/settings/resume-settings-section.tsx
+ *   - features/workspace/utils/settings/settings-resume-query.ts
+ */
+
 import type { FoundSkill } from '@/shared/api/endpoints/users'
 import type { UserResume } from '@/shared/schemas'
 

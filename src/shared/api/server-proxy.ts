@@ -1,3 +1,11 @@
+/**
+ * Proxies incoming `/api/*` requests from the Next.js route handler to the backend API, cleaning hop-by-hop headers, forwarding cookies, and mapping outages to HTTP 502 or client aborts to 499.
+ *
+ * Calls: getServerEnv
+ * Used by:
+ *   - app/api/[...path]/route.ts
+ */
+
 import { NextResponse, type NextRequest } from 'next/server'
 import { getServerEnv } from '@/shared/config/env'
 

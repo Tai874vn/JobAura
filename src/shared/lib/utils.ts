@@ -1,3 +1,12 @@
+/**
+ * Common frontend utility helpers used across the app.
+ * Merges Tailwind class names, extracts avatar initials, resolves backend asset URLs, checks localhost images, and re-exports error helpers.
+ *
+ * Calls: env; resolveHttpUrl; toUserError; getErrorMessage; getErrorCode; RequestError; UserValidationError
+ * Used by:
+ *   - 96 files, for example features/admin/components/admin-dashboard.tsx, features/admin/components/admin-resource-model.tsx, features/admin/components/admin-resource-page.tsx
+ */
+
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { env } from '@/shared/config/env'

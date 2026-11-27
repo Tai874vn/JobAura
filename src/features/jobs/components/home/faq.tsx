@@ -1,3 +1,13 @@
+/**
+ * Frequently asked questions section for the public landing page (/welcome).
+ * Exports the static Q&A list and renders it inside an accordion.
+ *
+ * Calls: Accordion; Section; SectionHeading
+ * Used by:
+ *   - app/(marketplace)/welcome/page.tsx
+ *   - features/jobs/components/home/home-page.tsx
+ */
+
 import { Accordion, Section, SectionHeading, type AccordionItem } from '@/shared/ui'
 
 export const landingFaqs: AccordionItem[] = [

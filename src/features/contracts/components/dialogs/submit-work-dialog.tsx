@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Modal dialog for a freelancer to submit milestone work with a required note, uploaded images, and web links.
+ * Also exports validation and request-body helpers for work submissions.
+ *
+ * Calls: contractsApi.uploadImage; useDialogFocus; contractsConfig; reportServerError; imageUploadAccept
+ * Used by:
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ *   - features/contracts/hooks/use-contract-actions.ts
+ */
+
 import { contractsConfig } from '@/features/contracts/config/contracts'
 import { ImagePlus, Plus, X } from 'lucide-react'
 import Image from 'next/image'

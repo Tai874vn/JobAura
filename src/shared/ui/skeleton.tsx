@@ -1,3 +1,12 @@
+/**
+ * Shared loading placeholder components shown while page data is loading.
+ * Provides a base pulsing Skeleton box along with preset CardSkeleton and ListRowSkeleton layouts.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { cn } from '@/shared/lib/utils'
 import { Card } from './card'
 

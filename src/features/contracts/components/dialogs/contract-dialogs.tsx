@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Groups and renders all confirmation and form dialogs for a contract on /contracts: milestones, change requests, ending the contract, and reviews.
+ * Also displays credit balance checks and low-balance actions inside the fund milestone dialog.
+ *
+ * Calls: ConfirmDialog; SubmitWorkDialog; AmendmentDialog; EndDialog; ReviewDialog; creditsShortage; milestoneName; credits
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ */
 
 import { credits } from '@/shared/lib/credits'
 import type { ContractDetail, MilestoneView, PersonSummary } from '@/shared/schemas'

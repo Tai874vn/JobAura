@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Right desktop sidebar on the home feed page.
+ * Shows "People you may know" with connect buttons, "Trending skills" links, and footer navigation links.
+ *
+ * Calls: GET /api/skill; POST /api/connections/requests/:userId; connectionsApi.suggestions; useSession; FeedAvatar; feedConfig; getErrorMessage
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ */
+
 import { feedConfig } from '@/features/feed/config/feed'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { TrendingUp, UserPlus } from 'lucide-react'

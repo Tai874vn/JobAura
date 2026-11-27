@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for user connections: listing connections, pending requests, and suggestions, checking status, and sending, accepting, or removing requests.
+ *
+ * Calls: apiClient; GET /api/connections; GET /api/connections/requests; GET /api/connections/suggestions; POST /api/connections/requests/:userId; normalizeConnectionsResponse; normalizeConnectionRequestsResponse; normalizeConnectionSuggestionsResponse
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import {
   normalizeConnectionRequestsResponse,

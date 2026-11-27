@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Optional specialty picker for the occupations feature. Filters and lets users pick from the O*NET specialties listed under the selected ESCO occupation.
+ *
+ * Calls: GET /api/occupations/:code; occupationQuery; getErrorMessage; LiveStatus
+ * Used by:
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/users/components/resume/resume-career-fields.tsx
+ */
+
 import { useEffect, useId, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'

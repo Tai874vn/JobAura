@@ -1,3 +1,12 @@
+/**
+ * Reads the AI seniority queue status on a hiring post for the My hiring posts page. Computes whether scoring is still running and which status text, error message, and action button to show.
+ *
+ * Calls: sanitizeUserMessage
+ * Used by:
+ *   - features/hiring/components/my-posts/my-hiring-post-result-card.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import { sanitizeUserMessage } from '@/shared/lib/errors'
 import type { HiringPost } from '@/shared/schemas'
 

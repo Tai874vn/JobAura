@@ -1,3 +1,12 @@
+/**
+ * Section list, role checks, overview panel, and placeholder card for /settings.
+ * Shows profile strength with links to missing fields, quick cards for profile and resume, and coming-soon placeholders for unfinished tabs.
+ *
+ * Calls: canAccessCandidateTools
+ * Used by:
+ *   - features/workspace/components/settings/settings-page.tsx
+ */
+
 import {
   AlertCircle,
   ArrowRight,

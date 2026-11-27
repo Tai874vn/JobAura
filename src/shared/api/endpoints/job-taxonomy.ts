@@ -1,3 +1,11 @@
+/**
+ * Defines API calls to list, create, update, and delete job categories and subcategories, shaping payloads and normalizing responses.
+ *
+ * Calls: apiClient; GET /api/categories; GET /api/subcategories; normalizeCategoriesResponse; normalizeSubcategoriesResponse; toCategoryPayload; toSubcategoryPayload
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse, Subcategory, Category } from '@/shared/schemas'
 import { normalizeCategoriesResponse, normalizeCategory, normalizeSubcategoriesResponse, normalizeSubcategory, toCategoryPayload, toSubcategoryPayload } from '../normalizers'

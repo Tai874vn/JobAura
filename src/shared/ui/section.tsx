@@ -1,3 +1,11 @@
+/**
+ * Shared layout components used across pages. Exports Section, PageHeader, and SectionHeading for consistent page spacing, backgrounds, titles, and action slots.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/utils'
 

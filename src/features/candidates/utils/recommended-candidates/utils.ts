@@ -1,3 +1,13 @@
+/**
+ * Small helper functions for the Recommended candidates (/recommendations/candidates) page.
+ * Formats the daily quota reset time and sorts recommended candidates by final score and rank.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/recommended-candidates-page.tsx
+ *   - features/candidates/components/recommended-candidates/sidebar-cards.tsx
+ */
+
 export function formatReset(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "daily";

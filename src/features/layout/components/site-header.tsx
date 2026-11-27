@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Top navigation bar shown across JobAura pages. Displays the logo, role-based links, wallet balance, notification bell, account menu, and mobile menu.
+ *
+ * Calls: useSession; siteNav; isCurrentLink; NotificationBell; WalletChip; PipelineLiveUpdates; ContractLiveUpdates
+ * Used by:
+ *   - app/(feed)/layout.tsx
+ *   - features/layout/components/public-shell.tsx
+ */
+
 import { Bookmark, Briefcase, FileSignature, FileText, Home, LogOut, Menu, Search, Settings, User, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

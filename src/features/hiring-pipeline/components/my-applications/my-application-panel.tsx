@@ -1,6 +1,14 @@
 'use client'
 
-
+/**
+ * Detail panel for one application on the candidate's My Applications page.
+ * Shows the progress tracker, offer card, interviews, role details, timeline, and buttons to message the recruiter, answer an offer, or withdraw.
+ * Also exports a loading skeleton, the progress tracker, and the offer card.
+ *
+ * Calls: usePipelineMutation; pipelineApi; trackerView; refreshHiringPostPages; StatusBadge; InterviewCard; ApplicationTimeline; ConfirmActionDialog
+ * Used by:
+ *   - features/hiring-pipeline/components/my-applications/my-applications-page.tsx
+ */
 
 import { ArrowLeft, ExternalLink, MessageSquare, Check } from 'lucide-react'
 import Link from 'next/link'

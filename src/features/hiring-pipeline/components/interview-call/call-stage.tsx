@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Part of the interview video call screen in the hiring pipeline. Connects to the LiveKit room, shows participant video tiles with mic and camera controls, and reports connection changes.
+ *
+ * Calls: useTracks; deviceNotice; isDeviceError
+ * Used by:
+ *   - features/hiring-pipeline/components/interview-call/call-screen.tsx
+ */
+
 import '@livekit/components-styles'
 import {
   ControlBar,

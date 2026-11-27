@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Modal dialog for proposing a change (amendment) to an active contract on /contracts.
+ * Opens the proposal editor in amendment mode, adds an optional note, and builds the list of changed milestones or deadline to submit.
+ *
+ * Calls: ProposalEditor; useDialogFocus; amendmentStart; buildAmendment; contractsConfig
+ * Used by:
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ */
+
 import { contractsConfig } from '@/features/contracts/config/contracts'
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'

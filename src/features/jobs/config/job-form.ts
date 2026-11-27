@@ -1,3 +1,14 @@
+/**
+ * Settings and Zod validation schema for creating and editing a service or portfolio post (/jobs/new and /jobs/[id]/edit).
+ * Holds character limits, milestone template limits, and form field rules.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/jobs/components/form/job-form.tsx
+ *   - features/jobs/utils/milestone-template.ts
+ *   - shared/schemas/marketplace.ts
+ */
+
 import { z } from 'zod'
 
 // @find job-form page config logic [all] — every adjustable value of this page

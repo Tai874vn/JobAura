@@ -1,3 +1,13 @@
+/**
+ * Shared query options for loading the signed-in user's resume on /settings.
+ * Polls every 3 seconds while the backend AI seniority evaluation is still running.
+ *
+ * Calls: usersApi.myResume; queryKeys.myResume; isResumeAiPending
+ * Used by:
+ *   - features/workspace/components/settings/resume-settings-editor.tsx
+ *   - features/workspace/components/settings/settings-page.tsx
+ */
+
 import { queryOptions } from '@tanstack/react-query'
 import { usersApi } from '@/shared/api/endpoints/users'
 import { queryKeys } from '@/shared/api/query-keys'

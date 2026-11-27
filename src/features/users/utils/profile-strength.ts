@@ -1,5 +1,16 @@
 'use client'
 
+/**
+ * Profile completeness calculator and hook for the feed, profile, and settings pages. Computes a 0 to 100 strength score and missing-item checklist tailored to either candidates or employers.
+ *
+ * Calls: GET /api/jobs/by-creator/:creatorId; GET /api/hiring-posts/mine; useOwnResume; isOccupationCode; parseResumeJobs; queryKeys
+ * Used by:
+ *   - features/feed/components/feed-greeting.tsx
+ *   - features/feed/components/feed-left-rail.tsx
+ *   - features/users/components/profile/profile-page.tsx
+ *   - features/workspace/components/settings/settings-page.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import { hiringPostsApi, jobsApi } from '@/shared/api/endpoints'
 import { queryKeys } from '@/shared/api/query-keys'

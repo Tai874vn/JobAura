@@ -1,3 +1,12 @@
+/**
+ * Auth routing and redirect safety helpers for login flows, session expiry, and the request proxy.
+ * Checks internal return paths, lists protected route prefixes, computes login redirects, and saves Google OAuth return paths.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - 9 files, for example features/auth/components/auth-forms.tsx, features/auth/components/oauth-callback.tsx, features/auth/components/require-auth.tsx
+ */
+
 const INTERNAL_NAVIGATION_ORIGIN = 'https://jobaura.invalid'
 const OAUTH_NEXT_STORAGE_KEY = 'jobaura:oauth-next'
 const CONTROL_CHARS_RE = /[\u0000-\u001f\u007f]/

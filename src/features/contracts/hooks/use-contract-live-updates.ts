@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Subscribes to real-time notification socket events for a signed-in user and refreshes contract and wallet queries when a proposal or contract changes.
+ * Also exports a no-UI wrapper component mounted in the site header.
+ *
+ * Calls: useSession; useRealtimeConnection
+ * Used by:
+ *   - features/layout/components/site-header.tsx
+ */
+
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useRealtimeConnection } from '@/features/auth/components/realtime-provider'

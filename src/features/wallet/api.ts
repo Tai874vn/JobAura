@@ -1,3 +1,16 @@
+/**
+ * Wallet API client and Stripe Checkout redirect helper for the /wallet feature.
+ * Reads the credit summary and ledger history, starts test-mode top-ups, checks top-up status, and opens only Stripe's checkout domain.
+ *
+ * Calls: GET /api/wallet; GET /api/wallet/ledger; POST /api/wallet/top-ups; GET /api/wallet/top-ups/:id; apiClient; contentOf; parsePage; walletKeys
+ * Used by:
+ *   - features/contracts/hooks/use-contract-actions.ts
+ *   - features/wallet/components/top-up-dialog.tsx
+ *   - features/wallet/components/top-up-return.tsx
+ *   - features/wallet/components/wallet-chip.tsx
+ *   - features/wallet/components/wallet-page.tsx
+ */
+
 import { apiClient } from '@/shared/api/client'
 import { definedParams } from '@/shared/api/endpoints/params'
 import { walletKeys } from '@/shared/api/query-keys'

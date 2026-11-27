@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Recommended candidates (/recommendations/candidates) AI matching page for recruiters.
+ * Lets users pick a hiring post, view saved matches or run a new match against their daily quota, and review ranked candidates with sidebar quota and policy cards.
+ *
+ * Calls: GET /api/recommendations/quota; GET /api/hiring-posts/mine; POST /api/recommendations/hiring-posts/:hiringPostId/candidates; useSession; HiringPostSelectionPanel; StartCandidateMatchingCard; CandidateResultsPanel; RecruiterQuotaCard
+ * Used by:
+ *   - app/(workspace)/recommendations/candidates/page.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

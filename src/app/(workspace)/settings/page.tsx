@@ -1,3 +1,12 @@
+/**
+ * Workspace settings page (/settings).
+ * Renders the account settings screen with a loading fallback.
+ *
+ * Calls: SettingsPage; SettingsLoading
+ * Used by:
+ *   - Next.js router: page for /settings
+ */
+
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { SettingsLoading } from '@/features/workspace/components/settings/settings-loading'

@@ -1,3 +1,11 @@
+/**
+ * Part of the contract milestones section. Displays each milestone step with its number, title, status, warning dot, amount, and due date.
+ *
+ * Calls: milestoneLabel; formatPipelineDay; credits
+ * Used by:
+ *   - features/contracts/components/contract/contract-milestones.tsx
+ */
+
 import { credits } from '@/shared/lib/credits'
 import { cn } from '@/shared/lib/utils'
 import type { MilestoneView } from '@/shared/schemas'

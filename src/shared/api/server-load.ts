@@ -1,3 +1,13 @@
+/**
+ * Classifies server-side API results into `ok`, `not-found`, or `error` outcomes so Server Components show a 404 page only for missing or forbidden items and throw on real outages.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/[id]/page.tsx
+ *   - app/jobs/[id]/page.tsx
+ *   - app/profile/[id]/page.tsx
+ */
+
 import type { ServerRequestResult } from './server'
 
 export type ServerLoadOutcome<T> =

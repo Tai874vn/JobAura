@@ -1,3 +1,14 @@
+/**
+ * Reads, checks, and clears the `csrf_token` cookie used for CSRF headers on write requests and as the browser session marker.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/auth/hooks/use-session.ts
+ *   - features/jobs/utils/refresh-job-pages.ts
+ *   - proxy.ts
+ *   - shared/api/client.ts
+ */
+
 export const SESSION_COOKIE_NAME = 'csrf_token'
 
 const UNSAFE_METHODS = new Set(['post', 'put', 'patch', 'delete'])

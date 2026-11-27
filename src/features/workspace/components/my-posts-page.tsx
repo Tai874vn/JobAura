@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Main view for the /my-posts seller workspace page.
+ * Lists the signed-in user's portfolio and service posts with view and edit links, and lets them delete a post after confirming.
+ *
+ * Calls: GET /api/jobs/by-creator/:creatorId; DELETE /api/jobs/:id; useSession; jobsApi.byCreator; deleteJob; myPostsConfig; servicePriceLabel; ConfirmationDialog
+ * Used by:
+ *   - app/(workspace)/my-posts/page.tsx
+ */
+
 import { myPostsConfig } from '@/features/workspace/config/my-posts'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'

@@ -1,3 +1,11 @@
+/**
+ * Shows the site-wide 404 page when a JobAura route does not exist. The user sees a short message and a link back to /welcome.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - Next.js router: not-found for /
+ */
+
 import { ButtonLink, Card, CardContent } from '@/shared/ui'
 
 export default function NotFound() {

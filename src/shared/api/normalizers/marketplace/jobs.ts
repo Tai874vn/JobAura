@@ -1,3 +1,11 @@
+/**
+ * Normalizes raw backend responses for service jobs, categories, subcategories, and job comments, and builds request payloads for creating or updating them.
+ *
+ * Calls: asRecord; mapApiResponse; pickNumber; pickString; pickUser
+ * Used by:
+ *   - shared/api/normalizers/marketplace.ts
+ */
+
 import type { ApiResponse, Comment, CreateComment, CreateJob, Job, Subcategory, Category, PaginatedContent, UpdateJob } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickNumber, pickString, pickUser } from '../core'
 

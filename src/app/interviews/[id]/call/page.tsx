@@ -1,3 +1,12 @@
+/**
+ * Interview video call page (/interviews/[id]/call).
+ * Checks the interview ID, requires sign-in, and renders the call screen with a loading fallback.
+ *
+ * Calls: RequireAuth; CallScreen; CallLoading; positiveIntegerRouteParam
+ * Used by:
+ *   - Next.js router: page for /interviews/[id]/call
+ */
+
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'

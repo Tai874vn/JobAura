@@ -1,3 +1,11 @@
+/**
+ * Admin comments page at /admin/comments. Lets admins view and manage comments across the site.
+ *
+ * Calls: AdminResourcePage
+ * Used by:
+ *   - Next.js router: page for /admin/comments
+ */
+
 import type { Metadata } from 'next'
 import { AdminResourcePage } from '@/features/admin/components/admin-resource-page'
 

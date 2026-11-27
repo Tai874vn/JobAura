@@ -1,3 +1,14 @@
+/**
+ * Shared UI container components (Card, CardHeader, CardContent) that draw a bordered surface box with standard padding.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/empty-state.tsx
+ *   - shared/ui/index.ts
+ *   - shared/ui/route-error.tsx
+ *   - shared/ui/skeleton.tsx
+ */
+
 import * as React from 'react'
 import { cn } from '@/shared/lib/utils'
 

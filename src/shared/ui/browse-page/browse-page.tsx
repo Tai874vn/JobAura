@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Shared browse page layout used by listing pages such as hiring posts. Provides the hero, sticky search bar, optional explore chips, filter panel, and results header.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/ui/browse-page/index.ts
+ */
+
 import { Check, SlidersHorizontal } from 'lucide-react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { cn } from '@/shared/lib/utils'

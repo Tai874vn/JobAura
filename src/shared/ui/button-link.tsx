@@ -1,3 +1,12 @@
+/**
+ * Shared UI link styled as a button, wrapping Next.js Link with the shared button variants and sizes.
+ *
+ * Calls: buttonVariants; cn
+ * Used by:
+ *   - shared/ui/index.ts
+ *   - shared/ui/route-error.tsx
+ */
+
 import Link, { type LinkProps } from 'next/link'
 import type { AnchorHTMLAttributes } from 'react'
 import { cn } from '@/shared/lib/utils'

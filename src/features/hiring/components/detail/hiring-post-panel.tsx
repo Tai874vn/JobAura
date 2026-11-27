@@ -1,5 +1,15 @@
 "use client";
 
+/**
+ * Pieces of the hiring post detail page: HiringPostBody (the role text sections) and ManageApplicantsLink (the
+ * owner's link to the applicants). The page /hiring-posts/[id] imports only these two. HiringPostPanel, the side
+ * panel in this file, is not used by any page at the moment.
+ *
+ * Calls: ApplyPanel; AppliedAction; HiringPostAction; HiringPostAvatar; HiringPostBadges; HiringPostFacts; HiringPostSkills; formatPostedAgo
+ * Used by:
+ *   - features/hiring/components/detail/hiring-post-detail-view.tsx
+ */
+
 import { ExternalLink, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

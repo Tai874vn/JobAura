@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Connect button shown on each card in the Find candidates directory.
+ * Lets a signed-in user send, cancel, accept, or decline a connection request, or unfriend an existing connection.
+ *
+ * Calls: useConnectionControls; ConfirmationDialog
+ * Used by:
+ *   - features/candidates/components/candidate-directory-page.tsx
+ */
+
 import { Check, ChevronDown, Clock3, UserMinus, UserPlus, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useConnectionControls } from '@/features/connections/hooks/use-connection-controls'

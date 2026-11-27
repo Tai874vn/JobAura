@@ -1,3 +1,15 @@
+/**
+ * Parses and validates HTTP(S) URLs for external profile links and relative backend asset paths.
+ * Rejects non-HTTP schemes and returns undefined when a URL is empty or invalid.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/users/components/profile/profile-page.tsx
+ *   - shared/lib/seo-jsonld.ts
+ *   - shared/lib/seo.tsx
+ *   - shared/lib/utils.ts
+ */
+
 const URL_SCHEME = /^[a-z][a-z\d+.-]*:/i
 
 export function resolveHttpUrl(

@@ -1,3 +1,12 @@
+/**
+ * Pure helpers that decide which actions, dialogs, and outcome prompts a recruiter can use on an application.
+ * Computes remaining post openings and matches the backend's allowed status transitions.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ */
+
 import type { ApplicationDetail, HiringPost } from '@/shared/schemas'
 
 export type ApplicantAction =

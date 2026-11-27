@@ -1,3 +1,12 @@
+/**
+ * Validates uploaded image files for forms, posts, and contract attachments before upload.
+ * Checks that a file is JPEG, PNG, or WEBP and within the allowed size limit, returning a result or throwing a validation error.
+ *
+ * Calls: UserValidationError
+ * Used by:
+ *   - 10 files, for example features/contracts/api.ts, features/contracts/components/dialogs/submit-work-dialog.tsx, features/contracts/components/proposal/proposal-editor.tsx
+ */
+
 import { UserValidationError } from './errors'
 
 const imageUploadMimeTypes = new Set([

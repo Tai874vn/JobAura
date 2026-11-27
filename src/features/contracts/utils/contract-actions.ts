@@ -1,3 +1,16 @@
+/**
+ * Action and timing logic for the contract panel in the contracts feature.
+ * Decides which action buttons and dialogs the viewer can use, finds the current milestone or open change request, and computes the milestone countdown text.
+ *
+ * Calls: viewerRoleFor; visibleMilestoneActions
+ * Used by:
+ *   - features/contracts/components/contract/contract-action-bar.tsx
+ *   - features/contracts/components/contract/contract-milestones.tsx
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ *   - features/contracts/hooks/use-contract-actions.ts
+ */
+
 import type { ContractDetail, MilestoneView } from '@/shared/schemas'
 import { viewerRoleFor, visibleMilestoneActions } from './milestone-actions'
 

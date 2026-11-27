@@ -1,3 +1,16 @@
+/**
+ * Pure form state and validation helpers for the proposal and contract change editors.
+ * Prefills milestone rows from a service template, totals credits, checks fields against server rules, and converts between editor state and API bodies.
+ *
+ * Calls: contractsConfig; credits
+ * Used by:
+ *   - features/contracts/components/proposal/new-proposal-dialog.tsx
+ *   - features/contracts/components/proposal/proposal-editor.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ *   - features/contracts/utils/amendment-changes.ts
+ *   - features/jobs/components/detail/job-detail-view.tsx
+ */
+
 import { contractsConfig } from '@/features/contracts/config/contracts'
 import { credits } from '@/shared/lib/credits'
 import type { MilestoneStatus, ProposalVersionView, VersionBody } from '@/shared/schemas'

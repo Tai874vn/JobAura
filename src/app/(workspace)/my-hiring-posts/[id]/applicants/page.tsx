@@ -1,3 +1,11 @@
+/**
+ * Applicants review page at /my-hiring-posts/[id]/applicants. Validates the hiring post ID from the URL and lets signed-in employers and admins review applicants for that post.
+ *
+ * Calls: positiveIntegerRouteParam; RequireAuth; ApplicantsPage; ApplicantsPageSkeleton
+ * Used by:
+ *   - Next.js router: page for /my-hiring-posts/[id]/applicants
+ */
+
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'

@@ -1,3 +1,13 @@
+/**
+ * Maps a job category name to a matching icon for category chips and landing page links.
+ * Falls back to a generic shapes icon when no keyword matches.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/jobs/components/browse/job-category-nav.tsx
+ *   - features/jobs/components/home/home-page.tsx
+ */
+
 import {
   AudioLines,
   BarChart3,

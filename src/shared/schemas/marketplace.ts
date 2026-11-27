@@ -1,3 +1,12 @@
+/**
+ * Zod schemas for marketplace features: jobs, categories, hiring posts, job applications, interviews, candidate directory profiles, AI recommendations, and job comments.
+ *
+ * Calls: createHiringPostSchema; createJobSchema; profileSkillSchema; userProfileSchema; userSchema
+ * Used by:
+ *   - shared/schemas/domain.ts
+ *   - shared/schemas/types.ts
+ */
+
 import { z } from 'zod'
 // Form input rules defined in the feature config folders (edit them there):
 import { createHiringPostSchema } from '@/features/hiring/config/my-hiring-posts'

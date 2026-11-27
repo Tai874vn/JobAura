@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Hook that returns the current signed-in user, loading state, and auth flag. It waits for client hydration and checks for the CSRF cookie before requesting /api/auth/me.
+ *
+ * Calls: GET /api/auth/me; hasCsrfTokenCookie; queryKeys.me
+ * Used by:
+ *   - 44 files, for example features/admin/components/admin-dashboard.tsx, features/admin/components/admin-shell.tsx, features/auth/components/auth-form-layout.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import { useSyncExternalStore } from 'react'
 import { hasCsrfTokenCookie } from '@/shared/api/csrf'

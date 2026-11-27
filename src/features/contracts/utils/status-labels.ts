@@ -1,3 +1,16 @@
+/**
+ * Plain-English status label helpers for the contracts feature.
+ * Maps proposal statuses, contract statuses, contract end reasons, and milestone statuses to short display text.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/contracts/components/contract-list-item.tsx
+ *   - features/contracts/components/contract/contract-header.tsx
+ *   - features/contracts/components/contract/contract-milestones.tsx
+ *   - features/contracts/components/contract/milestone-stepper.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import type { ContractStatus, EndReason, MilestoneStatus, ProposalStatus } from '@/shared/schemas'
 
 /** The words for a proposal. An open one says whose turn it is ("Waiting for you" / "Waiting for Ann"). */

@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Main home feed page (/) for signed-in users.
+ * Displays the side rails, greeting, recommended jobs, post composer, an infinite-scroll post list with like/save/delete actions, and the discussion modal.
+ *
+ * Calls: GET /api/posts/feed; POST /api/posts; PUT /api/posts/:id/like; DELETE /api/posts/:id/like; PUT /api/saved/posts/:postId; DELETE /api/saved/posts/:postId; DELETE /api/posts/:id; useSession; LeftFeedRail; FeedGreeting; JobsForYou; PostComposer; FeedPostCard; RightFeedRail; PostDiscussionModal
+ * Used by:
+ *   - app/(feed)/page.tsx
+ *   - features/feed/components/role-home-page.tsx
+ */
+
 import { feedConfig } from '@/features/feed/config/feed'
 
 import { useInfiniteQuery, useMutation, useQueryClient, type InfiniteData, mutationOptions, type QueryClient } from '@tanstack/react-query'

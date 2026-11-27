@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Career, work history, and education fields for the resume editor and hiring forms. Lets users pick an occupation and specialty, add dated jobs, view counted years of experience, and choose a degree and field of study.
+ *
+ * Calls: GET /api/occupations/:code; GET /api/skill/fields-of-study; useOccupationTitle; OccupationPicker; SpecialtyPicker; occupationQuery; parseResumeJobs; resumeCareerProblems
+ * Used by:
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/workspace/components/settings/resume-settings-section.tsx
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'

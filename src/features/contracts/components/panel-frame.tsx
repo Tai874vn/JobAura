@@ -1,3 +1,14 @@
+/**
+ * Part of the contracts feature. Provides the scrollable detail panel frame with a mobile back link and a matching loading skeleton for proposal and contract panels.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/contracts-page.tsx
+ *   - features/contracts/components/contracts-skeleton.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'

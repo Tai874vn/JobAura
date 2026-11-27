@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Detail panel for one selected applicant on the recruiter's applicants page.
+ * Shows the applicant's resume, cover letter, interviews, timeline, and action buttons, plus dialogs for offers, rejections, interviews, and outcomes.
+ * Also exports a loading skeleton and an interview sorting helper.
+ *
+ * Calls: usePipelineMutation; pipelineApi; applicantActions; StatusBadge; InterviewCard; ApplicationTimeline; ConfirmActionDialog; RequestInterviewDialog
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicants-page.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ */
 
 import { ArrowLeft, MessageSquare, X } from 'lucide-react'
 import Link from 'next/link'

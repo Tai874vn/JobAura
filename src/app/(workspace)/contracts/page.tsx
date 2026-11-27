@@ -1,3 +1,11 @@
+/**
+ * Contracts page at /contracts. Lets signed-in users, employers, and admins view and manage their contracts, with a skeleton fallback while loading.
+ *
+ * Calls: RequireAuth; ContractsPage; ContractsPageSkeleton
+ * Used by:
+ *   - Next.js router: page for /contracts
+ */
+
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/components/require-auth'

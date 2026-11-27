@@ -1,3 +1,12 @@
+/**
+ * Provides pure helpers for the My hiring posts page (/my-hiring-posts), including URL filter reading and building, status filtering, sorting, pagination, summary stats, and applicant step chips. Works on the recruiter's loaded posts on the client.
+ *
+ * Calls: myHiringPostsConfig; applicantTabs
+ * Used by:
+ *   - features/hiring/components/my-posts/my-hiring-post-result-card.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import { myHiringPostsConfig } from '@/features/hiring/config/my-hiring-posts'
 import type { ApplicationStatus, HiringPost } from '@/shared/schemas'
 import { applicantTabs } from '@/features/hiring-pipeline/components/applicants/applicants-page'

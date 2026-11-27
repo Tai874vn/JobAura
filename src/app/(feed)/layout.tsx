@@ -1,3 +1,11 @@
+/**
+ * Shared layout for the feed route group at /. Renders the site header and footer, requires a candidate or admin session, and sends signed-out visitors to /welcome.
+ *
+ * Calls: SiteHeader; Footer; RequireAuth
+ * Used by:
+ *   - Next.js router: layout for /
+ */
+
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/components/require-auth'
 import { Footer } from '@/features/layout/components/footer'

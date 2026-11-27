@@ -1,4 +1,13 @@
 /**
+ * Builds Sentry error-tracking settings for the client, server, and edge runtimes.
+ * Picks the DSN, environment name, and trace or replay sample rates, turning sampling off outside production.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - instrumentation-client.ts
+ */
+
+/**
  * Default Sentry DSN (project reporting address) used when no environment
  * variable is set, so production deployments keep reporting errors out of the box.
  */

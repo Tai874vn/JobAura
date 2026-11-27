@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Part of the contracts list page. Shows one proposal or contract row with the other person, status badge, next action, due date, and total price.
+ *
+ * Calls: nextAction; proposalLabel; contractLabel; endReasonLine; formatPipelineDay; credits
+ * Used by:
+ *   - features/contracts/components/contracts-page.tsx
+ */
+
 import Link from 'next/link'
 import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { credits } from '@/shared/lib/credits'

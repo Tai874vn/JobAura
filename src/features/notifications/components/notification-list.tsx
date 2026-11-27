@@ -1,3 +1,11 @@
+/**
+ * Part of the notifications dropdown menu. Renders grouped notification rows with type icons, avatars, unread indicators, and a loading skeleton.
+ *
+ * Calls: notificationHeadline; notificationContext; notificationDetail; notificationActivityTime; formatNotificationTime; resolveAssetUrl; initials
+ * Used by:
+ *   - features/notifications/components/notification-bell.tsx
+ */
+
 import {
   BriefcaseBusiness,
   CalendarClock,

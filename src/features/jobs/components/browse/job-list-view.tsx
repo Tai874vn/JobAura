@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Main client view for the candidate portfolios browse page (/jobs).
+ * Shows the hero, keyword search bar, explore chips, category navigation, filter sidebar, sorted result cards, pagination, and a proposal dialog.
+ *
+ * Calls: GET /api/categories; GET /api/jobs/paginated-search; useSession; useQuery; JobCategoryNav; JobResultCard; JobResultsSkeleton; NewProposalDialog
+ * Used by:
+ *   - app/(marketplace)/jobs/page.tsx
+ */
+
 import { jobsConfig as config } from '@/features/jobs/config/jobs'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { replaceUrlInPlace } from '@/shared/lib/replace-url'

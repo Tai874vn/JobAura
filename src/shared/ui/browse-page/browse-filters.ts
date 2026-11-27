@@ -1,3 +1,11 @@
+/**
+ * Shared filter helpers for browse pages such as hiring posts, jobs, and candidates. Parses and toggles comma-separated URL filter values, looks up facet counts, and computes the shown item range for pagination.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/ui/browse-page/index.ts
+ */
+
 /** How many items one choice finds, as the backend's facet endpoints send it. */
 export type ChoiceCount = { value: string; count: number }
 

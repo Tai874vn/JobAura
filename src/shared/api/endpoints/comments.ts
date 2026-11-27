@@ -1,3 +1,11 @@
+/**
+ * Defines API calls to list, create, and delete job service reviews (comments), normalizing responses and shaping payloads.
+ *
+ * Calls: apiClient; GET /api/comments; POST /api/comments; DELETE /api/comments/:id; normalizeComment; normalizeCommentsResponse; toCommentPayload
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse, Comment, CreateComment } from '@/shared/schemas'
 import { normalizeComment, normalizeCommentsResponse, toCommentPayload } from '../normalizers'

@@ -1,3 +1,14 @@
+/**
+ * Pure helpers and filter logic for the /jobs candidate portfolios browse page.
+ * Reads and builds URL query parameters, formats price and work-mode labels, decides card actions per viewer, and checks when the server can prefetch.
+ *
+ * Calls: jobsConfig; credits; getSellerId; isPortfolioPost; servicePriceLabel; workModeLine
+ * Used by:
+ *   - app/(marketplace)/jobs/page.tsx
+ *   - features/jobs/components/browse/job-list-view.tsx
+ *   - features/jobs/components/browse/job-result-card.tsx
+ */
+
 import { jobsConfig } from '@/features/jobs/config/jobs'
 import { credits } from '@/shared/lib/credits'
 import type { Category, Job, JobSearchParams } from '@/shared/schemas'

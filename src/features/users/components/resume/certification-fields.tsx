@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Form fields for one certification entry in profile settings. Lets users edit the name, issuer, type, credential ID, issue and expiration dates, URL, and linked skills, and displays validation errors.
+ *
+ * Calls: SkillPicker; certificationCategories
+ * Used by:
+ *   - features/workspace/components/settings/profile-settings-editor.tsx
+ */
+
 import { Trash2 } from 'lucide-react'
 import { Button, Input, Select } from '@/shared/ui'
 import { SkillPicker } from './skill-picker'

@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Header notification bell and dropdown panel for the notifications feature. Keeps the unread count updated in real time, loads recent unread and read items when opened, marks items read, and opens the target page or chat room on click.
+ *
+ * Calls: GET /api/notifications; GET /api/notifications/unread-count; PATCH /api/notifications/:id/read; PATCH /api/notifications/read-all; useSession; useRealtimeConnection; useChatStore; NotificationSection
+ * Used by:
+ *   - features/layout/components/site-header.tsx
+ */
+
 import { useEffect, useRef, useState } from "react";
 import {
   useMutation,

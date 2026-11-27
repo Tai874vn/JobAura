@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Renders the public Hiring posts browse page (/hiring-posts) with search, quick explore chips, filters, sorting, role cards, and pagination. Reads and writes all filters in the URL so filtered results can be shared.
+ *
+ * Calls: GET /api/hiring-posts; GET /api/hiring-posts/facets; GET /api/hiring-posts/locations; useSession; BrowsePage; HiringPostResultCard; HiringPostResultSkeleton; readHiringPostFilters
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/page.tsx
+ */
+
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { replaceUrlInPlace } from "@/shared/lib/replace-url";
 import { ArrowDownWideNarrow, BriefcaseBusiness, ListChecks, ListOrdered, MapPin, Search } from "lucide-react";

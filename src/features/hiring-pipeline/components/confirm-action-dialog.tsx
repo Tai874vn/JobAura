@@ -1,5 +1,16 @@
 'use client'
 
+/**
+ * Part of the hiring pipeline and hiring posts features. Shows a confirmation dialog with an optional note box before actions like rejecting, withdrawing, or cancelling an interview.
+ *
+ * Calls: useDialogFocus; DialogPortal
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ *   - features/hiring-pipeline/components/interview-card.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'

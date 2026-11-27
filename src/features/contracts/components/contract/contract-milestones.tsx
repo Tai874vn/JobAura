@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Milestone and submitted-work sections of the contract detail panel on /contracts.
+ * Shows the milestone stepper, the current active milestone card with a live countdown and action buttons, and the list of submissions with images, links, and client feedback.
+ *
+ * Calls: MilestoneStepper; MilestoneActionBar; milestoneClock; milestoneLabel; formatPipelineDay; formatPipelineTime; credits
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ */
 
 import { useEffect, useState } from 'react'
 import { formatPipelineDay, formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'

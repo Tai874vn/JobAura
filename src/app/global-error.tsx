@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Global error boundary for the root layout (/).
+ * Reports the error to Sentry and renders a standalone HTML fallback page with retry and home links.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - Next.js router: global-error for /
+ */
+
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
 

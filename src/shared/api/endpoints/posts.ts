@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for the social feed: loading posts and user stats, creating and deleting posts, liking, and reading or writing post comments and replies.
+ *
+ * Calls: apiClient; uploadClient; assertValidImageFile; postCommentContentSchema; GET /api/posts/feed; POST /api/posts; normalizeFeedResponse; normalizePostComment
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient, uploadClient } from '../client'
 import { normalizeFeedPost, normalizeFeedResponse, normalizePostComment } from '../normalizers'
 import { assertValidImageFile } from '@/shared/lib/file-validation'

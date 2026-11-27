@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Shared UI help tooltip triggered by a small "i" button on hover, keyboard focus, or click. Portals the bubble into document.body and clamps its horizontal position so parent cards never clip it.
+ *
+ * Calls: DialogPortal; cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { useEffect, useId, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { Info } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'

@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Hook for loading the signed-in user's own resume when viewing their own profile or calculating profile strength. Returns null when disabled so cached resume data never leaks onto another member's profile.
+ *
+ * Calls: GET /api/users/me/resume; useSession; usersApi.myResume; queryKeys.myResume
+ * Used by:
+ *   - features/users/components/profile/profile-page.tsx
+ *   - features/users/utils/profile-strength.ts
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from '@/features/auth/hooks/use-session'
 import { usersApi } from '@/shared/api/endpoints/users'

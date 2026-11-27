@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Creates the shared axios clients (`apiClient` for JSON and `uploadClient` for file uploads) used across the app to talk to the backend. Adds the CSRF header on requests, refreshes expired access tokens once on 401 errors, and clears the local session when refresh fails.
+ *
+ * Calls: POST /api/auth/refresh; resolveClientOrigin; csrfTokenForMethod; clearCsrfTokenCookie; getQueryClient; resetClientSession; useChatStore; getSessionExpiredRedirect
+ * Used by:
+ *   - 17 files, for example features/contracts/api.ts, features/hiring-pipeline/api.ts, features/occupations/api.ts
+ */
+
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { resolveClientOrigin } from '@/shared/config/client-origin'
 import { env } from '@/shared/config/env'

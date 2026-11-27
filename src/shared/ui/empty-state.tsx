@@ -1,3 +1,11 @@
+/**
+ * Shared UI placeholder card shown when a list or page has no items. Displays an optional icon, title, short description, and action button or link.
+ *
+ * Calls: Card; CardContent; cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/utils'
 import { Card, CardContent } from './card'

@@ -1,8 +1,11 @@
 /**
- * The header for each role, in order of what that role comes to do:
- * candidates find hiring posts and post a portfolio; recruiters manage their posts and find candidates;
- * visitors browse both before signing up.
+ * Navigation config and active-link helper for the site header. Builds the main links, account menu links, and search target for each role (admin, employer, candidate, and visitor), and checks which link matches the current page.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/layout/components/site-header.tsx
  */
+
 // `wide` links show in the header bar only from 1280px; below that they stay in the account menu.
 export type NavLink = { href: string; label: string; wide?: boolean }
 

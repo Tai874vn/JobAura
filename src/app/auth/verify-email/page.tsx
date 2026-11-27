@@ -1,3 +1,12 @@
+/**
+ * Email verification page (/auth/verify-email).
+ * Confirms the user's email address and shows the verification result.
+ *
+ * Calls: VerifyEmailView
+ * Used by:
+ *   - Next.js router: page for /auth/verify-email
+ */
+
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { VerifyEmailView } from '@/features/auth/components/email-flows'

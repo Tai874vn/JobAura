@@ -1,3 +1,13 @@
+/**
+ * Config constants for the Find candidates (/candidates) directory page.
+ * Sets page size, search placeholders and searchable fields, popular skill chip limits, and sidebar filter options.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/candidates/components/candidate-directory-page.tsx
+ *   - features/candidates/utils/candidate-directory.ts
+ */
+
 // @find candidates page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /candidates (recruiters search candidate profiles)

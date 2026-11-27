@@ -1,3 +1,11 @@
+/**
+ * Vitest global test setup. Replaces global localStorage with an in-memory storage implementation and clears it before each test.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - Vitest: setup file for every test (vitest config)
+ */
+
 import { beforeEach } from 'vitest'
 
 const createMemoryStorage = (): Storage => {

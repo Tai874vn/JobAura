@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Hook that manages the live /chat Socket.IO connection for the chat drawer.
+ * Listens for new messages, read receipts, typing updates, and online presence, syncs room joins and read state, and sends messages and throttled typing events.
+ *
+ * Calls: useRealtimeConnection; useChatStore; createChatConnectHandler; handleIncomingChatMessage; mergeRoomMessages; sanitizeUserMessage
+ * Used by:
+ *   - features/chat/components/chat-shell.tsx
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { Socket } from 'socket.io-client'

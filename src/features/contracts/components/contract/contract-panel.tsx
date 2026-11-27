@@ -1,6 +1,13 @@
 'use client'
 
-
+/**
+ * Full detail panel for one contract on /contracts.
+ * Combines the header, milestones, open change request and end request cards, action buttons, submitted work, event history, and contract dialogs.
+ *
+ * Calls: useContractActions; PanelFrame; ContractHeader; ContractMilestones; ContractActionBar; ContractTimeline; ContractDialogs; contractActions
+ * Used by:
+ *   - features/contracts/components/contracts-page.tsx
+ */
 
 import { openChatEventName } from '@/features/chat/utils/chat-data'
 import type { ContractDetail, AmendmentView } from '@/shared/schemas'

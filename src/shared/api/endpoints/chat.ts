@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for the chat feature: listing rooms, reading room details and messages, starting a private chat, and creating a room.
+ *
+ * Calls: apiClient; GET /api/chat/rooms; GET /api/chat/rooms/:id; GET /api/chat/rooms/:id/messages; GET /api/chat/start/:userId; POST /api/chat/rooms
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse, ChatMessage, ChatRoom } from '@/shared/schemas'
 

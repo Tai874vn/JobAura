@@ -1,3 +1,16 @@
+/**
+ * Loading skeletons for the split-pane hiring pipeline pages.
+ * Provides placeholders for the application list, the recruiter applicants page, and the candidate My Applications page while data or routes load.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/(workspace)/my-applications/page.tsx
+ *   - app/(workspace)/my-hiring-posts/[id]/applicants/page.tsx
+ *   - features/hiring-pipeline/components/applicants/applicants-page.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-applications-page.tsx
+ *   - features/workspace/components/workspace-require-auth.tsx
+ */
+
 import { Skeleton } from '@/shared/ui'
 
 /** Five bordered card placeholders mirroring ApplicantListItem / MyApplicationListItem rows. */

@@ -1,3 +1,12 @@
+/**
+ * Server-side HTTP helper for calling the JobAura backend from Next.js server code.
+ * Sends requests with optional session cookies, blocks shared caching of private responses, and reports 5xx or network errors to Sentry.
+ *
+ * Calls: getServerEnv; RequestError
+ * Used by:
+ *   - 13 files, for example app/(marketplace)/hiring-posts/[id]/page.tsx, app/(marketplace)/hiring-posts/page.tsx, app/(marketplace)/jobs/page.tsx
+ */
+
 import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { getServerEnv } from '@/shared/config/env'

@@ -1,3 +1,11 @@
+/**
+ * Defines hiring post filter types, sort options, and API calls for browsing open roles, managing a recruiter's posts, predicting seniority, and handling applications.
+ *
+ * Calls: apiClient; definedParams; GET /api/hiring-posts; POST /api/hiring-posts; POST /api/hiring-posts/:id/applications; normalizeHiringPost; normalizePaginatedHiringPostsResponse; normalizePaginatedHiringApplicationsResponse
+ * Used by:
+ *   - 7 files, for example app/(marketplace)/hiring-posts/page.tsx, features/hiring-pipeline/components/applicants/applicants-page.tsx, features/hiring/components/browse/hiring-posts-page.tsx
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse, ApplyHiringPost, CreateHiringPost, HiringApplication, HiringPost, PaginatedContent, PaginationParams } from '@/shared/schemas'
 import { normalizeHiringApplication, normalizeHiringPost, normalizePaginatedHiringApplicationsResponse, normalizePaginatedHiringPostsResponse } from '../normalizers'

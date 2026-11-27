@@ -1,5 +1,16 @@
 'use client'
 
+/**
+ * Shared React Query mutation hook for running hiring pipeline actions on one application.
+ * Updates cached application details on success, refreshes related lists, and shows toast errors or re-fetches stale data on 400 or 409 responses.
+ *
+ * Calls: useMutation; useQueryClient; useSession; pipelineKeys; getErrorMessage
+ * Used by:
+ *   - features/contracts/hooks/use-contract-mutation.ts
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { toast } from 'sonner'

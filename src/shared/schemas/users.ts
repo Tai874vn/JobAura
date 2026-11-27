@@ -1,3 +1,14 @@
+/**
+ * Zod schemas for user accounts, public profiles (skills, certifications, portfolio items), resume data and occupation-year breakdowns, profile updates, and auth forms.
+ *
+ * Calls: accountRoles; signupRoles; signInSchema; signUpSchema
+ * Used by:
+ *   - shared/schemas/domain.ts
+ *   - shared/schemas/marketplace.ts
+ *   - shared/schemas/social.ts
+ *   - shared/schemas/types.ts
+ */
+
 import { z } from 'zod'
 import { accountRoles, signupRoles } from '@/shared/lib/roles'
 

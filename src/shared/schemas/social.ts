@@ -1,3 +1,12 @@
+/**
+ * Zod schemas for social features: feed posts, post comments, user connections, chat rooms and messages, and in-app notifications.
+ *
+ * Calls: profileSkillSchema
+ * Used by:
+ *   - shared/schemas/domain.ts
+ *   - shared/schemas/types.ts
+ */
+
 import { z } from 'zod'
 import { profileSkillSchema } from './users'
 

@@ -1,6 +1,10 @@
 /**
- * Pure helpers for keeping the keyboard inside an open dialog (a "focus trap").
- * They work on plain lists, so they can be tested without a browser.
+ * Pure helpers for keeping keyboard focus inside an open modal dialog (a focus trap). They work on plain lists so they can be tested without a browser, picking initial focus, wrapping Tab movement, and checking the topmost stacked dialog.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/ui/dialog-portal.tsx
+ *   - shared/ui/index.ts
  */
 
 /** CSS selector for the elements a keyboard user can reach with Tab. */

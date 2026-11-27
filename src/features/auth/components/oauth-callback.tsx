@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Renders the /auth/callback page after Google sign-in returns. It clears any old local session, checks /api/auth/me, and redirects to the target page or shows an error.
+ *
+ * Calls: GET /api/auth/me; useChatStore; resetClientSession; setCachedSession; broadcastSessionChange; consumeOAuthNextPath; getSignedInRedirect
+ * Used by:
+ *   - app/auth/callback/page.tsx
+ */
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'

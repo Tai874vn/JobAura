@@ -1,3 +1,12 @@
+/**
+ * Forgot password page (/auth/forgot-password).
+ * Shows a form so users can request a password reset link by email.
+ *
+ * Calls: ForgotPasswordForm
+ * Used by:
+ *   - Next.js router: page for /auth/forgot-password
+ */
+
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { ForgotPasswordForm } from '@/features/auth/components/email-flows'

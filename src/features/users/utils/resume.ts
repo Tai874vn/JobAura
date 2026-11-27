@@ -1,3 +1,15 @@
+/**
+ * Resume draft constants, file validation, and CV text extraction helpers. Validates PDF/DOC/DOCX uploads, extracts fields from PDF, DOCX, or JSON files, and converts between form drafts and API import payloads.
+ *
+ * Calls: UserValidationError; parseResumeJobs; savedResumeJobs; serializeResumeJobs
+ * Used by:
+ *   - features/users/components/profile/profile-content.tsx
+ *   - features/users/components/profile/profile-page.tsx
+ *   - features/users/components/resume/resume-career-fields.tsx
+ *   - features/workspace/components/settings/resume-settings-editor.tsx
+ *   - features/workspace/components/settings/resume-settings-section.tsx
+ */
+
 import { UserValidationError } from '@/shared/lib/errors'
 import type { ImportResume, ResumeData, UserResume } from '@/shared/schemas'
 import { parseResumeJobs, savedResumeJobs, serializeResumeJobs } from './resume-career'

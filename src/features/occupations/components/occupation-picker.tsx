@@ -1,5 +1,17 @@
 'use client'
 
+/**
+ * Searchable occupation picker and title hook for the occupations feature. Lets users search ESCO occupations by title, alternate label, or specialty and select one result from the dropdown list.
+ *
+ * Calls: GET /api/occupations; GET /api/occupations/:code; occupationsApi.search; occupationQuery; occupationKeys; occupationLabel; LiveStatus
+ * Used by:
+ *   - features/candidates/components/candidate-directory-page.tsx
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/hiring/hooks/use-post-occupation.ts
+ *   - features/users/components/resume/resume-career-fields.tsx
+ *   - features/workspace/components/settings/resume-settings-section.tsx
+ */
+
 import { useEffect, useId, useRef, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { X } from 'lucide-react'

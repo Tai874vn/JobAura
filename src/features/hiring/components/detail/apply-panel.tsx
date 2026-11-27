@@ -1,5 +1,16 @@
 "use client";
 
+/**
+ * Renders the inline application form where a candidate writes an optional message and applies to a hiring post. Checks whether the candidate has a resume on file and shows a notice with a link to add one if missing.
+ *
+ * Calls: GET /api/users/me/resume; POST /api/hiring-posts/:id/applications; useSession
+ * Used by:
+ *   - features/hiring/components/browse/hiring-post-card.tsx
+ *   - features/hiring/components/browse/hiring-post-result-card.tsx
+ *   - features/hiring/components/detail/hiring-post-detail-view.tsx
+ *   - features/hiring/components/detail/hiring-post-panel.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileWarning, Send } from "lucide-react";
 import { useId, useState } from "react";

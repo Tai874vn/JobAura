@@ -1,3 +1,13 @@
+/**
+ * Pure helpers for the online interview video call state and media device errors.
+ * Maps token and connection status to a screen state and builds plain-English notices when a camera or microphone fails to start.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/hiring-pipeline/components/interview-call/call-screen.tsx
+ *   - features/hiring-pipeline/components/interview-call/call-stage.tsx
+ */
+
 export type CallState = 'preparing' | 'live' | 'unavailable'
 
 /**

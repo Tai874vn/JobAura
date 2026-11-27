@@ -1,3 +1,11 @@
+/**
+ * React Query cache helpers for the notifications feature. Adds incoming live notifications, marks one or all cached items as read, and sorts unread and recent items first.
+ *
+ * Calls: queryKeys.notifications; notificationTimeValue
+ * Used by:
+ *   - features/notifications/components/notification-bell.tsx
+ */
+
 import type { QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { ApiResponse, AppNotification, NotificationPage } from '@/shared/schemas'

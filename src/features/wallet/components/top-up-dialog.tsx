@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Top-up modal dialog for the /wallet page.
+ * Lets the user enter or pick a credit amount, checks limits, shows the test-mode USD total, and redirects to Stripe Checkout.
+ *
+ * Calls: POST /api/wallet/top-ups; useDialogFocus; walletApi.startTopUp; openCheckout; walletConfig; credits; DialogPortal
+ * Used by:
+ *   - features/wallet/components/wallet-page.tsx
+ */
+
 import { walletConfig } from '@/features/wallet/config/wallet'
 
 import { useMutation } from '@tanstack/react-query'

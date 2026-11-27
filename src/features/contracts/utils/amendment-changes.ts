@@ -1,3 +1,15 @@
+/**
+ * Helper functions for contract change requests (amendments) in the contracts feature.
+ * Builds the starting editor state, converts edits into the server payload, describes changes in plain words, and reads credit shortage messages.
+ *
+ * Calls: formatPipelineDay; credits; toDayString; toVersionBody
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/dialogs/amendment-dialog.tsx
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ *   - features/contracts/hooks/use-contract-actions.ts
+ */
+
 import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { credits } from '@/shared/lib/credits'
 import type { AmendmentChange, ContractDetail, MilestoneStatus } from '@/shared/schemas'

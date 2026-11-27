@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Credit balance pill shown in the site header for signed-in users.
+ * Loads the available credit balance, links to /wallet, shows a loading skeleton first, and hides itself on error.
+ *
+ * Calls: GET /api/wallet; useSession; walletApi.summary; walletKeys; credits
+ * Used by:
+ *   - features/layout/components/site-header.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { useSession } from '@/features/auth/hooks/use-session'

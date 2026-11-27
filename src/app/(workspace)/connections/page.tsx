@@ -1,3 +1,11 @@
+/**
+ * Connections page at /connections. Shows the signed-in user's connections and network requests.
+ *
+ * Calls: ConnectionsPage
+ * Used by:
+ *   - Next.js router: page for /connections
+ */
+
 import type { Metadata } from 'next'
 import { ConnectionsPage } from '@/features/connections/components/connections-page'
 

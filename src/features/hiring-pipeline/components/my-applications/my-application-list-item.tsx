@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Part of the candidate My Applications page. Shows one application card with company details, status badge, applied date, next interview time, and an action-needed flag.
+ *
+ * Calls: StatusBadge; nextBooked; needsAction; formatApplicantDay; formatPipelineTime
+ * Used by:
+ *   - features/hiring-pipeline/components/my-applications/my-applications-page.tsx
+ */
+
 import Link from 'next/link'
 import { cn } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'

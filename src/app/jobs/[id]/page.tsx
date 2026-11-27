@@ -1,3 +1,12 @@
+/**
+ * Service detail page (/jobs/[id]).
+ * Loads a service listing on the server for SEO metadata and structured data, then shows the detail view and comments.
+ *
+ * Calls: GET /api/jobs/details/[id]; serverRequest; resolveServerEntity; normalizeJobResponse; JobDetailView; serviceJsonLd; JsonLd; positiveIntegerRouteParam
+ * Used by:
+ *   - Next.js router: page for /jobs/[id]
+ */
+
 import { cache } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

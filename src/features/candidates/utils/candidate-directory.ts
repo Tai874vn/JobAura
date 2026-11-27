@@ -1,3 +1,13 @@
+/**
+ * Pure helper functions and filter types for the Find candidates (/candidates) page.
+ * Reads and builds filter URLs, maps filters to API query params, formats candidate career and degree facts, decides card actions, and checks out-of-range pages.
+ *
+ * Calls: candidatesConfig; occupationLabel; formatCredit; formatYears
+ * Used by:
+ *   - features/candidates/components/candidate-directory-page.tsx
+ *   - features/candidates/components/candidate-result-card.tsx
+ */
+
 import { candidatesConfig } from '@/features/candidates/config/candidates'
 import { occupationLabel } from '@/features/occupations/api'
 import { formatCredit, formatYears } from '@/features/users/utils/resume-career'

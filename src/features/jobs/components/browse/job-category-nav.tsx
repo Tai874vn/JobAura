@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Category filter bar for the candidate portfolios browse page (/jobs).
+ * Shows an "All" chip plus category chips, hiding extra categories behind a "Show more" toggle.
+ *
+ * Calls: jobsConfig; categoryIcon
+ * Used by:
+ *   - features/jobs/components/browse/job-list-view.tsx
+ */
+
 import { jobsConfig } from '@/features/jobs/config/jobs'
 import { ChevronDown, LayoutGrid } from 'lucide-react'
 import { useId, useState } from 'react'

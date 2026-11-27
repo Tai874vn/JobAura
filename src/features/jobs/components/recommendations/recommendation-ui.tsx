@@ -1,3 +1,15 @@
+/**
+ * Shared display pieces for AI match scores across recommendations and previews.
+ * Formats a score as a percentage and renders the score number with a thin progress bar and optional match label.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/feed/components/jobs-for-you.tsx
+ *   - features/jobs/components/home/home-page.tsx
+ *   - features/jobs/components/home/shortlist-preview.tsx
+ *   - features/jobs/components/recommendations/recommended-jobs-page.tsx
+ */
+
 import type { RecommendationLabel } from "@/shared/schemas";
 import { cn } from "@/shared/lib/utils";
 

@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Part of the contracts and proposals feature. Renders the form for writing a new proposal, counter-offer, or contract change request with brief, links, images, deadline, and milestones.
+ *
+ * Calls: contractsApi.uploadImage; editorErrors; editorTotal; toVersionBody; blankRow; isRowClosed; credits; reportServerError
+ * Used by:
+ *   - features/contracts/components/dialogs/amendment-dialog.tsx
+ *   - features/contracts/components/proposal/new-proposal-dialog.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import { ArrowDown, ArrowUp, ImagePlus, Plus, Trash2, X } from 'lucide-react'
 import Image from 'next/image'
 import { useRef, useState } from 'react'

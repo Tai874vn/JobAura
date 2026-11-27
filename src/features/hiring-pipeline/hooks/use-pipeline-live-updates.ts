@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Real-time listener that refreshes hiring pipeline and hiring post queries when a pipeline notification arrives over the websocket.
+ * Exports both the hook and a renderless component mounted in the site header for signed-in users.
+ *
+ * Calls: useSession; useRealtimeConnection; useQueryClient
+ * Used by:
+ *   - features/layout/components/site-header.tsx
+ */
+
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useRealtimeConnection } from '@/features/auth/components/realtime-provider'

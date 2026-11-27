@@ -1,3 +1,11 @@
+/**
+ * Public landing page at /welcome. Renders the JobAura home page along with organization, website, and FAQ structured data for search engines.
+ *
+ * Calls: HomePage; landingFaqs; buildPageMetadata; JsonLd; faqJsonLd; organizationJsonLd; websiteJsonLd
+ * Used by:
+ *   - Next.js router: page for /welcome
+ */
+
 import type { Metadata } from 'next'
 import { HomePage } from '@/features/jobs/components/home/home-page'
 import { landingFaqs } from '@/features/jobs/components/home/faq'

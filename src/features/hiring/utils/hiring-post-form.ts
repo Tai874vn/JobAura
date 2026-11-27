@@ -1,3 +1,12 @@
+/**
+ * Handles draft state, validation, and API payload building for the hiring post create and edit form. Also formats a post's occupation label and exposes form choice lists from config.
+ *
+ * Calls: myHiringPostsConfig; MAX_HIRING_OPENINGS; createHiringPostSchema; occupationLabel
+ * Used by:
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/hiring/hooks/use-post-occupation.ts
+ */
+
 import { MAX_HIRING_OPENINGS, myHiringPostsConfig } from '@/features/hiring/config/my-hiring-posts'
 import { occupationLabel } from '@/features/occupations/api'
 import { createHiringPostSchema, type CreateHiringPost, type HiringPost } from '@/shared/schemas'

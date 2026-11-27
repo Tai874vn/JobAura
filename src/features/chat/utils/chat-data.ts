@@ -1,3 +1,17 @@
+/**
+ * Shared chat data and custom event helpers for the chat drawer and contract panels.
+ * Checks when room history needs to load, merges fetched and live messages without duplicates, and parses jobaura:open-chat event payloads.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/chat/components/chat-shell.tsx
+ *   - features/chat/components/lazy-chat-shell.tsx
+ *   - features/chat/hooks/use-chat-room-selection.ts
+ *   - features/chat/hooks/use-chat-socket.ts
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 export function shouldLoadRoomMessages(
   activeRoomId: number | null,
   messagesByRoom: Record<number, unknown[]>

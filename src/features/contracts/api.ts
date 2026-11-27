@@ -1,3 +1,12 @@
+/**
+ * API client for the Contracts feature, covering proposals, contracts, milestones, change requests, end requests, image uploads, and reviews.
+ * Parses and validates every response with Zod schemas so screens only receive valid data.
+ *
+ * Calls: apiClient; uploadClient; contractKeys; definedParams; assertValidImageFile; contract and proposal schemas
+ * Used by:
+ *   - 7 files, for example features/contracts/components/contracts-page.tsx, features/contracts/components/dialogs/submit-work-dialog.tsx, features/contracts/components/proposal/new-proposal-dialog.tsx
+ */
+
 import { apiClient, uploadClient } from '@/shared/api/client'
 import { definedParams } from '@/shared/api/endpoints/params'
 import { contractKeys } from '@/shared/api/query-keys'

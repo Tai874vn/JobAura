@@ -1,3 +1,14 @@
+/**
+ * Loading placeholder skeletons for the /jobs browse page.
+ * Exports card-list placeholders matching JobResultCard and a full-page fallback matching the browse layout.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/(marketplace)/jobs/loading.tsx
+ *   - app/(marketplace)/jobs/page.tsx
+ *   - features/jobs/components/browse/job-list-view.tsx
+ */
+
 import { Skeleton } from '@/shared/ui'
 
 /** Loading placeholders mirroring JobResultCard (avatar, title, price, summary, footer actions). */

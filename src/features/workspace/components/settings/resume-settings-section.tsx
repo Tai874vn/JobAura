@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Form and live preview layout for the Resume tab on /settings.
+ * Renders career, skill, and CV upload fields, an unsaved-changes bar, and a sticky preview card with AI seniority status and reasons.
+ *
+ * Calls: GET /api/occupations/:code; useOccupationTitle; occupationQuery; ResumeCareerFields; SkillListEditor; UnsavedChangesBar; resumeCareerProblems; resumeAiStatus
+ * Used by:
+ *   - features/workspace/components/settings/resume-settings-editor.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import { CheckCircle2, FileText, ListOrdered } from 'lucide-react'
 import type { UserResume } from '@/shared/schemas'

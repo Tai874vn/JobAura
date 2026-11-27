@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Part of the contracts feature. Shows a dialog to request or accept ending a contract early, with an optional note and a pay-or-refund choice when work awaits review.
+ *
+ * Calls: useDialogFocus; DialogPortal
+ * Used by:
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ */
+
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { EndChoice } from '@/shared/schemas'

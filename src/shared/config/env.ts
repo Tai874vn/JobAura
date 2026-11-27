@@ -1,3 +1,17 @@
+/**
+ * Reads and validates the required API environment variables for client and server code.
+ * Checks that API base URLs are valid HTTP(S) origins with no path, query, or credentials.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/auth/components/auth-forms.tsx
+ *   - features/auth/components/realtime-provider.tsx
+ *   - shared/api/client.ts
+ *   - shared/api/server-proxy.ts
+ *   - shared/api/server.ts
+ *   - shared/lib/utils.ts
+ */
+
 function requireValue(name: string, value: string | undefined) {
   const normalized = value?.trim()
   if (!normalized) {

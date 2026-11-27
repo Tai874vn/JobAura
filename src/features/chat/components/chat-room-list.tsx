@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Conversation list panel on the left side of the chat drawer.
+ * Displays each chat room with online status, last message preview, time, and unread count badge, plus loading, empty, and retry states.
+ *
+ * Calls: getErrorMessage
+ * Used by:
+ *   - features/chat/components/chat-shell.tsx
+ */
+
 import { cn, getErrorMessage } from '@/shared/lib/utils'
 import type { ChatRoom } from '@/shared/schemas'
 import { Avatar, Button, Skeleton } from '@/shared/ui'

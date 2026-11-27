@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Renders the connection action buttons (connect, accept, decline, cancel, unfriend) and a Message button for one user on a profile or candidate card.
+ * Also manages the unfriend confirmation dialog and opening a direct chat room.
+ *
+ * Calls: GET /api/chat/start/:userId; useConnectionControls; useChatStore; ConfirmationDialog
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/candidate-results-panel.tsx
+ *   - features/users/components/profile/profile-page.tsx
+ */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, Clock3, MessageCircle, UserMinus, UserPlus, X } from 'lucide-react'
 import { toast } from 'sonner'

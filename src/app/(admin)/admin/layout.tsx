@@ -1,3 +1,11 @@
+/**
+ * Shared layout for all pages under /admin. Checks that the signed-in user is an admin before showing the admin shell, and displays a neutral skeleton while checking access.
+ *
+ * Calls: RequireAuth; AdminShell
+ * Used by:
+ *   - Next.js router: layout for /admin
+ */
+
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/components/require-auth'
 import { AdminShell } from '@/features/admin/components/admin-shell'

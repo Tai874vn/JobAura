@@ -1,3 +1,12 @@
+/**
+ * Part of the contracts and proposals detail panels. Turns contract history events into plain sentences and renders the timeline list.
+ *
+ * Calls: formatPipelineTime; credits
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import type { ContractEventView } from '@/shared/schemas'
 import { credits } from '@/shared/lib/credits'
 import { formatPipelineTime } from '@/features/hiring-pipeline/utils/format-time'

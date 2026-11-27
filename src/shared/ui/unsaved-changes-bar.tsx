@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Shared floating save bar and navigation guard for forms with unsaved edits, such as settings pages.
+ * Slides up with Reset and Save actions, blocks leaving the page or closing the tab while dirty, and shakes in red if the user tries to leave.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/shared/lib/utils'

@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Full-screen video call page for an online job interview.
+ * Loads the application and call token, polls to detect when the interview ends, renders the video stage, and handles leaving or marking the interview done.
+ *
+ * Calls: GET /api/interviews/upcoming; GET /api/applications/:id; POST /api/interviews/:id/call-token; POST /api/interviews/:id/complete; useSession; useDialogFocus; CallStage; CallLoading; callState
+ * Used by:
+ *   - app/interviews/[id]/call/page.tsx
+ */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'

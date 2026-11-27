@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Part of the service job creation and edit form. Lets a freelancer define optional default milestone steps with percentage shares that add up to 100%.
+ *
+ * Calls: blankTemplateRow; templateErrors; templateShareTotal; errorForField
+ * Used by:
+ *   - features/jobs/components/form/job-form.tsx
+ */
+
 import { Plus, Trash2 } from 'lucide-react'
 import { useRef } from 'react'
 import { Button, Input } from '@/shared/ui'

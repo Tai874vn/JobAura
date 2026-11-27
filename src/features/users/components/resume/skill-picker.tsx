@@ -1,5 +1,16 @@
 'use client'
 
+/**
+ * Skill search picker, skill list editor, and level selector used in resume, profile, certification, and hiring forms. Searches JobAura's skill dictionary, shows optional CV skill suggestions, and lets users add, remove, or set levels for skills.
+ *
+ * Calls: GET /api/skill/search; skillsApi.search; settingsConfig; getErrorMessage
+ * Used by:
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/users/components/resume/certification-fields.tsx
+ *   - features/workspace/components/settings/profile-settings-editor.tsx
+ *   - features/workspace/components/settings/resume-settings-section.tsx
+ */
+
 import { settingsConfig } from '@/features/workspace/config/settings'
 import { useEffect, useId, useRef, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'

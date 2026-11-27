@@ -1,3 +1,12 @@
+/**
+ * Shared SEO metadata, canonical URL, and JSON-LD script helpers for public pages.
+ * Builds Next.js metadata with Open Graph and Twitter cards, resolves site and asset URLs, and renders JSON-LD script tags.
+ *
+ * Calls: resolveHttpUrl
+ * Used by:
+ *   - 10 files, for example app/(marketplace)/hiring-posts/[id]/page.tsx, app/(marketplace)/hiring-posts/page.tsx, app/(marketplace)/jobs/page.tsx
+ */
+
 import type { Metadata } from 'next'
 import { resolveHttpUrl } from './urls'
 

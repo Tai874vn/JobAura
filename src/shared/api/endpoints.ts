@@ -1,3 +1,11 @@
+/**
+ * Re-exports all shared backend API client modules from one central file.
+ *
+ * Calls: adminApi; authApi; chatApi; hiringPostsApi; jobsApi; postsApi; recommendationsApi; usersApi
+ * Used by:
+ *   - 38 files, for example features/admin/components/admin-dashboard.tsx, features/admin/components/admin-resource-model.tsx, features/admin/components/admin-resource-page.tsx
+ */
+
 export { adminApi } from './endpoints/admin'
 export { authApi } from './endpoints/auth'
 export { chatApi } from './endpoints/chat'

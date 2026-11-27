@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * One candidate result card on the Find candidates (/candidates) page.
+ * Shows the candidate's avatar, name, occupation, AI level, experience, location, top skills, and profile, message, and connect actions.
+ *
+ * Calls: candidateCardFacts; candidateCardActions; getCandidateSkillNames
+ * Used by:
+ *   - features/candidates/components/candidate-directory-page.tsx
+ */
+
 import { GraduationCap, MessageSquare } from 'lucide-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'

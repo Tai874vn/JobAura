@@ -1,3 +1,11 @@
+/**
+ * Defines table settings for each admin resource: jobs, users, categories, subcategories, and comments. It supplies column labels, API loaders, delete handlers, and cell renderers.
+ *
+ * Calls: jobsApi; usersApi; categoriesApi; subcategoriesApi; commentsApi; deleteJob; credits; resolveAssetUrl
+ * Used by:
+ *   - features/admin/components/admin-resource-page.tsx
+ */
+
 import Image from 'next/image'
 import { commentsApi, subcategoriesApi, categoriesApi, jobsApi, usersApi } from '@/shared/api/endpoints'
 import { credits } from '@/shared/lib/credits'

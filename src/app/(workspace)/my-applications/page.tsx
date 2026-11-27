@@ -1,3 +1,11 @@
+/**
+ * Candidate applications page at /my-applications. Lets signed-in candidates and admins track their submitted job applications, with a skeleton fallback while loading.
+ *
+ * Calls: RequireAuth; MyApplicationsPage; MyApplicationsPageSkeleton
+ * Used by:
+ *   - Next.js router: page for /my-applications
+ */
+
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/components/require-auth'

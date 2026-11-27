@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Main /connections page with three tabs: Connections, Requests (incoming and sent), and Discover.
+ * Supports debounced search, pagination, sending or answering requests, removing connections, and opening chat.
+ *
+ * Calls: GET /api/connections; GET /api/connections/suggestions; POST /api/connections/requests/:userId; PUT /api/connections/requests/:id/accept; DELETE /api/connections/:id; GET /api/chat/start/:userId; useSession; useChatStore; FeedAvatar; pageWindow
+ * Used by:
+ *   - app/(workspace)/connections/page.tsx
+ */
+
 import { connectionsConfig } from '@/features/connections/config/connections'
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircle, Check, ChevronLeft, ChevronRight, MapPin, MessageCircle, Search, UserMinus, UserPlus, Users, X } from 'lucide-react'

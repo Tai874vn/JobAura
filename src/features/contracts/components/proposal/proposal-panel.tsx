@@ -1,7 +1,13 @@
 'use client'
 
-
-
+/**
+ * Full detail panel for one proposal on /contracts.
+ * Shows the latest version, collapsible earlier versions with change summaries, accept/counter/decline/withdraw actions and dialogs, and event history.
+ *
+ * Calls: useContractMutation; contractsApi; PanelFrame; VersionView; ProposalEditor; ConfirmDialog; ContractTimeline; nextAction
+ * Used by:
+ *   - features/contracts/components/contracts-page.tsx
+ */
 
 import { MessageSquare, X } from 'lucide-react'
 import Link from 'next/link'

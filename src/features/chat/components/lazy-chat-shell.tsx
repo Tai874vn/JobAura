@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Lazy loader for the global chat widget mounted in the root app layout.
+ * Waits until a signed-in user's browser is idle before loading ChatShell, loads it right away on jobaura:open-chat events, and hides it during interview calls.
+ *
+ * Calls: useSession; ChatShell; openChatEventName; parseOpenChatRequest
+ * Used by:
+ *   - app/layout.tsx
+ */
+
 import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'

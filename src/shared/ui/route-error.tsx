@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Shared error boundary screen shown when a page crashes.
+ * Reports the error to Sentry and gives the user a Try again button and a link back home.
+ *
+ * Calls: Sentry.captureException; cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import * as Sentry from '@sentry/nextjs'
 import { AlertCircle } from 'lucide-react'
 import { useEffect } from 'react'

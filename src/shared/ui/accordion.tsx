@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Shared UI accordion for expandable question-and-answer lists. Keeps at most one item open at a time and toggles each panel with accessible button controls.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { ChevronDown } from 'lucide-react'
 import { useId, useState } from 'react'
 import { cn } from '@/shared/lib/utils'

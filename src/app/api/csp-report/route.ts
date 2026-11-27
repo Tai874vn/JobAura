@@ -1,3 +1,12 @@
+/**
+ * API route (/api/csp-report) that receives browser Content Security Policy violation reports.
+ * Limits payload size to 64 KB, cleans reported URLs, logs normalized warnings, and returns 204.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - Next.js router: route for /api/csp-report
+ */
+
 import { NextResponse } from 'next/server'
 
 const maxReportBodyBytes = 64 * 1024

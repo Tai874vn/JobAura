@@ -1,3 +1,15 @@
+/**
+ * Loading skeletons for the /settings page.
+ * Renders placeholders that match the full settings page, the overview panel, and the lazy-loaded profile and resume forms.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/(workspace)/settings/loading.tsx
+ *   - app/(workspace)/settings/page.tsx
+ *   - features/workspace/components/settings/resume-settings-editor.tsx
+ *   - features/workspace/components/settings/settings-page.tsx
+ */
+
 import { Card, CardContent, Skeleton } from '@/shared/ui'
 
 /** Matches the Overview panel (summary card with strength bar + 2-column quick-action cards). */

@@ -1,3 +1,11 @@
+/**
+ * Normalizes backend responses for notifications, feed posts, post comments, saved and cursor job lists, and user connections (lists, requests, and suggestions).
+ *
+ * Calls: notificationTypes; normalizeJob; asRecord; mapApiResponse; pickBoolean; pickNumber; pickString
+ * Used by:
+ *   - shared/api/normalizers.ts
+ */
+
 import type {
   ApiResponse, AppNotification, Connection, ConnectionProfile, ConnectionRequests, ConnectionSuggestion,
   CursorPage, FeedAuthor, FeedPage, FeedPost, Job, NotificationPage, PaginatedContent, PostComment,

@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Left desktop sidebar on the home feed page.
+ * Shows the user's cover, avatar, profile strength bar with next steps, and personal navigation shortcuts with pending connection requests.
+ *
+ * Calls: GET /api/connections/requests; useProfileStrength; FeedAvatar; resolveAssetUrl; shouldBypassImageOptimizer
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ */
 
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRight, Bookmark, BriefcaseBusiness, FileText, Users } from 'lucide-react'

@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Renders the recruiter's My hiring posts page (/my-hiring-posts) for searching, filtering, sorting, creating, editing, closing, and reopening their roles. Polls while AI seniority scoring is running and opens the edit form from the URL.
+ *
+ * Calls: GET /api/hiring-posts/mine; PATCH /api/hiring-posts/:id; POST /api/hiring-posts/:id/seniority; useSession; BrowsePage; MyHiringPostResultCard; HiringPostFormDialog; ConfirmActionDialog
+ * Used by:
+ *   - app/(workspace)/my-hiring-posts/page.tsx
+ */
+
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { replaceUrlInPlace } from "@/shared/lib/replace-url";
 import { ArrowDownWideNarrow, BriefcaseBusiness, Plus, Search } from "lucide-react";

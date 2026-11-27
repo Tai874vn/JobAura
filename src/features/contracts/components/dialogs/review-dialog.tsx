@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Part of the contracts feature. Shows the dialog where a client picks a 1-to-5 star rating and writes a review for a finished contract.
+ *
+ * Calls: useDialogFocus; DialogPortal
+ * Used by:
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ */
+
 import { Star, X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { cn } from '@/shared/lib/utils'

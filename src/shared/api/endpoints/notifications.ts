@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for notifications: loading the list, reading the unread count, and marking one or all notifications as read.
+ *
+ * Calls: apiClient; GET /api/notifications; GET /api/notifications/unread-count; PATCH /api/notifications/:id/read; PATCH /api/notifications/read-all; normalizeNotification; normalizeNotificationsResponse
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import { normalizeNotification, normalizeNotificationsResponse } from '../normalizers'
 import type { ApiResponse, AppNotification, NotificationPage } from '@/shared/schemas'

@@ -1,3 +1,13 @@
+/**
+ * Shared form controls for the Profile tab on /settings.
+ * Provides section cards with actions, labeled inputs, portfolio item fields, a validated image upload button, and a delete icon button.
+ *
+ * Calls: validateImageFile; imageUploadAccept
+ * Used by:
+ *   - features/workspace/components/settings/profile-settings-editor.tsx
+ *   - features/workspace/hooks/use-profile-settings.ts
+ */
+
 import { LoaderCircle, Plus, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { imageUploadAccept, validateImageFile } from '@/shared/lib/file-validation'

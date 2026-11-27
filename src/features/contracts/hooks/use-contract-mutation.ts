@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Shared mutation hook for contract and proposal actions in the contracts feature.
+ * Saves the fresh detail response to the cache, refreshes contract lists and wallet data, and reloads stale data on conflict errors.
+ *
+ * Calls: isStaleActionError; getErrorMessage
+ * Used by:
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ *   - features/contracts/hooks/use-contract-actions.ts
+ */
+
 import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { isStaleActionError } from '@/features/hiring-pipeline/hooks/use-pipeline-mutation'

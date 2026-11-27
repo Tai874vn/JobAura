@@ -1,3 +1,12 @@
+/**
+ * Part of the hiring pipeline feature. Turns application history events into readable labels and renders the chronological timeline list.
+ *
+ * Calls: formatPipelineTime
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ */
+
 import type { ApplicationEvent } from '@/shared/schemas'
 import { formatPipelineTime } from '../utils/format-time'
 

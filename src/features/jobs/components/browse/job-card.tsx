@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Compact card for one service or portfolio post in the Jobs feature.
+ * Shows the cover image, seller avatar and name, title, rating, price or "Portfolio" label, and a save button.
+ *
+ * Calls: JobSaveButton; getSellerName; getSellerHref; getSellerAvatar; servicePriceLabel; resolveAssetUrl; shouldBypassImageOptimizer
+ * Used by:
+ *   - features/jobs/components/home/home-page.tsx
+ *   - features/saved/components/saved-page.tsx
+ */
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'

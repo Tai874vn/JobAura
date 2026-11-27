@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Renders one open role card on the public Hiring posts browse page. Shows a company initials tile, role title, occupation badges, salary, key facts, top skills, and buttons to view details or apply in place.
+ *
+ * Calls: usePostOccupation; ApplyPanel; hiringPostsConfig; formatHiringPostSalary; formatYearsRequired; formatDate; salaryPeriodLabel
+ * Used by:
+ *   - features/hiring/components/browse/hiring-posts-page.tsx
+ */
+
 import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";

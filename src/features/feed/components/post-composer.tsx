@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * "Start a post" box and modal dialog on the home feed page.
+ * Lets the user write text, attach and preview an optional image, and submit the post through the parent handler.
+ *
+ * Calls: FeedAvatar; feedConfig; validateImageFile
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ */
+
 import { feedConfig } from '@/features/feed/config/feed'
 import Image from 'next/image'
 import Link from 'next/link'

@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Sign-in guard for workspace routes.
+ * Wraps pages in RequireAuth and shows a route-matching skeleton while the session is checked so the layout does not jump.
+ *
+ * Calls: RequireAuth; ContractsPageSkeleton; MyApplicationsPageSkeleton; ApplicantsPageSkeleton; MyHiringPostsPageSkeleton
+ * Used by:
+ *   - app/(workspace)/layout.tsx
+ */
+
 import { usePathname } from 'next/navigation'
 import { RequireAuth } from '@/features/auth/components/require-auth'
 import { ContractsPageSkeleton } from '@/features/contracts/components/contracts-skeleton'

@@ -1,3 +1,13 @@
+/**
+ * Formatting and routing helpers for notifications. Builds the display headline, context label, detail text, relative time, chat room ID, and safe destination URL for each notification type.
+ *
+ * Calls: safeInternalPath; credits; formatPipelineTime
+ * Used by:
+ *   - features/notifications/components/notification-bell.tsx
+ *   - features/notifications/components/notification-list.tsx
+ *   - features/notifications/utils/notification-cache.ts
+ */
+
 import type { AppNotification } from '@/shared/schemas'
 import { safeInternalPath } from '@/shared/lib/session-routing'
 import { credits } from '@/shared/lib/credits'

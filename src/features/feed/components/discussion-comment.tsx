@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Single comment or reply row inside the feed post discussion modal.
+ * Displays the comment text along with inline edit controls for the author and delete confirmation for the author or an admin.
+ *
+ * Calls: CommentRow; ConfirmationDialog
+ * Used by:
+ *   - features/feed/components/comment-thread.tsx
+ */
+
 import { Pencil, Trash2 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import type { PostComment } from '@/shared/schemas'

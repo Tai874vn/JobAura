@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Resume tab container on the /settings page.
+ * Loads the saved resume, extracts fields from an uploaded PDF or DOCX file, saves the draft and file attachment, and triggers AI seniority evaluation.
+ *
+ * Calls: GET /api/users/me/resume; PUT /api/users/me/resume; POST /api/users/me/resume/file; POST /api/users/me/resume/seniority; useSession; settingsResumeOptions; ResumeSettingsSection; extractResumeFile
+ * Used by:
+ *   - features/workspace/components/settings/settings-page.tsx
+ */
+
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'

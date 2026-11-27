@@ -1,3 +1,12 @@
+/**
+ * Computes pipeline summary text, active applicant counts, and the close-post confirmation message for My hiring posts. Turns stage counts and openings into short text shown on recruiter cards and dialogs.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/hiring/components/my-posts/my-hiring-post-result-card.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import type { HiringPost } from '@/shared/schemas'
 
 type Counts = NonNullable<HiringPost['pipeline']>

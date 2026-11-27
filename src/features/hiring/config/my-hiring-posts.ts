@@ -1,3 +1,14 @@
+/**
+ * Holds settings for the My hiring posts page (/my-hiring-posts) and the hiring post create/edit form, including page size, sort labels, form options, and max openings. Also defines the Zod validation schema for creating and editing a post.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/hiring/components/form/hiring-post-form-dialog.tsx
+ *   - features/hiring/utils/hiring-post-form.ts
+ *   - features/hiring/utils/my-hiring-posts-view.ts
+ *   - shared/schemas/marketplace.ts
+ */
+
 import { z } from 'zod'
 
 // @find my-hiring-posts page config logic [all] — every adjustable value of this page

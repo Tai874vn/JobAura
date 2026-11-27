@@ -1,3 +1,11 @@
+/**
+ * Root layout for every page on JobAura. It sets site metadata and fonts, then wraps the app in providers, live socket state, and the chat overlay.
+ *
+ * Calls: AppProviders; RealtimeProvider; LazyChatShell
+ * Used by:
+ *   - Next.js router: layout for /
+ */
+
 import type { Metadata } from 'next'
 import { Hanken_Grotesk, Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'

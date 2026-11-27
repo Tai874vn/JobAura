@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Renders the "Send a proposal" button inside a direct chat window when the other person has priced services.
+ * Lets the viewer pick one of those services from a list and opens the new proposal dialog for it.
+ *
+ * Calls: GET /api/jobs/by-creator/:creatorId; NewProposalDialog; servicePriceLabel
+ * Used by:
+ *   - features/chat/components/chat-conversation.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import { FilePlus2 } from 'lucide-react'
 import { useState } from 'react'

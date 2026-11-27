@@ -1,3 +1,12 @@
+/**
+ * Sign-in page (/auth/login).
+ * Shows the login form so users can access their JobAura account.
+ *
+ * Calls: LoginForm
+ * Used by:
+ *   - Next.js router: page for /auth/login
+ */
+
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { LoginForm } from '@/features/auth/components/auth-forms'

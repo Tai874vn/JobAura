@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Active conversation panel on the right side of the chat drawer.
+ * Shows the room header with online status, scrollable message bubbles, read receipts, typing status, a direct proposal shortcut, and the composer slot.
+ *
+ * Calls: ChatProposalButton; getErrorMessage
+ * Used by:
+ *   - features/chat/components/chat-shell.tsx
+ */
+
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
 import { ArrowLeft, CheckCheck, MessageCircle, X } from 'lucide-react'
 import { ChatProposalButton } from '@/features/contracts/components/chat-proposal-button'

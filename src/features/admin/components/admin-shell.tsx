@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Provides the page frame for the /admin area. It shows the left navigation sidebar, the administrator top bar, and the main content area.
+ *
+ * Calls: useSession
+ * Used by:
+ *   - app/(admin)/admin/layout.tsx
+ */
+
 import { BarChart3, BriefcaseBusiness, FileJson, Home, MessageSquare, Tags, Users } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'

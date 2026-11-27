@@ -1,3 +1,13 @@
+/**
+ * Holds editable settings for the public Hiring posts browse page (/hiring-posts). Defines page size, search fields and placeholder, default explore chips, filter groups, skill count on cards, and sort options.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/hiring/components/browse/hiring-post-result-card.tsx
+ *   - features/hiring/components/browse/hiring-posts-page.tsx
+ *   - features/hiring/utils/hiring-posts-browse.ts
+ */
+
 // @find hiring-posts page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /hiring-posts (public list of open roles)

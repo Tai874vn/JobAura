@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Hiring post selector panel on the Recommended candidates (/recommendations/candidates) page.
+ * Lets recruiters choose a hiring post, create a new post, predict a post's AI seniority level, and set the result count and pool size.
+ *
+ * Calls: POST /api/hiring-posts/:id/seniority; HiringPostFormDialog; queryKeys; topKOptions; poolSizeOptions
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/recommended-candidates-page.tsx
+ */
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BriefcaseBusiness, CheckCircle2, ListOrdered } from "lucide-react";
 import { useState } from "react";

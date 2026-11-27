@@ -1,3 +1,14 @@
+/**
+ * Configurable settings for the /jobs portfolios and services browse page.
+ * Defines page size, searchable fields, explore chips, category limits, price filter ranges, and sort menu options.
+ *
+ * Calls: credits
+ * Used by:
+ *   - features/jobs/components/browse/job-category-nav.tsx
+ *   - features/jobs/components/browse/job-list-view.tsx
+ *   - features/jobs/utils/jobs-browse-view.ts
+ */
+
 import { credits } from '@/shared/lib/credits'
 
 // @find jobs page config logic [all] — every adjustable value of this page

@@ -1,3 +1,11 @@
+/**
+ * Defines the admin API call that loads platform totals (users, jobs, contracts, and comments) for the admin dashboard.
+ *
+ * Calls: apiClient; GET /api/admin/stats
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse } from '@/shared/schemas'
 

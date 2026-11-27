@@ -1,3 +1,14 @@
+/**
+ * Computes the single next-action label shown on proposal and contract rows and headers in the contracts feature.
+ * Marks whether the viewer needs to act or is waiting for the other person.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/contracts/components/contract-list-item.tsx
+ *   - features/contracts/components/contract/contract-header.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import type { ContractDetail, ContractListItem, MilestoneStatus, ProposalDetail, ProposalListItem } from '@/shared/schemas'
 
 type Item = ContractListItem | ProposalListItem | ContractDetail | ProposalDetail

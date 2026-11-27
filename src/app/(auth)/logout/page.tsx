@@ -1,3 +1,11 @@
+/**
+ * Sign-out page at /logout. Renders the sign-out flow that ends the current user session.
+ *
+ * Calls: LogoutPage
+ * Used by:
+ *   - Next.js router: page for /logout
+ */
+
 import type { Metadata } from 'next'
 import { LogoutPage } from '@/features/auth/components/logout-page'
 

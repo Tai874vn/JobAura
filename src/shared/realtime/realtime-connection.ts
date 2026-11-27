@@ -1,3 +1,11 @@
+/**
+ * Shared Socket.IO connection manager for realtime features like chat and notifications. Lazy-loads the Socket.IO client, shares one transport across namespaces, fetches a fresh auth ticket on handshake, and disconnects idle namespaces.
+ *
+ * Calls: reportServerError
+ * Used by:
+ *   - features/auth/components/realtime-provider.tsx
+ */
+
 import type { Manager, Socket } from 'socket.io-client'
 import { reportServerError } from '@/shared/api/query-client'
 

@@ -1,5 +1,16 @@
 "use client";
 
+/**
+ * Renders the email-based auth flows: verifying an email link, resending verification mail, requesting a password reset link, and choosing a new password.
+ *
+ * Calls: POST /api/auth/verify-email/resend; POST /api/auth/verify-email; POST /api/auth/forgot-password; POST /api/auth/reset-password; AuthCard; forgotPasswordSchema; resetPasswordSchema; resetClientSession
+ * Used by:
+ *   - app/auth/forgot-password/page.tsx
+ *   - app/auth/reset-password/page.tsx
+ *   - app/auth/verify-email/page.tsx
+ *   - features/auth/components/auth-forms.tsx
+ */
+
 import { authConfig, forgotPasswordSchema, resetPasswordSchema } from '@/features/auth/config/auth'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

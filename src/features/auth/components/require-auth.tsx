@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Client-side access guard for protected pages. It sends guests to sign in, redirects users without the required role, and renders a loading skeleton while checking.
+ *
+ * Calls: useSession; canAccessRole; getSignedInRedirect; buildLoginRedirect
+ * Used by:
+ *   - 16 files, for example app/(admin)/admin/layout.tsx, app/(feed)/layout.tsx, app/(workspace)/candidates/page.tsx
+ */
+
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { canAccessRole, getSignedInRedirect, type AccountRole } from '@/shared/lib/roles'

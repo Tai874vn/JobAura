@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Hook for the chat drawer that manages open room state and data fetching.
+ * Handles jobaura:open-chat requests from other pages and fetches the user's room list and active room message history.
+ *
+ * Calls: GET /api/chat/rooms; GET /api/chat/rooms/:id/messages; chatApi.room; chatApi.start; useChatStore; queryKeys; parseOpenChatRequest; reportServerError
+ * Used by:
+ *   - features/chat/components/chat-shell.tsx
+ */
+
 import { useEffect, useMemo, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'

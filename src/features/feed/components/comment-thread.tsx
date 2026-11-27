@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Top-level comment and expandable reply thread inside the feed post discussion modal.
+ * Loads replies a page at a time and provides an inline form to send a new reply.
+ *
+ * Calls: GET /api/posts/:postId/comments/:commentId/replies; DiscussionComment; mergeReplies; getErrorMessage
+ * Used by:
+ *   - features/feed/components/post-discussion-modal.tsx
+ */
+
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { memo, useId, useMemo, useRef, useState } from 'react'
 import { postsApi } from '@/shared/api/endpoints'

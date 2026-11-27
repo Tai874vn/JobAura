@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Shared modal helpers: DialogPortal draws overlays into document.body, and useDialogFocus handles initial focus, Tab focus trapping, Escape closing, stacked dialogs, and restoring focus when a dialog closes.
+ *
+ * Calls: FOCUSABLE_SELECTOR; initialFocusIndex; isTopmostDialog; nextFocusIndex
+ * Used by:
+ *   - shared/ui/confirmation-dialog.tsx
+ *   - shared/ui/index.ts
+ *   - shared/ui/info-tip.tsx
+ */
+
 import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { FOCUSABLE_SELECTOR, initialFocusIndex, isTopmostDialog, nextFocusIndex } from './dialog-focus'

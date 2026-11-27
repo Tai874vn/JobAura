@@ -1,3 +1,11 @@
+/**
+ * Defines account and signup roles, signup role descriptions, role access checks, and post-login redirect paths.
+ *
+ * Calls: safeInternalPath
+ * Used by:
+ *   - 10 files, for example features/auth/components/auth-form-layout.tsx, features/auth/components/auth-forms.tsx, features/auth/components/google-signup-role-modal.tsx
+ */
+
 import { safeInternalPath } from './session-routing'
 
 export const accountRoles = ['user', 'employer', 'admin'] as const

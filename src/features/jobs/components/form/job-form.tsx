@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Form for creating (/jobs/new) or editing (/jobs/[id]/edit) a service or portfolio post.
+ * Lets the candidate pick a field, rate, work mode, milestone split, descriptions, and cover image, with a live card preview.
+ *
+ * Calls: GET /api/categories; POST /api/jobs; PUT /api/jobs/:id; useSession; useForm; MilestoneTemplateField; refreshJobPagesAfterSave; createJobSchema
+ * Used by:
+ *   - app/(workspace)/jobs/new/page.tsx
+ *   - features/jobs/components/form/job-edit-page.tsx
+ */
+
 import { jobFormConfig } from '@/features/jobs/config/job-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'

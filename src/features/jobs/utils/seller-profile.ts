@@ -1,3 +1,16 @@
+/**
+ * Small helpers that read the seller's ID, profile link, display name, and avatar URL from a Job object.
+ * Provides safe fallbacks when user details are missing.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/jobs/[id]/page.tsx
+ *   - features/jobs/components/browse/job-card.tsx
+ *   - features/jobs/components/browse/job-result-card.tsx
+ *   - features/jobs/components/detail/job-detail-view.tsx
+ *   - features/jobs/utils/jobs-browse-view.ts
+ */
+
 import type { Job } from '@/shared/schemas'
 
 export function getSellerId(job: Job) {

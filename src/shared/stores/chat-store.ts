@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Global Zustand store for the chat widget and messaging state. Tracks whether chat is open, the room list, active room, messages by room, online users, typing users, and unread counts.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - 11 files, for example features/auth/components/auth-forms.tsx, features/auth/components/logout-page.tsx, features/auth/components/oauth-callback.tsx
+ */
+
 import { create } from 'zustand'
 import type { ChatMessage, ChatRoom } from '@/shared/schemas'
 

@@ -1,3 +1,12 @@
+/**
+ * Editable config values for the /my-posts page.
+ * Sets how many of the signed-in user's portfolio and service posts are loaded at once.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/workspace/components/my-posts-page.tsx
+ */
+
 // @find my-posts page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /my-posts (my portfolio / service posts)

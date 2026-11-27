@@ -1,3 +1,11 @@
+/**
+ * Shared UI form field components (Input, Textarea, Select) with consistent border, focus ring, invalid, and disabled styles.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import * as React from 'react'
 import { cn } from '@/shared/lib/utils'
 

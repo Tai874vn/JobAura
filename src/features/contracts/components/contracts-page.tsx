@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Main /contracts page showing the signed-in user's proposals and contracts in a split list-and-detail layout.
+ * Keeps the role tab, status filter, and open item synced with the URL query parameters.
+ *
+ * Calls: GET /api/proposals; GET /api/proposals/:id; GET /api/contracts/:id; contractsApi.contracts; useSession; ContractListItem; ContractPanel; ProposalPanel
+ * Used by:
+ *   - app/(workspace)/contracts/page.tsx
+ */
+
 import { contractsConfig } from '@/features/contracts/config/contracts'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'

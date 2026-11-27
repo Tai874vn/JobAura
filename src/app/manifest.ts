@@ -1,3 +1,11 @@
+/**
+ * Builds the web app manifest for JobAura. It defines the app name, start page, theme colors, and icon used when someone installs the site.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - Next.js router: serves /manifest.webmanifest
+ */
+
 import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {

@@ -1,3 +1,11 @@
+/**
+ * Shared UI circular user avatar. Shows the user's photo when available, or falls back to their initials on a colored circle.
+ *
+ * Calls: cn; initials; resolveAssetUrl; shouldBypassImageOptimizer
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import Image from 'next/image'
 import { cn, initials, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
 

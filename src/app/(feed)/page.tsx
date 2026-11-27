@@ -1,3 +1,11 @@
+/**
+ * Signed-in home feed page at /. Shows the personalized workspace feed for candidates and admins.
+ *
+ * Calls: FeedPage
+ * Used by:
+ *   - Next.js router: page for /
+ */
+
 import type { Metadata } from 'next'
 import { FeedPage } from '@/features/feed/components/feed-page'
 

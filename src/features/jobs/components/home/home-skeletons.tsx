@@ -1,3 +1,13 @@
+/**
+ * Loading placeholder skeletons for the /welcome landing page.
+ * Exports skeletons for the category list, the top-rated portfolios grid, and the full welcome page layout.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/(marketplace)/welcome/loading.tsx
+ *   - features/jobs/components/home/home-page.tsx
+ */
+
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Card, CardSkeleton, Section, SectionHeading, Skeleton } from '@/shared/ui'

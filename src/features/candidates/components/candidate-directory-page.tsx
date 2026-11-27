@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Find candidates directory page (/candidates) for employers and admins.
+ * Shows a search bar, popular skill chips, a sidebar for occupation, AI level, experience, and skill filters, candidate cards, and pagination.
+ *
+ * Calls: GET /api/users/candidates; skillsApi.all; useSession; useOccupationTitle; BrowsePage; OccupationPicker; CandidateResultCard; CandidateConnectButton
+ * Used by:
+ *   - app/(workspace)/candidates/page.tsx
+ */
+
 import { candidatesConfig as config } from '@/features/candidates/config/candidates'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { replaceUrlInPlace } from '@/shared/lib/replace-url'

@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Profile tab editor on the /settings page.
+ * Lets the user upload an avatar and cover image, edit basic info, skills, certifications, portfolio items, and recruiter visibility, with one unsaved-changes bar.
+ *
+ * Calls: useProfileSettings; UnsavedChangesBar; SkillListEditor; CertificationFields; EditorSection; PortfolioFields; UploadField; certificationProblems
+ * Used by:
+ *   - features/workspace/components/settings/settings-page.tsx
+ */
+
 import { Eye, ImageUp, Info, Upload } from 'lucide-react'
 import type { UserProfile } from '@/shared/schemas'
 import { Avatar, Button, Card, CardContent, ConfirmationDialog, Textarea, UnsavedChangesBar } from '@/shared/ui'

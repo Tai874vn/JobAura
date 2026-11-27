@@ -1,3 +1,12 @@
+/**
+ * Catch-all API proxy route (/api/[...path]).
+ * Forwards incoming HTTP requests to the backend server proxy.
+ *
+ * Calls: proxyApiRequest
+ * Used by:
+ *   - Next.js router: route for /api/[...path]
+ */
+
 import type { NextRequest } from 'next/server'
 import { proxyApiRequest } from '@/shared/api/server-proxy'
 

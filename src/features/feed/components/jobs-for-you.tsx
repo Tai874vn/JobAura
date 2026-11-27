@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Job list card near the top of the home feed page.
+ * Shows cached AI-matched roles when available, or falls back to the newest open hiring posts with a prompt to run matching.
+ *
+ * Calls: POST /api/recommendations/jobs; GET /api/hiring-posts; useSession; usePostOccupation; MatchBadge; feedConfig
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ */
+
 import { feedConfig } from '@/features/feed/config/feed'
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, ListOrdered } from 'lucide-react'

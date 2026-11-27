@@ -1,3 +1,13 @@
+/**
+ * Holds auth settings and Zod validation schemas for the sign-in, sign-up, forgot-password, and reset-password forms.
+ *
+ * Calls: signupRoles
+ * Used by:
+ *   - features/auth/components/auth-forms.tsx
+ *   - features/auth/components/email-flows.tsx
+ *   - shared/schemas/users.ts
+ */
+
 import { z } from 'zod'
 import { signupRoles } from '@/shared/lib/roles'
 

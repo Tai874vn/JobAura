@@ -1,3 +1,12 @@
+/**
+ * Results panel on the Recommended candidates (/recommendations/candidates) page.
+ * Groups ranked candidates into Match and No match lists with matched and missing skills, and provides an empty state card when no matches return.
+ *
+ * Calls: ConnectionActions; FeedAvatar; EmptyState
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/recommended-candidates-page.tsx
+ */
+
 import { ArrowUpRight, CheckCircle2, MapPin, Users, XCircle } from "lucide-react";
 import Link from "next/link";
 import { ConnectionActions } from "@/features/connections/components/connect-button";

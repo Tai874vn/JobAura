@@ -1,6 +1,11 @@
-// This file configures the initialization of Sentry on the client.
-// The added config here will be used whenever a user loads a page in their browser.
-// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+/**
+ * Configures and initializes Sentry in the browser whenever a user loads a page (https://docs.sentry.io/platforms/javascript/guides/nextjs/).
+ * Reads public environment variables directly so Next.js can inline them, sets up masked replays and logs, and exports router transition tracking.
+ *
+ * Calls: resolveSentryConfig
+ * Used by:
+ *   - Next.js: runs once when the browser loads the app
+ */
 
 import * as Sentry from "@sentry/nextjs";
 import { resolveSentryConfig } from "@/shared/config/sentry";

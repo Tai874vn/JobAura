@@ -1,3 +1,14 @@
+/**
+ * Loading placeholder skeletons for the /contracts page and its list of proposals and contracts.
+ * Mirrors the split-pane page layout and list card structure while data loads.
+ *
+ * Calls: PanelLoading
+ * Used by:
+ *   - app/(workspace)/contracts/page.tsx
+ *   - features/contracts/components/contracts-page.tsx
+ *   - features/workspace/components/workspace-require-auth.tsx
+ */
+
 import { Skeleton } from '@/shared/ui'
 import { PanelLoading } from './panel-frame'
 

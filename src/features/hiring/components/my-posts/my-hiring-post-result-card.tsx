@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Renders one recruiter-owned post card on the My hiring posts page. Shows status, role facts, pipeline summary, AI level status, quick actions, and an expandable section with applicant counts by step and latest applicants.
+ *
+ * Calls: GET /api/hiring-posts/:id/applications; useSession; usePostOccupation; pipelineSummary; hiringPostAiState; stepChips; statusLabel
+ * Used by:
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ExternalLink, ListOrdered, Lock, LockOpen, Pencil, Users } from "lucide-react";
 import Link from "next/link";

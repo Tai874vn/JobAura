@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Single post card on the home feed, plus the shared CommentRow component.
+ * Displays the author, post text and image, like/comment/save buttons, delete menu for the author, and recent comments.
+ *
+ * Calls: FeedAvatar; timeAgo; resolveAssetUrl; shouldBypassImageOptimizer
+ * Used by:
+ *   - features/feed/components/discussion-comment.tsx
+ *   - features/feed/components/feed-page.tsx
+ */
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Bookmark, Heart, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from 'lucide-react'

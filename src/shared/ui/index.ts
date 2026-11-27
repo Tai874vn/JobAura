@@ -1,3 +1,11 @@
+/**
+ * Public entry point for shared UI components, re-exporting all base controls, dialogs, feedback elements, and browse-page blocks.
+ *
+ * Calls: ./button; ./card; ./input; ./dialog-portal; ./confirmation-dialog; ./browse-page; ./choice-menu; ./route-error
+ * Used by:
+ *   - 127 files, for example app/(admin)/admin/error.tsx, app/(admin)/admin/layout.tsx, app/(feed)/layout.tsx
+ */
+
 export * from './accordion'
 export * from './avatar'
 export * from './badge'

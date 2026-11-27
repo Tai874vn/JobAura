@@ -1,3 +1,15 @@
+/**
+ * Provides low-level helpers that safely read typed fields (strings, numbers, booleans, arrays, roles, and user objects) from raw backend JSON and map `ApiResponse` wrappers.
+ *
+ * Calls: isAccountRole
+ * Used by:
+ *   - shared/api/normalizers.ts
+ *   - shared/api/normalizers/marketplace/hiring.ts
+ *   - shared/api/normalizers/marketplace/jobs.ts
+ *   - shared/api/normalizers/marketplace/recommendations.ts
+ *   - shared/api/normalizers/social.ts
+ */
+
 import type { ApiResponse, Job } from '@/shared/schemas'
 import { isAccountRole } from '@/shared/lib/roles'
 

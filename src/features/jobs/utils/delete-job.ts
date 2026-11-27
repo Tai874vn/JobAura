@@ -1,3 +1,14 @@
+/**
+ * Client helper that deletes a portfolio or service post and clears cached public pages.
+ * Retries once after refreshing the session token on a 401 response, and throws RequestError on failure.
+ *
+ * Calls: deleteJobAndRefresh; authApi.me; RequestError
+ * Used by:
+ *   - features/admin/components/admin-resource-model.tsx
+ *   - features/jobs/components/detail/job-detail-view.tsx
+ *   - features/workspace/components/my-posts-page.tsx
+ */
+
 import { authApi } from '@/shared/api/endpoints'
 import { RequestError } from '@/shared/lib/errors'
 import { deleteJobAndRefresh } from './refresh-job-pages'

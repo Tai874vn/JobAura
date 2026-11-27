@@ -1,3 +1,16 @@
+/**
+ * Builds schema.org JSON-LD structured data for public listing, hiring post, portfolio service, and profile pages.
+ * Omits private contact fields and formats priced services in credits instead of USD.
+ *
+ * Calls: credits; safeExternalUrl; absoluteAssetUrl; absoluteSiteUrl; seoDescription
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/[id]/page.tsx
+ *   - app/(marketplace)/hiring-posts/page.tsx
+ *   - app/(marketplace)/jobs/page.tsx
+ *   - app/jobs/[id]/page.tsx
+ *   - app/profile/[id]/page.tsx
+ */
+
 import { credits } from '@/shared/lib/credits'
 import { safeExternalUrl } from '@/shared/lib/urls'
 import type { Comment, HiringPost, Job, UserProfile } from '@/shared/schemas'

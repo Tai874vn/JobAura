@@ -1,3 +1,12 @@
+/**
+ * Sidebar cards on the Recommended candidates (/recommendations/candidates) page.
+ * Shows the recruiter's remaining daily AI runs with a progress bar and explains how candidate matching works.
+ *
+ * Calls: formatReset
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/recommended-candidates-page.tsx
+ */
+
 import {
   BriefcaseBusiness,
   Clock3,

@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Renders the full detail page for a single hiring post (/hiring-posts/[id]). Shows the role badges, facts, full description, recruiter card, and role-based sidebar actions to apply, manage applicants, or edit.
+ *
+ * Calls: GET /api/hiring-posts/:id; useSession; hiringPostViewer; HiringPostBody; HiringPostAction; AppliedAction; ApplyPanel; ManageApplicantsLink
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/[id]/page.tsx
+ */
+
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Pencil } from "lucide-react";
 import Link from "next/link";

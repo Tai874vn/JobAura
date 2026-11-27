@@ -1,3 +1,12 @@
+/**
+ * Shared error classes and helpers that turn API, network, and validation errors into safe, plain-English messages for the UI.
+ * Hides internal paths, stack traces, and backend jargon, and reads backend error codes for UI logic.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - 11 files, for example features/auth/components/logout-page.tsx, features/chat/hooks/use-chat-socket.ts, features/hiring/utils/hiring-post-ai.ts
+ */
+
 import axios from 'axios'
 
 export type UserErrorKind =

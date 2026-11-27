@@ -1,3 +1,15 @@
+/**
+ * Viewer role and milestone button rules for the contracts feature.
+ * Checks whether the viewer is the client, freelancer, or an observer, and returns the milestone actions allowed for the current state.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/contracts/components/contract/contract-action-bar.tsx
+ *   - features/contracts/components/contract/contract-milestones.tsx
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/utils/contract-actions.ts
+ */
+
 import type { ContractDetail, ContractStatus, MilestoneStatus } from '@/shared/schemas'
 
 /** Who is looking at the contract: one of the two sides, or someone else (such as an admin). */

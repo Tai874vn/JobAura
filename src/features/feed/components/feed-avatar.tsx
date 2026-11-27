@@ -1,3 +1,12 @@
+/**
+ * Clickable user avatar used across the feed, connections, and candidate pages.
+ * Renders the user's avatar linked to their profile page.
+ *
+ * Calls: Avatar
+ * Used by:
+ *   - 8 files, for example features/candidates/components/recommended-candidates/candidate-results-panel.tsx, features/connections/components/connections-page.tsx, features/feed/components/feed-left-rail.tsx
+ */
+
 import Link from 'next/link'
 import { Avatar } from '@/shared/ui'
 

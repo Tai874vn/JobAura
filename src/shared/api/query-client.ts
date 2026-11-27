@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Creates and caches the shared TanStack Query client with retry rules and deduplicated Sentry reporting for 5xx server errors and non-fatal background errors.
+ *
+ * Calls: RequestError; toUserError
+ * Used by:
+ *   - 18 files, for example features/admin/components/admin-resource-page.tsx, features/auth/components/logout-page.tsx, features/chat/hooks/use-chat-room-selection.ts
+ */
+
 import * as Sentry from '@sentry/nextjs'
 import axios from 'axios'
 import { isServer, MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'

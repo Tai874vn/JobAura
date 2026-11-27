@@ -1,9 +1,13 @@
-// @find connections page config logic [all] — every adjustable value of this page
 /**
- * PAGE CONFIG: /connections (my connections and people to discover)
+ * PAGE CONFIG: /connections (my connections and people to discover), holding page size, search hint text, and skills shown per card.
+ * Safe edits: change a number or text.
  *
- * Safe edits: change a number or a text.
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/connections/components/connections-page.tsx
  */
+
+// @find connections page config logic [all] — every adjustable value of this page
 export const connectionsConfig = {
   /** People per page, in both tabs. Backend limit: 1–100. */
   pageSize: 24,

@@ -1,3 +1,11 @@
+/**
+ * Defines API calls to list, save, and unsave feed posts and freelance service jobs for the signed-in user.
+ *
+ * Calls: apiClient; GET /api/saved/posts; PUT /api/saved/posts/:postId; GET /api/saved/jobs; PUT /api/saved/jobs/:jobId; normalizeFeedResponse; normalizeSavedJobsResponse
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import { normalizeFeedResponse, normalizeSavedJobsResponse } from '../normalizers'
 import type { ApiResponse, CursorPage, FeedPage, Job } from '@/shared/schemas'

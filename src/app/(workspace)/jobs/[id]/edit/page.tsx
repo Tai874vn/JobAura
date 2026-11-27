@@ -1,3 +1,11 @@
+/**
+ * Portfolio post edit page at /jobs/[id]/edit. Validates the post ID from the URL and shows the edit form to signed-in candidates and admins.
+ *
+ * Calls: positiveIntegerRouteParam; RequireAuth; JobEditPage
+ * Used by:
+ *   - Next.js router: page for /jobs/[id]/edit
+ */
+
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { RequireAuth } from '@/features/auth/components/require-auth'

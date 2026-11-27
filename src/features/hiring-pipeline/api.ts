@@ -1,3 +1,12 @@
+/**
+ * API client and helpers for the hiring pipeline feature (applications, offers, interviews, and call tokens).
+ * Fetches and validates application lists, details, upcoming interviews, and status changes, and formats status labels and tracker steps.
+ *
+ * Calls: apiClient; definedParams; pipelineKeys; applicationDetailSchema; hiringApplicationStatusSchema; upcomingInterviewSchema
+ * Used by:
+ *   - 11 files, for example features/hiring-pipeline/components/applicants/applicant-panel.tsx, features/hiring-pipeline/components/applicants/applicants-page.tsx, features/hiring-pipeline/components/applicants/request-interview-dialog.tsx
+ */
+
 import { apiClient } from '@/shared/api/client'
 import { definedParams } from '@/shared/api/endpoints/params'
 import { pipelineKeys } from '@/shared/api/query-keys'

@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Top summary banner on the home feed page.
+ * Shows the signed-in user's name along with quick stats for profile strength, connection count, and remaining daily matching runs.
+ *
+ * Calls: GET /api/connections; GET /api/recommendations/quota; useProfileStrength
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
 import { connectionsApi, recommendationsApi } from '@/shared/api/endpoints'

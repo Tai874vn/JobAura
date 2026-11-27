@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Part of the contracts and proposals feature. Shows a confirmation dialog with an optional or required note box and error message before running a contract action.
+ *
+ * Calls: useDialogFocus; DialogPortal
+ * Used by:
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import { X } from 'lucide-react'
 import { useId, useState, type ReactNode } from 'react'
 import { Button, DialogPortal, Textarea, useDialogFocus } from '@/shared/ui'

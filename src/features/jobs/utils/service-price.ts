@@ -1,3 +1,12 @@
+/**
+ * Formatting helpers for service prices, portfolio-post checks, and work-mode location labels in the Jobs feature.
+ * Turns positive prices into a "From X credits" label and treats price 0 as a portfolio post.
+ *
+ * Calls: credits
+ * Used by:
+ *   - 8 files, for example features/contracts/components/chat-proposal-button.tsx, features/jobs/components/browse/job-card.tsx, features/jobs/components/browse/job-result-card.tsx
+ */
+
 import { credits } from '@/shared/lib/credits'
 import type { Job } from '@/shared/schemas'
 

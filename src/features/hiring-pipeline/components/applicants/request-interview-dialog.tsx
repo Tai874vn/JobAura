@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Modal form for a recruiter to request an interview or send new times for an existing interview.
+ * Lets the recruiter choose the mode, 1 to 3 time slots, length, address or phone number, and an optional note, and validates the draft before sending.
+ *
+ * Calls: useDialogFocus; applicantsConfig
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ *   - features/hiring-pipeline/components/interview-card.tsx
+ */
+
 import { applicantsConfig } from '@/features/hiring-pipeline/config/applicants'
 
 import { Plus, X } from 'lucide-react'

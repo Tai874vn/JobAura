@@ -1,5 +1,15 @@
 'use server'
 
+/**
+ * Server actions for the Jobs feature that revalidate cached public pages after a post is saved or deleted.
+ * Checks the caller's session and post ownership on the server before deleting or clearing cache paths.
+ *
+ * Calls: GET /api/auth/me; GET /api/jobs/details/:id; DELETE /api/jobs/:id; serverRequest; reportServerRequestFailure; normalizeJobResponse; csrfTokenFromCookie
+ * Used by:
+ *   - features/jobs/components/form/job-form.tsx
+ *   - features/jobs/utils/delete-job.ts
+ */
+
 import { revalidatePath } from 'next/cache'
 import { cookies, headers } from 'next/headers'
 import { csrfTokenFromCookie } from '@/shared/api/csrf'

@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Renders the /logout page. It clears local chat and session state, calls the logout endpoint, and sends the user to /auth/login or shows a retry button on error.
+ *
+ * Calls: useChatStore; authApi.logout; resetClientSession; reportServerError
+ * Used by:
+ *   - app/(auth)/logout/page.tsx
+ */
+
 import { useEffect, useRef, useState } from 'react'
 import { authApi } from '@/shared/api/endpoints'
 import { reportServerError } from '@/shared/api/query-client'

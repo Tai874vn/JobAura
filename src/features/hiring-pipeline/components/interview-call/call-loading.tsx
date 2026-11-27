@@ -1,3 +1,13 @@
+/**
+ * Loading skeletons for the online interview video call screen.
+ * Exports a 2-tile video stage placeholder and a full-page call shell shown while the call or LiveKit loads.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/interviews/[id]/call/page.tsx
+ *   - features/hiring-pipeline/components/interview-call/call-screen.tsx
+ */
+
 import { Skeleton } from '@/shared/ui'
 
 /** 2-tile video grid + bottom controls placeholder matching CallStage while LiveKit loads. */

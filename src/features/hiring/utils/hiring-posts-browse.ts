@@ -1,3 +1,12 @@
+/**
+ * Handles URL filter parsing, page clamping, server prefetch checks, and API query param building for the public Hiring posts page (/hiring-posts). Keeps the server and client views using the same filter rules and query keys.
+ *
+ * Calls: hiringPostsConfig; hiringPostSorts
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/page.tsx
+ *   - features/hiring/components/browse/hiring-posts-page.tsx
+ */
+
 import { hiringPostSorts, type HiringPostFilters, type HiringPostSort } from '@/shared/api/endpoints/hiring-posts'
 import { hiringPostsConfig } from '@/features/hiring/config/hiring-posts'
 

@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for freelance service listings (jobs): listing, cursor and paginated search, detail lookup, create, update, delete, category menu, and image upload.
+ *
+ * Calls: apiClient; uploadClient; definedParams; assertValidImageFile; GET /api/jobs/paginated-search; GET /api/jobs/details/:jobId; normalizeJob; normalizePaginatedJobsResponse
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient, uploadClient } from '../client'
 import { assertValidImageFile } from '@/shared/lib/file-validation'
 import type { ApiResponse, Comment, CreateJob, CursorPage, Job, JobSearchParams, PaginatedContent, PaginationParams, UpdateJob } from '@/shared/schemas'

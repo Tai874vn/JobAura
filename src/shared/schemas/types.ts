@@ -1,3 +1,11 @@
+/**
+ * Shared TypeScript types inferred from all domain Zod schemas, plus search filter and cursor-pagination types used across the app.
+ *
+ * Calls: ./common; ./users; ./marketplace; ./contracts; ./social
+ * Used by:
+ *   - shared/schemas/domain.ts
+ */
+
 import { z } from 'zod'
 import { paginatedContentSchema, paginationParamsSchema } from './common'
 import {

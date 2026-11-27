@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Main page for a candidate to view and manage their own job applications.
+ * Shows a strip of upcoming interviews, a paginated application list, and the selected application's detail panel, keeping the page and selection in the URL.
+ *
+ * Calls: GET /api/hiring-posts/applications/me; GET /api/interviews/upcoming; GET /api/applications/:id; useSession; myApplicationsConfig; MyApplicationListItem; MyApplicationPanel; PipelineListSkeleton
+ * Used by:
+ *   - app/(workspace)/my-applications/page.tsx
+ */
+
 import { myApplicationsConfig } from '@/features/hiring-pipeline/config/my-applications'
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'

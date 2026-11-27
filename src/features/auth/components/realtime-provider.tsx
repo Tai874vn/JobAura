@@ -1,5 +1,17 @@
 'use client'
 
+/**
+ * Manages the shared realtime socket connection for the signed-in user across the app. It opens a connection with a realtime ticket, exposes it via useRealtimeConnection, and closes it on logout or account change.
+ *
+ * Calls: useSession; createRealtimeConnection; fetchRealtimeAuth; authApi.realtimeTicket
+ * Used by:
+ *   - app/layout.tsx
+ *   - features/chat/hooks/use-chat-socket.ts
+ *   - features/contracts/hooks/use-contract-live-updates.ts
+ *   - features/hiring-pipeline/hooks/use-pipeline-live-updates.ts
+ *   - features/notifications/components/notification-bell.tsx
+ */
+
 import { createContext, useContext, useEffect, useMemo } from 'react'
 import { authApi } from '@/shared/api/endpoints'
 import { env } from '@/shared/config/env'

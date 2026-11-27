@@ -1,5 +1,16 @@
 'use client'
 
+/**
+ * Modal dialog for sending a new proposal on a service page or from chat.
+ * Pre-fills the proposal editor from the service price and milestone template, creates the proposal, and opens it on /contracts.
+ *
+ * Calls: POST /api/proposals; ProposalEditor; useDialogFocus; prefillFromService; contractsConfig
+ * Used by:
+ *   - features/contracts/components/chat-proposal-button.tsx
+ *   - features/jobs/components/browse/job-list-view.tsx
+ *   - features/jobs/components/detail/job-detail-view.tsx
+ */
+
 import { contractsConfig } from '@/features/contracts/config/contracts'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'

@@ -1,3 +1,14 @@
+/**
+ * Pure helper functions for the Connections feature.
+ * Maps a connection status state to its display label and action buttons, and calculates the visible page numbers for pagination.
+ *
+ * Calls: ConnectionStatus schema
+ * Used by:
+ *   - features/connections/components/connect-button.tsx
+ *   - features/connections/components/connections-page.tsx
+ *   - features/connections/hooks/use-connection-controls.ts
+ */
+
 import type { ConnectionStatus } from '@/shared/schemas'
 
 export type ConnectionCommand = {

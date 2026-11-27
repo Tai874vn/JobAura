@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Detail view for a single service or portfolio post (/jobs/[id]).
+ * Shows the cover image, description, reviews, seller card, price and milestone split, plus buttons to message, send a proposal, edit, or delete.
+ *
+ * Calls: DELETE /api/jobs/:id; GET /api/chat/start/:userId; useSession; useChatStore; useMutation; NewProposalDialog; deleteJob; splitPrice
+ * Used by:
+ *   - app/jobs/[id]/page.tsx
+ */
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { useMutation, useQueryClient } from '@tanstack/react-query'

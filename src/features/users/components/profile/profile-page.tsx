@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Public member profile page (/profile/[id]). Shows the cover photo, avatar, bio, skills, education, resume, portfolio posts, projects, certifications, and contact info, with upload controls and edit links to Settings when viewing your own profile.
+ *
+ * Calls: GET /api/skill/fields-of-study; useSession; useOwnResume; useProfileStrength; useProfileUpload; ConnectionActions; ResumeShowcase; ProfilePostCard
+ * Used by:
+ *   - app/profile/[id]/page.tsx
+ */
+
 import { profileConfig } from '@/features/users/config/profile'
 
 import { useMemo } from 'react'

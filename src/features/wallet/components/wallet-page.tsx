@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Main view for the /wallet page.
+ * Displays available, held, paid-out, and earned credit totals, a top-up button when enabled, and a paged history of credit changes.
+ *
+ * Calls: GET /api/wallet; GET /api/wallet/ledger; useSession; walletApi; TopUpDialog; walletConfig; credits; formatPipelineDay
+ * Used by:
+ *   - app/(workspace)/wallet/page.tsx
+ */
+
 import { walletConfig } from '@/features/wallet/config/wallet'
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'

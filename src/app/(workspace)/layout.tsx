@@ -1,3 +1,11 @@
+/**
+ * Shared layout for signed-in workspace pages. Wraps pages in the public header and footer shell and requires an active user session.
+ *
+ * Calls: PublicShell; WorkspaceRequireAuth
+ * Used by:
+ *   - Next.js router: layout for /
+ */
+
 import type { Metadata } from 'next'
 import { PublicShell } from '@/features/layout/components/public-shell'
 import { WorkspaceRequireAuth } from '@/features/workspace/components/workspace-require-auth'

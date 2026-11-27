@@ -1,5 +1,15 @@
 'use server'
 
+/**
+ * Server action that revalidates the signed-in user's cached public profile page (/profile/[id]) after they edit their profile or resume. Reads the caller's ID from the current session cookies instead of trusting browser input.
+ *
+ * Calls: GET /api/auth/me; serverRequest; reportServerRequestFailure
+ * Used by:
+ *   - features/users/components/profile/profile-page.tsx
+ *   - features/workspace/components/settings/resume-settings-editor.tsx
+ *   - features/workspace/hooks/use-profile-settings.ts
+ */
+
 import { revalidatePath } from 'next/cache'
 import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'

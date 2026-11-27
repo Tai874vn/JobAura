@@ -1,3 +1,16 @@
+/**
+ * Shared UI button component and style variants (primary, accent, secondary, ghost, danger) with an optional inline loading spinner.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/button-link.tsx
+ *   - shared/ui/confirmation-dialog.tsx
+ *   - shared/ui/index.ts
+ *   - shared/ui/pagination.tsx
+ *   - shared/ui/route-error.tsx
+ *   - shared/ui/unsaved-changes-bar.tsx
+ */
+
 import * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/shared/lib/utils'

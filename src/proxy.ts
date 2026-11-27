@@ -1,3 +1,11 @@
+/**
+ * Runs before page requests to check for the session cookie and redirect signed-out visitors away from private pages or `/`. Only handles GET and HEAD page navigations and skips API routes and static files.
+ *
+ * Calls: SESSION_COOKIE_NAME; resolveProxyRedirect
+ * Used by:
+ *   - Next.js: runs before every matching request (the proxy, formerly middleware)
+ */
+
 import { NextResponse, type NextRequest } from 'next/server'
 import { SESSION_COOKIE_NAME } from '@/shared/api/csrf'
 import { resolveProxyRedirect } from '@/shared/lib/session-routing'

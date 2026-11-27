@@ -1,3 +1,11 @@
+/**
+ * Candidate portfolio posts management page at /my-posts. Lets signed-in candidates and admins view and manage their own portfolio posts.
+ *
+ * Calls: RequireAuth; MyPostsPage
+ * Used by:
+ *   - Next.js router: page for /my-posts
+ */
+
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/components/require-auth'
 import { MyPostsPage } from '@/features/workspace/components/my-posts-page'

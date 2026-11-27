@@ -1,3 +1,12 @@
+/**
+ * Password reset page (/auth/reset-password).
+ * Shows a form so users can set a new password from a reset link.
+ *
+ * Calls: ResetPasswordForm
+ * Used by:
+ *   - Next.js router: page for /auth/reset-password
+ */
+
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { ResetPasswordForm } from '@/features/auth/components/email-flows'

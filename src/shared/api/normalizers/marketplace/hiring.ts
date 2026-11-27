@@ -1,3 +1,12 @@
+/**
+ * Normalizes raw backend hiring post and application payloads (including paginated lists and the viewer's own application state) into clean frontend objects with safe defaults.
+ *
+ * Calls: hiringApplicationStatusSchema; hiringPipelineCountsSchema; hiringStatusReasonSchema; asRecord; mapApiResponse; pickBoolean; pickNumber; pickString
+ * Used by:
+ *   - shared/api/normalizers/marketplace.ts
+ *   - shared/api/normalizers/marketplace/recommendations.ts
+ */
+
 import { hiringApplicationStatusSchema, hiringPipelineCountsSchema, hiringStatusReasonSchema } from '@/shared/schemas'
 import type { ApiResponse, HiringApplication, HiringPost, PaginatedContent } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickRole, pickString } from '../core'

@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Bookmark button on a job card to save or unsave a service post.
+ * Sends signed-out visitors to login and updates the saved icon right away while syncing with the server.
+ *
+ * Calls: GET /api/saved/jobs; PUT /api/saved/jobs/:jobId; DELETE /api/saved/jobs/:jobId; useSession; useQuery; useMutation
+ * Used by:
+ *   - features/jobs/components/browse/job-card.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bookmark } from 'lucide-react'
 import { useRouter } from 'next/navigation'

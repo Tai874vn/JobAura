@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Shared accessibility component for screen-reader status announcements, such as search result counts.
+ * Renders a hidden live region and sets its text after a short delay so screen readers announce changes.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { useEffect, useState } from 'react'
 
 /**

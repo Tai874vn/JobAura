@@ -1,5 +1,12 @@
-// Example data for the landing and sign-in previews only. It shows the shape of a recruiter's ranked
-// shortlist; none of it is read from the API, and every place that renders it labels it as an example.
+/**
+ * Static example data for the landing and sign-in shortlist previews.
+ * Shows a sample hiring post, ranked candidates, and a score breakdown; none of it comes from the API, and every view labels it as an example.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/jobs/components/home/home-page.tsx
+ *   - features/jobs/components/home/shortlist-preview.tsx
+ */
 
 export const samplePost = {
   title: 'Backend developer',

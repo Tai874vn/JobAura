@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Wrapper page for editing an existing service or portfolio post (/jobs/[id]/edit).
+ * Fetches the post, checks that the signed-in user owns it or is an admin, and renders the editor form or an error state.
+ *
+ * Calls: GET /api/jobs/details/:jobId; useSession; useQuery; JobForm
+ * Used by:
+ *   - app/(workspace)/jobs/[id]/edit/page.tsx
+ */
+
 import axios from 'axios'
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from '@/features/auth/hooks/use-session'

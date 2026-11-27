@@ -1,3 +1,12 @@
+/**
+ * Profile data types and display helpers for the public profile page (/profile/[id]). Reads skills and certifications across current and legacy fields, sorts items by order, and formats UTC dates and enum labels.
+ *
+ * Calls: emptyCertificationDraft
+ * Used by:
+ *   - features/users/components/profile/profile-content.tsx
+ *   - features/users/components/profile/profile-page.tsx
+ */
+
 import type { User, UserProfile } from '@/shared/schemas'
 
 export type ProfileSkill = {

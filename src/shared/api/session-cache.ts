@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Client-side auth session cache and multi-tab sync helpers.
+ * Updates or clears cached user queries on sign-in or sign-out, and notifies other open tabs so signed-out tabs drop private data.
+ *
+ * Calls: getQueryClient; queryKeys; getSessionExpiredRedirect
+ * Used by:
+ *   - 8 files, for example features/auth/components/auth-forms.tsx, features/auth/components/email-flows.tsx, features/auth/components/logout-page.tsx
+ */
+
 import type { QueryClient } from '@tanstack/react-query'
 import { getSessionExpiredRedirect } from '@/shared/lib/session-routing'
 import type { ApiResponse, UserProfile } from '@/shared/schemas'

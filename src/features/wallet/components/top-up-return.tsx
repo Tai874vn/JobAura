@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Return view for the /wallet/top-up/return page after Stripe Checkout.
+ * Reads the return URL params, polls the server until the top-up settles, refreshes wallet data on success, and displays the outcome.
+ *
+ * Calls: GET /api/wallet/top-ups/:id; useSession; walletApi.topUpStatus; walletKeys; credits; getErrorMessage
+ * Used by:
+ *   - app/(workspace)/wallet/top-up/return/page.tsx
+ */
+
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useSession } from '@/features/auth/hooks/use-session'

@@ -1,4 +1,16 @@
 /**
+ * Updates the browser URL for filter and page changes on list pages without triggering a Next.js route reload.
+ * Keeps existing list cards visible while React Query loads new results and avoids layout shift.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/candidates/components/candidate-directory-page.tsx
+ *   - features/hiring/components/browse/hiring-posts-page.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ *   - features/jobs/components/browse/job-list-view.tsx
+ */
+
+/**
  * Change the address bar (filters, page number) WITHOUT a Next.js navigation.
  *
  * Why: list pages (/jobs, /hiring-posts, /my-hiring-posts, /candidates) already load their results on

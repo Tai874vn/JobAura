@@ -1,3 +1,13 @@
+/**
+ * Static preview card showing an example AI-ranked candidate shortlist for a sample hiring post.
+ * Used on the landing page and auth screens to show what recruiters see.
+ *
+ * Calls: MatchScore; samplePost; sampleCandidates
+ * Used by:
+ *   - features/auth/components/auth-form-layout.tsx
+ *   - features/jobs/components/home/home-page.tsx
+ */
+
 import { MatchScore } from '@/features/jobs/components/recommendations/recommendation-ui'
 import { cn } from '@/shared/lib/utils'
 import { samplePost, sampleCandidates } from '../../utils/home/sample-shortlist'

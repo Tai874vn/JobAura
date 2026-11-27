@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Hook for the Connections feature that loads the relationship status with one user and runs connect, accept, cancel, decline, and unfriend actions.
+ * Handles toast notifications, unfriend confirmation state, and query cache invalidation.
+ *
+ * Calls: GET /api/connections/status/:userId; POST /api/connections/requests/:userId; PUT /api/connections/requests/:id/accept; connectionsApi.remove; useSession; connectionControlsFor
+ * Used by:
+ *   - features/candidates/components/candidate-connect-button.tsx
+ *   - features/connections/components/connect-button.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'

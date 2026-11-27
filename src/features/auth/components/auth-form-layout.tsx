@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Shared layout helpers for auth pages. It redirects signed-in users away from auth routes, frames forms beside a shortlist preview card, and renders field labels with error messages.
+ *
+ * Calls: useSession; getSignedInRedirect; ShortlistPreview
+ * Used by:
+ *   - features/auth/components/auth-forms.tsx
+ *   - features/auth/components/email-flows.tsx
+ */
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'

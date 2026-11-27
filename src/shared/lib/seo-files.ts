@@ -1,3 +1,13 @@
+/**
+ * Builds the robots.txt rules and sitemap.xml entries for search engine crawlers.
+ * Disallows signed-in and auth routes, and lists public pages, open hiring posts, portfolio posts, and public profiles.
+ *
+ * Calls: PROTECTED_PREFIXES
+ * Used by:
+ *   - app/robots.ts
+ *   - app/sitemap.ts
+ */
+
 import type { MetadataRoute } from 'next'
 import { PROTECTED_PREFIXES } from './session-routing'
 

@@ -1,5 +1,13 @@
 "use client";
 
+/**
+ * Shared UI dropdown select menu for picking one option such as a sort order or filter choice. Supports arrow keys, Enter selection, Escape and outside-click dismissal, and optional item counts.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";

@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Full post and comment discussion modal opened from the home feed.
+ * Loads paginated comments, scrolls to new comments, and provides useDiscussionMutations for creating, replying to, editing, and deleting comments.
+ *
+ * Calls: GET /api/posts/:id/comments; POST /api/posts/:id/comments; POST /api/posts/:postId/comments/:commentId/replies; PUT /api/posts/:postId/comments/:commentId; DELETE /api/posts/:postId/comments/:commentId; useDialogFocus; CommentThread; FeedAvatar; syncDiscussionChange; mergeComments
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ */
 
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'

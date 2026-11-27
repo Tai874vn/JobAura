@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for user profiles, candidate directory search, resumes, portfolio items, avatar and cover uploads, and skill dictionary search and extraction.
+ *
+ * Calls: apiClient; uploadClient; assertValidImageFile; normalizePaginatedCandidatesResponse; GET /api/users/candidates; GET /api/users/me/profile; GET /api/users/me/resume; GET /api/skill/search
+ * Used by:
+ *   - 11 files, for example features/hiring/components/detail/apply-panel.tsx, features/users/components/profile/profile-page.tsx, features/users/components/resume/resume-career-fields.tsx
+ */
+
 import axios from 'axios'
 import { apiClient, uploadClient } from '../client'
 import { normalizePaginatedCandidatesResponse } from '../normalizers'

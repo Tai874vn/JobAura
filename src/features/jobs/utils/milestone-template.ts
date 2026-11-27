@@ -1,3 +1,13 @@
+/**
+ * Helpers for the optional milestone template and service area fields in the job form.
+ * Converts saved templates to editable rows, validates step fields and 100% share totals, and builds the API payload.
+ *
+ * Calls: jobFormConfig
+ * Used by:
+ *   - features/jobs/components/form/job-form.tsx
+ *   - features/jobs/components/form/milestone-template-field.tsx
+ */
+
 import { jobFormConfig } from '@/features/jobs/config/job-form'
 import type { Job } from '@/shared/schemas'
 

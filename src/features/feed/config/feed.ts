@@ -1,9 +1,16 @@
-// @find feed page config logic [all] — every adjustable value of this page
 /**
- * PAGE CONFIG: / (home feed of a signed-in user)
+ * PAGE CONFIG: / (home feed of a signed-in user).
+ * Holds adjustable numbers and text for post page size, composer placeholder, right rail counts, and Jobs for you count. Safe edits: change a number or a text.
  *
- * Safe edits: change a number or a text.
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/feed/components/feed-page.tsx
+ *   - features/feed/components/feed-rails.tsx
+ *   - features/feed/components/jobs-for-you.tsx
+ *   - features/feed/components/post-composer.tsx
  */
+
+// @find feed page config logic [all] — every adjustable value of this page
 export const feedConfig = {
   /** Posts loaded each time the feed reaches the bottom. Backend limit: at most 50. */
   postsPerLoad: 10,

@@ -1,3 +1,15 @@
+/**
+ * Renders loading placeholder skeletons for the Hiring posts browse page, My hiring posts page, their role cards, and the hiring post detail page. Matches each layout while data loads.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/(marketplace)/hiring-posts/page.tsx
+ *   - app/(workspace)/my-hiring-posts/page.tsx
+ *   - features/hiring/components/browse/hiring-posts-page.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ *   - features/workspace/components/workspace-require-auth.tsx
+ */
+
 import { Card, CardContent, Skeleton } from '@/shared/ui'
 
 /** Structured placeholders matching HiringPostResultCard (company tile, title, salary, meta, skills, footer). */

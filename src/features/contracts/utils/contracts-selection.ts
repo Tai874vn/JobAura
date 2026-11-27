@@ -1,3 +1,14 @@
+/**
+ * URL, filter, and list helpers for the contracts page.
+ * Reads tab, filter, and selected item from the address bar, builds sorted proposal and contract rows, and formats expiry times.
+ *
+ * Calls: contractsConfig
+ * Used by:
+ *   - features/contracts/components/contract-list-item.tsx
+ *   - features/contracts/components/contracts-page.tsx
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import { contractsConfig } from '@/features/contracts/config/contracts'
 import type { ContractListItem, ContractStatus, ProposalListItem, ProposalStatus, Side } from '@/shared/schemas'
 

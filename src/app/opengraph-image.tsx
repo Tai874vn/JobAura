@@ -1,3 +1,11 @@
+/**
+ * Builds the default Open Graph preview image for shared JobAura links. Pages without their own photo fall back to this PNG card.
+ *
+ * Calls: defaultShareImage
+ * Used by:
+ *   - Next.js router: the share image for link previews
+ */
+
 import { ImageResponse } from 'next/og'
 import { defaultShareImage } from '@/shared/lib/seo'
 

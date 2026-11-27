@@ -1,3 +1,13 @@
+/**
+ * Part of the hiring posts feature. Shows a candidate's current application status badge and a link to view their application instead of the Apply button.
+ *
+ * Calls: StatusBadge
+ * Used by:
+ *   - features/hiring/components/browse/hiring-post-card.tsx
+ *   - features/hiring/components/detail/hiring-post-detail-view.tsx
+ *   - features/hiring/components/detail/hiring-post-panel.tsx
+ */
+
 import { StatusBadge } from '@/features/hiring-pipeline/components/status-badge'
 import type { HiringPost } from '@/shared/schemas'
 import { ButtonLink } from '@/shared/ui'

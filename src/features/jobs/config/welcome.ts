@@ -1,3 +1,12 @@
+/**
+ * Configurable text and display counts for the public /welcome landing page.
+ * Sets the hero search placeholder and how many categories appear in the browse grid.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/jobs/components/home/home-page.tsx
+ */
+
 // @find welcome page config logic [all] — every adjustable value of this page
 /**
  * PAGE CONFIG: /welcome (the public landing page)

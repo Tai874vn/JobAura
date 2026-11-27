@@ -1,3 +1,15 @@
+/**
+ * Formatting helpers for applicant dates, years of experience, and resume job history lines.
+ * Produces consistent text across browsers for applicant list rows and detail panels.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicant-list-item.tsx
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-list-item.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ */
+
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /** A date as "12 Nov" in the viewer's time zone (built by hand so every browser reads the same). */

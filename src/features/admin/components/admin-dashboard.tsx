@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Renders the /admin dashboard home view. The admin sees counts for users, active jobs, contracts, and comments above an embedded jobs table.
+ *
+ * Calls: GET /api/admin/stats; useSession; AdminResourcePage
+ * Used by:
+ *   - app/(admin)/admin/page.tsx
+ */
+
 import { useQuery } from '@tanstack/react-query'
 import { useSession } from '@/features/auth/hooks/use-session'
 import { adminApi } from '@/shared/api/endpoints'

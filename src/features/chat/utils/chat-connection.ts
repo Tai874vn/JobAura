@@ -1,3 +1,12 @@
+/**
+ * Socket.IO connection helpers for the live chat feature.
+ * Syncs online users and the active room on connect, refetches cached rooms and messages after reconnects, and adds incoming live messages to the store.
+ *
+ * Calls: queryKeys
+ * Used by:
+ *   - features/chat/hooks/use-chat-socket.ts
+ */
+
 import type { QueryClient } from '@tanstack/react-query'
 import type { Socket } from 'socket.io-client'
 import { queryKeys } from '@/shared/api/query-keys'

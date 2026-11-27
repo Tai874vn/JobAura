@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Hook that owns all contract mutations, review submission, wallet balance checks, and open dialog state for ContractPanel.
+ * Closes stale dialogs when the contract state changes and refreshes related caches after a review succeeds.
+ *
+ * Calls: POST /api/comments; GET /api/wallet; useContractMutation; contractsApi; runDialogAction; dialogStillAllowed; lowerAmountFrom; refreshServicePageAfterReview
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ *   - features/contracts/components/dialogs/contract-dialogs.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'

@@ -1,3 +1,11 @@
+/**
+ * Shared UI badge pill for short status labels and tags in neutral, primary, accent, rating, or danger tones.
+ *
+ * Calls: cn
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import * as React from 'react'
 import { cn } from '@/shared/lib/utils'
 

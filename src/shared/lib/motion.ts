@@ -1,6 +1,11 @@
 /**
- * Small helpers for JavaScript-driven motion (like programmatic `scrollIntoView`),
- * because CSS `@media (prefers-reduced-motion: reduce)` does not override JS `{ behavior: 'smooth' }`.
+ * Small helpers for JavaScript-driven motion such as programmatic scrolling.
+ * Checks the browser's reduced-motion setting because CSS media queries do not override JS smooth scrolling.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/feed/components/post-discussion-modal.tsx
+ *   - features/workspace/components/settings/settings-page.tsx
  */
 
 /** Returns true when the browser reports that the user prefers reduced motion. */

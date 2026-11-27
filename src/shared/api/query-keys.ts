@@ -1,4 +1,12 @@
 /**
+ * Centralizes all TanStack Query cache keys (general queries, hiring pipeline, service contracts, and credit wallet) and scopes viewer-specific keys by user id or `'anon'`.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - 49 files, for example app/(marketplace)/hiring-posts/page.tsx, app/(marketplace)/jobs/page.tsx, features/admin/components/admin-dashboard.tsx
+ */
+
+/**
  * Stable viewer segment for TanStack Query keys. Keeps visitor cache entries ('anon')
  * separate from each signed-in account (its numeric user id) so switching accounts or
  * signing in never serves another viewer's cached payload.

@@ -1,3 +1,11 @@
+/**
+ * Display sections and cards for the public profile page (/profile/[id]). Renders portfolio post cards, the CV/resume showcase, section headers, contact rows, and empty states.
+ *
+ * Calls: profileConfig; InlineEditButton; ResumeSnippet; hasResumeDraftInput; resumeSkills; occupationLabel; servicePriceLabel; formatYears
+ * Used by:
+ *   - features/users/components/profile/profile-page.tsx
+ */
+
 import { profileConfig } from '@/features/users/config/profile'
 import { formatCredit, formatYears } from '@/features/users/utils/resume-career'
 import { occupationLabel } from '@/features/occupations/api'

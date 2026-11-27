@@ -1,3 +1,11 @@
+/**
+ * Admin users page at /admin/users. Lets admins view and manage user accounts.
+ *
+ * Calls: AdminResourcePage
+ * Used by:
+ *   - Next.js router: page for /admin/users
+ */
+
 import type { Metadata } from 'next'
 import { AdminResourcePage } from '@/features/admin/components/admin-resource-page'
 

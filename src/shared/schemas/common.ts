@@ -1,3 +1,12 @@
+/**
+ * Shared Zod schemas for standard API response wrappers, pagination query params, and paginated list responses used across the app.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/schemas/domain.ts
+ *   - shared/schemas/types.ts
+ */
+
 import { z } from "zod";
 
 export const apiResponseSchema = <T extends z.ZodType>(content: T) =>

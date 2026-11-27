@@ -1,5 +1,18 @@
 'use client'
 
+/**
+ * Renders a shared admin table for jobs, users, categories, subcategories, or comments. Admins can filter rows in the browser, create taxonomy items, view records, and confirm deletes.
+ *
+ * Calls: GET /api/categories; useDialogFocus; getResourceConfig; refreshMarketplaceTaxonomyPages; reportNonFatalError; ConfirmationDialog
+ * Used by:
+ *   - app/(admin)/admin/categories/page.tsx
+ *   - app/(admin)/admin/comments/page.tsx
+ *   - app/(admin)/admin/jobs/page.tsx
+ *   - app/(admin)/admin/subcategories/page.tsx
+ *   - app/(admin)/admin/users/page.tsx
+ *   - features/admin/components/admin-dashboard.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Eye, Plus, Search, Trash2 } from 'lucide-react'
 import { type FormEvent, useId, useMemo, useState } from 'react'

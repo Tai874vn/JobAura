@@ -1,3 +1,13 @@
+/**
+ * Small form utilities for profile and resume settings editors. Updates or removes items in array state, strips empty fields from objects, formats date input values, and formats file sizes.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/workspace/components/settings/profile-settings-editor.tsx
+ *   - features/workspace/components/settings/resume-settings-section.tsx
+ *   - features/workspace/hooks/use-profile-settings.ts
+ */
+
 import type { Dispatch, SetStateAction } from 'react'
 
 export function updateList<T>(

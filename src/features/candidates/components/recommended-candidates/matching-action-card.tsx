@@ -1,3 +1,12 @@
+/**
+ * Action card on the Recommended candidates (/recommendations/candidates) page for starting or refreshing AI matching.
+ * Displays the selected hiring post, remaining daily AI runs, and a helper that picks the button label for each state.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/recommended-candidates-page.tsx
+ */
+
 import {
   BrainCircuit,
   Database,

@@ -1,3 +1,12 @@
+/**
+ * Sample users, milestones, and contract builders for tests in the contracts feature.
+ * Not used by the live app.
+ *
+ * Calls: ContractDetail and MilestoneView schemas
+ * Used by:
+ *   - no file imports it (only tests, or not used)
+ */
+
 import type { ContractDetail, MilestoneView } from '@/shared/schemas'
 
 /** Made-up contracts for the tests (not used by the app). */

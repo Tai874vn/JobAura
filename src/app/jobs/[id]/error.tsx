@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Error boundary for the service detail page (/jobs/[id]).
+ * Shows a recovery screen when loading a service listing fails.
+ *
+ * Calls: RouteError
+ * Used by:
+ *   - Next.js router: error for /jobs/[id]
+ */
+
 import { RouteError } from '@/shared/ui'
 
 export default function JobDetailError({

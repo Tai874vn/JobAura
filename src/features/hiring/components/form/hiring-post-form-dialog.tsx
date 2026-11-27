@@ -1,5 +1,14 @@
 "use client";
 
+/**
+ * Renders the modal form dialog for recruiters to create a new hiring post or edit an existing one. Lets them set occupation, specialty, skills, openings, salary, and closing date, then saves and refreshes cached post pages.
+ *
+ * Calls: GET /api/occupations/:code; POST /api/hiring-posts; PATCH /api/hiring-posts/:id; useDialogFocus; OccupationPicker; SpecialtyPicker; SkillPicker; refreshHiringPostPages
+ * Used by:
+ *   - features/candidates/components/recommended-candidates/hiring-post-selection-panel.tsx
+ *   - features/hiring/components/my-posts/my-hiring-posts-page.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Save, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";

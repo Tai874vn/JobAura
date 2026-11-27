@@ -1,3 +1,12 @@
+/**
+ * Public landing page (/welcome) for JobAura visitors.
+ * Renders the hero search, example score breakdown, three-step guide, browse links, streamed top-rated portfolios, FAQ, and sign-up band.
+ *
+ * Calls: GET /api/categories; GET /api/jobs/paginated-search; serverRequest; ShortlistPreview; JobCard; FaqSection; MatchScore; welcomeConfig
+ * Used by:
+ *   - app/(marketplace)/welcome/page.tsx
+ */
+
 import { welcomeConfig } from '@/features/jobs/config/welcome'
 import { Suspense } from 'react'
 import { FaqSection } from './faq'

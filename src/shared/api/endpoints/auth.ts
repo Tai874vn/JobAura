@@ -1,3 +1,11 @@
+/**
+ * Defines authentication and account security API calls: sign-in, sign-up, email verification, password reset and change, current user lookup, realtime tickets, token refresh, and logout.
+ *
+ * Calls: apiClient; POST /api/auth/signin; POST /api/auth/signup; GET /api/auth/me; POST /api/auth/refresh; POST /api/auth/refresh/logout; POST /api/auth/reset-password; PATCH /api/auth/password
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse, SignIn, SignUp, UserProfile } from '@/shared/schemas'
 

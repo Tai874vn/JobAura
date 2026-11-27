@@ -1,3 +1,11 @@
+/**
+ * Hiring post detail page at /hiring-posts/[id]. Loads the post on the server for fast first paint and SEO metadata, retries with cookies for closed posts, and renders the detail view with structured data.
+ *
+ * Calls: GET /api/hiring-posts/{id}; serverRequest; resolveServerEntity; normalizeHiringPost; HiringPostDetailView; jobPostingJsonLd; JsonLd; positiveIntegerRouteParam
+ * Used by:
+ *   - Next.js router: page for /hiring-posts/[id]
+ */
+
 import { cache } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

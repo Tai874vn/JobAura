@@ -1,3 +1,11 @@
+/**
+ * Public hiring posts browse page at /hiring-posts. Prefetches the public job list, facet counts, and locations on the server for React Query hydration and SEO, then renders the filterable list.
+ *
+ * Calls: GET /api/hiring-posts; GET /api/hiring-posts/facets; GET /api/hiring-posts/locations; serverRequest; readHiringPostFilters; HiringPostsPage; HiringPostsPageSkeleton; hiringPostsItemListJsonLd
+ * Used by:
+ *   - Next.js router: page for /hiring-posts
+ */
+
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'

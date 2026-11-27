@@ -1,3 +1,15 @@
+/**
+ * Pure data helpers for the home feed and post discussions.
+ * Merges and deduplicates paged posts, comments, and replies, and updates post like, save, and comment counts without mutating inputs.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/feed/components/comment-thread.tsx
+ *   - features/feed/components/feed-page.tsx
+ *   - features/feed/components/post-discussion-modal.tsx
+ *   - features/feed/utils/discussion-cache.ts
+ */
+
 import type { InfiniteData } from '@tanstack/react-query'
 import type { FeedPage, FeedPost, PostComment } from '@/shared/schemas'
 

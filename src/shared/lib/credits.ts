@@ -1,3 +1,11 @@
+/**
+ * Formats credit amounts as plain words like "1,250 credits" or "+500 credits" for wallets, contracts, and pricing views.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - 23 files, for example features/admin/components/admin-resource-model.tsx, features/contracts/components/contract-list-item.tsx, features/contracts/components/contract/contract-action-bar.tsx
+ */
+
 const grouped = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 })
 
 /**

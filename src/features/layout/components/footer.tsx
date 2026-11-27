@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Site footer for the JobAura layout. Shows links grouped into columns that change based on whether the viewer is a visitor, candidate, employer, or admin.
+ *
+ * Calls: useSession
+ * Used by:
+ *   - app/(feed)/layout.tsx
+ *   - features/layout/components/public-shell.tsx
+ */
 
 import Link from 'next/link'
 import { useSyncExternalStore } from 'react'

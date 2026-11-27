@@ -1,3 +1,11 @@
+/**
+ * Defines API calls for AI job recommendations, candidate recommendations for a hiring post, and the user's recommendation quota.
+ *
+ * Calls: apiClient; GET /api/recommendations/quota; POST /api/recommendations/jobs; POST /api/recommendations/hiring-posts/:hiringPostId/candidates; normalizeRecommendedJobsResponse; normalizeRecommendedCandidatesResponse
+ * Used by:
+ *   - shared/api/endpoints.ts
+ */
+
 import { apiClient } from '../client'
 import type { ApiResponse, RecommendationContent, RecommendationQuota, RecommendedCandidate, RecommendedJob } from '@/shared/schemas'
 import { normalizeRecommendedCandidatesResponse, normalizeRecommendedJobsResponse } from '../normalizers'

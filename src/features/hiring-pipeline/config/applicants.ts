@@ -1,3 +1,13 @@
+/**
+ * Configuration constants for the recruiter's applicants page and interview request dialog.
+ * Sets the page size, status filter tabs, and allowed interview length choices in minutes.
+ *
+ * Calls: ApplicationStatus
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicants-page.tsx
+ *   - features/hiring-pipeline/components/applicants/request-interview-dialog.tsx
+ */
+
 import type { ApplicationStatus } from '@/shared/schemas'
 
 // @find applicants page config logic [all] — every adjustable value of this page

@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * One applicant row in the recruiter's applicants list.
+ * Shows the applicant's avatar, name, role summary, status badge, applied date, and next interview state, and selects the applicant when clicked.
+ *
+ * Calls: StatusBadge; formatApplicantDay; formatYears; formatPipelineTime
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicants-page.tsx
+ */
+
 import Link from 'next/link'
 import { cn } from '@/shared/lib/utils'
 import type { ApplicationDetail } from '@/shared/schemas'

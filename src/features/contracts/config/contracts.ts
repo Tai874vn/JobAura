@@ -1,10 +1,18 @@
-// @find contracts page config logic [all] — every adjustable value of this page
 /**
- * PAGE CONFIG: /contracts (proposals and contracts of the signed-in user)
+ * PAGE CONFIG: /contracts (proposals and contracts of the signed-in user), holding list page size, tab labels, and form limits matching backend rules.
+ * Safe edits: change a label or lower a number; raising a limit above the backend rule only moves the error to the server.
  *
- * Safe edits: change a label or LOWER a number. The limits below repeat the backend rules: the frontend
- * stops the user early with a clear message; raising one above the backend limit only moves the error to the server.
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/contracts/components/contracts-page.tsx
+ *   - features/contracts/components/dialogs/amendment-dialog.tsx
+ *   - features/contracts/components/dialogs/submit-work-dialog.tsx
+ *   - features/contracts/components/proposal/new-proposal-dialog.tsx
+ *   - features/contracts/utils/contracts-selection.ts
+ *   - features/contracts/utils/proposal-editor-model.ts
  */
+
+// @find contracts page config logic [all] — every adjustable value of this page
 export const contractsConfig = {
   /** Proposals and contracts loaded in the list. */
   pageSize: 50,

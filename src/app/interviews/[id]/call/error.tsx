@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Error boundary for the interview call page (/interviews/[id]/call).
+ * Shows a full-height recovery screen when the call view fails.
+ *
+ * Calls: RouteError
+ * Used by:
+ *   - Next.js router: error for /interviews/[id]/call
+ */
+
 import { RouteError } from '@/shared/ui'
 
 export default function InterviewCallError({

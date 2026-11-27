@@ -1,3 +1,11 @@
+/**
+ * Normalizes backend responses for AI recommendation scores, daily quotas, cache info, recommended jobs, recommended candidates, and candidate directory profiles.
+ *
+ * Calls: normalizeHiringPost; asRecord; mapApiResponse; pickBoolean; pickNumber; pickRole; pickString; pickStringArray
+ * Used by:
+ *   - shared/api/normalizers/marketplace.ts
+ */
+
 import type { ApiResponse, CandidateProfile, PaginatedContent, RecommendationContent, RecommendationLabel, RecommendationScore, RecommendedCandidate, RecommendedJob, UserProfile } from '@/shared/schemas'
 import { asRecord, mapApiResponse, pickBoolean, pickNumber, pickRole, pickString, pickStringArray } from '../core'
 import { normalizeHiringPost } from './hiring'

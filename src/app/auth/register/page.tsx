@@ -1,3 +1,12 @@
+/**
+ * Account registration page (/auth/register).
+ * Shows the sign-up form for creating a new JobAura account.
+ *
+ * Calls: RegisterForm
+ * Used by:
+ *   - Next.js router: page for /auth/register
+ */
+
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { RegisterForm } from '@/features/auth/components/auth-forms'

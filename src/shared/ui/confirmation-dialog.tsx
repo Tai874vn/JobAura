@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Shared UI modal dialog for confirming destructive or important actions. Shows a warning icon, title, message, and Cancel/Confirm buttons, and blocks closing while the action is pending.
+ *
+ * Calls: DialogPortal; useDialogFocus
+ * Used by:
+ *   - shared/ui/index.ts
+ */
+
 import { AlertTriangle, X } from 'lucide-react'
 import { useId } from 'react'
 import { Button } from './button'

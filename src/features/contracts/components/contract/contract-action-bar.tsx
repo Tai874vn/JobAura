@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Renders the action button bars inside a contract detail view: milestone actions (fund, submit, approve, request changes) and contract-wide actions (propose a change, end contract, message).
+ *
+ * Calls: visibleMilestoneActions; credits
+ * Used by:
+ *   - features/contracts/components/contract/contract-milestones.tsx
+ *   - features/contracts/components/contract/contract-panel.tsx
+ */
+
 import { MessageSquare } from 'lucide-react'
 import { credits } from '@/shared/lib/credits'
 import type { ContractStatus, MilestoneView } from '@/shared/schemas'

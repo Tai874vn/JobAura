@@ -1,3 +1,11 @@
+/**
+ * Employer hiring posts management page at /my-hiring-posts. Lets signed-in employers and admins view and manage their own hiring posts, with a skeleton fallback while loading.
+ *
+ * Calls: RequireAuth; MyHiringPostsPage; MyHiringPostsPageSkeleton
+ * Used by:
+ *   - Next.js router: page for /my-hiring-posts
+ */
+
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { RequireAuth } from '@/features/auth/components/require-auth'

@@ -1,3 +1,11 @@
+/**
+ * API client, React Query keys, and label formatter for the ESCO occupation catalog. Searches occupations, loads one occupation with its specialties and related codes, and capitalizes occupation titles for display.
+ *
+ * Calls: GET /api/occupations; GET /api/occupations/:code; apiClient
+ * Used by:
+ *   - 9 files, for example features/candidates/utils/candidate-directory.ts, features/hiring/components/browse/hiring-posts-page.tsx, features/hiring/components/form/hiring-post-form-dialog.tsx
+ */
+
 import { apiClient } from '@/shared/api/client'
 
 /** A search hit: an ESCO occupation, and the alternative label or specialty that matched when not the title. */

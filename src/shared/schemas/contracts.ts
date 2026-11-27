@@ -1,3 +1,12 @@
+/**
+ * Zod schemas for the service-contracts feature, covering proposals, contracts, milestones, amendments, wallet balances, ledger entries, and top-up results.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/schemas/domain.ts
+ *   - shared/schemas/types.ts
+ */
+
 import { z } from 'zod'
 
 /**

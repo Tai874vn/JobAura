@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Small editing controls and resume text blocks for the profile page (/profile/[id]). Provides the inline edit button, a validated image upload button for avatar and cover photos, and read-only resume snippets.
+ *
+ * Calls: validateImageFile; imageUploadAccept
+ * Used by:
+ *   - features/users/components/profile/profile-content.tsx
+ *   - features/users/components/profile/profile-page.tsx
+ */
+
 import type { ReactNode } from 'react'
 import { Edit3 } from 'lucide-react'
 import { toast } from 'sonner'

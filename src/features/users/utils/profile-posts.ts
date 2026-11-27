@@ -1,3 +1,11 @@
+/**
+ * Helper for the public profile page (/profile/[id]). Filters a list of portfolio posts down to those created by a given user and sorts them newest first.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - app/profile/[id]/page.tsx
+ */
+
 import type { Job } from '@/shared/schemas'
 
 export function getUserPosts(jobs: Job[], userId: number | undefined) {

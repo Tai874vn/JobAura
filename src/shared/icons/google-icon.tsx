@@ -1,3 +1,11 @@
+/**
+ * Renders the multicolor Google logo SVG icon for auth sign-in buttons.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - shared/icons/index.ts
+ */
+
 import type { SVGProps } from 'react'
 
 export function GoogleIcon({ className = 'h-4 w-4', ...props }: SVGProps<SVGSVGElement>) {

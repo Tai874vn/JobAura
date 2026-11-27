@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Candidate AI job recommendations page (/recommendations/jobs).
+ * Shows the last saved matches on load, lets the user run a fresh match against their daily quota, and shows a skill-gap tooltip on card hover or focus.
+ *
+ * Calls: GET /api/recommendations/quota; POST /api/recommendations/jobs; useSession; useQuery; useMutation; HiringPostCard; MatchBadge
+ * Used by:
+ *   - app/(workspace)/recommendations/jobs/page.tsx
+ */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Link from 'next/link'
 import { ArrowLeft, BrainCircuit, CheckCircle2, Clock3, Lightbulb, ListOrdered, Zap } from 'lucide-react'

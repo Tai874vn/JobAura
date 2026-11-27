@@ -1,3 +1,15 @@
+/**
+ * Draft types, validation, payload builders, and date formatters for user certifications. Converts between saved API records and month-based form drafts, checks for missing or invalid fields, and flags expired credentials.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/users/components/profile/profile-page.tsx
+ *   - features/users/components/resume/certification-fields.tsx
+ *   - features/users/utils/profile/model.ts
+ *   - features/workspace/components/settings/profile-settings-editor.tsx
+ *   - features/workspace/hooks/use-profile-settings.ts
+ */
+
 import type { ProfileCertification } from '@/shared/schemas'
 
 /**

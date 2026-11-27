@@ -1,3 +1,11 @@
+/**
+ * Part of the proposals panel in the contracts feature. Displays one version of a proposal, including its brief, reference links and images, milestone table, deadline, and total price.
+ *
+ * Calls: formatPipelineDay; credits
+ * Used by:
+ *   - features/contracts/components/proposal/proposal-panel.tsx
+ */
+
 import Image from 'next/image'
 import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'
 import { credits } from '@/shared/lib/credits'

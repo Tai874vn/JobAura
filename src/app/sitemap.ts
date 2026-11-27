@@ -1,3 +1,11 @@
+/**
+ * Builds the XML sitemap for JobAura, refreshed at most once an hour. It loads recent jobs and hiring posts on the server and merges them with the fixed public pages.
+ *
+ * Calls: GET /api/jobs/paginated-search; GET /api/hiring-posts; serverRequest; normalizePaginatedJobsResponse; normalizePaginatedHiringPostsResponse; siteOrigin; buildSitemap
+ * Used by:
+ *   - Next.js router: serves /sitemap.xml
+ */
+
 import type { MetadataRoute } from 'next'
 import { normalizePaginatedHiringPostsResponse, normalizePaginatedJobsResponse } from '@/shared/api/normalizers'
 import { serverRequest } from '@/shared/api/server'

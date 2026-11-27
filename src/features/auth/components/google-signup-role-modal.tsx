@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Modal dialog for new Google sign-up users. It asks them to pick an account type (candidate or recruiter) before continuing to Google.
+ *
+ * Calls: useDialogFocus; signupRoleOptions
+ * Used by:
+ *   - features/auth/components/auth-forms.tsx
+ */
+
 import { X } from 'lucide-react'
 import { useId } from 'react'
 import { signupRoleOptions, type SignupRole } from '@/shared/lib/roles'

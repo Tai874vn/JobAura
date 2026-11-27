@@ -1,3 +1,14 @@
+/**
+ * Shared page frame for public and workspace layouts. Wraps each page with the site header at the top and the footer at the bottom.
+ *
+ * Calls: SiteHeader; Footer
+ * Used by:
+ *   - app/(marketplace)/layout.tsx
+ *   - app/(workspace)/layout.tsx
+ *   - app/jobs/layout.tsx
+ *   - app/profile/layout.tsx
+ */
+
 import { Footer } from './footer'
 import { SiteHeader } from './site-header'
 

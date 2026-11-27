@@ -1,3 +1,13 @@
+/**
+ * Pure helpers that compute a candidate's application progress tracker, action-needed state, next booked interview, and allowed dialogs.
+ * Uses the application's status and event history to decide each tracker step and summary line.
+ *
+ * Calls: myApplicationsConfig; trackerStep
+ * Used by:
+ *   - features/hiring-pipeline/components/my-applications/my-application-list-item.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ */
+
 import { myApplicationsConfig } from '@/features/hiring-pipeline/config/my-applications'
 import type { ApplicationDetail, ApplicationEvent, ApplicationStatus, Interview } from '@/shared/schemas'
 import { trackerStep } from '../api'

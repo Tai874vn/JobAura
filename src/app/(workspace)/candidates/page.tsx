@@ -1,3 +1,11 @@
+/**
+ * Candidate directory page at /candidates. Lets signed-in employers and admins browse and search for candidates.
+ *
+ * Calls: RequireAuth; CandidateDirectoryPage
+ * Used by:
+ *   - Next.js router: page for /candidates
+ */
+
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/components/require-auth'
 import { CandidateDirectoryPage } from '@/features/candidates/components/candidate-directory-page'

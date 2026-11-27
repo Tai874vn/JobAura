@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Top section of the contract detail panel on /contracts.
+ * Shows the other party, status badge, title, deadline, next action or admin notice, credit totals (total, paid, held, remaining), and the review summary or review prompt.
+ *
+ * Calls: nextAction; contractLabel; endReasonLine; formatPipelineDay; credits
+ * Used by:
+ *   - features/contracts/components/contract/contract-panel.tsx
+ */
+
 import { Star } from 'lucide-react'
 import Link from 'next/link'
 import { formatPipelineDay } from '@/features/hiring-pipeline/utils/format-time'

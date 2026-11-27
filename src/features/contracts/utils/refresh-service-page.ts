@@ -1,5 +1,14 @@
 'use server'
 
+/**
+ * Server action for the contracts feature that clears cached service, marketplace, and freelancer profile pages after a review is submitted.
+ * Verifies that the signed-in caller belongs to the contract (or is an admin) before revalidating paths.
+ *
+ * Calls: GET /api/auth/me; GET /api/contracts/:id; serverRequest; reportServerRequestFailure; contractDetailSchema
+ * Used by:
+ *   - features/contracts/hooks/use-contract-actions.ts
+ */
+
 import { revalidatePath } from 'next/cache'
 import { reportServerRequestFailure, serverRequest } from '@/shared/api/server'
 import { contractDetailSchema, type ApiResponse, type UserProfile } from '@/shared/schemas'

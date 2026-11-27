@@ -1,3 +1,11 @@
+/**
+ * Public candidate portfolios browse page at /jobs. Prefetches the public portfolio list and categories on the server for React Query hydration and SEO, then renders the filterable directory.
+ *
+ * Calls: GET /api/jobs/paginated-search; GET /api/categories; serverRequest; readJobListFilters; JobListView; JobsPageSkeleton; jobsItemListJsonLd
+ * Used by:
+ *   - Next.js router: page for /jobs
+ */
+
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'

@@ -1,3 +1,11 @@
+/**
+ * Server page for a public user profile (/profile/[id]). It loads the profile and job listings on the server, builds page metadata and JSON-LD, and renders the profile view.
+ *
+ * Calls: GET /api/users/profile/[id]; GET /api/jobs/by-creator/[id]; serverRequest; resolveServerEntity; getUserPosts; personJsonLd; JsonLd; ProfilePage
+ * Used by:
+ *   - Next.js router: page for /profile/[id]
+ */
+
 import { cache } from 'react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'

@@ -1,3 +1,12 @@
+/**
+ * Cache update helper for comment and reply changes in the feed discussion modal.
+ * Keeps the feed, saved posts, root comments, and reply thread queries in sync after creating, editing, or deleting a comment.
+ *
+ * Calls: queryKeys; addCommentToPost; updateCommentInPost; removeCommentFromPost; appendCommentToPages; updateCommentInPages; removeCommentFromPages; adjustRootReplyCount
+ * Used by:
+ *   - features/feed/components/post-discussion-modal.tsx
+ */
+
 import type { InfiniteData, QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/api/query-keys'
 import type { FeedPage, FeedPost, PostComment } from '@/shared/schemas'

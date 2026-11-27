@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Wide list card for one portfolio or priced service on the /jobs browse page.
+ * Shows the seller avatar and name, title, category badges, price and work mode, summary, reviews, and action buttons.
+ *
+ * Calls: jobCardActions; jobWorkModeSummary; portfolioPriceLabel; getSellerId; getSellerName; getSellerHref; getSellerAvatar; isPortfolioPost
+ * Used by:
+ *   - features/jobs/components/browse/job-list-view.tsx
+ */
+
 import { MessageSquare, Pencil, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/shared/lib/utils'

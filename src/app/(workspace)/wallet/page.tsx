@@ -1,3 +1,12 @@
+/**
+ * Wallet page (/wallet) in the workspace.
+ * Checks that the user is signed in, then shows their wallet balance and transactions.
+ *
+ * Calls: RequireAuth; WalletPage
+ * Used by:
+ *   - Next.js router: page for /wallet
+ */
+
 import type { Metadata } from 'next'
 import { RequireAuth } from '@/features/auth/components/require-auth'
 import { WalletPage } from '@/features/wallet/components/wallet-page'

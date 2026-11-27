@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * Floating chat button and messaging drawer shown in the bottom corner for signed-in users.
+ * Wires the room list, active conversation, and message composer together while keeping the typed draft when the drawer closes.
+ *
+ * Calls: useSession; useChatRoomSelection; useChatSocket; ChatRoomList; ChatConversation
+ * Used by:
+ *   - features/chat/components/lazy-chat-shell.tsx
+ */
 
 import { useState } from 'react'
 import { MessageCircle, Send } from 'lucide-react'

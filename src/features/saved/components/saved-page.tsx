@@ -1,5 +1,12 @@
 'use client'
 
+/**
+ * Saved items page (/saved) with Posts and Jobs tabs. Loads bookmarked feed posts or portfolio jobs on demand with pagination and lets users remove saved posts.
+ *
+ * Calls: GET /api/saved/posts; GET /api/saved/jobs; DELETE /api/saved/posts/:postId; useSession; JobCard; FeedAvatar; queryKeys
+ * Used by:
+ *   - app/(workspace)/saved/page.tsx
+ */
 
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import Image from 'next/image'

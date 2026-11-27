@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Main page for a recruiter to review applicants for one hiring post.
+ * Shows the post header, status filter tabs, a paginated applicant list, and the selected applicant's detail panel, keeping filters and selection in the URL.
+ *
+ * Calls: GET /api/hiring-posts/:id; GET /api/hiring-posts/:id/applications; GET /api/applications/:id; useSession; applicantsConfig; ApplicantListItem; ApplicantPanel; PipelineListSkeleton
+ * Used by:
+ *   - app/(workspace)/my-hiring-posts/[id]/applicants/page.tsx
+ *   - features/hiring/utils/my-hiring-posts-view.ts
+ */
+
 import { applicantsConfig } from '@/features/hiring-pipeline/config/applicants'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AxiosError } from 'axios'

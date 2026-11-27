@@ -1,5 +1,14 @@
 'use client'
 
+/**
+ * Form state and save mutations for the Profile tab on /settings.
+ * Tracks unsaved edits across basic info, skills, and certifications, saves only changed parts, manages portfolio items, and handles avatar and cover uploads.
+ *
+ * Calls: PATCH /api/users/me/profile; PUT /api/users/me/profile/skills; POST /api/users/me/profile/portfolio; PUT /api/users/me/profile/portfolio/:id; DELETE /api/users/me/profile/portfolio/:id; useProfileUpload; usersApi; refreshMyProfilePage
+ * Used by:
+ *   - features/workspace/components/settings/profile-settings-editor.tsx
+ */
+
 import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'

@@ -1,3 +1,11 @@
+/**
+ * Renders a hiring post card and shared post parts (avatar, badges, facts, skills, apply action, and formatters) for hiring pages and job recommendations. Shows the role summary, required skills, and the right action for each viewer.
+ *
+ * Calls: usePostOccupation; AppliedAction; ApplyPanel
+ * Used by:
+ *   - 7 files, for example features/hiring-pipeline/components/my-applications/my-application-panel.tsx, features/hiring/components/browse/hiring-post-result-card.tsx, features/hiring/components/detail/hiring-post-detail-view.tsx
+ */
+
 import { BriefcaseBusiness, CalendarClock, Clock3, MapPin, Send, Users, X } from "lucide-react";
 import Link from "next/link";
 import type { HiringPost } from "@/shared/schemas";

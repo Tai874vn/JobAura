@@ -1,3 +1,12 @@
+/**
+ * Formats timestamps into short relative labels for feed posts and comments, such as "now", "5m", "3h", "2d", or "Oct 4".
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - features/feed/components/feed-post-card.tsx
+ *   - features/feed/components/post-discussion-modal.tsx
+ */
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /** Relative display time: now, 5m, 3h, 2d, then "Oct 4" (+year when not current). */

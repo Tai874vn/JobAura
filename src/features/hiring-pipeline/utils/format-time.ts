@@ -1,3 +1,12 @@
+/**
+ * Date and time formatting helpers for the hiring pipeline and contracts features.
+ * Formats ISO timestamps into consistent local day and clock strings and builds the toast message shown when an interview is booked.
+ *
+ * Calls: nothing from this project
+ * Used by:
+ *   - 18 files, for example features/contracts/components/contract-list-item.tsx, features/contracts/components/contract/contract-header.tsx, features/contracts/components/contract/contract-milestones.tsx
+ */
+
 const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 

@@ -1,5 +1,15 @@
 'use client'
 
+/**
+ * Card showing one interview round inside an applicant or candidate application panel.
+ * Displays the interview mode, length, proposed or booked times, and role-specific buttons to pick a time, join a call, send new times, mark done, or cancel.
+ *
+ * Calls: ConfirmActionDialog; RequestInterviewDialog; formatPipelineTime; runDialogAction; getErrorMessage
+ * Used by:
+ *   - features/hiring-pipeline/components/applicants/applicant-panel.tsx
+ *   - features/hiring-pipeline/components/my-applications/my-application-panel.tsx
+ */
+
 import { useEffect, useState } from 'react'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Badge, Button, ButtonLink } from '@/shared/ui'
