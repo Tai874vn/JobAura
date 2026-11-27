@@ -46,6 +46,15 @@ describe('profileStrength', () => {
     expect(result.score).toBe(100)
   })
 
+  it('counts a degree without a field of study as complete education (the field is no longer asked)', () => {
+    const result = profileStrength({
+      profile: fullCandidate, portfolioPosts: 1,
+      resume: resume({ ...fullResume.data, Degree: 'Bachelor', FieldOfStudy: '' }),
+    })
+    expect(result.score).toBe(100)
+    expect(result.missing.map((item) => item.label)).not.toContain('Education')
+  })
+
   it('scores recruiters on identity and a hiring post, not a resume', () => {
     const recruiter = { role: 'employer' as const, headline: 'Hiring at Acme', bio: 'We build tools.', location: 'Hanoi', website: 'https://acme.example', avatar: '/logo.png' }
     expect(profileStrength({ profile: recruiter, hiringPosts: 1 }).score).toBe(100)

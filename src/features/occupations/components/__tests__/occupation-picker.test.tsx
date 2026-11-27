@@ -4,7 +4,6 @@ import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, describe, expect, it } from 'vitest'
 import { apiClient } from '@/shared/api/client'
-import type { ResumeOccupationYears } from '@/shared/schemas'
 import { resumeDraftFromData } from '@/features/users/utils/resume'
 import {
   defaultMainOccupation,
@@ -12,7 +11,6 @@ import {
   jobOccupationChange,
   mainOccupationChange,
   matchedSpecialty,
-  OccupationYears,
   ResumeCareerFields,
 } from '@/features/users/components/resume/resume-career-fields'
 import { parseResumeJobs, type ResumeJob } from '@/features/users/utils/resume-career'
@@ -200,73 +198,6 @@ describe('the main occupation defaults to the current job (Decision 4)', () => {
   })
 })
 
-describe('years shown separately', () => {
-  // The backend's breakdown for web developer since 2023-11, ICT business analyst 2022-11 to 2024-11, and accountant
-  // 2010-11 to 2020-11, counted on 2026-11-16 with the real overlaps (accountant to web developer is 0.0811).
-  const breakdown: ResumeOccupationYears = {
-    occupation: { code: '2513.5', title: 'web developer' },
-    years: 3,
-    related: 0.4,
-    otherCredit: 0.2,
-    capped: false,
-    others: [
-      { code: '2411.1', title: 'accountant', years: 10, overlap: 0.0811, closelyRelated: false, credit: 0.2432, shownCredit: 0 },
-      { code: '2511.8', title: 'ICT business analyst', years: 2, overlap: 0.2813, closelyRelated: true, credit: 0.1687, shownCredit: 0.2 },
-    ],
-  }
-
-  it('shows the main years, a line per closely related occupation, and one line for the rest', () => {
-    const html = render(<OccupationYears occupation="2513.5" years={breakdown} />)
-    expect(text(html)).toContain('Experience as Web developer: 3 yr')
-    expect(text(html)).toContain('Related experience: ICT business analyst 2 yr → +0.2 yr')
-    expect(html).toContain('title="28% of ESCO skill groups shared × 0.3"')
-    // Ten years as an accountant share few skills with web development: no line of their own.
-    expect(text(html)).not.toContain('Accountant')
-    expect(text(html)).toContain('Other experience: +0.2 yr')
-    expect(html).toContain('title="These jobs share few skills with Web developer, so they count a little (overlap × 0.3)."')
-    expect(text(html)).not.toContain('capped')
-  })
-
-  it('adds up to the related years the AI reads', () => {
-    const shown = breakdown.others.filter((other) => other.closelyRelated).reduce((sum, other) => sum + other.shownCredit, 0)
-    expect(Math.round((shown + breakdown.otherCredit) * 10)).toBe(Math.round(breakdown.related * 10))
-  })
-
-  it('opens each explanation from a focusable button, for keyboard and touch', () => {
-    const html = render(<OccupationYears occupation="2513.5" years={breakdown} />)
-    expect(html).toMatch(/<button type="button" aria-label="How \+0\.2 yr is counted" title="28% of ESCO skill groups shared × 0\.3" aria-expanded="false"/)
-  })
-
-  it('hides the other line when its credit rounds to nothing', () => {
-    const html = text(render(<OccupationYears occupation="2513.5" years={{ ...breakdown, related: 0.2, otherCredit: 0 }} />))
-    expect(html).toContain('Related experience: ICT business analyst 2 yr → +0.2 yr')
-    expect(html).not.toContain('Other experience')
-  })
-
-  it('says when the credit is capped at the main years', () => {
-    const capped: ResumeOccupationYears = {
-      occupation: { code: '2511.3', title: 'data scientist' },
-      years: 1,
-      related: 1,
-      otherCredit: 0.2,
-      capped: true,
-      others: [
-        { code: '2511.2', title: 'data analyst', years: 6, overlap: 0.8421, closelyRelated: true, credit: 1.5158, shownCredit: 0.8 },
-        { code: '2411.1', title: 'accountant', years: 10, overlap: 0.1081, closelyRelated: false, credit: 0.3243, shownCredit: 0 },
-      ],
-    }
-    const html = text(render(<OccupationYears occupation="2511.3" years={capped} />))
-    expect(html).toContain('Experience as Data scientist: 1 yr')
-    expect(html).toContain('Related experience: Data analyst 6 yr → +0.8 yr')
-    expect(html).toContain('Other experience: +0.2 yr')
-    expect(html).toContain('The credit is capped at your years as Data scientist.')
-  })
-
-  it('waits for a save after the occupation or job dates change', () => {
-    const html = text(render(<OccupationYears occupation="2513.5" years={null} />, [webDeveloper]))
-    expect(html).toContain('Experience as Web developer: counted when you save')
-  })
-})
 
 describe('picker details', () => {
   it('ignores a slow specialty lookup once the main choice has changed', () => {

@@ -190,7 +190,8 @@ export type SkillItem = { name: string; level?: string | null }
 
 /**
  * The one skill list, the same in Profile and Resume: a single search to add (with suggestions from the CV), then
- * one compact row per skill with its level and one remove button. `showLevel` is off where levels aren't edited.
+ * one chip per skill with its level and a remove button; chips wrap onto new lines. `showLevel` is off where levels
+ * aren't edited (the resume), so the chip shows only the name.
  */
 export function SkillListEditor<T extends SkillItem>({
   value,
@@ -217,18 +218,20 @@ export function SkillListEditor<T extends SkillItem>({
     <div className="grid gap-3">
       <SkillPicker hideChosen label="Add a skill" value={names} onChange={setNames} field={field} suggestions={suggestions} max={max} />
       {names.length ? (
-        <ul className="divide-y divide-border rounded-lg border border-border" aria-label="Your skills">
+        // Skills as chips that wrap, so a short list stays short; with levels, the level sits inside the chip.
+        <ul className="flex flex-wrap gap-2" aria-label="Your skills">
           {value.filter((skill) => skill.name).map((skill) => (
-            <li key={skill.name} className="flex min-h-12 items-center gap-2 px-3 py-1.5">
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">{skill.name}</span>
+            <li key={skill.name}
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-surface py-1 pl-3 pr-1 text-sm shadow-sm">
+              <span className="min-w-0 truncate font-medium">{skill.name}</span>
               {showLevel ? (
                 <CompactLevelSelect name={skill.name} value={skill.level}
                   onChange={(level) => onChange(value.map((item) => (item === skill ? { ...item, level } : item)))} />
               ) : null}
               <button type="button" aria-label={`Remove ${skill.name}`}
-                className="grid h-8 w-8 shrink-0 place-items-center rounded text-muted hover:bg-danger/5 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
                 onClick={() => onChange(value.filter((item) => item !== skill))}>
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             </li>
           ))}
@@ -244,7 +247,7 @@ function CompactLevelSelect({ name, value, onChange }: { name: string; value?: s
   const listed = skillLevels.find((level) => level.toLowerCase() === (value ?? '').toLowerCase())
   return (
     <select aria-label={`Level for ${name}`} value={listed ?? value ?? ''} onChange={(event) => onChange(event.target.value)}
-      className={cn('h-8 w-32 shrink-0 rounded-md border border-border bg-surface px-2 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-bright/20 sm:w-36',
+      className={cn('h-7 shrink-0 cursor-pointer rounded-full border-0 bg-surface-muted px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary-bright/30',
         listed ? 'text-foreground' : 'text-muted')}>
       <option value="">Level</option>
       {value && !listed ? <option value={value}>{value}</option> : null}

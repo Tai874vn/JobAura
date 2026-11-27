@@ -100,7 +100,7 @@ export function ResumeSettingsSection({
               <ResumeField label="Current job title" value={draft.Role} onChange={(value) => onFieldChange('Role', value)} />
             </div>
 
-            <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} years={years} />
+            <ResumeCareerFields draft={draft} onFieldChange={onFieldChange} />
 
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
             <div className="grid gap-1">

@@ -79,8 +79,8 @@ export function profileStrength({ profile, resume, portfolioPosts = 0, hiringPos
       check('Photo', 10, filled(profile.avatar), 'Add a profile photo', profileField('photo')),
       check('About', 10, filled(profile.bio), 'Write a short About', profileField('bio')),
       check('Portfolio', 10, portfolio > 0, 'Add a portfolio post', profileField('portfolio')),
-      check('Education', 5, filled(data?.Degree) && (data?.Degree === 'Not stated' || filled(data?.FieldOfStudy)),
-        'Add your degree and field of study', resumeField('education')),
+      // The highest degree is enough (the field of study is no longer asked); "Not stated" counts too.
+      check('Education', 5, filled(data?.Degree), 'Add your highest degree', resumeField('education')),
       check('Location', 5, filled(profile.location), 'Add your location', profileField('location')),
     ]
   }

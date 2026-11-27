@@ -1,32 +1,27 @@
 'use client'
 
 /**
- * Career, work history, and education fields for the resume editor and hiring forms. Lets users pick an occupation and specialty, add dated jobs, view counted years of experience, and choose a degree and field of study.
+ * Career, work history, and education fields for the resume editor and hiring forms. Lets users pick an occupation and specialty, add dated jobs, and choose their highest degree.
  *
- * Calls: GET /api/occupations/:code; GET /api/skill/fields-of-study; useOccupationTitle; OccupationPicker; SpecialtyPicker; occupationQuery; parseResumeJobs; resumeCareerProblems
+ * Calls: GET /api/occupations/:code; OccupationPicker; SpecialtyPicker; occupationQuery; parseResumeJobs; resumeCareerProblems
  * Used by:
  *   - features/hiring/components/form/hiring-post-form-dialog.tsx
  *   - features/workspace/components/settings/resume-settings-section.tsx
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
-import { skillsApi, type FieldOfStudy } from '@/shared/api/endpoints/users'
-import type { ResumeOccupationYears } from '@/shared/schemas'
-import { Button, InfoTip, Input, Select, Textarea } from '@/shared/ui'
-import { occupationLabel, occupationQuery, type OccupationHit } from '@/features/occupations/api'
-import { OccupationPicker, useOccupationTitle } from '@/features/occupations/components/occupation-picker'
+import { Button, Input, Select, Textarea } from '@/shared/ui'
+import { occupationQuery, type OccupationHit } from '@/features/occupations/api'
+import { OccupationPicker } from '@/features/occupations/components/occupation-picker'
 import { SpecialtyPicker } from '@/features/occupations/components/specialty-picker'
 import type { ResumeDraft, ResumeFieldKey } from '../../utils/resume'
 import {
   currentJobOccupation,
   degreeLevels,
   emptyResumeJob,
-  formatCredit,
-  formatYears,
   parseResumeJobs,
-  relatedLines,
   resumeCareerProblems,
   serializeResumeJobs,
   type ResumeJob,
@@ -71,12 +66,9 @@ export function defaultMainOccupation(draft: { Occupation?: string; Jobs?: strin
 export function ResumeCareerFields({
   draft,
   onFieldChange,
-  years = null,
 }: {
   draft: Pick<ResumeDraft, 'Occupation' | 'Specialty' | 'Jobs'> & Partial<Pick<ResumeDraft, 'Degree' | 'FieldOfStudy' | 'LegacyField'>>
   onFieldChange: (field: ResumeFieldKey, value: string) => void
-  /** The saved years breakdown while the draft's occupation and job dates are the saved ones; null otherwise. */
-  years?: ResumeOccupationYears | null
 }) {
   const client = useQueryClient()
   const jobs = parseResumeJobs(draft.Jobs)
@@ -133,7 +125,6 @@ export function ResumeCareerFields({
           onClear={() => { onFieldChange('Occupation', ''); onFieldChange('Specialty', '') }} />
         <SpecialtyPicker occupation={occupation} value={specialty} onChange={(value) => onFieldChange('Specialty', value)} />
       </div>
-      {occupation ? <OccupationYears occupation={occupation} years={years} /> : null}
 
       <div data-focus="jobs" className="grid gap-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -188,7 +179,7 @@ export function ResumeCareerFields({
         ))}
       </div>
 
-      <EducationFields degree={draft.Degree ?? ''} fieldOfStudy={draft.FieldOfStudy ?? ''} onFieldChange={onFieldChange} />
+      <EducationFields degree={draft.Degree ?? ''} onFieldChange={onFieldChange} />
 
       {problems.length ? (
         <ul className="list-disc rounded-lg border border-danger/20 bg-danger/5 py-2 pl-7 pr-3 text-sm text-danger" aria-live="polite">
@@ -200,78 +191,16 @@ export function ResumeCareerFields({
 }
 
 /**
- * Years in the main occupation, then the related credit on separate lines that add up to the AI's related_years:
- * one line for each closely related occupation (ESCO skill-group overlap of at least 0.25), and one "Other
- * experience" line for the small credit from jobs that share few skills. Jobs with no occupation add nothing.
- * Counted by the backend from the saved jobs, so a changed occupation or job date shows its years after saving.
- */
-export function OccupationYears({ occupation, years }: { occupation: string; years: ResumeOccupationYears | null }) {
-  const loadedTitle = useOccupationTitle(occupation)
-  const title = years ? occupationLabel(years.occupation.title) : loadedTitle ?? 'this occupation'
-  if (!years) {
-    return (
-      <p data-focus="years" className="rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted">
-        Experience as {title}: <span className="font-medium text-foreground">counted when you save</span>
-        <span className="block text-xs">Counted from the start and end months of your jobs in this occupation.</span>
-      </p>
-    )
-  }
-  const lines = relatedLines(years)
-  return (
-    <div data-focus="years" className="grid gap-1 rounded-lg bg-primary/5 px-3 py-2 text-sm text-muted">
-      <p>Experience as {title}: <span className="font-medium text-foreground">{formatYears(years.years)}</span></p>
-      {lines.length || years.otherCredit > 0 ? (
-        <ul className="grid gap-0.5" aria-label="Related experience">
-          {lines.map((other) => (
-            <li key={other.code}>
-              Related experience: {occupationLabel(other.title)} {formatYears(other.years)} →{' '}
-              <span className="font-medium text-foreground">+{formatCredit(other.shownCredit)} yr</span>{' '}
-              <InfoTip label={`How +${formatCredit(other.shownCredit)} yr is counted`}
-                text={`${Math.round(other.overlap * 100)}% of ESCO skill groups shared × 0.3`} />
-            </li>
-          ))}
-          {years.otherCredit > 0 ? (
-            <li>
-              Other experience: <span className="font-medium text-foreground">+{formatCredit(years.otherCredit)} yr</span>{' '}
-              <InfoTip label={`How +${formatCredit(years.otherCredit)} yr is counted`}
-                text={`These jobs share few skills with ${title}, so they count a little (overlap × 0.3).`} />
-            </li>
-          ) : null}
-        </ul>
-      ) : null}
-      {years.capped ? <p className="text-xs">The credit is capped at your years as {title}.</p> : null}
-      <p className="text-xs">Counted from the start and end months of your jobs. Related experience is a small separate credit, never added to your years in this occupation.</p>
-    </div>
-  )
-}
-
-function groupByBroad(fields: FieldOfStudy[]) {
-  const groups = new Map<string, FieldOfStudy[]>()
-  for (const field of fields) groups.set(field.broad, [...(groups.get(field.broad) ?? []), field])
-  return [...groups.entries()]
-}
-
-/**
- * Highest degree and, only if the person wants, its field of study (both from fixed lists; field of study:
- * ISCED-F 2013). Most people do not care about the field of study, so it stays hidden behind a small
- * "Add field of study" button until it is opened or already has a value. It is never required.
+ * Highest degree only, from a fixed list. The field of study is no longer asked (2026-11-28); a value saved
+ * earlier stays in the resume, and choosing "Not stated" still clears it.
  */
 function EducationFields({
   degree,
-  fieldOfStudy,
   onFieldChange,
 }: {
   degree: string
-  fieldOfStudy: string
   onFieldChange: (field: ResumeFieldKey, value: string) => void
 }) {
-  // Data: skillsApi.fieldsOfStudy → GET /api/skill/fields-of-study → NestjsBE/src/modules/skill/services/skill.service.ts fieldsOfStudy()
-  const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity, gcTime: 30 * 60_000 })
-  const options = fields.data?.content ?? []
-  const hasDegree = degree !== '' && degree !== 'Not stated'
-  // The field of study is shown once the person asks for it, or when the resume already has one.
-  const [showField, setShowField] = useState(false)
-  const fieldOpen = hasDegree && (showField || fieldOfStudy !== '')
   return (
     <div data-focus="education" className="grid gap-3 sm:grid-cols-2">
       <label className="grid gap-1">
@@ -284,28 +213,6 @@ function EducationFields({
           {degreeLevels.map((level) => <option key={level} value={level}>{level}</option>)}
         </Select>
       </label>
-      {hasDegree && !fieldOpen ? (
-        <div className="flex items-end">
-          <Button type="button" size="sm" variant="ghost" onClick={() => setShowField(true)}>
-            <Plus className="h-4 w-4" />
-            Add field of study (optional)
-          </Button>
-        </div>
-      ) : null}
-      {fieldOpen ? (
-      <label className="grid gap-1">
-        <span className="text-sm font-medium">Field of study <span className="font-normal text-muted">(optional)</span></span>
-        <Select value={fieldOfStudy} onChange={(event) => onFieldChange('FieldOfStudy', event.target.value)}>
-          <option value="">{fields.isError ? 'List unavailable, try again later' : 'Not needed'}</option>
-          {fieldOfStudy && !options.some((field) => field.code === fieldOfStudy) ? <option value={fieldOfStudy}>{fieldOfStudy}</option> : null}
-          {groupByBroad(options).map(([broad, items]) => (
-            <optgroup key={broad} label={broad[0].toUpperCase() + broad.slice(1)}>
-              {items.map((field) => <option key={field.code} value={field.code}>{field.name}</option>)}
-            </optgroup>
-          ))}
-        </Select>
-      </label>
-      ) : null}
     </div>
   )
 }
