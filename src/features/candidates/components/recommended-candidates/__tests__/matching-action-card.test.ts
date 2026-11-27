@@ -18,4 +18,9 @@ describe('matchingButtonLabel', () => {
     expect(matchingButtonLabel({ canRun: true, hasResults: false, hasHiringPost: true, quota: quota(5), loadingQuota: false })).toBe('Proceed to match')
     expect(matchingButtonLabel({ canRun: true, hasResults: true, hasHiringPost: true, quota: quota(4), loadingQuota: false })).toBe('Run again')
   })
+
+  it('offers Try again instead of No AI uses left when quota failed to load', () => {
+    expect(matchingButtonLabel({ canRun: false, hasResults: false, hasHiringPost: true, quota: undefined, loadingQuota: false, quotaError: true }))
+      .toBe('Try again')
+  })
 })

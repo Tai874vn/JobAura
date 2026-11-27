@@ -84,6 +84,15 @@ export function RecommendedJobsPage() {
   const quota = quotaQuery.data?.content ?? cachedQuery.data?.content?.quota
   const jobs = useMemo(() => sortByFinalScore(content?.data ?? []), [content?.data])
   const canRun = (quota?.remaining ?? 0) > 0
+  // Show a real error + retry when loading quota or saved results fails instead of falling back to "0/0".
+  const quotaFailed = quotaQuery.isError && !quota
+  const cachedFailed = cachedQuery.isError && !content
+  const loadError = quotaFailed ? quotaQuery.error : cachedFailed ? cachedQuery.error : null
+  const isRetrying = quotaQuery.isFetching || cachedQuery.isFetching
+  const retryLoad = () => {
+    if (quotaQuery.isError) void quotaQuery.refetch()
+    if (cachedQuery.isError) void cachedQuery.refetch()
+  }
 
   const placeTooltip = useCallback((clientX: number, clientY: number) => {
     const pos = computeTooltipPosition(clientX, clientY, window.innerWidth, window.innerHeight)
@@ -128,16 +137,30 @@ export function RecommendedJobsPage() {
 
       <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="grid gap-5">
+          {loadError ? (
+            <Card>
+              <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between" role="alert">
+                <p className="text-sm text-danger">
+                  {getErrorMessage(loadError, 'Could not load AI job recommendations right now.')}
+                </p>
+                <Button type="button" variant="secondary" onClick={retryLoad} loading={isRetrying}>
+                  Try again
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
           {/* Keep the action card mounted while cached matches load so the page never jumps. */}
           <StartRecommendationCard
             hasResults={Boolean(content)}
             isLoadingQuota={quotaQuery.isPending}
+            quotaError={quotaFailed}
             isRunning={runMutation.isPending}
             canRun={canRun}
             remaining={quota?.remaining ?? 0}
             limit={quota?.limit ?? 0}
             resetAt={quota?.resetAt}
             onRun={() => runMutation.mutate(Boolean(content))}
+            onRetry={retryLoad}
           />
           {!content && cachedQuery.isPending ? (
             <RecommendedJobsSkeleton />
@@ -192,7 +215,13 @@ export function RecommendedJobsPage() {
         </section>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <QuotaCard quota={quota} loading={quotaQuery.isPending} />
+          <QuotaCard
+            quota={quota}
+            loading={quotaQuery.isPending}
+            hasError={quotaFailed}
+            retrying={quotaQuery.isFetching}
+            onRetry={retryLoad}
+          />
         </aside>
       </div>
       {activeRecommendation ? (
@@ -302,21 +331,25 @@ function SkillList({ label, empty, skills, tone }: { label: string; empty: strin
 function StartRecommendationCard({
   hasResults,
   isLoadingQuota,
+  quotaError,
   isRunning,
   canRun,
   remaining,
   limit,
   resetAt,
   onRun,
+  onRetry,
 }: {
   hasResults: boolean
   isLoadingQuota: boolean
+  quotaError: boolean
   isRunning: boolean
   canRun: boolean
   remaining: number
   limit: number
   resetAt?: string
   onRun: () => void
+  onRetry: () => void
 }) {
   return (
     <Card>
@@ -343,15 +376,32 @@ function StartRecommendationCard({
           <p className="text-xs font-medium text-primary">Available today</p>
           {isLoadingQuota ? (
             <Skeleton className="mt-4 h-10 w-28 bg-surface" />
+          ) : quotaError ? (
+            <p className="mt-3 text-sm text-danger">Could not load your daily runs.</p>
           ) : (
             <p className="mt-2 font-display text-4xl font-medium tabular-nums">{remaining}<span className="text-lg text-muted">/{limit}</span></p>
           )}
-          <p className="mt-2 text-xs leading-5 text-muted">
-            {resetAt ? `Resets ${formatReset(resetAt)}` : 'Daily AI recommendation allowance.'}
-          </p>
-          <Button className="mt-5 w-full" size="lg" type="button" onClick={onRun} loading={isRunning} disabled={isLoadingQuota || !canRun}>
+          {!quotaError ? (
+            <p className="mt-2 text-xs leading-5 text-muted">
+              {resetAt ? `Resets ${formatReset(resetAt)}` : 'Daily AI recommendation allowance.'}
+            </p>
+          ) : null}
+          <Button
+            className="mt-5 w-full"
+            size="lg"
+            type="button"
+            onClick={quotaError ? onRetry : onRun}
+            loading={isRunning}
+            disabled={isLoadingQuota || (!quotaError && !canRun)}
+          >
             <ListOrdered className="h-4 w-4" />
-            {canRun ? (hasResults ? 'Run again' : 'Proceed to match') : 'No uses left'}
+            {quotaError
+              ? 'Try again'
+              : isLoadingQuota
+                ? 'Checking AI uses...'
+                : canRun
+                  ? (hasResults ? 'Run again' : 'Proceed to match')
+                  : 'No uses left'}
           </Button>
         </div>
       </CardContent>
@@ -359,7 +409,19 @@ function StartRecommendationCard({
   )
 }
 
-function QuotaCard({ quota, loading }: { quota?: { limit: number; used: number; remaining: number; resetAt: string }; loading: boolean }) {
+function QuotaCard({
+  quota,
+  loading,
+  hasError,
+  retrying,
+  onRetry,
+}: {
+  quota?: { limit: number; used: number; remaining: number; resetAt: string }
+  loading: boolean
+  hasError: boolean
+  retrying: boolean
+  onRetry: () => void
+}) {
   const percent = quota?.limit ? Math.round((quota.remaining / quota.limit) * 100) : 0
 
   return (
@@ -369,6 +431,13 @@ function QuotaCard({ quota, loading }: { quota?: { limit: number; used: number; 
         <h2 className="mt-1 font-display text-xl font-medium">Daily recommendation runs</h2>
         {loading ? (
           <Skeleton className="mt-4 h-20 w-full" />
+        ) : hasError ? (
+          <div className="mt-3 space-y-3">
+            <p className="text-sm text-danger">Could not load your daily allowance.</p>
+            <Button className="w-full" type="button" variant="secondary" onClick={onRetry} loading={retrying}>
+              Try again
+            </Button>
+          </div>
         ) : (
           <>
             <div className="mt-4 flex items-end justify-between gap-3">

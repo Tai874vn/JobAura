@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { skillsApi, type FieldOfStudy } from '@/shared/api/endpoints/users'
@@ -242,7 +242,11 @@ function groupByBroad(fields: FieldOfStudy[]) {
   return [...groups.entries()]
 }
 
-/** Highest degree and its field of study, both chosen from fixed lists (field of study: ISCED-F 2013). */
+/**
+ * Highest degree and, only if the person wants, its field of study (both from fixed lists; field of study:
+ * ISCED-F 2013). Most people do not care about the field of study, so it stays hidden behind a small
+ * "Add field of study" button until it is opened or already has a value. It is never required.
+ */
 function EducationFields({
   degree,
   fieldOfStudy,
@@ -256,10 +260,13 @@ function EducationFields({
   const fields = useQuery({ queryKey: ['fields-of-study'], queryFn: skillsApi.fieldsOfStudy, staleTime: Infinity, gcTime: 30 * 60_000 })
   const options = fields.data?.content ?? []
   const hasDegree = degree !== '' && degree !== 'Not stated'
+  // The field of study is shown once the person asks for it, or when the resume already has one.
+  const [showField, setShowField] = useState(false)
+  const fieldOpen = hasDegree && (showField || fieldOfStudy !== '')
   return (
     <div data-focus="education" className="grid gap-3 sm:grid-cols-2">
       <label className="grid gap-1">
-        <span className="text-sm font-medium">Highest degree</span>
+        <span className="text-sm font-medium">Highest degree <span className="font-normal text-muted">(optional)</span></span>
         <Select value={degree} onChange={(event) => {
           onFieldChange('Degree', event.target.value)
           if (event.target.value === 'Not stated') onFieldChange('FieldOfStudy', '')
@@ -268,10 +275,19 @@ function EducationFields({
           {degreeLevels.map((level) => <option key={level} value={level}>{level}</option>)}
         </Select>
       </label>
+      {hasDegree && !fieldOpen ? (
+        <div className="flex items-end">
+          <Button type="button" size="sm" variant="ghost" onClick={() => setShowField(true)}>
+            <Plus className="h-4 w-4" />
+            Add field of study (optional)
+          </Button>
+        </div>
+      ) : null}
+      {fieldOpen ? (
       <label className="grid gap-1">
-        <span className="text-sm font-medium">Field of study</span>
-        <Select value={fieldOfStudy} disabled={!hasDegree} onChange={(event) => onFieldChange('FieldOfStudy', event.target.value)}>
-          <option value="">{fields.isError ? 'List unavailable, try again later' : hasDegree ? 'Choose' : 'Choose a degree first'}</option>
+        <span className="text-sm font-medium">Field of study <span className="font-normal text-muted">(optional)</span></span>
+        <Select value={fieldOfStudy} onChange={(event) => onFieldChange('FieldOfStudy', event.target.value)}>
+          <option value="">{fields.isError ? 'List unavailable, try again later' : 'Not needed'}</option>
           {fieldOfStudy && !options.some((field) => field.code === fieldOfStudy) ? <option value={fieldOfStudy}>{fieldOfStudy}</option> : null}
           {groupByBroad(options).map(([broad, items]) => (
             <optgroup key={broad} label={broad[0].toUpperCase() + broad.slice(1)}>
@@ -280,6 +296,7 @@ function EducationFields({
           ))}
         </Select>
       </label>
+      ) : null}
     </div>
   )
 }

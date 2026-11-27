@@ -51,7 +51,7 @@ const resourceConfigs: Record<Resource, ResourceConfig> = {
     load: async () => (await categoriesApi.all()).content ?? [],
     remove: categoriesApi.delete,
     renderCells: renderCategoryCells,
-    create: { label: 'Create Job Type', submit: ({ name }) => categoriesApi.create({ name: name }) },
+    create: { label: 'Create Category', submit: ({ name }) => categoriesApi.create({ name: name }) },
   },
   'subcategories': {
     title: 'Subcategories',
@@ -60,7 +60,7 @@ const resourceConfigs: Record<Resource, ResourceConfig> = {
     remove: subcategoriesApi.delete,
     renderCells: renderSubcategoryCells,
     create: {
-      label: 'Create Detail Type',
+      label: 'Create Subcategory',
       submit: ({ name, parentTypeId }) => subcategoriesApi.create({ name: name, categoryId: parentTypeId }),
       needsParentType: true,
     },

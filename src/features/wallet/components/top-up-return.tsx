@@ -64,7 +64,7 @@ export function TopUpReturn() {
     queryFn: () => walletApi.topUpStatus(topUpId!),
     enabled: topUpId !== null && Boolean(user),
     retry: false,
-    // Keep asking while PENDING after a success return, for a while (the IPN usually lands in seconds).
+    // Keep asking while PENDING after a success return, for a while (the Stripe webhook usually lands in seconds).
     refetchInterval: (query) =>
       query.state.data?.status === 'PENDING' && result === 'success' && !timedOut ? POLL_MS : false,
   })

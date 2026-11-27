@@ -6,6 +6,9 @@ import { z } from 'zod'
  *
  * Safe edits: remove a line, reorder lines, change a label or a number.
  */
+/** Maximum number of openings one hiring post can accept (matches backend CreateHiringPostDto). */
+export const MAX_HIRING_OPENINGS = 50
+
 export const myHiringPostsConfig = {
   /** Posts per page. */
   pageSize: 10,
@@ -75,8 +78,8 @@ export const createHiringPostSchema = z
     skills: z.array(z.string()).max(20, "Pick up to 20 skills").optional(),
     /** A date (YYYY-MM-DD) after which the post is no longer listed. */
     closesAt: z.string().optional(),
-    /** How many people the post hires (1 to 50); null keeps hiring until the post is closed. */
-    openings: z.number().int().min(1).max(50).nullable().optional(),
+    /** How many people the post hires (1 to MAX_HIRING_OPENINGS); null keeps hiring until the post is closed. */
+    openings: z.number().int().min(1).max(MAX_HIRING_OPENINGS).nullable().optional(),
   })
   .refine(
     (data) =>

@@ -16,6 +16,7 @@ export type UserError = {
 }
 
 const DEFAULT_SERVER_MESSAGE = 'Something went wrong. Please try again.'
+const DEFAULT_SERVICE_UNAVAILABLE_MESSAGE = 'The AI service is not available right now. Please try again later.'
 const DEFAULT_AUTH_MESSAGE = "You don't have access to this."
 const DEFAULT_NOT_FOUND_MESSAGE = "We couldn't find that."
 const DEFAULT_OFFLINE_MESSAGE = 'You seem to be offline.'
@@ -184,6 +185,16 @@ function classifyHttpError(
       ...(requestId ? { requestId } : {}),
       ...(status !== undefined ? { status } : {}),
       kind: 'network',
+    }
+  }
+
+  // Show a clear sentence for HTTP 503 (for example when the AI service is offline); keep other 5xx generic.
+  if (status === 503) {
+    return {
+      message: withReference(DEFAULT_SERVICE_UNAVAILABLE_MESSAGE, requestId),
+      ...(requestId ? { requestId } : {}),
+      status,
+      kind: 'server',
     }
   }
 

@@ -58,7 +58,7 @@ describe('JobEditPage', () => {
     const html = renderWithClient(client, 55)
 
     expect(html).toContain('Could not load this post')
-    expect(html).toContain('Something went wrong. Please try again. (ref: req-503)')
+    expect(html).toContain('The AI service is not available right now. Please try again later. (ref: req-503)')
     expect(html).not.toContain('Backend temporarily unavailable')
     expect(html).toContain('>Try again</button>')
     expect(html).not.toContain('JobForm:')

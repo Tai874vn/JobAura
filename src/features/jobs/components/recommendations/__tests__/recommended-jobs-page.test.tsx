@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
+import { queryKeys } from '@/shared/api/query-keys'
+import { RequestError } from '@/shared/lib/errors'
 import { computeTooltipPosition, RecommendedJobsPage } from '../recommended-jobs-page'
 
 vi.mock('@/features/auth/hooks/use-session', () => ({
@@ -36,5 +38,34 @@ describe('RecommendedJobsPage', () => {
     expect(html).toContain('Run job matching when you are ready')
     expect(html).toContain('Loading your previous matches')
     expect(html).toContain('motion-safe:animate-pulse')
+  })
+
+  it('shows an error message and Try again button instead of 0/0 and No uses left when quota fails', async () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { staleTime: Infinity, retry: false, retryOnMount: false } },
+    })
+    await client.fetchQuery({
+      queryKey: queryKeys.viewerRecommendationQuota(5),
+      queryFn: async () => {
+        throw new RequestError('AI offline', 503)
+      },
+    }).catch(() => {})
+    await client.fetchQuery({
+      queryKey: queryKeys.recommendedJobs({ topK: 12, poolSize: 50, cacheOnly: true }, 5),
+      queryFn: async () => {
+        throw new RequestError('AI offline', 503)
+      },
+    }).catch(() => {})
+
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={client}>
+        <RecommendedJobsPage />
+      </QueryClientProvider>,
+    )
+
+    expect(html).toContain('The AI service is not available right now. Please try again later.')
+    expect(html).toContain('Try again')
+    expect(html).not.toContain('No uses left')
+    expect(html).not.toContain('0<span class="text-lg text-muted">/0</span>')
   })
 })

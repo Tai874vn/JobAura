@@ -281,7 +281,7 @@ function RegisterFormFields({
 
     form.setError("role", {
       type: "manual",
-      message: "Choose Worker or Employer before continuing.",
+      message: "Choose Candidate or Recruiter before continuing.",
     });
     toast.error("Choose an account type first");
     return null;

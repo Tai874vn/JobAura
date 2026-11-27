@@ -1,4 +1,4 @@
-import { myHiringPostsConfig } from '@/features/hiring/config/my-hiring-posts'
+import { MAX_HIRING_OPENINGS, myHiringPostsConfig } from '@/features/hiring/config/my-hiring-posts'
 import { occupationLabel } from '@/features/occupations/api'
 import { createHiringPostSchema, type CreateHiringPost, type HiringPost } from '@/shared/schemas'
 
@@ -82,8 +82,9 @@ export function hiringPostPayload(
   if (specialty && specialties && !specialties.includes(specialty)) return { error: 'Choose a specialty listed under the occupation' }
   if (draft.closesAt && draft.closesAt < todayInput(now)) return { error: 'The closing date must be today or later' }
   const openings = draft.keepHiring ? null : Number(draft.openings.trim() === '' ? NaN : draft.openings)
-  if (openings !== null && !(Number.isInteger(openings) && openings >= 1 && openings <= 50)) {
-    return { error: 'Openings must be a whole number from 1 to 50' }
+  // Reuse MAX_HIRING_OPENINGS from config so form validation and schema stay in sync.
+  if (openings !== null && !(Number.isInteger(openings) && openings >= 1 && openings <= MAX_HIRING_OPENINGS)) {
+    return { error: `Openings must be a whole number from 1 to ${MAX_HIRING_OPENINGS}` }
   }
   const optional = (value: string) => value.trim() || undefined
   const parsed = createHiringPostSchema.safeParse({

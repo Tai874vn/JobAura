@@ -14,6 +14,7 @@ import { reportNonFatalError } from "@/shared/api/query-client";
 import { getErrorMessage } from "@/shared/lib/utils";
 import type { HiringPost } from "@/shared/schemas";
 import { Button, DialogPortal, Input, Select, Textarea, useDialogFocus } from "@/shared/ui";
+import { MAX_HIRING_OPENINGS } from "../../config/my-hiring-posts";
 import {
   draftFromPost,
   emptyHiringPostDraft,
@@ -182,8 +183,8 @@ function HiringPostForm({
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="How many people are you hiring?" required={!draft.keepHiring} hint="From 1 to 50. When the last one accepts, the post closes by itself.">
-              <Input type="number" inputMode="numeric" min={1} max={50} step={1} value={draft.openings} disabled={draft.keepHiring}
+            <Field label="How many people are you hiring?" required={!draft.keepHiring} hint={`From 1 to ${MAX_HIRING_OPENINGS}. When the last one accepts, the post closes by itself.`}>
+              <Input type="number" inputMode="numeric" min={1} max={MAX_HIRING_OPENINGS} step={1} value={draft.openings} disabled={draft.keepHiring}
                 onChange={(event) => set("openings", event.target.value)} placeholder="1" />
             </Field>
             <label className="flex items-start gap-2 self-center text-sm font-medium md:mt-6">

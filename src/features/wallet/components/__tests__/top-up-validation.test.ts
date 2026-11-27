@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest'
-import { parseTopUpAmount, topUpErrors } from '../top-up-dialog'
+import { describe, expect, it, vi } from 'vitest'
+import { getErrorMessage } from '@/shared/lib/utils'
+import { openCheckout } from '../../api'
+import { parseTopUpAmount, startTopUpAndRedirect, topUpErrors } from '../top-up-dialog'
 
 const bounds = { min: 10, max: 10_000 }
 
@@ -24,5 +26,20 @@ describe('parseTopUpAmount', () => {
     expect(parseTopUpAmount(' 40 ')).toBe(40)
     expect(parseTopUpAmount('12.5')).toBeNull()
     expect(parseTopUpAmount('')).toBeNull()
+  })
+})
+
+describe('startTopUpAndRedirect', () => {
+  it('turns an unexpected checkout URL into a safe inline error message instead of throwing a raw error', async () => {
+    const fakeStart = vi.fn().mockResolvedValue({ topUpId: 1, checkoutUrl: 'https://evil.example/pay' })
+    const err = await startTopUpAndRedirect(100, fakeStart, openCheckout).catch((e: unknown) => e)
+    expect(getErrorMessage(err)).toBe('Could not open the payment page. Please try again.')
+  })
+
+  it('redirects when the checkout URL is a valid Stripe Checkout URL', async () => {
+    const fakeStart = vi.fn().mockResolvedValue({ topUpId: 2, checkoutUrl: 'https://checkout.stripe.com/c/pay/cs_test_123' })
+    const go = vi.fn()
+    await startTopUpAndRedirect(100, fakeStart, (url) => openCheckout(url, go))
+    expect(go).toHaveBeenCalledWith('https://checkout.stripe.com/c/pay/cs_test_123')
   })
 })

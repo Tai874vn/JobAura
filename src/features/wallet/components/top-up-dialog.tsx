@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { useId, useState } from 'react'
 import { credits } from '@/shared/lib/credits'
+import { UserValidationError } from '@/shared/lib/errors'
 import { getErrorMessage } from '@/shared/lib/utils'
 import { Button, DialogPortal, Input, useDialogFocus } from '@/shared/ui'
 import { openCheckout, walletApi } from '../api'
@@ -26,9 +27,8 @@ export function TopUpDialog({ info, onClose }: { info: TopUpInfo; onClose: () =>
   const amount = parseTopUpAmount(text)
   // Data: walletApi.startTopUp → POST /api/wallet/top-ups → NestjsBE/src/modules/wallet/services/top-ups.service.ts start()
   const start = useMutation({
-    mutationFn: (n: number) => walletApi.startTopUp(n),
-    // The browser leaves this site, so nothing else to do. The credits are added when Stripe tells our server.
-    onSuccess: ({ checkoutUrl }) => openCheckout(checkoutUrl),
+    // Validate and open the checkout URL inside the mutation so an unexpected URL shows an inline error instead of throwing.
+    mutationFn: (n: number) => startTopUpAndRedirect(n),
   })
 
   const dialogRef = useDialogFocus(onClose, !start.isPending)
@@ -130,4 +130,19 @@ const dollars = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'U
 /** What Stripe test mode charges, for example 1,250 credits at 5 cents gives "$62.50". */
 export function usdText(creditAmount: number, centsPerCredit: number): string {
   return dollars.format((creditAmount * centsPerCredit) / 100)
+}
+
+/** Starts a top-up and opens Stripe Checkout; turns an unexpected payment URL into a safe inline error. */
+export async function startTopUpAndRedirect(
+  creditAmount: number,
+  startTopUp: (n: number) => Promise<{ topUpId: number; checkoutUrl: string }> = walletApi.startTopUp,
+  redirect: (url: string) => void = openCheckout,
+): Promise<{ topUpId: number; checkoutUrl: string }> {
+  const result = await startTopUp(creditAmount)
+  try {
+    redirect(result.checkoutUrl)
+  } catch {
+    throw new UserValidationError('Could not open the payment page. Please try again.')
+  }
+  return result
 }

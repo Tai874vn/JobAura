@@ -9,15 +9,17 @@ import type { ReactNode } from "react";
 import type { HiringPost, RecommendationQuota } from "@/shared/schemas";
 import { Button, Card, CardContent } from "@/shared/ui";
 
-/** Say why matching can't run: no post chosen is not the same as no AI uses left. */
-export function matchingButtonLabel({ canRun, hasResults, hasHiringPost, quota, loadingQuota }: {
+/** Say why matching can't run: no post chosen or a failed quota load is not the same as no AI uses left. */
+export function matchingButtonLabel({ canRun, hasResults, hasHiringPost, quota, loadingQuota, quotaError = false }: {
   canRun: boolean
   hasResults: boolean
   hasHiringPost: boolean
   quota?: RecommendationQuota
   loadingQuota: boolean
+  quotaError?: boolean
 }) {
   if (canRun) return hasResults ? "Run again" : "Proceed to match"
+  if (quotaError) return "Try again"
   if (!hasHiringPost) return "Choose a hiring post first"
   if (loadingQuota) return "Checking AI uses..."
   return (quota?.remaining ?? 0) > 0 ? "Proceed to match" : "No AI uses left"
@@ -28,9 +30,11 @@ type StartCandidateMatchingCardProps = {
   selectedHiringPost: HiringPost | null;
   quota?: RecommendationQuota;
   loadingQuota: boolean;
+  quotaError?: boolean;
   canRun: boolean;
   isRunning: boolean;
   onRun: () => void;
+  onRetry?: () => void;
 };
 
 export function StartCandidateMatchingCard({
@@ -38,9 +42,11 @@ export function StartCandidateMatchingCard({
   selectedHiringPost,
   quota,
   loadingQuota,
+  quotaError = false,
   canRun,
   isRunning,
   onRun,
+  onRetry,
 }: StartCandidateMatchingCardProps) {
   return (
     <Card>
@@ -84,21 +90,23 @@ export function StartCandidateMatchingCard({
           <h3 className="mt-2 line-clamp-3 font-display text-xl font-medium">
             {selectedHiringPost?.title ?? "No hiring post selected"}
           </h3>
-          <p className="mt-2 text-xs leading-5 text-muted">
+          <p className={`mt-2 text-xs leading-5 ${quotaError ? "text-danger" : "text-muted"}`}>
             {loadingQuota
               ? "Checking your AI runs..."
-              : `${quota?.remaining ?? 0} of ${quota?.limit ?? 0} AI runs left today.`}
+              : quotaError
+                ? "Could not load your daily AI runs."
+                : `${quota?.remaining ?? 0} of ${quota?.limit ?? 0} AI runs left today.`}
           </p>
           <Button
             className="mt-5 w-full"
             size="lg"
             type="button"
-            onClick={onRun}
+            onClick={quotaError && onRetry ? onRetry : onRun}
             loading={isRunning}
-            disabled={loadingQuota || !canRun}
+            disabled={loadingQuota || (!quotaError && !canRun)}
           >
             <ListOrdered className="h-4 w-4" />
-            {matchingButtonLabel({ canRun, hasResults, hasHiringPost: Boolean(selectedHiringPost), quota, loadingQuota })}
+            {matchingButtonLabel({ canRun, hasResults, hasHiringPost: Boolean(selectedHiringPost), quota, loadingQuota, quotaError })}
           </Button>
         </div>
       </CardContent>

@@ -385,7 +385,7 @@ export function ProfileEducation({ education, isOwner }: {
             </div>
           </div>
         ) : (
-          <p className="mt-3 text-sm text-muted">Add your highest degree and field of study in your resume.</p>
+          <p className="mt-3 text-sm text-muted">Add your highest degree in your resume.</p>
         )}
       </CardContent>
     </Card>

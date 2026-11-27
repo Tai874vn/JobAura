@@ -141,9 +141,26 @@ describe('toUserError', () => {
       kind: 'server',
     })
 
-    const withoutRef = toUserError(axiosError(503, { message: 'Service Unavailable' }))
+    const withoutRef = toUserError(axiosError(504, { message: 'Gateway Timeout' }))
     expect(withoutRef).toEqual({
       message: 'Something went wrong. Please try again.',
+      status: 504,
+      kind: 'server',
+    })
+  })
+
+  it('returns a clear service-unavailable message for HTTP 503 while keeping requestId when present', () => {
+    expect(toUserError(axiosError(503, { message: 'Service Unavailable' }))).toEqual({
+      message: 'The AI service is not available right now. Please try again later.',
+      status: 503,
+      kind: 'server',
+    })
+
+    expect(
+      toUserError(axiosError(503, { message: 'AI offline', requestId: 'req-503' })),
+    ).toEqual({
+      message: 'The AI service is not available right now. Please try again later. (ref: req-503)',
+      requestId: 'req-503',
       status: 503,
       kind: 'server',
     })

@@ -14,7 +14,7 @@ import type {
   RecommendationContent,
   RecommendedCandidate,
 } from "@/shared/schemas";
-import { Card, CardContent, PageHeader, Spinner } from "@/shared/ui";
+import { Button, Card, CardContent, PageHeader, Spinner } from "@/shared/ui";
 import { CandidateResultsPanel, EmptyResultsCard } from "./candidate-results-panel";
 import { hiringPostPageParams } from "../../utils/recommended-candidates/constants";
 import { HiringPostSelectionPanel } from "./hiring-post-selection-panel";
@@ -158,6 +158,20 @@ export function RecommendedCandidatesPage() {
     [content?.data],
   );
   const canRun = Boolean(selectedHiringPostId && (quota?.remaining ?? 0) > 0);
+  // Show an error + retry button when loading quota or saved results fails instead of showing "0 of 0" / "No AI uses left".
+  const quotaFailed = quotaQuery.isError && !quota;
+  const cachedFailed = Boolean(selectedHiringPostId) && cachedQuery.isError && !content;
+  const loadError = quotaFailed
+    ? quotaQuery.error
+    : cachedFailed
+      ? cachedQuery.error
+      : null;
+  const isRetrying = quotaQuery.isFetching || cachedQuery.isFetching;
+
+  function retryLoad() {
+    if (quotaQuery.isError) void quotaQuery.refetch();
+    if (cachedQuery.isError) void cachedQuery.refetch();
+  }
 
   function runMatching(forceRefresh = false) {
     if (!selectedHiringPostId) {
@@ -188,6 +202,30 @@ export function RecommendedCandidatesPage() {
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="grid gap-5">
+          {loadError ? (
+            <Card>
+              <CardContent
+                className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
+                role="alert"
+              >
+                <p className="text-sm text-danger">
+                  {getErrorMessage(
+                    loadError,
+                    "Could not load AI candidate recommendations right now.",
+                  )}
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={retryLoad}
+                  loading={isRetrying}
+                >
+                  Try again
+                </Button>
+              </CardContent>
+            </Card>
+          ) : null}
+
           <HiringPostSelectionPanel
             hiringPosts={hiringPosts}
             loading={hiringPostsQuery.isPending}
@@ -213,9 +251,11 @@ export function RecommendedCandidatesPage() {
                 selectedHiringPost={selectedHiringPost}
                 quota={quota}
                 loadingQuota={quotaQuery.isPending}
+                quotaError={quotaFailed}
                 canRun={canRun}
                 isRunning={runMutation.isPending}
                 onRun={() => runMatching(Boolean(content))}
+                onRetry={retryLoad}
               />
               {content ? (
                 candidates.length ? (
@@ -235,7 +275,30 @@ export function RecommendedCandidatesPage() {
         </section>
 
         <aside className="grid content-start gap-5 xl:sticky xl:top-24">
-          <RecruiterQuotaCard quota={quota} loading={quotaQuery.isPending} />
+          {quotaFailed ? (
+            <Card>
+              <CardContent className="p-4" role="alert">
+                <p className="text-xs font-medium text-primary">Today</p>
+                <h2 className="mt-1 font-display text-xl font-medium">
+                  AI runs left
+                </h2>
+                <p className="mt-3 text-sm text-danger">
+                  Could not load your daily AI runs.
+                </p>
+                <Button
+                  className="mt-4 w-full"
+                  type="button"
+                  variant="secondary"
+                  onClick={retryLoad}
+                  loading={quotaQuery.isFetching}
+                >
+                  Try again
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <RecruiterQuotaCard quota={quota} loading={quotaQuery.isPending} />
+          )}
           <MatchingPolicyCard />
         </aside>
       </div>
