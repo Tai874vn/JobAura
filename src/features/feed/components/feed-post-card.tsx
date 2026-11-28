@@ -12,7 +12,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Bookmark, Heart, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from 'lucide-react'
+import { Bookmark, MessageCircle, MoreHorizontal, ThumbsUp, Trash2 } from 'lucide-react'
 import { memo, useEffect, useRef, useState } from 'react'
 import type { FeedPost, PostComment } from '@/shared/schemas'
 import { cn, resolveAssetUrl, shouldBypassImageOptimizer } from '@/shared/lib/utils'
@@ -149,10 +149,10 @@ export const FeedPostCard = memo(function FeedPostCard({
             onClick={() => onLike(post)}
             className={cn(
               'interaction flex h-10 items-center justify-center gap-2 rounded text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary-bright hover:bg-surface-muted disabled:opacity-60',
-              post.viewerHasLiked && 'text-danger'
+              post.viewerHasLiked && 'text-primary'
             )}
           >
-            <Heart className={cn('h-5 w-5 transition-colors', post.viewerHasLiked && 'fill-danger')} /> {post.viewerHasLiked ? 'Liked' : 'Like'}
+            <ThumbsUp className={cn('h-5 w-5 transition-colors', post.viewerHasLiked && 'fill-current')} /> {post.viewerHasLiked ? 'Liked' : 'Like'}
           </button>
           <button
             type="button"
