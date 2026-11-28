@@ -50,6 +50,7 @@ export function OccupationPicker({
   emptyLabel = 'Choose your occupation',
   previously,
   invalid = false,
+  showInvalid = false,
   required = false,
   compact = false,
 }: {
@@ -64,12 +65,18 @@ export function OccupationPicker({
   emptyLabel?: string
   /** The old 37-field value of a resume saved before occupations, shown read-only as "previously: X". */
   previously?: string
+  /** Nothing valid is chosen. Shown in red only after the user leaves the box, or when showInvalid is set. */
   invalid?: boolean
+  /** Show the invalid state now, for example after a failed save. */
+  showInvalid?: boolean
   required?: boolean
   /** Small label, as inside a job row. */
   compact?: boolean
 }) {
   const [query, setQuery] = useState('')
+  // Red only after the user has been in the box and left it, not on a form that was just opened.
+  const [touched, setTouched] = useState(false)
+  const showError = invalid && (touched || showInvalid)
   // True once the user types; until then the box shows the chosen occupation's title.
   const [typing, setTyping] = useState(false)
   const [open, setOpen] = useState(false)
@@ -121,7 +128,7 @@ export function OccupationPicker({
         {label}{required ? <> <span className="text-danger">*</span></> : null}
       </label>
       {value ? null : (
-        <p id={hintId} className={cn('text-xs', invalid ? 'text-danger' : 'text-muted')}>
+        <p id={hintId} className={cn('text-xs', showError ? 'text-danger' : 'text-muted')}>
           {emptyLabel}
           {previously ? <span className="text-muted"> (previously: {previously})</span> : null}
         </p>
@@ -134,7 +141,7 @@ export function OccupationPicker({
           aria-controls={listShown ? listId : undefined}
           aria-describedby={value ? undefined : hintId}
           aria-autocomplete="list"
-          aria-invalid={invalid || undefined}
+          aria-invalid={showError || undefined}
           aria-activedescendant={open && hits[active] ? `${listId}-${active}` : undefined}
           autoComplete="off"
           className={cn(value && onClear && 'pr-9', value && !typing && 'font-medium')}
@@ -144,7 +151,7 @@ export function OccupationPicker({
           onFocus={(event) => { clearBlurTimer(); event.target.select(); if (typing) setOpen(true) }}
           // While it shows the chosen value, a click selects it all, so typing replaces it.
           onClick={(event) => { if (!typing) event.currentTarget.select() }}
-          onBlur={() => { clearBlurTimer(); blurTimerRef.current = setTimeout(reset, 120) }}
+          onBlur={() => { clearBlurTimer(); setTouched(true); blurTimerRef.current = setTimeout(reset, 120) }}
           onKeyDown={(event) => {
             if (event.key === 'ArrowDown') { event.preventDefault(); setOpen(true); setActive((i) => Math.max(0, Math.min(i + 1, hits.length - 1))) }
             else if (event.key === 'ArrowUp') { event.preventDefault(); setActive((i) => Math.max(i - 1, 0)) }

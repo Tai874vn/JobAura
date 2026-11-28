@@ -76,7 +76,9 @@ export function ResumeCareerFields({
   const specialty = draft.Specialty ?? ''
   // Data: occupationQuery() → occupationsApi.get → GET /api/occupations/:code → NestjsBE/src/modules/occupations/services/occupations.service.ts occupation()
   const detail = useQuery(occupationQuery(occupation))
-  const problems = resumeCareerProblems(draft, detail.data?.specialties)
+  // "Choose your occupation" is not listed up front: the box turns red once the user leaves it empty, and the
+  // save bar says it is needed. The other problems (specialty, job dates) only appear after the user typed something.
+  const problems = resumeCareerProblems(draft, detail.data?.specialties).filter((problem) => problem !== 'Choose your occupation.')
 
   function setJobs(next: ResumeJob[]) {
     onFieldChange('Jobs', next.length ? serializeResumeJobs(next) : '')

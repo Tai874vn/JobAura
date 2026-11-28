@@ -111,9 +111,12 @@ function HiringPostForm({
   });
 
   const dialogRef = useDialogFocus(onClose, !save.isPending);
+  // After a failed Publish the missing occupation is shown in red; before that it is not.
+  const [triedSave, setTriedSave] = useState(false);
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setTriedSave(true);
     const result = hiringPostPayload(draft, new Date(), detail.data?.specialties);
     if (result.error !== undefined) {
       toast.error(result.error);
@@ -163,7 +166,7 @@ function HiringPostForm({
               <OccupationPicker label="Occupation" required value={draft.occupationCode}
                 emptyLabel="Choose the occupation" previously={draft.legacyField || undefined}
                 placeholder="Search occupations, for example web developer"
-                invalid={!draft.occupationCode} onPick={(hit) => void pickOccupation(hit)}
+                invalid={!draft.occupationCode} showInvalid={triedSave} onPick={(hit) => void pickOccupation(hit)}
                 onClear={() => setDraft((current) => ({ ...current, occupationCode: "", specialty: "" }))} />
               <span className="text-xs leading-5 text-muted">Candidates are matched on this, and the AI level reads it.</span>
             </div>

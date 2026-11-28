@@ -147,7 +147,22 @@ describe('the resume career form', () => {
     })} />))
     expect(html).toContain('Choose your occupation (previously: Software development)')
     expect(html).toContain("count toward no occupation (previously: Software development)")
-    expect(html).toContain('Choose your occupation.')
+    // Not listed in red up front (2026-11-28): the box turns red only after the user leaves it empty.
+    expect(html).not.toContain('Choose your occupation.')
+  })
+})
+
+describe('the occupation box is not red before the user touches it (2026-11-28)', () => {
+  it('shows the empty hint in grey and no invalid flag on a form that was just opened', () => {
+    const html = render(<OccupationPicker label="Occupation" required value="" invalid onPick={() => undefined} />)
+    expect(html).not.toContain('aria-invalid="true"')
+    expect(html).not.toContain('text-danger">Choose your occupation')
+  })
+
+  it('shows it in red after a failed save (showInvalid)', () => {
+    const html = render(<OccupationPicker label="Occupation" required value="" invalid showInvalid onPick={() => undefined} />)
+    expect(html).toContain('aria-invalid="true"')
+    expect(html).toContain('text-danger">Choose your occupation')
   })
 })
 
