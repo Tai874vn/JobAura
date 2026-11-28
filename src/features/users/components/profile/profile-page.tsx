@@ -33,7 +33,7 @@ import { useProfileUpload } from '../../hooks/use-profile-upload'
 import { refreshMyProfilePage } from '../../utils/refresh-profile-page'
 import { InlineEditButton, OwnerUploadButton } from './profile-editor'
 import { ContactRow, EmptyState, InlineInfo, ProfilePostCard, ResumeShowcase, SectionTitle } from './profile-content'
-import { formatDate, getProfileCertifications, getProfileSkills, humanize, sortByOrder, type MarketplaceProfile, type PortfolioItem } from '../../utils/profile/model'
+import { formatDate, getProfileCertifications, getProfileSkills, sortByOrder, type MarketplaceProfile, type PortfolioItem } from '../../utils/profile/model'
 import Link from 'next/link'
 import { skillsApi } from '@/shared/api/endpoints/users'
 
@@ -148,7 +148,6 @@ export function ProfilePage({ user, posts = [] }: { user: MarketplaceProfile; po
                   {skills.slice(0, profileConfig.skillsInHeader).map((skill, index) => (
                     <span key={skill.id ?? `${skill.name}-${index}`} className="rounded-full bg-accent/30 px-2.5 py-1 text-xs font-medium">
                       {skill.name}
-                      {skill.level ? <span className="ml-1.5 text-xs font-medium text-muted">{humanize(skill.level)}</span> : null}
                     </span>
                   ))}
                   {skills.length > 4 ? (

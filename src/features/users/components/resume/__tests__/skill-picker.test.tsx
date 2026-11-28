@@ -3,7 +3,7 @@ import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import type { FoundSkill } from '@/shared/api/endpoints/users'
-import { SkillLevelSelect, SkillPicker } from '../skill-picker'
+import { SkillPicker } from '../skill-picker'
 
 const render = (element: ReactElement) =>
   renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}>{element}</QueryClientProvider>)
@@ -33,12 +33,5 @@ describe('SkillPicker', () => {
   it('hides the search box when the limit is reached', () => {
     const html = render(<SkillPicker value={['React', 'SQL']} max={2} onChange={() => undefined} />)
     expect(html).not.toContain('role="combobox"')
-  })
-})
-
-describe('SkillLevelSelect', () => {
-  it('maps old free-text levels onto the fixed list and flags unknown ones', () => {
-    expect(render(<SkillLevelSelect value="advanced" onChange={() => undefined} />)).toContain('value="Advanced" selected=""')
-    expect(render(<SkillLevelSelect value="guru" onChange={() => undefined} />)).toContain('guru (choose from the list)')
   })
 })

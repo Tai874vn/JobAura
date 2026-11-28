@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * Skill search picker, skill list editor, and level selector used in resume, profile, certification, and hiring forms. Searches JobAura's skill dictionary, shows optional CV skill suggestions, and lets users add, remove, or set levels for skills.
+ * Skill search picker and skill list editor used in resume, profile, certification, and hiring forms. Searches JobAura's skill dictionary, shows optional CV skill suggestions, and lets users add or remove skills.
  *
- * Calls: GET /api/skill/search; skillsApi.search; settingsConfig; getErrorMessage
+ * Calls: GET /api/skill/search; skillsApi.search; getErrorMessage
  * Used by:
  *   - features/hiring/components/form/hiring-post-form-dialog.tsx
  *   - features/users/components/resume/certification-fields.tsx
@@ -11,7 +11,6 @@
  *   - features/workspace/components/settings/resume-settings-section.tsx
  */
 
-import { settingsConfig } from '@/features/workspace/config/settings'
 import { useEffect, useId, useRef, useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Plus, X } from 'lucide-react'
@@ -20,9 +19,6 @@ import { cn, getErrorMessage } from '@/shared/lib/utils'
 import { Input } from '@/shared/ui'
 
 const kindLabel: Record<string, string> = { software: 'Tool', knowledge: 'Knowledge', skill: 'Skill' }
-
-/** Set in src/features/workspace/config/settings.ts */
-export const skillLevels = settingsConfig.skillLevels
 
 function useDebounced(value: string, delayMs: number) {
   const [debounced, setDebounced] = useState(value)
@@ -190,44 +186,39 @@ export type SkillItem = { name: string; level?: string | null }
 
 /**
  * The one skill list, the same in Profile and Resume: a single search to add (with suggestions from the CV), then
- * one chip per skill with its level and a remove button; chips wrap onto new lines. `showLevel` is off where levels
- * aren't edited (the resume), so the chip shows only the name.
+ * one chip per skill with a remove button; chips wrap onto new lines. Skills have no level: nothing in JobAura (AI,
+ * matching, candidate search, profile strength) reads one, so it is not asked (2026-11-28). A level saved earlier
+ * stays in the database untouched.
  */
 export function SkillListEditor<T extends SkillItem>({
   value,
   onChange,
   field,
   suggestions = [],
-  showLevel = true,
   max = 50,
 }: {
   value: T[]
   onChange: (skills: T[]) => void
   field?: string
   suggestions?: FoundSkill[]
-  showLevel?: boolean
   max?: number
 }) {
   const names = value.map((skill) => skill.name).filter(Boolean)
   function setNames(next: string[]) {
-    // Keep each kept skill (and its level); new names come in without a level.
+    // Keep each kept skill as it was (with any level saved earlier); new names come in as just a name.
     const byName = new Map(value.map((skill) => [skill.name.toLowerCase(), skill]))
-    onChange(next.map((name) => byName.get(name.toLowerCase()) ?? ({ name, level: '' } as T)))
+    onChange(next.map((name) => byName.get(name.toLowerCase()) ?? ({ name } as T)))
   }
   return (
     <div className="grid gap-3">
       <SkillPicker hideChosen label="Add a skill" value={names} onChange={setNames} field={field} suggestions={suggestions} max={max} />
       {names.length ? (
-        // Skills as chips that wrap, so a short list stays short; with levels, the level sits inside the chip.
+        // Skills as chips that wrap, so a short list stays short.
         <ul className="flex flex-wrap gap-2" aria-label="Your skills">
           {value.filter((skill) => skill.name).map((skill) => (
             <li key={skill.name}
               className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-surface py-1 pl-3 pr-1 text-sm shadow-sm">
               <span className="min-w-0 truncate font-medium">{skill.name}</span>
-              {showLevel ? (
-                <CompactLevelSelect name={skill.name} value={skill.level}
-                  onChange={(level) => onChange(value.map((item) => (item === skill ? { ...item, level } : item)))} />
-              ) : null}
               <button type="button" aria-label={`Remove ${skill.name}`}
                 className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-muted hover:bg-danger/10 hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-bright"
                 onClick={() => onChange(value.filter((item) => item !== skill))}>
@@ -239,44 +230,6 @@ export function SkillListEditor<T extends SkillItem>({
       ) : (
         <p className="rounded-lg border border-dashed border-border p-3 text-sm text-muted">No skills yet. Search above to add your first one.</p>
       )}
-    </div>
-  )
-}
-
-function CompactLevelSelect({ name, value, onChange }: { name: string; value?: string | null; onChange: (level: string) => void }) {
-  const listed = skillLevels.find((level) => level.toLowerCase() === (value ?? '').toLowerCase())
-  return (
-    <select aria-label={`Level for ${name}`} value={listed ?? value ?? ''} onChange={(event) => onChange(event.target.value)}
-      className={cn('h-7 shrink-0 cursor-pointer rounded-full border-0 bg-surface-muted px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary-bright/30',
-        listed ? 'text-foreground' : 'text-muted')}>
-      <option value="">Level</option>
-      {value && !listed ? <option value={value}>{value}</option> : null}
-      {skillLevels.map((level) => <option key={level} value={level}>{level}</option>)}
-    </select>
-  )
-}
-
-/** Skill level from a fixed list, so levels are comparable across profiles. */
-export function SkillLevelSelect({
-  value,
-  onChange,
-  hideLabel = false,
-}: {
-  value?: string | null
-  onChange: (level: string) => void
-  hideLabel?: boolean
-}) {
-  const id = useId()
-  const listed = skillLevels.find((level) => level.toLowerCase() === (value ?? '').toLowerCase())
-  return (
-    <div className="grid gap-1">
-      <label htmlFor={id} className={cn('text-sm font-medium', hideLabel && 'sr-only')}>Level</label>
-      <select id={id} value={listed ?? value ?? ''} onChange={(event) => onChange(event.target.value)}
-        className="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-bright/20">
-        <option value="">Choose level</option>
-        {value && !listed ? <option value={value}>{value} (choose from the list)</option> : null}
-        {skillLevels.map((level) => <option key={level} value={level}>{level}</option>)}
-      </select>
     </div>
   )
 }

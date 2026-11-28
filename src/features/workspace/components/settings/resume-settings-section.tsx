@@ -105,9 +105,9 @@ export function ResumeSettingsSection({
             <ResumeTextarea label="Summary" value={draft.Summary} onChange={(value) => onFieldChange('Summary', value)} />
             <div className="grid gap-1">
               <span className="text-sm font-medium">Skills</span>
-              <SkillListEditor showLevel={false} value={resumeSkills(draft.Skills).map((name) => ({ name }))} field={draft.Occupation}
+              <SkillListEditor value={resumeSkills(draft.Skills).map((name) => ({ name }))} field={draft.Occupation}
                 suggestions={foundSkills} onChange={(skills) => onFieldChange('Skills', skills.map((skill) => skill.name).join(', '))} />
-              <p className="text-xs text-muted">One list with your profile: saving here updates the skills on your profile, where you set their levels.</p>
+              <p className="text-xs text-muted">One list with your profile: saving here updates the skills on your profile.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <ResumeTextarea label="Other experience notes" className="min-h-24" value={draft.Experience} onChange={(value) => onFieldChange('Experience', value)} />
